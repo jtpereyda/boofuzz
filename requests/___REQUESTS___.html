@@ -1,0 +1,82 @@
+<style type="text/css">
+    a:link    {color: #990000; text-decoration: none;}
+    a:visited {color: #990000; text-decoration: none;}
+    a:hover   {color: #FFFFFF; text-decoration: none; background-color: #990000}
+    a:active  {color: #990000; text-decoration: none;}
+
+    body
+    {
+        font-family:      arial, helvetica, sans-serif;
+        font-size:        12px;
+        color:            #000000;
+    }
+
+    h1
+    {
+        font-family:      arial, helvetica, sans-serif;
+        font-size:        25px;
+        color:            #333333;
+        border-bottom:    1px solid #B0C8E3;
+    }
+
+    h2
+    {
+        font-family:      arial, helvetica, sans-serif;
+        font-size:        17px;
+        color:            #2153B0;
+    }
+</style>
+
+<h1>About</h1>
+This file contains the descriptions for stored request categories and lists individual types. Maintain alphabetical order.
+
+<h1>HTTP</h1>
+
+<h1>Jabber</h1>
+
+<h1>LDAP</h1>
+
+<h1>NDMP</h1>
+
+<h2>Veritas NDMP_CONECT_CLIENT_AUTH</h2>
+Regular auth types include 0 (none), 1 (plain-text) and 2 (MD5). According to NDMP_CONFIG_GET_SERVER_INFO response Veritas defines types 4, 5, and 190. This fuzz requests will generate valid NDMP fragment and regular headers then fuzz the body. See the request to toggle between random data fuzzing (1k to 50k of pure random data) and valid XDR string fuzzing. Nothing was found when running this against version 11d-hotfix-10.
+
+<h2>Veritas Proprietary Message Types</h2>
+The NDMP spec defines a number of message types enumerated at the top of requests\ndmp.py, the spec also alots space for proprietary usage. Sniffing a back up job and then further reversing beremote.exe revealed a number of defined custom message types. This fuzz request will generate valid NDMP fragment and regular headers then fuzz the body which contains purely random data chosen of random lengths between 1k and 50k.
+
+<h1>Rendezvous</h1>
+
+<h1>STUN</h1>
+
+<h1>Trend Micro</h1>
+
+<h2>20901</h2>
+This fuzz request targets Trend Micro Control Manager (DcsProcessor.exe) TCP port 20901. For more information about the audit target see:
+
+    <ul><li><a href="http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager">http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager</a></p></ul>
+
+The CRC field in this protocol is calculated in some non-standard fashion so the check must be NOP-ed out in the target binary. The protocol is also obfuscated using a basic XOR routine. I wrote an appropriate block encoder named <i>trend_xor_encode()</i>, a decoder is defined as well. This fuzz found nothing so far! I need to uncover more protocol details. See also: Pedram's pwned notebook page 3, 4.
+
+<h2>5168: op-[0x1, 0x2, 0x3, 0x5, 0xa, 0x1f]</h2>
+These fuzz requests (one for each Trend opnum, read on for more) targets the RPC endpoint on Trend Micro Server Protect (SpNTsvc.exe) TCP port 5168. There is only a single RPC opnum exposed however Trend defines it's own op/sub-op codes exposing a plethora of code coverage through this interface. The RPC endpoints is defined as:
+<pre>
+    // opcode: 0x00, address: 0x65741030
+    // uuid: 25288888-bd5b-11d1-9d53-0080c83a5c2c
+    // version: 1.0
+
+    error_status_t rpc_opnum_0 (
+    [in] handle_t arg_1,                          // not sent on wire
+    [in] long trend_req_num,
+    [in][size_is(arg_4)] byte overflow_str[],
+    [in] long arg_4,
+    [out][size_is(arg_6)] byte arg_5[],           // not sent on wire
+    [in] long arg_6
+    );
+</pre>
+This fuzz uncovered a bunch of DoS and code exec bugs. The obvious code exec bugs were documented and released to the vendor. See also: Pedram's pwned notebook page 1, 2 and the following advisories:
+<ul>
+    <li><a href="http://zdi-is/zdi/submissions.html?action=view&id=644">Trend Micro ServerProtect StCommon.dll Stack Overflow Vulnerabilities</a>
+    <li><a href="http://zdi-is/zdi/submissions.html?action=view&id=695">Trend Micro ServerProtect eng50.dll Stack Overflow Vulnerabilities</a>
+</ul>
+
+<h1>Xbox</h1>

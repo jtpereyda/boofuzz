@@ -1,0 +1,25 @@
+# alphabetical order.
+
+Charlie Miller <charlesamiller@hotmail.com>
+    - General ideas, beta testing and morale support.
+
+Gabriel Campana <gc.campana@gmail.com>
+    - Bunch of bug fixes (including finally fixing the memory leak issue).
+    - Various feature enhancements including Ctrl-C support on Unix and the addition of an instrumentation class.
+    - Various feature enhancements to primitives.
+
+Gerald Eisenhaur <gerry.eisenhaur@gmail.com>
+    - General ideas, beta testing and morale support.
+    - Numerous bug reports.
+    - SSL support to fuzz session.
+
+Jared DeMott <jdemott@appliedsec.com>
+    - General ideas, beta testing and morale support.
+
+nnp <http://www.unprotectedhex.com>
+    - Unix process monitor agent.
+
+Peter Silberman <peter.silberman@gmail.com>
+    - General ideas, beta testing and morale support.
+    - Upcoming file fuzzing capability.
+    - Bug reports.

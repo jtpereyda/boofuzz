@@ -1,0 +1,59 @@
+body
+{
+    font-family:                arial, helvetica, sans-serif;
+    font-size:                  12px;
+    color:                      #000000;
+}
+
+a:link    {color: #990000; text-decoration: underline;}
+a:visited {color: #990000; text-decoration: underline;}
+a:hover   {color: #FFFFFF; text-decoration: none; background-color: #990000}
+a:active  {color: #990000; text-decoration: underline;}
+
+td
+{
+    font-family:      arial, helvetica, sans-serif;
+    font-size:        12px;
+    color:            #000000;
+}
+
+h1
+{
+    font-family:      arial, helvetica, sans-serif;
+    font-size:        35px;
+    color:            #FFFFFF;
+    background-color: #004080;
+    margin-top:       10px;
+}
+
+h2
+{
+    font-family:      arial, helvetica, sans-serif;
+    font-size:        20px;
+    color:            #004080;
+    border-bottom:    1px solid #B0C8E3;
+    margin-top:       30px;
+    margin-bottom:    10px;
+}
+
+h3
+{
+    font-family:      arial, helvetica, sans-serif;
+    font-size:        15px;
+    color:            #005BB7;
+    margin-bottom:    5px;
+}
+
+.code
+{
+    border:           2px dashed #cccccc;
+    padding:          10px;
+    margin:           10px;
+    margin-left:      5%;
+    margin-right:     5%;
+    background-color: #D2E9FF;
+    color:            #000000;
+    font-size:        12px;
+    font-family:      courier new;
+    word-wrap: break-word;
+}
