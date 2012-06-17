@@ -436,7 +436,8 @@ class session (pgraph.graph):
 
                         try:
                             sock.settimeout(self.timeout)
-                            sock.connect((target.host, target.port))
+                            if self.proto == socket.SOCK_STREAM
+                                sock.connect((target.host, target.port))
                         except Exception, e:
                             error_handler(e, "failed connecting on socket", target, sock)
                             continue
@@ -503,7 +504,7 @@ class session (pgraph.graph):
         # finished with the last node on the path, pop it off the path stack.
         if path:
             path.pop()
-            
+
         # loop to keep the main thread running and be able to receive signals
         if self.signal_module:
             # wait for a signal only if fuzzing is finished (this function is recursive)
@@ -739,11 +740,11 @@ class session (pgraph.graph):
 
         self.total_mutant_index  = 0
         self.total_num_mutations = self.num_mutations()
-        
+
         # web interface thread doesn't catch KeyboardInterrupt
         # add a signal handler, and exit on SIGINT
         # XXX - should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-        #     - doesn't work on OS where the signal module isn't available        
+        #     - doesn't work on OS where the signal module isn't available
         try:
             import signal
             self.signal_module = True
@@ -804,7 +805,10 @@ class session (pgraph.graph):
                 data = data[:MAX_UDP]
 
         try:
-            sock.send(data)
+            if self.proto == socket.SOCK_STREAM
+                sock.send(data)
+            else:
+                sock.sendto(data, (self.targets[0].host, self.targets[0].port))
         except Exception, inst:
             self.log("Socket error, send: %s" % inst[1])
 
