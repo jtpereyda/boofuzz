@@ -436,7 +436,7 @@ class session (pgraph.graph):
 
                         try:
                             sock.settimeout(self.timeout)
-                            if self.proto == socket.SOCK_STREAM
+                            if self.proto == socket.SOCK_STREAM:
                                 sock.connect((target.host, target.port))
                         except Exception, e:
                             error_handler(e, "failed connecting on socket", target, sock)
@@ -805,7 +805,7 @@ class session (pgraph.graph):
                 data = data[:MAX_UDP]
 
         try:
-            if self.proto == socket.SOCK_STREAM
+            if self.proto == socket.SOCK_STREAM:
                 sock.send(data)
             else:
                 sock.sendto(data, (self.targets[0].host, self.targets[0].port))
