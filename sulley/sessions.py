@@ -8,6 +8,7 @@ import httplib
 import cPickle
 import threading
 import BaseHTTPServer
+import httplib
 
 import blocks
 import pedrpc
@@ -157,6 +158,7 @@ class session (pgraph.graph):
         self.targets             = []
         self.netmon_results      = {}
         self.procmon_results     = {}
+        self.protmon_results     = {}
         self.pause_flag          = False
         self.crashing_primitives = {}
 
@@ -311,6 +313,7 @@ class session (pgraph.graph):
         data["total_mutant_index"]  = self.total_mutant_index
         data["netmon_results"]      = self.netmon_results
         data["procmon_results"]     = self.procmon_results
+        data['protmon_results']     = self.protmon_results
         data["pause_flag"]          = self.pause_flag
 
         fh = open(self.session_filename, "wb+")
@@ -436,6 +439,7 @@ class session (pgraph.graph):
 
                         try:
                             sock.settimeout(self.timeout)
+                            # Connect is needed only for TCP stream
                             if self.proto == socket.SOCK_STREAM:
                                 sock.connect((target.host, target.port))
                         except Exception, e:
@@ -546,6 +550,7 @@ class session (pgraph.graph):
         self.total_mutant_index  = data["total_mutant_index"]
         self.netmon_results      = data["netmon_results"]
         self.procmon_results     = data["procmon_results"]
+        self.protmon_results     = data["protmon_results"]
         self.pause_flag          = data["pause_flag"]
 
 
@@ -755,12 +760,17 @@ class session (pgraph.graph):
                 '''Save current settings (just in case) and exit'''
                 self.export_file()
                 self.log("SIGINT received ... exiting")
+                try:
+                    self.thread.join()
+                except:
+                    self.log( "No server launched", 10)
+
                 sys.exit(0)
             signal.signal(signal.SIGINT, exit_abruptly)
 
         # spawn the web interface.
-        t = web_interface_thread(self)
-        t.start()
+        self.thread = web_interface_thread(self)
+        self.thread.start()
 
 
     ####################################################################################################################
@@ -817,13 +827,20 @@ class session (pgraph.graph):
             try:
                 self.last_recv = sock.recv(10000)
             except Exception, e:
-                self.log("Nothing received on socket.", 5)
                 self.last_recv = ""
         else:
             self.last_recv = ""
 
         if len(self.last_recv) > 0:
             self.log("received: [%d] %s" % (len(self.last_recv), self.last_recv), level=10)
+        else:
+            self.log("Nothing received on socket.", 5)
+            # Increment individual crash count
+            self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant,0) +1
+            # Note crash information
+            self.protmon_results[self.total_mutant_index] = data ;
+            #print self.protmon_results
+
 
 
 ########################################################################################################################
@@ -1088,12 +1105,21 @@ class web_interface_server (BaseHTTPServer.HTTPServer):
 ########################################################################################################################
 class web_interface_thread (threading.Thread):
     def __init__ (self, session):
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name="SulleyWebServer")
 
+        self._stopevent = threading.Event()
         self.session = session
         self.server  = None
 
 
     def run (self):
         self.server = web_interface_server(('', self.session.web_port), web_interface_handler, self.session)
-        self.server.serve_forever()
+        while not self._stopevent.isSet():
+            self.server.handle_request()
+
+    def join(self, timeout=None):
+        # A little dirty but no other solution afaik
+        self._stopevent.set()
+        conn = httplib.HTTPConnection("localhost:%d" % self.session.web_port)
+        conn.request("GET", "/")
+        conn.getresponse()
