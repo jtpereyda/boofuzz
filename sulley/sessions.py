@@ -659,7 +659,16 @@ class session (pgraph.graph):
                         self.fuzz_node.mutant_index += skipped
 
             # start the target back up.
-            self.restart_target(target, stop_first=False)
+            # If it returns False, stop the test
+            if self.restart_target(target, stop_first=False) == False:
+                self.log("Restarting the target failed, exiting.")
+                self.export_file()
+                try:
+                    self.thread.join()
+                except:
+                    self.log( "No server launched", 10)
+                sys.exit(0)
+
 
 
     ####################################################################################################################
@@ -723,7 +732,8 @@ class session (pgraph.graph):
             if stop_first:
                 target.procmon.stop_target()
 
-            target.procmon.start_target()
+            if not target.procmon.start_target():
+                return False
 
             # give the process a few seconds to settle in.
             time.sleep(3)
@@ -732,6 +742,8 @@ class session (pgraph.graph):
         else:
             self.log("no vmcontrol or procmon channel available ... sleeping for %d seconds" % self.restart_sleep_time)
             time.sleep(self.restart_sleep_time)
+            # XXX : should be good to relaunch test for crash before returning False
+            return False
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.pedrpc_connect()
@@ -819,6 +831,7 @@ class session (pgraph.graph):
                 sock.send(data)
             else:
                 sock.sendto(data, (self.targets[0].host, self.targets[0].port))
+            self.log("Packet sent : " + str(data),  10)
         except Exception, inst:
             self.log("Socket error, send: %s" % inst[1])
 
