@@ -19,13 +19,13 @@ Gerald Eisenhaur <gerry.eisenhaur@gmail.com>
 Jared DeMott <jdemott@appliedsec.com>
     - General ideas, beta testing and morale support.
 
-Nibbler <XXXXXXX@gmail.com>
+Nibbler <nbblrr@gmail.com | @Nbblrr>
 	- Lots of general improvements
 	- Bugfixes
 	- Layer 2 fuzzing capabilities
 	- Morale support (architecture direction)
 
-Nikolai Rusakov <https://twitter.com/nrusakov>
+Nikolai Rusakov <@nrusakov>
 	- Add file-fuzzing capabilities
 	
 nnp <http://www.unprotectedhex.com>
