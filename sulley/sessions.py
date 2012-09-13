@@ -865,7 +865,7 @@ class session (pgraph.graph):
         if len(self.last_recv) > 0:
             self.logger.debug("received: [%d] %s" % (len(self.last_recv), repr(self.last_recv)))
         else:
-            self.logger.warning("Nothing received on socket.", 5)
+            self.logger.warning("Nothing received on socket.")
             # Increment individual crash count
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant,0) +1
             # Note crash information

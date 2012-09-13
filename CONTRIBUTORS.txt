@@ -1,5 +1,8 @@
 # alphabetical order.
 
+Charles Timko <https://www.popebp.com>
+	- Semantic fix (problems from removing ^M)
+
 Charlie Miller <charlesamiller@hotmail.com>
     - General ideas, beta testing and morale support.
 
@@ -16,6 +19,15 @@ Gerald Eisenhaur <gerry.eisenhaur@gmail.com>
 Jared DeMott <jdemott@appliedsec.com>
     - General ideas, beta testing and morale support.
 
+Nibbler <XXXXXXX@gmail.com>
+	- Lots of general improvements
+	- Bugfixes
+	- Layer 2 fuzzing capabilities
+	- Morale support (architecture direction)
+
+Nikolai Rusakov <https://twitter.com/nrusakov>
+	- Add file-fuzzing capabilities
+	
 nnp <http://www.unprotectedhex.com>
     - Unix process monitor agent.
 
@@ -23,3 +35,4 @@ Peter Silberman <peter.silberman@gmail.com>
     - General ideas, beta testing and morale support.
     - Upcoming file fuzzing capability.
     - Bug reports.
+	
