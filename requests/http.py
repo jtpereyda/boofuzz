@@ -1,6 +1,16 @@
 from sulley import *
-
 ########################################################################################################################
+# Old http.py request primitives, http_* does all of these and many more (AFAIK)
+########################################################################################################################
+# List of all blocks defined here (for easy copy/paste)
+"""
+sess.connect(s_get("HTTP VERBS"))
+sess.connect(s_get("HTTP VERBS BASIC"))
+sess.connect(s_get("HTTP VERBS POST"))
+sess.connect(s_get("HTTP HEADERS"))
+sess.connect(s_get("HTTP COOKIE"))
+"""
+
 s_initialize("HTTP VERBS")
 s_group("verbs", values=["GET", "HEAD", "POST", "OPTIONS", "TRACE", "PUT", "DELETE", "PROPFIND"])
 if s_block_start("body", group="verbs"):

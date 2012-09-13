@@ -950,6 +950,7 @@ class web_interface_handler (BaseHTTPServer.BaseHTTPRequestHandler):
         response = """
                     <html>
                     <head>
+                    <meta http-equiv="refresh" content="5">
                         <title>Sulley Fuzz Control</title>
                         <style>
                             a:link    {color: #FF8200; text-decoration: none;}
