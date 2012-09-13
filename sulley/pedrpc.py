@@ -10,7 +10,8 @@ class client:
         self.__port           = port
         self.__dbg_flag       = False
         self.__server_sock    = None
-        self.NOLINGER         = struct.pack('HH', 1, 0)
+        self.NOLINGER         = struct.pack('ii', 1, 0)
+        #self.NOLINGER         = struct.pack('HH', 1, 0)
 
 
     ####################################################################################################################

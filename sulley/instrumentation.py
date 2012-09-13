@@ -70,10 +70,14 @@ class external:
     def start_target(self):
         '''
         Start up the target. Called when post_send failed.
+        Returns success of failure of the action
+        If no method defined, false is returned
         '''
 
         if self.start:
-            self.start()
+            return self.start()
+        else:
+            return False
 
 
     def stop_target(self):
