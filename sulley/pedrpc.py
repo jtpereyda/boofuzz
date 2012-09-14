@@ -1,5 +1,6 @@
 import sys
 import struct
+import time
 import socket
 import cPickle
 
@@ -49,7 +50,7 @@ class client:
         except:
             if self.__retry != 5:
                 self.__retry += 1
-                sleep(5)
+                time.sleep(5)
                 self.__connect()
             else:
                 sys.stderr.write("PED-RPC> unable to connect to server %s:%d\n" % (self.__host, self.__port))
