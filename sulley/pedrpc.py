@@ -10,8 +10,8 @@ class client:
         self.__port           = port
         self.__dbg_flag       = False
         self.__server_sock    = None
+        self.__retry          = 0
         self.NOLINGER         = struct.pack('ii', 1, 0)
-        #self.NOLINGER         = struct.pack('HH', 1, 0)
 
 
     ####################################################################################################################
@@ -47,9 +47,13 @@ class client:
             self.__server_sock.settimeout(3.0)
             self.__server_sock.connect((self.__host, self.__port))
         except:
-            sys.stderr.write("PED-RPC> unable to connect to server %s:%d\n" % (self.__host, self.__port))
-            raise Exception
-
+            if self.__retry != 5:
+                self.__retry += 1
+                sleep(5)
+                self.__connect()
+            else:
+                sys.stderr.write("PED-RPC> unable to connect to server %s:%d\n" % (self.__host, self.__port))
+                raise Exception            
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
