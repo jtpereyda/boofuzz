@@ -18,13 +18,12 @@ import utils
 
 PORT  = 26002
 ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
-USAGE = "USAGE: process_monitor.py"                                                                \
-        "\n    <-c|--crash_bin FILENAME> filename to serialize crash bin class to"                 \
-        "\n    [-p|--proc_name NAME]     process name to search for and attach to"                 \
-        "\n    [-i|--ignore_pid PID]     ignore this PID when searching for the target process"    \
-        "\n    [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity"       \
-        "\n    [--port PORT]             TCP port to bind this agent to"                            \
-        "\n    [-f]--filefuzz]           Enable file fuzzing mode"
+USAGE = "USAGE: process_monitor.py"\
+        "\n    <-c|--crash_bin FILENAME> filename to serialize crash bin class to"\
+        "\n    [-p|--proc_name NAME]     process name to search for and attach to"\
+        "\n    [-i|--ignore_pid PID]     ignore this PID when searching for the target process"\
+        "\n    [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity"\
+        "\n    [--port PORT]             TCP port to bind this agent to"
 
 
 ########################################################################################################################
@@ -136,46 +135,6 @@ class debugger_thread (threading.Thread):
                     break
 
         self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
-
-
-#TODO: calculate base of module and use relative offset of base for breakpoints for ASLR
-#TODO: meanwhile just mod the pe and disable the flags to fuzz ASLR binaries
-class filedebugger_thread(debugger_thread):
-    def __init__(self, process_monitor, proc_path, proc_args, finish_bp, max_lifetime=5.0):
-        self.procmon = process_monitor
-        self.proc_path = proc_path
-        self.proc_args = proc_args
-        self.finish_bp = finish_bp
-        self.max_lifetime = max_lifetime
-        self.start_time = 0
-
-        debugger_thread.__init__(self, process_monitor, None)
-
-
-
-    def run(self):
-        try:
-            self.start_time = time.time()
-            self.dbg.load(self.proc_path, command_line=self.proc_args, show_window=self.procmon.show_window)
-            if self.finish_bp != 0:
-                self.dbg.bp_set(self.finish_bp, handler=self.dbg_callback_bp)
-        except Exception,e:
-            self.process_monitor.log(e)
-            raise Exception('Failed to load %s %s.' % (proc.path, proc_args))
-        self.dbg.run()
-        #del(self.dbg)
-
-    def dbg_callback_user(self, dbg):
-        if time.time()-self.start_time >= self.max_lifetime:
-            self.process_monitor.log('Test case %d was terminated by max lifetime.', self.process_monitor.test_number)
-            dbg.terminate_process()
-        return DBG_CONTINUE
-
-    def dbg_callback_bp(self, dbg):
-        if dbg.context.Eip == self.finish_bp:
-            dbg.terminate_process()
-        return DBG_CONTINUE
-
 
 
 ########################################################################################################################
@@ -401,87 +360,14 @@ class process_monitor_pedrpc_server (pedrpc.server):
 
 ########################################################################################################################
 
-#TODO: better exception handling, since this is a subclass of pedrpc all exceptions end up being handled
-#by missing_method, without a debugger makes tracking down what happened pretty difficult.
-class fileprocess_monitor_pedrpc_server(process_monitor_pedrpc_server):
-    def __init__(self, host, port, crash_filename, proc_name=None, ignore_pid=None, log_level=1):
-        ret = process_monitor_pedrpc_server.__init__(self, host, port, crash_filename, proc_name, ignore_pid,
-            log_level)
-        self.proc_path = ''
-        self.proc_args = ''
-        self.file_path = ''
-        self.finish_bp = 0
-        self.max_lifetime = 5.0
-        self.show_window = False
-        self.log('File fuzzer initialized..')
-        return ret
-
-    def set_proc_path(self, proc_path):
-        self.proc_path = proc_path
-
-    def set_proc_args(self, proc_args):
-        self.proc_args = proc_args
-
-    def set_file_path(self, file_path):
-        self.file_path =  file_path
-
-    def set_finish_bp(self, finish_bp):
-        self.finish_bp = finish_bp
-
-    def set_max_lifetime(self, max_lifetime):
-        self.max_liftime = max_lifetime
-
-    def set_show_window(self, show_window):
-        self.show_window = show_window
-
-    def pre_send(self, test_number):
-        self.log("pre_send(%d)" % test_number, 10)
-        self.test_number = test_number
-
-        # unserialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
-        try:
-            self.crash_bin.import_file(self.crash_filename)
-        except:
-            pass
-
-    def post_send(self):
-        #wait for debugger to finish
-        if self.debugger_thread:
-            while self.debugger_thread.dbg.debugger_active:
-                time.sleep(0.1)
-        return process_monitor_pedrpc_server.post_send(self)
-
-
-    def on_send(self, index, data):
-        #TODO: was going to use multiple targets for threading/distribution till i looked at the code and realized
-        #that it isnt implemented yet, consider implementing threading for multi target
-        if self.debugger_thread:
-            while self.debugger_thread.dbg.debugger_active:
-                time.sleep(0.1) #wait for thread to finish before allowing another
-        try:
-            f = open(self.file_path+str(index),'wb')
-            f.write(data)
-            f.flush()
-            f.close()
-        except Exception,e:
-            #print the exception and pass it up the the chain
-            print e
-            raise e
-        #print '%d bytes written to %s' % (len(data), self.file_path+str(index))
-        args = self.proc_args % (self.file_path+str(index))
-        self.debugger_thread = filedebugger_thread(self, self.proc_path, args, self.finish_bp, max_lifetime=self.max_liftime)
-        self.debugger_thread.start()
-
-
 if __name__ == "__main__":
     # parse command line options.
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "c:i:l:p:f", ["crash_bin=", "ignore_pid=", "log_level=", "proc_name=", "port=", "filefuzz"])
+        opts, args = getopt.getopt(sys.argv[1:], "c:i:l:p:", ["crash_bin=", "ignore_pid=", "log_level=", "proc_name=", "port="])
     except getopt.GetoptError:
         ERR(USAGE)
 
     crash_bin = ignore_pid = proc_name = None
-    file_fuzz = False
     log_level = 1
 
     for opt, arg in opts:
@@ -490,17 +376,13 @@ if __name__ == "__main__":
         if opt in ("-l", "--log_level"):   log_level  = int(arg)
         if opt in ("-p", "--proc_Name"):   proc_name  = arg
         if opt in ("-P", "--port"):        PORT       = int(arg)
-        if opt in ("-f", "--filefuzz"):     file_fuzz = True
 
     if not crash_bin:
         ERR(USAGE)
 
     # spawn the PED-RPC servlet.
     try:
-        if file_fuzz:
-            servlet = fileprocess_monitor_pedrpc_server("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
-        else:
-            servlet = process_monitor_pedrpc_server("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
+        servlet = process_monitor_pedrpc_server("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
         servlet.serve_forever()
     except:
         print "Error starting RPC server!"
