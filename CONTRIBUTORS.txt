@@ -25,7 +25,7 @@ Nibbler <nbblrr@gmail.com | @Nbblrr>
 	- Layer 2 fuzzing capabilities
 	- Morale support (architecture direction)
 
-Nikolai Rusakov <@nrusakov>
+Nikolai Rusakov <nikolai.rusakov@gmail.com | @nrusakov>
 	- Add file-fuzzing capabilities
 	
 nnp <http://www.unprotectedhex.com>

@@ -46,10 +46,10 @@ class target:
 
     def pedrpc_connect (self):
         '''
-        # pass specified target parameters to the PED-RPC server.
+        Pass specified target parameters to the PED-RPC server.
         '''
 
-        # wait for the process monitor to come alive and then set its options.
+        # If the process monitor is alive, set it's options
         if self.procmon:
             while 1:
                 try:
@@ -64,7 +64,7 @@ class target:
             for key in self.procmon_options.keys():
                 eval('self.procmon.set_%s(self.procmon_options["%s"])' % (key, key))
 
-        # wait for the network monitor to come alive and then set its options.
+        # If the network monitor is alive, set it's options
         if self.netmon:
             while 1:
                 try:
@@ -111,7 +111,22 @@ class connection (pgraph.edge.edge):
 
 ########################################################################################################################
 class session (pgraph.graph):
-    def __init__ (self, session_filename=None, skip=0, sleep_time=1.0, log_level=30, logfile=None, logfile_level=10, proto="tcp",  bind=None, restart_interval=0, timeout=5.0, web_port=26000, crash_threshold=3, restart_sleep_time=300):
+    def __init__(
+                  self,
+                  session_filename=None,
+                  skip=0,
+                  sleep_time=1.0,
+                  log_level=30,
+                  logfile=None,
+                  logfile_level=10,
+                  proto="tcp",
+                  bind=None,
+                  restart_interval=0,
+                  timeout=5.0,
+                  web_port=26000,
+                  crash_threshold=3,
+                  restart_sleep_time=300
+                ):
         '''
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
