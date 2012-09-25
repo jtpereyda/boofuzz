@@ -2,7 +2,7 @@
 Sulley is an actively developed fuzzing engine and fuzz testing framework consisting of multiple extensible components.
 Sulley (IMHO) exceeds the capabilities of most previously published fuzzing technologies, commercial and public domain.
 The goal of the framework is to simplify not only data representation but to simplify data transmission and 
-insturmentation. Sulley is affectionately named after the creature from Monsters Inc., because, well, he is fuzzy.
+instrumentation. Sulley is affectionately named after the creature from Monsters Inc., because, well, he is fuzzy.
 
 ![He's also fearless](http://i.imgur.com/AHuBu.jpg)
 
@@ -15,7 +15,7 @@ Sulley watches the network and methodically maintains records. Sulley instrument
 capable of reverting to a known good state using multiple methods. Sulley detects, tracks and categorizes detected
 faults. Sulley can fuzz in parallel, significantly increasing test speed. Sulley can automatically determine what unique
 sequence of test cases trigger faults. Sulley does all this, and more, automatically and without attendance. It's not
-ususal for a fuzz to run seamlessly for days at a time, that way you (as the vulnerability researcher) can focus on 
+usual for a fuzz to run seamlessly for days at a time, that way you (as the vulnerability researcher) can focus on
 other areas of exploitation, and come back to Sulley's results when they're convenient for you.
 
 # Awesome! Where do I start?
