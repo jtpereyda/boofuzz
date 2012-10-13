@@ -279,7 +279,7 @@ if s_block_start("cookie"):
     s_block_end()
 
 s_repeat("cookie", max_reps=5000, step=500)
-s_static("\r\n")
+s_static("\r\n\r\n")
 
 ########################################################################################################################
 # Fuzz Date header
