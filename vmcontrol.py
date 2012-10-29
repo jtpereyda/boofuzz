@@ -20,13 +20,13 @@ from sulley import pedrpc
 PORT  = 26003
 ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 USAGE = "USAGE: vmcontrol.py"                                                             \
-        "\n    <-x|--vmx FILENAME>    path to VMX to control or name of VirtualBox image" \
-        "\n    <-r|--vmrun FILENAME>  path to vmrun.exe or VBoxManage"                    \
-        "\n    [-s|--snapshot NAME>   set the snapshot name"                              \
-        "\n    [-l|--log_level LEVEL] log level (default 1), increase for more verbosity" \
-        "\n    [-i|--interactive]     Interactive mode, prompts for input values"         \
-        "\n    [--port PORT]          TCP port to bind this agent to"                      \
-        "\n    [--vbox]               control a Oracle VirtualBox VM"
+        "\n    <-x|--vmx FILENAME|NAME> path to VMX to control or name of VirtualBox image" \
+        "\n    <-r|--vmrun FILENAME>    path to vmrun.exe or VBoxManage"                    \
+        "\n    [-s|--snapshot NAME>     set the snapshot name"                              \
+        "\n    [-l|--log_level LEVEL]   log level (default 1), increase for more verbosity" \
+        "\n    [-i|--interactive]       Interactive mode, prompts for input values"         \
+        "\n    [--port PORT]            TCP port to bind this agent to"                      \
+        "\n    [--vbox]                 control an Oracle VirtualBox VM"
 
 ########################################################################################################################
 class vmcontrol_pedrpc_server (pedrpc.server):
@@ -37,9 +37,9 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         @type  port:         Integer
         @param port:         Port to bind server to
         @type  vmrun:        String
-        @param vmrun:        Path to VMWare vmrun.exe or VirtualBox VBoxManage
+        @param vmrun:        Path to VMWare vmrun.exe
         @type  vmx:          String
-        @param vmx:          Path to VMX file or VirtualBox image Name
+        @param vmx:          Path to VMX file
         @type  snap_name:    String
         @param snap_name:    (Optional, def=None) Snapshot name to revert to on restart
         @type  log_level:    Integer
