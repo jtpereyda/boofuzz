@@ -318,7 +318,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
 ########################################################################################################################
 
 ########################################################################################################################
-class vboxcontrol_pedrpc_server (pedrpc.server):
+class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
     def __init__ (self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         '''
         Controls an Oracle VirtualBox Virtual Machine
@@ -405,72 +405,6 @@ class vboxcontrol_pedrpc_server (pedrpc.server):
         self.log("\t snap name: %s" % self.snap_name)
         self.log("\t log level: %d" % self.log_level)
         self.log("Awaiting requests...")
-
-
-    def alive (self):
-        '''
-        Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
-        '''
-
-        return True
-
-
-    def log (self, msg="", level=1):
-        '''
-        If the supplied message falls under the current log level, print the specified message to screen.
-
-        @type  msg: String
-        @param msg: Message to log
-        '''
-
-        if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
-
-
-    def set_vmrun (self, vmrun):
-        self.log("setting vmrun to %s" % vmrun, 2)
-        self.vmrun = vmrun
-
-
-    def set_vmx (self, vmx):
-        self.log("setting vmx to %s" % vmx, 2)
-        self.vmx = vmx
-
-
-    def set_snap_name (self, snap_name):
-        self.log("setting snap_name to %s" % snap_name, 2)
-        self.snap_name = snap_name
-
-
-    def vmcommand (self, command):
-        '''
-        Execute the specified command, keep trying in the event of a failure.
-
-        @type  command: String
-        @param command: VMRun command to execute
-        '''
-
-        while 1:
-            self.log("executing: %s" % command, 5)
-
-            pipe = os.popen(command)
-            out  = pipe.readlines()
-
-            try:
-                pipe.close()
-            except IOError:
-                self.log("IOError trying to close pipe")
-
-            if not out:
-                break
-            elif not out[0].lower().startswith("close failed"):
-                break
-
-            self.log("failed executing command '%s' (%s). will try again." % (command, out))
-            time.sleep(1)
-
-        return "".join(out)
-
 
     ###
     ### VBOXMANAGE COMMAND WRAPPERS
@@ -619,13 +553,6 @@ class vboxcontrol_pedrpc_server (pedrpc.server):
                 return True
 
         return False
-
-
-    def wait (self):
-        self.log("waiting for vmx to come up: %s" % self.vmx)
-        while 1:
-            if self.is_target_running():
-                break
 
 
 ########################################################################################################################
