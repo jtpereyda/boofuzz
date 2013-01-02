@@ -868,7 +868,7 @@ class session (pgraph.graph):
         except Exception, inst:
             self.logger.error("Socket error, send: %s" % inst)
 
-        if self.proto == socket.SOCK_STREAM or socket.SOCK_DGRAM:
+        if self.proto == (socket.SOCK_STREAM or socket.SOCK_DGRAM):
             # XXX - might have a need to increase this at some point. (possibly make it a class parameter)
             try:
                 self.last_recv = sock.recv(10000)
