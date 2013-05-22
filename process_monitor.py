@@ -384,6 +384,7 @@ if __name__ == "__main__":
     try:
         servlet = process_monitor_pedrpc_server("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
         servlet.serve_forever()
-    except:
-        print "Error starting RPC server!"
-        pass
+    except Exception,e:
+	# XXX: Add servlet.shutdown
+	# XXX: Add KeyboardInterrupt
+	ERR("Error starting RPC server!\n\t%s" % e)
