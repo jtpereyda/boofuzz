@@ -39,7 +39,7 @@ Limitations
 '''
 
 USAGE = "USAGE: process_monitor_unix.py"\
-        "\n    [-c|--crash_bin]             File to record crash info too" \
+        "\n    -c|--crash_bin             File to record crash info too" \
         "\n    [-P|--port PORT]             TCP port to bind this agent too"\
         "\n    [-l|--log_level LEVEL]       log level (default 1), increase for more verbosity"
 
@@ -98,6 +98,8 @@ class nix_process_monitor_pedrpc_server(pedrpc.server):
         @param host: Hostname or IP address
         @type port: Integer
         @param port: Port to bind server to
+        @type crash_bin: String
+        @param crash_bin: Where to save monitored process crashes for analysis
         
         '''
         
@@ -249,7 +251,7 @@ if __name__ == "__main__":
         if opt in ("-P", "--port"): PORT = int(arg)
         if opt in ("-l", "--log_level"):   log_level  = int(arg)
 
-    if crash_bin == None: ERR(USAGE)
+    if not crash_bin: ERR(USAGE)
     
     if PORT == None:
         PORT = 26002
