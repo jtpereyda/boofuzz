@@ -246,6 +246,7 @@ if __name__ == "__main__":
 
     log_level = 1
     PORT = None
+    crash_bin = None
     for opt, arg in opts:
         if opt in ("-c", "--crash_bin"):   crash_bin  = arg
         if opt in ("-P", "--port"): PORT = int(arg)
