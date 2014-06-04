@@ -116,9 +116,9 @@ class session (pgraph.graph):
                   session_filename=None,
                   skip=0,
                   sleep_time=1.0,
-                  log_level=30,
+                  log_level=logging.INFO,
                   logfile=None,
-                  logfile_level=10,
+                  logfile_level=logging.DEBUG,
                   proto="tcp",
                   bind=None,
                   restart_interval=0,
@@ -137,7 +137,7 @@ class session (pgraph.graph):
         @type  sleep_time:         Float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
         @type  log_level:          Integer
-        @kwarg log_level:          (Optional, def=30) Set the log level (CRITICAL : 50 / ERROR : 40 / WARNING : 30 / INFO : 20 / DEBUG : 10)
+        @kwarg log_level:          (Optional, def=30) Set the log level 
         @type  logfile:            String
         @kwarg logfile:            (Optional, def=None) Name of log file
         @type  logfile_level:      Integer
@@ -175,7 +175,7 @@ class session (pgraph.graph):
 
         # Initialize logger
         self.logger = logging.getLogger("Sulley_logger")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(log_level)
         formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] -> %(message)s')
 
         if logfile != None:
