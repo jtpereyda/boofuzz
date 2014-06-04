@@ -439,7 +439,7 @@ class session (pgraph.graph):
 
                 # if we don't need to skip the current test case.
                 if self.total_mutant_index > self.skip:
-                    self.logger.error("fuzzing %d of %d" % (self.fuzz_node.mutant_index, num_mutations))
+                    self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index, num_mutations))
 
                     # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
                     # occurs, restart the target.
