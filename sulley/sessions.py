@@ -154,7 +154,9 @@ class session (pgraph.graph):
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: Integer
         @kwarg restart_sleep_time: Optional, def=300) Time in seconds to sleep when target can't be restarted
-        '''
+        @type  web_port:	   Integer
+        @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser	
+	'''
 
         # run the parent classes initialization routine first.
         pgraph.graph.__init__(self)
