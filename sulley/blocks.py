@@ -74,7 +74,7 @@ class request (pgraph.node):
         '''
 
         if not self.block_stack:
-            raise sex.error("BLOCK STACK OUT OF SYNC")
+            raise sex.SullyRuntimeError("BLOCK STACK OUT OF SYNC")
 
         self.block_stack.pop()
 
@@ -89,7 +89,7 @@ class request (pgraph.node):
         if hasattr(item, "name") and item.name:
             # ensure the name doesn't already exist.
             if item.name in self.names.keys():
-                raise sex.error("BLOCK NAME ALREADY EXISTS: %s" % item.name)
+                raise sex.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
 
             self.names[item.name] = item
 
@@ -108,7 +108,7 @@ class request (pgraph.node):
     def render (self):
         # ensure there are no open blocks lingering.
         if self.block_stack:
-            raise sex.error("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+            raise sex.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
         # render every item in the stack.
         for item in self.stack:
@@ -511,7 +511,7 @@ class checksum:
                 return digest
 
             else:
-                raise sex.error("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self.algorithm)
+                raise sex.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self.algorithm)
         else:
             return self.algorithm(data)
 
@@ -585,16 +585,16 @@ class repeat:
 
         # ensure the target block exists.
         if self.block_name not in self.request.names:
-            raise sex.error("CAN NOT ADD REPEATER FOR NON-EXISTANT BLOCK: %s" % self.block_name)
+            raise sex.SullyRuntimeError("CAN NOT ADD REPEATER FOR NON-EXISTANT BLOCK: %s" % self.block_name)
 
         # ensure the user specified either a variable to tie this repeater to or a min/max val.
         if self.variable == None and self.max_reps == None:
-            raise sex.error("REPEATER FOR BLOCK %s DOES NOT HAVE A MIN/MAX OR VARIABLE BINDING" % self.block_name)
+            raise sex.SullyRuntimeError("REPEATER FOR BLOCK %s DOES NOT HAVE A MIN/MAX OR VARIABLE BINDING" % self.block_name)
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, primitives.bit_field):
             print self.variable
-            raise sex.error("ATTEMPT TO BIND THE REPEATER FOR BLOCK %s TO A NON INTEGER PRIMITIVE" % self.block_name)
+            raise sex.SullyRuntimeError("ATTEMPT TO BIND THE REPEATER FOR BLOCK %s TO A NON INTEGER PRIMITIVE" % self.block_name)
 
         # if not binding variable was specified, propogate the fuzz library with the repetition counts.
         if not self.variable:
@@ -619,7 +619,7 @@ class repeat:
 
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
-            raise sex.error("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
+            raise sex.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
 
         # if we've run out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
@@ -664,7 +664,7 @@ class repeat:
 
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
-            raise sex.error("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
+            raise sex.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
 
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:

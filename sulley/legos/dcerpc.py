@@ -25,7 +25,7 @@ class ndr_conformant_array (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
 
         self.push(primitives.string(self.value))
 
@@ -63,7 +63,7 @@ class ndr_string (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.tag DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.string(self.value))
 
@@ -110,7 +110,7 @@ class ndr_wstring (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.tag DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.string(self.value))
 

@@ -356,7 +356,7 @@ class tag (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.tag DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         # <example>
         # [delim][string][delim]
@@ -377,7 +377,7 @@ class integer (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.ber_integer DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.ber_integer DEFAULT VALUE")
 
         self.push(primitives.dword(self.value, endian="&gt;"))
 

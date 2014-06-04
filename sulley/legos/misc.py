@@ -11,7 +11,7 @@ class dns_hostname (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.tag DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.string(self.value))
 
@@ -45,7 +45,7 @@ class tag (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.tag DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         # <example>
         # [delim][string][delim]

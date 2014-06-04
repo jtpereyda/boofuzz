@@ -210,7 +210,7 @@ class session (pgraph.graph):
             self.proto = socket.SOCK_DGRAM
 
         else:
-            raise sex.error("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         # import settings if they exist.
         self.import_file()
@@ -373,10 +373,10 @@ class session (pgraph.graph):
         if not this_node:
             # we can't fuzz if we don't have at least one target and one request.
             if not self.targets:
-                raise sex.error("NO TARGETS SPECIFIED IN SESSION")
+                raise sex.SullyRuntimeError("NO TARGETS SPECIFIED IN SESSION")
 
             if not self.edges_from(self.root.id):
-                raise sex.error("NO REQUESTS SPECIFIED IN SESSION")
+                raise sex.SullyRuntimeError("NO REQUESTS SPECIFIED IN SESSION")
 
             this_node = self.root
 

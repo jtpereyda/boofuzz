@@ -25,7 +25,7 @@ class string (blocks.block):
         self.prefix  = options.get("prefix", "\x04")
 
         if not self.value:
-            raise sex.error("MISSING LEGO.ber_string DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
 
         str_block = blocks.block(name + "_STR", request)
         str_block.push(primitives.string(self.value))
@@ -61,7 +61,7 @@ class integer (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.ber_integer DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.ber_integer DEFAULT VALUE")
 
         self.push(primitives.dword(self.value, endian=">"))
 

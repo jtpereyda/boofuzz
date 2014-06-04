@@ -25,7 +25,7 @@ class string (blocks.block):
         self.options = options
 
         if not self.value:
-            raise sex.error("MISSING LEGO.xdr_string DEFAULT VALUE")
+            raise sex.SullyRuntimeError("MISSING LEGO.xdr_string DEFAULT VALUE")
 
         self.push(primitives.string(self.value))
 

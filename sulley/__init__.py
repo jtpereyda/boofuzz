@@ -39,7 +39,7 @@ def s_get (name=None):
     s_switch(name)
 
     if not blocks.REQUESTS.has_key(name):
-        raise sex.error("blocks.REQUESTS NOT FOUND: %s" % name)
+        raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     return blocks.REQUESTS[name]
 
@@ -54,7 +54,7 @@ def s_initialize (name):
     '''
 
     if blocks.REQUESTS.has_key(name):
-        raise sex.error("blocks.REQUESTS ALREADY EXISTS: %s" % name)
+        raise sex.SullyRuntimeError("blocks.REQUESTS ALREADY EXISTS: %s" % name)
 
     blocks.REQUESTS[name] = blocks.request(name)
     blocks.CURRENT        = blocks.REQUESTS[name]
@@ -103,7 +103,7 @@ def s_switch (name):
     '''
 
     if not blocks.REQUESTS.has_key(name):
-        raise sex.error("blocks.REQUESTS NOT FOUND: %s" % name)
+        raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     blocks.CURRENT = blocks.REQUESTS[name]
 
@@ -174,7 +174,7 @@ def s_checksum (block_name, algorithm="crc32", length=0, endian="<", name=None):
 
     # you can't add a checksum for a block currently in the stack.
     if block_name in blocks.CURRENT.block_stack:
-        raise sex.error("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
+        raise sex.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
     checksum = blocks.checksum(block_name, blocks.CURRENT, algorithm, length, endian, name)
     blocks.CURRENT.push(checksum)
@@ -237,7 +237,7 @@ def s_size (block_name, length=4, endian="<", format="binary", inclusive=False, 
 
     # you can't add a size for a block currently in the stack.
     if block_name in blocks.CURRENT.block_stack:
-        raise sex.error("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
+        raise sex.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
 
     size = blocks.size(block_name, blocks.CURRENT, length, endian, format, inclusive, signed, math, fuzzable, name)
     blocks.CURRENT.push(size)
@@ -254,7 +254,7 @@ def s_update (name, value):
     '''
 
     if not blocks.CURRENT.names.has_key(name):
-        raise sex.error("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
+        raise sex.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
 
     blocks.CURRENT.names[name].value = value
 
@@ -336,7 +336,7 @@ def s_lego (lego_type, value=None, options={}):
     name = "LEGO_%08x" % len(blocks.CURRENT.names)
 
     if not legos.BIN.has_key(lego_type):
-        raise sex.error("INVALID LEGO TYPE SPECIFIED: %s" % lego_type)
+        raise sex.SullyRuntimeError("INVALID LEGO TYPE SPECIFIED: %s" % lego_type)
 
     lego = legos.BIN[lego_type](name, blocks.CURRENT, value, options)
 
