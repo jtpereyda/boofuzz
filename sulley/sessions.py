@@ -137,11 +137,11 @@ class session (pgraph.graph):
         @type  sleep_time:         Float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
         @type  log_level:          Integer
-        @kwarg log_level:          (Optional, def=30) Set the log level 
+        @kwarg log_level:          (Optional, def=logger.INFO) Set the log level
         @type  logfile:            String
         @kwarg logfile:            (Optional, def=None) Name of log file
         @type  logfile_level:      Integer
-        @kwarg logfile_level:      (Optional, def=10) Log level for log file, default is debug
+        @kwarg logfile_level:      (Optional, def=logger.INFO) Set the log level for the logfile
         @type  proto:              String
         @kwarg proto:              (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl")
         @type  bind:               Tuple (host, port)
