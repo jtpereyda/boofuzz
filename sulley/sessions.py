@@ -400,8 +400,8 @@ class session (pgraph.graph):
             current_path  = " -> ".join([self.nodes[e.src].name for e in path[1:]])
             current_path += " -> %s" % self.fuzz_node.name
 
-            self.logger.error("current fuzz path: %s" % current_path)
-            self.logger.error("fuzzed %d of %d total cases" % (self.total_mutant_index, self.total_num_mutations))
+            self.logger.info("current fuzz path: %s" % current_path)
+            self.logger.info("fuzzed %d of %d total cases" % (self.total_mutant_index, self.total_num_mutations))
 
             done_with_fuzz_node = False
             crash_count         = 0
@@ -529,7 +529,7 @@ class session (pgraph.graph):
                     sock.close()
 
                     # delay in between test cases.
-                    self.logger.warning("sleeping for %f seconds" % self.sleep_time)
+                    self.logger.info("sleeping for %f seconds" % self.sleep_time)
                     time.sleep(self.sleep_time)
 
                     # poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
@@ -662,26 +662,28 @@ class session (pgraph.graph):
         # kill the pcap thread and see how many bytes the sniffer recorded.
         if target.netmon:
             bytes = target.netmon.post_send()
-            self.logger.error("netmon captured %d bytes for test case #%d" % (bytes, self.total_mutant_index))
+            self.logger.info("netmon captured %d bytes for test case #%d" % (bytes, self.total_mutant_index))
             self.netmon_results[self.total_mutant_index] = bytes
 
         # check if our fuzz crashed the target. procmon.post_send() returns False if the target access violated.
         if target.procmon and not target.procmon.post_send():
-            self.logger.error("procmon detected access violation on test case #%d" % self.total_mutant_index)
+            self.logger.info("procmon detected access violation on test case #%d" % self.total_mutant_index)
 
             # retrieve the primitive that caused the crash and increment it's individual crash count.
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
 
             # notify with as much information as possible.
-            if not self.fuzz_node.mutant.name: msg = "primitive lacks a name, "
-            else:                              msg = "primitive name: %s, " % self.fuzz_node.mutant.name
+            if self.fuzz_node.mutant.name:
+                msg = "primitive name: %s, " % self.fuzz_node.mutant.name
+            else:
+                msg = "primitive lacks a name, "
 
             msg += "type: %s, default value: %s" % (self.fuzz_node.mutant.s_type, self.fuzz_node.mutant.original_value)
-            self.logger.error(msg)
+            self.logger.info(msg)
 
             # print crash synopsis
             self.procmon_results[self.total_mutant_index] = target.procmon.get_crash_synopsis()
-            self.logger.error(self.procmon_results[self.total_mutant_index].split("\n")[0])
+            self.logger.info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
             if self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
@@ -701,7 +703,7 @@ class session (pgraph.graph):
                 try:
                     self.thread.join()
                 except:
-                    self.logger.debug( "No server launched")
+                    self.logger.debug("No server launched")
                 sys.exit(0)
 
 
@@ -841,7 +843,7 @@ class session (pgraph.graph):
         if edge.callback:
             data = edge.callback(self, node, edge, sock)
 
-        self.logger.error("xmitting: [%d.%d]" % (node.id, self.total_mutant_index))
+        self.logger.info("xmitting: [%d.%d]" % (node.id, self.total_mutant_index))
 
         # if no data was returned by the callback, render the node here.
         if not data:
