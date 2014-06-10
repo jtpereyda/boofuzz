@@ -493,7 +493,7 @@ class checksum:
             elif self.algorithm == "md5":
                 digest = hashlib.md5(data).digest()
 
-                # XXX - is this right?
+                # TODO: is this right?
                 if self.endian == ">":
                     (a, b, c, d) = struct.unpack("<LLLL", digest)
                     digest       = struct.pack(">LLLL", a, b, c, d)
@@ -503,7 +503,7 @@ class checksum:
             elif self.algorithm == "sha1":
                 digest = hashlib.sha1(data).digest()
 
-                # XXX - is this right?
+                # TODO: is this right?
                 if self.endian == ">":
                     (a, b, c, d, e) = struct.unpack("<LLLLL", digest)
                     digest          = struct.pack(">LLLLL", a, b, c, d, e)

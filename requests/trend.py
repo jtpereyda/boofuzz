@@ -66,7 +66,7 @@ s_group("magic", values=["\x02\x00\x00\x10", "\x03\x00\x00\x10"])
 s_size("body")
 
 # dword 3, crc32(block) (copy from eax at 0041EE8B)
-# XXX - CRC is non standard, nop out jmp at 0041EE99 and use bogus value:
+# TODO: CRC is non standard, nop out jmp at 0041EE99 and use bogus value:
 #s_checksum("body", algorithm="crc32")
 s_static("\xff\xff\xff\xff")
 

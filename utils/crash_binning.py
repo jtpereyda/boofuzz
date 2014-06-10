@@ -191,7 +191,7 @@ class crash_binning:
 
         @see: import_file()
 
-        @type  file_name:   String
+        @type  file_name:   str
         @param file_name:   File name to export to
 
         @rtype:             crash_binning
@@ -221,7 +221,7 @@ class crash_binning:
 
         @see: export_file()
 
-        @type  file_name:   String
+        @type  file_name:   str
         @param file_name:   File name to import from
 
         @rtype:             crash_binning

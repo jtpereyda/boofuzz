@@ -328,7 +328,7 @@ def s_group (name, values):
 
 def s_lego (lego_type, value=None, options={}):
     '''
-    Legos are pre-built blocks... XXX finish this doc
+    Legos are pre-built blocks... TODO: finish this doc
     '''
 
     # as legos are blocks they must have a name.

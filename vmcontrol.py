@@ -489,7 +489,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         self.log("starting image", 2)
 
         command = self.vmrun + " startvm " + self.vmx 
-        # XXX we may want to do more here with headless, gui, etc...
+        # TODO: we may want to do more here with headless, gui, etc...
         return self.vmcommand(command)
 
 

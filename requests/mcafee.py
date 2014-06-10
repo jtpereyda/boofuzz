@@ -51,7 +51,7 @@ s_size("data", format="ascii") # must be over 234
 if s_block_start("data", encoder=mcafee_epo_xor):
     s_static("\x50\x4f", name="signature")
     s_group(values=[pack('<L', 0x40000001), pack('<L', 0x30000001), pack('<L', 0x20000001)], name="opcode")
-    s_size("data", length=4) #XXX: needs to be size of data - 1 !!!
+    s_size("data", length=4) #TODO: needs to be size of data - 1 !!!
 
     s_string("size", size=210)
     s_static("EPO\x00")
@@ -68,7 +68,7 @@ s_initialize("network_agent_udp")
 s_size("kit_and_kaboodle", endian='>', fuzzable=True)
 
 if s_block_start("kit_and_kaboodle"):
-    # xxx - command? might want to fuzz this later.
+    # TODO: command? might want to fuzz this later.
     s_static("\x00\x00\x00\x02")
     
     # dunno what this is.

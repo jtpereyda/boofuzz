@@ -383,7 +383,7 @@ class session (pgraph.graph):
             try:    self.server_init()
             except: return
 
-        # XXX - TODO - complete parallel fuzzing, will likely have to thread out each target
+        # TODO: complete parallel fuzzing, will likely have to thread out each target
         target = self.targets[0]
 
         # step through every edge from the current node.
@@ -779,7 +779,7 @@ class session (pgraph.graph):
         else:
             self.logger.error("no vmcontrol or procmon channel available ... sleeping for %d seconds" % self.restart_sleep_time)
             time.sleep(self.restart_sleep_time)
-            # XXX : should be good to relaunch test for crash before returning False
+            # TODO: should be good to relaunch test for crash before returning False
             return False
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
@@ -797,8 +797,8 @@ class session (pgraph.graph):
 
         # web interface thread doesn't catch KeyboardInterrupt
         # add a signal handler, and exit on SIGINT
-        # XXX - should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-        #     - doesn't work on OS where the signal module isn't available
+        # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+        # TODO: doesn't work on OS where the signal module isn't available
         try:
             import signal
             self.signal_module = True
@@ -850,10 +850,11 @@ class session (pgraph.graph):
             data = node.render()
 
         # if data length is > 65507 and proto is UDP, truncate it.
-        # XXX - this logic does not prevent duplicate test cases, need to address this in the future.
+        # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
         if self.proto == socket.SOCK_DGRAM:
             # max UDP packet size.
-            # XXX - anyone know how to determine this value smarter?
+            # TODO: anyone know how to determine this value smarter?
+            # - See http://stackoverflow.com/questions/25841/maximum-buffer-length-for-sendto to fix this
             MAX_UDP = 65507
 
             if os.name != "nt" and os.uname()[0] == "Darwin":
@@ -873,7 +874,7 @@ class session (pgraph.graph):
             self.logger.error("Socket error, send: %s" % inst)
 
         if self.proto == (socket.SOCK_STREAM or socket.SOCK_DGRAM):
-            # XXX - might have a need to increase this at some point. (possibly make it a class parameter)
+            # TODO: might have a need to increase this at some point. (possibly make it a class parameter)
             try:
                 self.last_recv = sock.recv(10000)
             except Exception, e:

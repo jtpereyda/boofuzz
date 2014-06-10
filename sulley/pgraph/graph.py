@@ -535,7 +535,7 @@ class graph (object):
         gml += ']\n'
 
         """
-        XXX - TODO: Complete cluster rendering
+        TODO: Complete cluster rendering
         # if clusters exist.
         if len(self.clusters):
             # open the rootcluster tag.

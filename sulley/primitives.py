@@ -596,7 +596,7 @@ class string (base_primitive):
                 break
 
             # ignore library items greather then user-supplied length.
-            # XXX - might want to make this smarter.
+            # TODO: might want to make this smarter.
             if len(self.value) > self.size:
                 continue
 

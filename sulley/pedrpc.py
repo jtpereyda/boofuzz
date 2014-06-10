@@ -139,7 +139,7 @@ class client:
         '''
 
         try:
-            # XXX - this should NEVER fail, but alas, it does and for the time being i can't figure out why.
+            # TODO: this should NEVER fail, but alas, it does and for the time being i can't figure out why.
             #       it gets worse. you would think that simply returning here would break things, but it doesn't.
             #       gotta track this down at some point.
             length = struct.unpack("<L", self.__server_sock.recv(4))[0]

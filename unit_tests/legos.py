@@ -27,7 +27,7 @@ def ndr_string ():
     s_lego("ndr_string", value="pedram")
 
     req = s_get("UNIT TEST NDR 1")
-    # XXX - unfinished!
+    # TODO: unfinished!
     #print req.render()
 
 

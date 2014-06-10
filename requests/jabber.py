@@ -10,7 +10,7 @@ s_initialize("chat init")
 """
 
 # i'll fuzz these bitches later.
-# xxx - still need to figure out how to incorporate dynamic IPs
+# TODO: still need to figure out how to incorporate dynamic IPs
 s_static('<?xml version="1.0" encoding="UTF-8" ?>')
 s_static('<stream:stream to="152.67.137.126" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">')
 
