@@ -55,7 +55,7 @@ Network Device List:"""
 
 ########################################################################################################################
 class PcapThread (threading.Thread):
-    def __init__ (self, network_monitor, pcap, pcap_save_path):
+    def __init__(self, network_monitor, pcap, pcap_save_path):
         self.network_monitor = network_monitor
         self.pcap            = pcap
         self.decoder         = None
@@ -73,7 +73,7 @@ class PcapThread (threading.Thread):
 
         threading.Thread.__init__(self)
 
-    def packet_handler (self, header, data):
+    def packet_handler(self, header, data):
         # add the captured data to the PCAP.
         self.dumper.dump(header, data)
 
@@ -83,7 +83,7 @@ class PcapThread (threading.Thread):
         # log the decoded data at the appropriate log level.
         self.network_monitor.log(self.decoder.decode(data), 15)
 
-    def run (self):
+    def run(self):
         # process packets while the active flag is raised.
         while self.active:
             self.pcap.dispatch(0, self.packet_handler)
@@ -91,7 +91,7 @@ class PcapThread (threading.Thread):
 
 ########################################################################################################################
 class NetworkMonitorPedrpcServer (pedrpc.server):
-    def __init__ (self, host, port, monitor_device, bpf_filter="", path="./", level=1):
+    def __init__(self, host, port, monitor_device, bpf_filter="", path="./", level=1):
         """
         @type  host:           str
         @param host:           Hostname or IP address to bind server to
@@ -128,7 +128,7 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
         self.log("\t log_level: %d" % self.log_level)
         self.log("Awaiting requests...")
 
-    def __stop (self):
+    def __stop(self):
         """
         Kill the PCAP thread.
         """
@@ -139,14 +139,14 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
             self.pcap_thread.active = False
             self.pcap_thread        = None
 
-    def alive (self):
+    def alive(self):
         """
         Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
         """
 
         return True
 
-    def post_send (self):
+    def post_send(self):
         """
         This routine is called after the fuzzer transmits a test case and returns the number of bytes captured by the
         PCAP thread.
@@ -164,7 +164,7 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
         self.log("stopped PCAP thread, snagged %d bytes of data" % data_bytes)
         return data_bytes
 
-    def pre_send (self, test_number):
+    def pre_send(self, test_number):
         """
         This routine is called before the fuzzer transmits a test case and spin off a packet capture thread.
         """
@@ -180,7 +180,7 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
         self.pcap_thread = PcapThread(self, self.pcap, pcap_log_path)
         self.pcap_thread.start()
 
-    def log (self, msg="", level=1):
+    def log(self, msg="", level=1):
         """
         If the supplied message falls under the current log level, print the specified message to screen.
 
@@ -191,7 +191,7 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
         if self.log_level >= level:
             print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
 
-    def retrieve (self, test_number):
+    def retrieve(self, test_number):
         """
         Return the raw binary contents of the PCAP saved for the specified test case number.
 
@@ -208,11 +208,11 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
 
         return data
 
-    def set_filter (self, new_filter):
+    def set_filter(self, new_filter):
         self.log("updating PCAP filter to '%s'" % new_filter)
         self.filter = new_filter
 
-    def set_log_path (self, new_log_path):
+    def set_log_path(self, new_log_path):
         self.log("updating log path to '%s'" % new_log_path)
         self.log_path = new_log_path
 

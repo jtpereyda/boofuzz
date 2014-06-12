@@ -3,7 +3,7 @@ from sulley import *
 import struct
 
 # crap ass trend xor "encryption" routine for control manager (20901)
-def trend_xor_encode (str):
+def trend_xor_encode(str):
     '''
     Simple bidirectional XOR "encryption" routine used by this service.
     '''
@@ -29,7 +29,7 @@ def trend_xor_encode (str):
 
 
 # crap ass trend xor "encryption" routine for control manager (20901)
-def trend_xor_decode (str):
+def trend_xor_decode(str):
     key = 0xA8534344
     ret = ""
 
@@ -46,7 +46,7 @@ def trend_xor_decode (str):
 
 # dce rpc request encoder used for trend server protect 5168 RPC service.
 # opnum is always zero.
-def rpc_request_encoder (data):
+def rpc_request_encoder(data):
     return utils.dcerpc.request(0, data)
 
 

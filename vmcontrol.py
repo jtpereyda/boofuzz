@@ -30,7 +30,7 @@ USAGE = "USAGE: vmcontrol.py"                                                   
 
 ########################################################################################################################
 class vmcontrol_pedrpc_server (pedrpc.server):
-    def __init__ (self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
+    def __init__(self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         '''
         @type  host:         String
         @param host:         Hostname or IP address to bind server to
@@ -131,7 +131,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         self.log("Awaiting requests...")
 
 
-    def alive (self):
+    def alive(self):
         '''
         Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
         '''
@@ -139,7 +139,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         return True
 
 
-    def log (self, msg="", level=1):
+    def log(self, msg="", level=1):
         '''
         If the supplied message falls under the current log level, print the specified message to screen.
 
@@ -151,22 +151,22 @@ class vmcontrol_pedrpc_server (pedrpc.server):
             print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
 
 
-    def set_vmrun (self, vmrun):
+    def set_vmrun(self, vmrun):
         self.log("setting vmrun to %s" % vmrun, 2)
         self.vmrun = vmrun
 
 
-    def set_vmx (self, vmx):
+    def set_vmx(self, vmx):
         self.log("setting vmx to %s" % vmx, 2)
         self.vmx = vmx
 
 
-    def set_snap_name (self, snap_name):
+    def set_snap_name(self, snap_name):
         self.log("setting snap_name to %s" % snap_name, 2)
         self.snap_name = snap_name
 
 
-    def vmcommand (self, command):
+    def vmcommand(self, command):
         '''
         Execute the specified command, keep trying in the event of a failure.
 
@@ -201,7 +201,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
     ###
 
 
-    def delete_snapshot (self, snap_name=None):
+    def delete_snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -211,28 +211,28 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         return self.vmcommand(command)
 
 
-    def list (self):
+    def list(self):
         self.log("listing running images", 2)
 
         command = self.vmrun + " list"
         return self.vmcommand(command)
 
 
-    def list_snapshots (self):
+    def list_snapshots(self):
         self.log("listing snapshots", 2)
 
         command = self.vmrun + " listSnapshots " + self.vmx
         return self.vmcommand(command)
 
 
-    def reset (self):
+    def reset(self):
         self.log("resetting image", 2)
 
         command = self.vmrun + " reset " + self.vmx
         return self.vmcommand(command)
 
 
-    def revert_to_snapshot (self, snap_name=None):
+    def revert_to_snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -242,7 +242,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         return self.vmcommand(command)
 
 
-    def snapshot (self, snap_name=None):
+    def snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -253,21 +253,21 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         return self.vmcommand(command)
 
 
-    def start (self):
+    def start(self):
         self.log("starting image", 2)
 
         command = self.vmrun + " start " + self.vmx
         return self.vmcommand(command)
 
 
-    def stop (self):
+    def stop(self):
         self.log("stopping image", 2)
 
         command = self.vmrun + " stop " + self.vmx
         return self.vmcommand(command)
 
 
-    def suspend (self):
+    def suspend(self):
         self.log("suspending image", 2)
 
         command = self.vmrun + " suspend " + self.vmx
@@ -279,7 +279,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
     ###
 
 
-    def restart_target (self):
+    def restart_target(self):
         self.log("restarting virtual machine...")
 
         # revert to the specified snapshot and start the image.
@@ -290,7 +290,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         self.wait()
 
 
-    def is_target_running (self):
+    def is_target_running(self):
         # sometimes vmrun reports that the VM is up while it's still reverting.
         time.sleep(10)
 
@@ -308,7 +308,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         return False
 
 
-    def wait (self):
+    def wait(self):
         self.log("waiting for vmx to come up: %s" % self.vmx)
         while 1:
             if self.is_target_running():
@@ -319,7 +319,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
 
 ########################################################################################################################
 class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
-    def __init__ (self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
+    def __init__(self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         '''
         Controls an Oracle VirtualBox Virtual Machine
         
@@ -411,7 +411,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
     ###
 
 
-    def delete_snapshot (self, snap_name=None):
+    def delete_snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -421,39 +421,39 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         return self.vmcommand(command)
 
 
-    def list (self):
+    def list(self):
         self.log("listing running images", 2)
 
         command = self.vmrun + " list runningvms"
         return self.vmcommand(command)
 
 
-    def list_snapshots (self):
+    def list_snapshots(self):
         self.log("listing snapshots", 2)
 
         command = self.vmrun + " snapshot " + self.vmx + " list"
         return self.vmcommand(command)
 
 
-    def reset (self):
+    def reset(self):
         self.log("resetting image", 2)
 
         command = self.vmrun + " controlvm " + self.vmx + " reset"
         return self.vmcommand(command)
 
-    def pause (self):
+    def pause(self):
         self.log("pausing image", 2)
 
         command = self.vmrun + " controlvm " + self.vmx + " pause"
         return self.vmcommand(command)
     
-    def resume (self):
+    def resume(self):
         self.log("resuming image", 2)
 
         command = self.vmrun + " controlvm " + self.vmx + " resume"
         return self.vmcommand(command)
 
-    def revert_to_snapshot (self, snap_name=None):
+    def revert_to_snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -469,7 +469,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         return self.vmcommand(command)
 
 
-    def snapshot (self, snap_name=None):
+    def snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
@@ -485,7 +485,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         return self.vmcommand(command)
 
 
-    def start (self):
+    def start(self):
         self.log("starting image", 2)
 
         command = self.vmrun + " startvm " + self.vmx 
@@ -493,14 +493,14 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         return self.vmcommand(command)
 
 
-    def stop (self):
+    def stop(self):
         self.log("stopping image", 2)
 
         command = self.vmrun + " controlvm " + self.vmx + " poweroff"
         return self.vmcommand(command)
 
 
-    def suspend (self):
+    def suspend(self):
         self.log("suspending image", 2)
 
         command = self.vmrun + " controlvm " + self.vmx + " pause"
@@ -520,7 +520,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
            return self.vmcommand(command)
 
 
-    def restart_target (self):
+    def restart_target(self):
         self.log("restarting virtual machine...")
     
         #VirtualBox flips out if you try to do this with a running VM
@@ -535,7 +535,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         self.wait()
 
 
-    def is_target_running (self):
+    def is_target_running(self):
         # sometimes vmrun reports that the VM is up while it's still reverting.
         time.sleep(10)
 
@@ -545,7 +545,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
 
         return False
     
-    def is_target_paused (self):
+    def is_target_paused(self):
         time.sleep(10)
         
         for line in self.get_vminfo().split('\n'):

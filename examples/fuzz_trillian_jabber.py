@@ -9,17 +9,22 @@
 #     process_monitor.py -c audits\trillian_jabber.crashbin -p trillian.exe
 #
 # on localhost:
-#     vmcontrol.py -r "c:\Progra~1\VMware\VMware~1\vmrun.exe" -x "v:\vmfarm\images\windows\xp\win_xp_pro-clones\allsor~1\win_xp_pro.vmx" --snapshot "sulley ready and waiting"
+#     vmcontrol.py -r "c:\Progra~1\VMware\VMware~1\vmrun.exe" \
+#                  -x "v:\vmfarm\images\windows\xp\win_xp_pro-clones\allsor~1\win_xp_pro.vmx" \
+#                  --snapshot "sulley ready and waiting"
 #
 # note:
 #     you MUST register the IP address of the fuzzer as a valid MDNS "presence" host. to do so, simply install and
 #     launch trillian on the fuzz box with rendezvous enabled. otherwise the target will drop the connection.
 #
 
-from sulley   import *
+from sulley import sessions, \
+    pedrpc, \
+    s_get
+
 from requests import jabber
 
-def init_message (sock):
+def init_message(sock):
     init  = '<?xml version="1.0" encoding="UTF-8" ?>\n'
     init += '<stream:stream to="152.67.137.126" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">'
 
@@ -30,8 +35,8 @@ sess                   = sessions.session(session_filename="audits/trillian.sess
 target                 = sessions.target("152.67.137.126", 5298)
 target.netmon          = pedrpc.client("152.67.137.126", 26001)
 target.procmon         = pedrpc.client("152.67.137.126", 26002)
-target.vmcontrol       = pedrpc.client("127.0.0.1",      26003)
-target.procmon_options = { "proc_name" : "trillian.exe" }
+target.vmcontrol       = pedrpc.client("127.0.0.1", 26003)
+target.procmon_options = {"proc_name": "trillian.exe"}
 
 # start up the target.
 target.vmcontrol.restart_target()

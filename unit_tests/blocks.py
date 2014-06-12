@@ -1,6 +1,6 @@
 from sulley import *
 
-def run ():
+def run():
     groups_and_num_test_cases()
     dependencies()
     repeaters()
@@ -13,7 +13,7 @@ def run ():
 
 
 ########################################################################################################################
-def groups_and_num_test_cases ():
+def groups_and_num_test_cases():
     s_initialize("UNIT TEST 1")
     s_size("BLOCK", length=4, name="sizer")
     s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
@@ -72,7 +72,7 @@ def groups_and_num_test_cases ():
 
 
 ########################################################################################################################
-def dependencies ():
+def dependencies():
     s_initialize("DEP TEST 1")
     s_group("group", values=["1", "2"])
 
@@ -90,7 +90,7 @@ def dependencies ():
 
 
 ########################################################################################################################
-def repeaters ():
+def repeaters():
     s_initialize("REP TEST 1")
     if s_block_start("BLOCK"):
         s_delim(">", name="delim", fuzzable=False)
@@ -124,7 +124,7 @@ def repeaters ():
 
 
 ########################################################################################################################
-def return_current_mutant ():
+def return_current_mutant():
     s_initialize("RETURN CURRENT MUTANT TEST 1")
 
     s_dword(0xdeadbeef, name="boss hog")
@@ -170,7 +170,7 @@ def return_current_mutant ():
 
 
 ########################################################################################################################
-def exhaustion ():
+def exhaustion():
 
     s_initialize("EXHAUSTION 1")
 

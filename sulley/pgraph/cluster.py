@@ -30,7 +30,7 @@ class cluster (object):
     nodes = []
 
     ####################################################################################################################
-    def __init__ (self, id=None):
+    def __init__(self, id=None):
         '''
         Class constructor.
         '''
@@ -40,7 +40,7 @@ class cluster (object):
 
 
    ####################################################################################################################
-    def add_node (self, node):
+    def add_node(self, node):
         '''
         Add a node to the cluster.
 
@@ -54,7 +54,7 @@ class cluster (object):
 
 
     ####################################################################################################################
-    def del_node (self, node_id):
+    def del_node(self, node_id):
         '''
         Remove a node from the cluster.
 
@@ -71,7 +71,7 @@ class cluster (object):
 
 
     ####################################################################################################################
-    def find_node (self, attribute, value):
+    def find_node(self, attribute, value):
         '''
         Find and return the node with the specified attribute / value pair.
 
@@ -93,5 +93,5 @@ class cluster (object):
 
 
     ####################################################################################################################
-    def render (self):
+    def render(self):
         pass

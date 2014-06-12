@@ -7,19 +7,19 @@ from sulley import blocks, primitives, sex
 
 
 ########################################################################################################################
-def xdr_pad (string):
+def xdr_pad(string):
     return "\x00" * ((4 - (len(string) & 3)) & 3)
 
 
 ########################################################################################################################
-class string (blocks.block):
+class string (blocks.Block):
     '''
     Note: this is not for fuzzing the XDR protocol but rather just representing an XDR string for fuzzing the actual
     client.
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -27,10 +27,10 @@ class string (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.xdr_string DEFAULT VALUE")
 
-        self.push(primitives.string(self.value))
+        self.push(primitives.String(self.value))
 
 
-    def render (self):
+    def render(self):
         '''
         We overload and extend the render routine in order to properly pad and prefix the string.
 
@@ -38,7 +38,7 @@ class string (blocks.block):
         '''
 
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         # encode the empty string correctly:
         if self.rendered == "":

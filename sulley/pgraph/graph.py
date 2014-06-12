@@ -38,7 +38,7 @@ class graph (object):
     nodes    = {}
 
     ####################################################################################################################
-    def __init__ (self, id=None):
+    def __init__(self, id=None):
         '''
         '''
 
@@ -49,7 +49,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def add_cluster (self, cluster):
+    def add_cluster(self, cluster):
         '''
         Add a pgraph cluster to the graph.
 
@@ -63,7 +63,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def add_edge (self, edge, prevent_dups=True):
+    def add_edge(self, edge, prevent_dups=True):
         '''
         Add a pgraph edge to the graph. Ensures a node exists for both the source and destination of the edge.
 
@@ -85,7 +85,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def add_graph (self, other_graph):
+    def add_graph(self, other_graph):
         '''
         Alias of graph_cat(). Concatenate the other graph into the current one.
 
@@ -100,7 +100,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def add_node (self, node):
+    def add_node(self, node):
         '''
         Add a pgraph node to the graph. Ensures a node with the same id does not already exist in the graph.
 
@@ -117,7 +117,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def del_cluster (self, id):
+    def del_cluster(self, id):
         '''
         Remove a cluster from the graph.
 
@@ -134,7 +134,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def del_edge (self, id=None, src=None, dst=None):
+    def del_edge(self, id=None, src=None, dst=None):
         '''
         Remove an edge from the graph. There are two ways to call this routine, with an edge id::
 
@@ -162,7 +162,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def del_graph (self, other_graph):
+    def del_graph(self, other_graph):
         '''
         Alias of graph_sub(). Remove the elements shared between the current graph and other graph from the current
         graph.
@@ -178,7 +178,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def del_node (self, id):
+    def del_node(self, id):
         '''
         Remove a node from the graph.
 
@@ -193,7 +193,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def edges_from (self, id):
+    def edges_from(self, id):
         '''
         Enumerate the edges from the specified node.
 
@@ -208,7 +208,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def edges_to (self, id):
+    def edges_to(self, id):
         '''
         Enumerate the edges to the specified node.
 
@@ -223,7 +223,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def find_cluster (self, attribute, value):
+    def find_cluster(self, attribute, value):
         '''
         Find and return the cluster with the specified attribute / value pair.
 
@@ -245,7 +245,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def find_cluster_by_node (self, attribute, value):
+    def find_cluster_by_node(self, attribute, value):
         '''
         Find and return the cluster that contains the node with the specified attribute / value pair.
 
@@ -268,7 +268,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def find_edge (self, attribute, value):
+    def find_edge(self, attribute, value):
         '''
         Find and return the edge with the specified attribute / value pair.
 
@@ -296,7 +296,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def find_node (self, attribute, value):
+    def find_node(self, attribute, value):
         '''
         Find and return the node with the specified attribute / value pair.
 
@@ -324,7 +324,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_cat (self, other_graph):
+    def graph_cat(self, other_graph):
         '''
         Concatenate the other graph into the current one.
 
@@ -344,7 +344,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_down (self, from_node_id, max_depth=-1):
+    def graph_down(self, from_node_id, max_depth=-1):
         '''
         Create a new graph, looking down, from the specified node id to the specified depth.
 
@@ -396,7 +396,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_intersect (self, other_graph):
+    def graph_intersect(self, other_graph):
         '''
         Remove all elements from the current graph that do not exist in the other graph.
 
@@ -418,7 +418,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_proximity (self, center_node_id, max_depth_up=2, max_depth_down=2):
+    def graph_proximity(self, center_node_id, max_depth_up=2, max_depth_down=2):
         '''
         Create a proximity graph centered around the specified node.
 
@@ -440,7 +440,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_sub (self, other_graph):
+    def graph_sub(self, other_graph):
         '''
         Remove the elements shared between the current graph and other graph from the current
         graph.
@@ -461,7 +461,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def graph_up (self, from_node_id, max_depth=-1):
+    def graph_up(self, from_node_id, max_depth=-1):
         '''
         Create a new graph, looking up, from the specified node id to the specified depth.
 
@@ -509,7 +509,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def render_graph_gml (self):
+    def render_graph_gml(self):
         '''
         Render the GML graph description.
 
@@ -558,7 +558,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def render_graph_graphviz (self):
+    def render_graph_graphviz(self):
         '''
         Render the graphviz graph structure.
 
@@ -580,7 +580,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def render_graph_udraw (self):
+    def render_graph_udraw(self):
         '''
         Render the uDraw graph description.
 
@@ -603,7 +603,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def render_graph_udraw_update (self):
+    def render_graph_udraw_update(self):
         '''
         Render the uDraw graph update description.
 
@@ -628,7 +628,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def update_node_id (self, current_id, new_id):
+    def update_node_id(self, current_id, new_id):
         '''
         Simply updating the id attribute of a node will sever the edges to / from the given node. This routine will
         correctly update the edges as well.
@@ -663,7 +663,7 @@ class graph (object):
 
 
     ####################################################################################################################
-    def sorted_nodes (self):
+    def sorted_nodes(self):
         '''
         Return a list of the nodes within the graph, sorted by id.
 

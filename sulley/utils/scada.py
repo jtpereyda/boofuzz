@@ -3,7 +3,7 @@ import struct
 
 
 ########################################################################################################################
-def dnp3 (data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
+def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
     num_packets = int(math.ceil(float(len(data)) / 250.0))
     packets     = []
 

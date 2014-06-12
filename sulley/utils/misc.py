@@ -3,7 +3,7 @@ import struct
 
 
 ########################################################################################################################
-def crc16 (string, value=0):
+def crc16(string, value=0):
     '''
     CRC-16 poly: p(x) = x**16 + x**15 + x**2 + 1
     '''
@@ -28,7 +28,7 @@ def crc16 (string, value=0):
 
 
 ########################################################################################################################
-def uuid_bin_to_str (uuid):
+def uuid_bin_to_str(uuid):
     '''
     Convert a binary UUID to human readable string.
     '''
@@ -40,7 +40,7 @@ def uuid_bin_to_str (uuid):
 
 
 ########################################################################################################################
-def uuid_str_to_bin (uuid):
+def uuid_str_to_bin(uuid):
     '''
     Ripped from Core Impacket. Converts a UUID string to binary form.
     '''

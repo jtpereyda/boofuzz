@@ -87,7 +87,7 @@ if s_block_start("content"):
 
     # <ContainerID>7</ContainerID>
     s_static("<ContainerID>")
-    s_dword(7, format="ascii", signed=True)
+    s_dword(7, output_format="ascii", signed=True)
     s_static("</ContainerID>")
 
     # <SearchCriteria>(upnp:class = &quot;object.container.album.musicAlbum&quot;)</SearchCriteria>
@@ -108,12 +108,12 @@ if s_block_start("content"):
 
     # <StartingIndex>0</StartingIndex>
     s_static("<StartingIndex>")
-    s_dword(0, format="ascii", signed=True)
+    s_dword(0, output_format="ascii", signed=True)
     s_static("</StartingIndex>")
 
     # <RequestedCount>1000</RequestedCount>
     s_static("<RequestedCount>")
-    s_dword(1000, format="ascii", signed=True)
+    s_dword(1000, output_format="ascii", signed=True)
     s_static("</RequestedCount>")
 
     s_static("<SortCriteria>+dc:title</SortCriteria>")

@@ -1,1 +1,2 @@
-__author__ = 'doctor'
+BIG_ENDIAN      = ">"
+LITTLE_ENDIAN   = "<"

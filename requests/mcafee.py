@@ -3,7 +3,7 @@ from sulley import *
 from struct import *
 
 # stupid one byte XOR
-def mcafee_epo_xor (buf, poly=0xAA):
+def mcafee_epo_xor(buf, poly=0xAA):
     l = len(buf)
     new_buf = ""
 
@@ -29,7 +29,7 @@ s_delim("\r\n")
 
 s_static("Content-Length:")
 s_delim(" ")
-s_size("payload", format="ascii")
+s_size("payload", output_format="ascii")
 s_delim("\r\n\r\n")
 
 if s_block_start("payload"):
@@ -46,7 +46,7 @@ s_initialize("mcafee_epo_framework_udp")
 
 s_static('Type=\"AgentWakeup\"', name="agent_wakeup")
 s_static('\"DataSize=\"')
-s_size("data", format="ascii") # must be over 234
+s_size("data", output_format="ascii") # must be over 234
 
 if s_block_start("data", encoder=mcafee_epo_xor):
     s_static("\x50\x4f", name="signature")

@@ -2,3 +2,6 @@
 
 class SullyRuntimeError(Exception):
     pass
+
+class SizerNotUtilizedError(Exception):
+    pass

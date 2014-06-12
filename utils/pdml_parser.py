@@ -10,13 +10,13 @@ from xml.sax.handler import feature_namespaces
 ########################################################################################################################
 class ParsePDML (ContentHandler):
     
-    def __init__ (self):
+    def __init__(self):
         self.current       = None
         self.start_parsing = False
         self.sulley        = ""
     
     
-    def startElement (self, name, attributes):
+    def startElement(self, name, attributes):
         if name == "proto":
             self.current = attributes["name"]
             
@@ -40,11 +40,11 @@ class ParsePDML (ContentHandler):
                 raise "WTFException"
         
         
-    def characters (self, data):
+    def characters(self, data):
         pass
         
         
-    def endElement (self, name):
+    def endElement(self, name):
         # if we're closing a packet
         if name == "packet":
             self.start_parsing = False
@@ -90,7 +90,7 @@ class ParsePDML (ContentHandler):
         
         return value
     
-    def error (self, exception):
+    def error(self, exception):
         print "Oh shitz: ", exception
         sys.exit(1)
 

@@ -51,7 +51,7 @@ s_static("Content-Type: ")
 s_string("application/x-www-form-urlencoded")
 s_static("\r\n")
 s_static("Content-Length: ")
-s_size("post blob", format="ascii", signed=True, fuzzable=True)
+s_size("post blob", output_format="ascii", signed=True, fuzzable=True)
 s_static("\r\n\r\n")
 
 if s_block_start("post blob"):

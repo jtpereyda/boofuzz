@@ -1,13 +1,16 @@
 import random
 import struct
 
-########################################################################################################################
-class base_primitive (object):
-    '''
-    The primitive base class implements common functionality shared across most primitives.
-    '''
+from constants import LITTLE_ENDIAN
 
-    def __init__ (self):
+# TODO: Change primitives to yield instead of returning a bunch of trues (if possible)
+
+
+class BasePrimitive(object):
+    """
+    The primitive base class implements common functionality shared across most primitives.
+    """
+    def __init__(self):
         self.fuzz_complete  = False     # this flag is raised when the mutations are exhausted.
         self.fuzz_library   = []        # library of static fuzz heuristics to cycle through.
         self.fuzzable       = True      # flag controlling whether or not the given primitive is to be fuzzed.
@@ -16,14 +19,13 @@ class base_primitive (object):
         self.rendered       = ""        # rendered value of primitive.
         self.value          = None      # current value of primitive.
 
-
-    def exhaust (self):
-        '''
+    def exhaust(self):
+        """
         Exhaust the possible mutations for this primitive.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: The number of mutations to reach exhaustion
-        '''
+        """
 
         num = self.num_mutations() - self.mutant_index
 
@@ -33,14 +35,13 @@ class base_primitive (object):
 
         return num
 
-
-    def mutate (self):
-        '''
+    def mutate(self):
+        """
         Mutate the primitive by stepping through the fuzz library, return False on completion.
 
-        @rtype:  Boolean
+        @rtype:  bool
         @return: True on success, False otherwise.
-        '''
+        """
 
         # if we've ran out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
@@ -59,66 +60,54 @@ class base_primitive (object):
 
         return True
 
-
-    def num_mutations (self):
-        '''
+    def num_mutations(self):
+        """
         Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Number of mutated forms this primitive can take
-        '''
+        """
 
         return len(self.fuzz_library)
 
-
-    def render (self):
-        '''
+    def render(self):
+        """
         Nothing fancy on render, simply return the value.
-        '''
+        """
 
         self.rendered = self.value
         return self.rendered
 
-
-    def reset (self):
-        '''
+    def reset(self):
+        """
         Reset this primitive to the starting mutation state.
-        '''
+        """
 
         self.fuzz_complete  = False
         self.mutant_index   = 0
         self.value          = self.original_value
 
 
-########################################################################################################################
-class delim (base_primitive):
-    def __init__ (self, value, fuzzable=True, name=None):
-        '''
+class Delim(BasePrimitive):
+    def __init__(self, value=None, fuzzable=True, name=None):
+        """
         Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
 
-        @type  value:    Character
+        @type  value:    chr
         @param value:    Original value
-        @type  fuzzable: Boolean
+        @type  fuzzable: bool
         @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:     String
+        @type  name:     str
         @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
-        '''
+        """
 
-        self.value         = self.original_value = value
-        self.fuzzable      = fuzzable
-        self.name          = name
+        super(Delim, self).__init__()
 
-        self.s_type        = "delim"   # for ease of object identification
-        self.rendered      = ""        # rendered value
-        self.fuzz_complete = False     # flag if this primitive has been completely fuzzed
-        self.fuzz_library  = []        # library of fuzz heuristics
-        self.mutant_index  = 0         # current mutation number
+        self.fuzzable = fuzzable
+        self.name     = name
+        self.value    = value
+        self.s_type   = "delim"  # for ease of object identification
 
-        #
-        # build the library of fuzz heuristics.
-        #
-
-        # if the default delim is not blank, repeat it a bunch of times.
         if self.value:
             self.fuzz_library.append(self.value * 2)
             self.fuzz_library.append(self.value * 5)
@@ -128,16 +117,12 @@ class delim (base_primitive):
             self.fuzz_library.append(self.value * 500)
             self.fuzz_library.append(self.value * 1000)
 
-        # try ommitting the delimiter.
         self.fuzz_library.append("")
-
-        # if the delimiter is a space, try throwing out some tabs.
         if self.value == " ":
             self.fuzz_library.append("\t")
             self.fuzz_library.append("\t" * 2)
             self.fuzz_library.append("\t" * 100)
 
-        # toss in some other common delimiters:
         self.fuzz_library.append(" ")
         self.fuzz_library.append("\t")
         self.fuzz_library.append("\t " * 100)
@@ -176,54 +161,49 @@ class delim (base_primitive):
         self.fuzz_library.append("\r\n" * 512)
 
 
-########################################################################################################################
-class group (base_primitive):
-    def __init__ (self, name, values):
-        '''
+class Group(BasePrimitive):
+    def __init__(self, name, values):
+        """
         This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
         to a group primitive to specify that the block should cycle through all possible mutations for *each* value
         within the group. The group primitive is useful for example for representing a list of valid opcodes.
 
-        @type  name:   String
+        @type  name:   str
         @param name:   Name of group
-        @type  values: List or raw data
+        @type  values: list or str
         @param values: List of possible raw values this group can take.
-        '''
+        """
 
-        self.name           = name
-        self.values         = values
-        self.fuzzable       = True
+        super(Group, self).__init__()
 
-        self.s_type         = "group"
-        self.value          = self.values[0]
-        self.original_value = self.values[0]
-        self.rendered       = ""
-        self.fuzz_complete  = False
-        self.mutant_index   = 0
+        assert(self.values > 0, "You can't have an empty value list for your group!")
 
-        # sanity check that values list only contains strings (or raw data)
-        if self.values != []:
-            for val in self.values:
-                assert type(val) is str, "Value list may only contain strings or raw data"
+        self.name = name
+        self.values = values
+        self.s_type = "group"
+        self.value = self.original_value = self.values[0]
 
+        for val in self.values:
+            assert(isinstance(val, basestring), "Value list may only contain strings or raw data")
 
-    def mutate (self):
-        '''
+    def mutate(self):
+        """
         Move to the next item in the values list.
 
-        @rtype:  False
+        @rtype:  bool
         @return: False
-        '''
-
+        """
+        # TODO: See if num_mutations() can be done away with (me thinks yes).
         if self.mutant_index == self.num_mutations():
             self.fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or self.fuzz_complete:
-            self.value = self.values[0]
+            self.value = self.original_value
             return False
 
         # step through the value list.
+        # TODO: break this into a get_value() function, so we can keep mutate as close to standard as possible.
         self.value = self.values[self.mutant_index]
 
         # increment the mutation count.
@@ -231,65 +211,61 @@ class group (base_primitive):
 
         return True
 
-
-    def num_mutations (self):
-        '''
+    def num_mutations(self):
+        """
         Number of values in this primitive.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Number of values in this primitive.
-        '''
+        """
 
         return len(self.values)
 
 
-########################################################################################################################
-class random_data (base_primitive):
-    def __init__ (self, value, min_length, max_length, max_mutations=25, fuzzable=True, step=None, name=None):
-        '''
-        Generate a random chunk of data while maintaining a copy of the original. A random length range can be specified.
+class RandomData(BasePrimitive):
+    def __init__(self, value, min_length, max_length, max_mutations=25, fuzzable=True, step=None, name=None):
+        """
+        Generate a random chunk of data while maintaining a copy of the original. A random length range
+        can be specified.
+
         For a static length, set min/max length to be the same.
 
-        @type  value:         Raw
+        @type  value:         str
         @param value:         Original value
-        @type  min_length:    Integer
+        @type  min_length:    int
         @param min_length:    Minimum length of random block
-        @type  max_length:    Integer
+        @type  max_length:    int
         @param max_length:    Maximum length of random block
-        @type  max_mutations: Integer
+        @type  max_mutations: int
         @param max_mutations: (Optional, def=25) Number of mutations to make before reverting to default
-        @type  fuzzable:      Boolean
+        @type  fuzzable:      bool
         @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  step:          Integer
+        @type  step:          int
         @param step:          (Optional, def=None) If not null, step count between min and max reps, otherwise random
-        @type  name:          String
+        @type  name:          str
         @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
-        '''
+        """
 
-        self.value         = self.original_value = str(value)
-        self.min_length    = min_length
-        self.max_length    = max_length
+        super(RandomData, self).__init__()
+
+        self.value = self.original_value = str(value)
+        self.min_length = min_length
+        self.max_length = max_length
         self.max_mutations = max_mutations
-        self.fuzzable      = fuzzable
-        self.step          = step
-        self.name          = name
-
-        self.s_type        = "random_data"  # for ease of object identification
-        self.rendered      = ""             # rendered value
-        self.fuzz_complete = False          # flag if this primitive has been completely fuzzed
-        self.mutant_index  = 0              # current mutation number
-
+        self.fuzzable = fuzzable
+        self.step = step
+        self.name = name
+        self.s_type = "random_data"  # for ease of object identification
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) / self.step + 1
 
-
-    def mutate (self):
-        '''
+    def mutate(self):
+        """
         Mutate the primitive value returning False on completion.
 
-        @rtype:  Boolean
+        @rtype:  bool
         @return: True on success, False otherwise.
-        '''
+        """
 
         # if we've ran out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
@@ -317,182 +293,153 @@ class random_data (base_primitive):
 
         return True
 
-
-    def num_mutations (self):
-        '''
+    def num_mutations(self):
+        """
         Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Number of mutated forms this primitive can take
-        '''
+        """
 
         return self.max_mutations
 
 
-########################################################################################################################
-class static (base_primitive):
-    def __init__ (self, value, name=None):
-        '''
+class Static(BasePrimitive):
+    def __init__(self, value, name=None):
+        """
         Primitive that contains static content.
 
-        @type  value: Raw
+        @type  value: str
         @param value: Raw static data
-        @type  name:  String
+        @type  name:  str
         @param name:  (Optional, def=None) Specifying a name gives you direct access to a primitive
-        '''
+        """
 
+        super(Static, self).__init__()
+
+        self.fuzz_complete = True
+        self.fuzzable      = False
         self.value         = self.original_value = value
         self.name          = name
-        self.fuzzable      = False       # every primitive needs this attribute.
-        self.mutant_index  = 0
-        self.s_type        = "static"    # for ease of object identification
-        self.rendered      = ""
-        self.fuzz_complete = True
+        self.s_type        = "static"
 
-
-    def mutate (self):
-        '''
-        Do nothing.
-
-        @rtype:  False
-        @return: False
-        '''
-
+    def mutate(self):
+        """
+        Always return false, don't fuzz
+        """
         return False
 
-
-    def num_mutations (self):
-        '''
-        Return 0.
-
-        @rtype:  0
-        @return: 0
-        '''
-
+    def num_mutations(self):
+        """
+        We have no mutations
+        """
         return 0
 
 
-########################################################################################################################
-class string (base_primitive):
+class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     fuzz_library = []
 
-    def __init__ (self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
-        '''
+    def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+        """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
         the instantiated primitive. This allows us to avoid copying the near ~70MB fuzz_library data structure across
         each instantiated primitive.
 
-        @type  value:    String
+        @type  value:    str
         @param value:    Default string value
-        @type  size:     Integer
+        @type  size:     int
         @param size:     (Optional, def=-1) Static size of this field, leave -1 for dynamic.
-        @type  padding:  Character
+        @type  padding:  chr
         @param padding:  (Optional, def="\\x00") Value to use as padding to fill static field size.
-        @type  encoding: String
-        @param encoding: (Optonal, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
-        @type  fuzzable: Boolean
+        @type  encoding: str
+        @param encoding: (Optional, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
+        @type  fuzzable: bool
         @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  max_len:  Integer
+        @type  max_len:  int
         @param max_len:  (Optional, def=0) Maximum string length
-        @type  name:     String
+        @type  name:     str
         @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
-        '''
+        """
 
-        self.value         = self.original_value = value
-        self.size          = size
-        self.padding       = padding
-        self.encoding      = encoding
-        self.fuzzable      = fuzzable
-        self.name          = name
+        super(String, self).__init__()
 
-        self.s_type        = "string"  # for ease of object identification
-        self.rendered      = ""        # rendered value
-        self.fuzz_complete = False     # flag if this primitive has been completely fuzzed
-        self.mutant_index  = 0         # current mutation number
-
-        # add this specific primitives repitition values to the unique fuzz library.
+        self.value = self.original_value = value
+        self.size = size
+        self.padding = padding
+        self.encoding = encoding
+        self.fuzzable = fuzzable
+        self.name = name
+        self.s_type = "string"  # for ease of object identification
         self.this_library = \
-        [
-            self.value * 2,
-            self.value * 10,
-            self.value * 100,
-
-            # UTF-8
-            self.value * 2   + "\xfe",
-            self.value * 10  + "\xfe",
-            self.value * 100 + "\xfe",
-        ]
-
-        # if the fuzz library has not yet been initialized, do so with all the global values.
-        if not self.fuzz_library:
-            string.fuzz_library  = \
             [
-                # omission.
-                "",
+                self.value * 2,
+                self.value * 10,
+                self.value * 100,
 
-                # strings ripped from spike (and some others I added)
-                "/.:/"  + "A"*5000 + "\x00\x00",
-                "/.../" + "A"*5000 + "\x00\x00",
-                "/.../.../.../.../.../.../.../.../.../.../",
-                "/../../../../../../../../../../../../etc/passwd",
-                "/../../../../../../../../../../../../boot.ini",
-                "..:..:..:..:..:..:..:..:..:..:..:..:..:",
-                "\\\\*",
-                "\\\\?\\",
-                "/\\" * 5000,
-                "/." * 5000,
-                "!@#$%%^#$%#$@#$%$$@#$%^^**(()",
-                "%01%02%03%04%0a%0d%0aADSF",
-                "%01%02%03@%04%0a%0d%0aADSF",
-                "/%00/",
-                "%00/",
-                "%00",
-                "%u0000",
-                "%\xfe\xf0%\x00\xff",
-                "%\xfe\xf0%\x01\xff" * 20,
-
-                # format strings.
-                "%n"     * 100,
-                "%n"     * 500,
-                "\"%n\"" * 500,
-                "%s"     * 100,
-                "%s"     * 500,
-                "\"%s\"" * 500,
-
-                # command injection.
-                "|touch /tmp/SULLEY",
-                ";touch /tmp/SULLEY;",
-                "|notepad",
-                ";notepad;",
-                "\nnotepad\n",
-
-                # SQL injection.
-                "1;SELECT%20*",
-                "'sqlattempt1",
-                "(sqlattempt2)",
-                "OR%201=1",
-
-                # some binary strings.
-                "\xde\xad\xbe\xef",
-                "\xde\xad\xbe\xef" * 10,
-                "\xde\xad\xbe\xef" * 100,
-                "\xde\xad\xbe\xef" * 1000,
-                "\xde\xad\xbe\xef" * 10000,
-                "\x00"             * 1000,
-
-                # miscellaneous.
-                "\r\n" * 100,
-                "<>" * 500,         # sendmail crackaddr (http://lsd-pl.net/other/sendmail.txt)
+                # UTF-8
+                # TODO: This can't actually convert these to unicode strings...
+                self.value * 2 + "\xfe",
+                self.value * 10 + "\xfe",
+                self.value * 100 + "\xfe",
             ]
+        if not self.fuzz_library:
+            self.fuzz_library = \
+                [
+                    "",
+                    # strings ripped from spike (and some others I added)
+                    "/.:/" + "A" * 5000 + "\x00\x00",
+                    "/.../" + "B" * 5000 + "\x00\x00",
+                    "/.../.../.../.../.../.../.../.../.../.../",
+                    "/../../../../../../../../../../../../etc/passwd",
+                    "/../../../../../../../../../../../../boot.ini",
+                    "..:..:..:..:..:..:..:..:..:..:..:..:..:",
+                    "\\\\*",
+                    "\\\\?\\",
+                    "/\\" * 5000,
+                    "/." * 5000,
+                    "!@#$%%^#$%#$@#$%$$@#$%^^**(()",
+                    "%01%02%03%04%0a%0d%0aADSF",
+                    "%01%02%03@%04%0a%0d%0aADSF",
+                    "\x01\x02\x03\x04",
+                    "/%00/",
+                    "%00/",
+                    "%00",
+                    "%u0000",
+                    "%\xfe\xf0%\x00\xff",
+                    "%\xfe\xf0%\x01\xff" * 20,
+
+                    # format strings.
+                    "%n" * 100,
+                    "%n" * 500,
+                    "\"%n\"" * 500,
+                    "%s" * 100,
+                    "%s" * 500,
+                    "\"%s\"" * 500,
+
+                    # command injection.
+                    "|touch /tmp/SULLEY",
+                    ";touch /tmp/SULLEY;",
+                    "|notepad",
+                    ";notepad;",
+                    "\nnotepad\n",
+
+                    # some binary strings.
+                    "\xde\xad\xbe\xef",
+                    "\xde\xad\xbe\xef" * 10,
+                    "\xde\xad\xbe\xef" * 100,
+                    "\xde\xad\xbe\xef" * 1000,
+                    "\xde\xad\xbe\xef" * 10000,
+
+                    # miscellaneous.
+                    "\r\n" * 100,
+                    "<>" * 500,  # sendmail crackaddr (http://lsd-pl.net/other/sendmail.txt)
+                ]
 
             # add some long strings.
-            self.add_long_strings("A")
-            self.add_long_strings("B")
+            self.add_long_strings("C")
             self.add_long_strings("1")
-            self.add_long_strings("2")
-            self.add_long_strings("3")
             self.add_long_strings("<")
             self.add_long_strings(">")
             self.add_long_strings("'")
@@ -516,63 +463,62 @@ class string (base_primitive):
             self.add_long_strings("{")
             self.add_long_strings("}")
             self.add_long_strings("\x14")
-            self.add_long_strings("\xFE")   # expands to 4 characters under utf16
-            self.add_long_strings("\xFF")   # expands to 4 characters under utf16
+            self.add_long_strings("\x00")
+            self.add_long_strings("\xFE")  # expands to 4 characters under utf16
+            self.add_long_strings("\xFF")  # expands to 4 characters under utf16
 
-            # add some long strings with null bytes thrown in the middle of it.
+            # add some long strings with null bytes thrown in the middle of them.
             for length in [128, 256, 1024, 2048, 4096, 32767, 0xFFFF]:
-                s = "B" * length
-                s = s[:len(s)/2] + "\x00" + s[len(s)/2:]
-                string.fuzz_library.append(s)
+                s = "D" * length
+                # Number of null bytes to insert (random)
+                for i in range(random.randint(1, 10)):
+                    # Location of random byte
+                    loc = random.randint(1, len(s))
+                    s = s[:loc] + "\x00" + s[loc:]
+                self.fuzz_library.append(s)
 
-            # if the optional file '.fuzz_strings' is found, parse each line as a new entry for the fuzz library.
-            try:
-                fh = open(".fuzz_strings", "r")
+            # TODO: Add easy and sane string injection from external file/s
 
-                for fuzz_string in fh.readlines():
-                    fuzz_string = fuzz_string.rstrip("\r\n")
-
-                    if fuzz_string != "":
-                        string.fuzz_library.append(fuzz_string)
-
-                fh.close()
-            except:
-                pass
-
-        # delete strings which length is greater than max_len.
+        # TODO: Make this more clear
         if max_len > 0:
+            # If any of our strings are over max_len
             if any(len(s) > max_len for s in self.this_library):
+                # Pull out only the ones that aren't
                 self.this_library = list(set([s[:max_len] for s in self.this_library]))
-
+            # Same thing here
             if any(len(s) > max_len for s in self.fuzz_library):
                 self.fuzz_library = list(set([s[:max_len] for s in self.fuzz_library]))
 
-
-    def add_long_strings (self, sequence):
-        '''
+    def add_long_strings(self, sequence):
+        """
         Given a sequence, generate a number of selectively chosen strings lengths of the given sequence and add to the
         string heuristic library.
 
-        @type  sequence: String
+        @type  sequence: str
         @param sequence: Sequence to repeat for creation of fuzz strings.
-        '''
+        """
+        strings = []
+        for size in [128, 256, 512, 1024, 2048, 4096, 32768, 0xFFFF]:
+            strings.append(sequence * (size - 2))
+            strings.append(sequence * (size - 1))
+            strings.append(sequence * size)
+            strings.append(sequence * (size + 1))
+            strings.append(sequence * (size + 2))
 
-        for length in [128, 255, 256, 257, 511, 512, 513, 1023, 1024, 2048, 2049, 4095, 4096, 4097, 5000, 10000, 20000,
-                       32762, 32763, 32764, 32765, 32766, 32767, 32768, 32769, 0xFFFF-2, 0xFFFF-1, 0xFFFF, 0xFFFF+1,
-                       0xFFFF+2, 99999, 100000, 500000, 1000000]:
+        for size in [5000, 10000, 20000, 99999, 100000, 500000, 1000000]:
+            strings.append(sequence * size)
 
-            long_string = sequence * length
-            string.fuzz_library.append(long_string)
+        for string in strings:
+            self.fuzz_library.append(string)
 
-
-    def mutate (self):
-        '''
+    def mutate(self):
+        """
         Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
         completion.
 
-        @rtype:  Boolean
+        @rtype:  bool
         @return: True on success, False otherwise.
-        '''
+        """
 
         # loop through the fuzz library until a suitable match is found.
         while 1:
@@ -595,36 +541,33 @@ class string (base_primitive):
             if self.size == -1:
                 break
 
-            # ignore library items greather then user-supplied length.
+            # ignore library items greater then user-supplied length.
             # TODO: might want to make this smarter.
             if len(self.value) > self.size:
                 continue
 
             # pad undersized library items.
             if len(self.value) < self.size:
-                self.value = self.value + self.padding * (self.size - len(self.value))
+                self.value += self.padding * (self.size - len(self.value))
                 break
 
         return True
 
-
-    def num_mutations (self):
-        '''
+    def num_mutations(self):
+        """
         Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Number of mutated forms this primitive can take
-        '''
-
+        """
         return len(self.fuzz_library) + len(self.this_library)
 
-
-    def render (self):
-        '''
+    def render(self):
+        """
         Render the primitive, encode the string according to the specified encoding.
-        '''
-
+        """
         # try to encode the string properly and fall back to the default value on failure.
+        # TODO: Fix this - seems hacky
         try:
             self.rendered = str(self.value).encode(self.encoding)
         except:
@@ -633,55 +576,52 @@ class string (base_primitive):
         return self.rendered
 
 
-########################################################################################################################
-class bit_field (base_primitive):
-    def __init__ (self, value, width, max_num=None, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
-        '''
+class BitField(BasePrimitive):
+    def __init__(self, value, width, max_num=None, endian=LITTLE_ENDIAN, output_format="binary", signed=False,
+                 full_range=False, fuzzable=True, name=None):
+        """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
 
-        @type  value:      Integer
-        @param value:      Default integer value
-        @type  width:      Integer
-        @param width:      Width of bit fields
-        @type  endian:     Character
-        @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-        @type  format:     String
-        @param format:     (Optional, def=binary) Output format, "binary" or "ascii"
-        @type  signed:     Boolean
-        @param signed:     (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-        @type  full_range: Boolean
-        @param full_range: (Optional, def=False) If enabled the field mutates through *all* possible values.
-        @type  fuzzable:   Boolean
-        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:       String
-        @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
-        '''
+        @type  value:         int
+        @param value:         Default integer value
+        @type  width:         int
+        @param width:         Width of bit fields
+        @type  max_num:       int
+        @param max_num:       Maximum number to iterate up to
+        @type  endian:        chr
+        @param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+        @type  output_format: str
+        @param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
+        @type  signed:        bool
+        @param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
+        @type  full_range:    bool
+        @param full_range:    (Optional, def=False) If enabled the field mutates through *all* possible values.
+        @type  fuzzable:      bool
+        @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
+        @type  name:          str
+        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+        """
 
-        assert(type(value) is int or type(value) is long)
-        assert(type(width) is int or type(value) is long)
+        super(BitField, self).__init__()
 
+        assert(isinstance(value, (int, long)), "value must be an integer!")
+        assert(isinstance(width, (int, long)), "width must be an integer!")
 
-        self.value         = self.original_value = value
-        self.width         = width
-        self.max_num       = max_num
-        self.endian        = endian
-        self.format        = format
-        self.signed        = signed
-        self.full_range    = full_range
-        self.fuzzable      = fuzzable
-        self.name          = name
+        self.value = self.original_value = value
+        self.width = width
+        self.max_num = max_num
+        self.endian = endian
+        self.format = output_format
+        self.signed = signed
+        self.full_range = full_range
+        self.fuzzable = fuzzable
+        self.name = name
 
-        self.rendered      = ""        # rendered value
-        self.fuzz_complete = False     # flag if this primitive has been completely fuzzed
-        self.fuzz_library  = []        # library of fuzz heuristics
-        self.mutant_index  = 0         # current mutation number
-
-        if self.max_num == None:
+        if not self.max_num:
             self.max_num = self.to_decimal("1" * width)
 
-        assert(type(self.max_num) is int or type(self.max_num) is long)
+        assert(isinstance(max_num, (int, long)), "max_num must be an integer!")
 
-        # build the fuzz library.
         if self.full_range:
             # add all possible values.
             for i in xrange(0, self.max_num):
@@ -697,50 +637,26 @@ class bit_field (base_primitive):
             self.add_integer_boundaries(self.max_num / 32)
             self.add_integer_boundaries(self.max_num)
 
-        # if the optional file '.fuzz_ints' is found, parse each line as a new entry for the fuzz library.
-        try:
-            fh = open(".fuzz_ints", "r")
+        # TODO: Add injectable arbitrary bit fields
 
-            for fuzz_int in fh.readlines():
-                # convert the line into an integer, continue on failure.
-                try:
-                    fuzz_int = long(fuzz_int, 16)
-                except:
-                    continue
-
-                if fuzz_int <= self.max_num:
-                    self.fuzz_library.append(fuzz_int)
-
-            fh.close()
-        except:
-            pass
-
-
-    def add_integer_boundaries (self, integer):
-        '''
+    def add_integer_boundaries(self, integer):
+        """
         Add the supplied integer and border cases to the integer fuzz heuristics library.
 
-        @type  integer: Int
-        @param integer: Integer to append to fuzz heuristics
-        '''
-
+        @type  integer: int
+        @param integer: int to append to fuzz heuristics
+        """
         for i in xrange(-10, 10):
             case = integer + i
-
             # ensure the border case falls within the valid range for this field.
             if 0 <= case <= self.max_num:
                 if case not in self.fuzz_library:
                     self.fuzz_library.append(case)
 
-
-    def render (self):
-        '''
+    def render(self):
+        """
         Render the primitive.
-        '''
-
-        #
-        # binary formatting.
-        #
+        """
 
         if self.format == "binary":
             bit_stream = ""
@@ -755,22 +671,20 @@ class bit_field (base_primitive):
 
             # convert the bit stream from a string of bits into raw bytes.
             for i in xrange(len(bit_stream) / 8):
-                chunk = bit_stream[8*i:8*i+8]
+                chunk_min = 8 * i
+                chunk_max = chunk_min + 8
+                chunk = bit_stream[chunk_min:chunk_max]
                 rendered += struct.pack("B", self.to_decimal(chunk))
 
             # if necessary, convert the endianess of the raw bytes.
-            if self.endian == "<":
+            if self.endian == LITTLE_ENDIAN:
                 rendered = list(rendered)
                 rendered.reverse()
                 rendered = "".join(rendered)
 
             self.rendered = rendered
-
-        #
-        # ascii formatting.
-        #
-
         else:
+            # Otherwise we have ascii/something else
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
             if self.signed and self.to_binary()[0] == "1":
                 max_num = self.to_decimal("0" + "1" * (self.width - 1))
@@ -781,7 +695,7 @@ class bit_field (base_primitive):
                 val = max_num - val
 
                 # toss in the negative sign.
-                self.rendered = "%d" % ~val
+                self.rendered = "%d" % (-val - 1)
 
             # unsigned integer or positive signed integer.
             else:
@@ -789,78 +703,87 @@ class bit_field (base_primitive):
 
         return self.rendered
 
-
-    def to_binary (self, number=None, bit_count=None):
-        '''
+    def to_binary(self, number=None, bit_count=None):
+        """
         Convert a number to a binary string.
 
-        @type  number:    Integer
+        @type  number:    int
         @param number:    (Optional, def=self.value) Number to convert
-        @type  bit_count: Integer
+        @type  bit_count: int
         @param bit_count: (Optional, def=self.width) Width of bit string
 
-        @rtype:  String
+        @rtype:  str
         @return: Bit string
-        '''
+        """
 
-        if number == None:
+        if not number:
             number = self.value
 
-        if bit_count == None:
+        if not bit_count:
             bit_count = self.width
 
-        return "".join(map(lambda x:str((number >> x) & 1), range(bit_count -1, -1, -1)))
+        return "".join(map(lambda x: str((number >> x) & 1), range(bit_count - 1, -1, -1)))
 
-
-    def to_decimal (self, binary):
-        '''
+    def to_decimal(self, binary):
+        """
         Convert a binary string to a decimal number.
 
-        @type  binary: String
+        @type  binary: str
         @param binary: Binary string
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Converted bit string
-        '''
+        """
 
         return int(binary, 2)
 
 
-########################################################################################################################
-class byte (bit_field):
-    def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
-        self.s_type  = "byte"
-        if type(value) not in [int, long]:
-            value       = struct.unpack(endian + "B", value)[0]
+class Byte(BitField):
+    def __init__(self, *args, **kwargs):
+        # Inject the one parameter we care to pass in (width)
+        kwargs["width"] = 8
 
-        bit_field.__init__(self, value, 8, None, endian, format, signed, full_range, fuzzable, name)
+        super(Byte, self).__init__(*args, **kwargs)
 
+        self.s_type = "byte"
 
-########################################################################################################################
-class word (bit_field):
-    def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
-        self.s_type  = "word"
-        if type(value) not in [int, long]:
-            value = struct.unpack(endian + "H", value)[0]
-
-        bit_field.__init__(self, value, 16, None, endian, format, signed, full_range, fuzzable, name)
+        if type(self.value) not in [int, long]:
+            self.value = struct.unpack(self.endian + "B", self.value)[0]
 
 
-########################################################################################################################
-class dword (bit_field):
-    def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
+class Word(BitField):
+    def __init__(self, *args, **kwargs):
+        # Inject our width argument
+        kwargs["width"] = 16
+
+        super(Word, self).__init__(*args, **kwargs)
+
+        self.s_type = "word"
+
+        if type(self.value) not in [int, long]:
+            self.value = struct.unpack(self.endian + "H", self.value)[0]
+
+
+class DWord(BitField):
+    def __init__(self, *args, **kwargs):
+        # Inject our width argument
+        kwargs["width"] = 32
+
+        super(DWord, self).__init__(*args, **kwargs)
+
         self.s_type  = "dword"
-        if type(value) not in [int, long]:
-            value = struct.unpack(endian + "L", value)[0]
 
-        bit_field.__init__(self, value, 32, None, endian, format, signed, full_range, fuzzable, name)
+        if type(self.value) not in [int, long]:
+            self.value = struct.unpack(self.endian + "L", self.value)[0]
 
 
-########################################################################################################################
-class qword (bit_field):
-    def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
+class QWord(BitField):
+    def __init__(self, *args, **kwargs):
+        kwargs["width"] = 64
+
+        super(QWord, self).__init__(*args, **kwargs)
+
         self.s_type  = "qword"
-        if type(value) not in [int, long]:
-            value = struct.unpack(endian + "Q", value)[0]
 
-        bit_field.__init__(self, value, 64, None, endian, format, signed, full_range, fuzzable, name)
+        if type(self.value) not in [int, long]:
+            self.value = struct.unpack(self.endian + "Q", self.value)[0]

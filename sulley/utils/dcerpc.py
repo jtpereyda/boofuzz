@@ -3,7 +3,7 @@ import struct
 import misc
 
 ########################################################################################################################
-def bind (uuid, version):
+def bind(uuid, version):
     '''
     Generate the data necessary to bind to the specified interface.
     '''
@@ -40,7 +40,7 @@ def bind (uuid, version):
 
 
 ########################################################################################################################
-def bind_ack (data):
+def bind_ack(data):
     '''
     Ensure the data is a bind ack and that the
     '''
@@ -57,7 +57,7 @@ def bind_ack (data):
 
 
 ########################################################################################################################
-def request (opnum, data):
+def request(opnum, data):
     '''
     Return a list of packets broken into 5k fragmented chunks necessary to make the RPC request.
     '''

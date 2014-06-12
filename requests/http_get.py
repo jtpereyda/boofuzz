@@ -14,8 +14,9 @@ sess.connect(s_get("HTTP REQ"))
 ########################################################################################################################
 s_initialize("HTTP VERBS")
 s_group("verbs", values=["GET", "HEAD", "POST", "OPTIONS", "TRACE", "PUT", "DELETE", "PROPFIND","CONNECT","PROPPATCH",
-                         "MKCOL","COPY","MOVE","LOCK","UNLOCK","VERSION-CONTROL","REPORT","CHECKOUT","CHECKIN","UNCHECKOUT",
-                         "MKWORKSPACE","UPDATE","LABEL","MERGE","BASELINE-CONTROL","MKACTIVITY","ORDERPATCH","ACL","PATCH","SEARCH","CAT"])
+                         "MKCOL","COPY","MOVE","LOCK","UNLOCK","VERSION-CONTROL","REPORT","CHECKOUT","CHECKIN",
+                         "UNCHECKOUT", "MKWORKSPACE","UPDATE","LABEL","MERGE","BASELINE-CONTROL","MKACTIVITY",
+                         "ORDERPATCH","ACL","PATCH","SEARCH","CAT"])
 if s_block_start("body", group="verbs"):
     s_delim(" ")
     s_delim("/")

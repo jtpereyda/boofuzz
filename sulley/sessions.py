@@ -24,11 +24,11 @@ class target:
     Target descriptor container.
     '''
 
-    def __init__ (self, host, port, **kwargs):
+    def __init__(self, host, port, **kwargs):
         '''
-        @type  host: String
+        @type  host: str
         @param host: Hostname or IP address of target system
-        @type  port: Integer
+        @type  port: int
         @param port: Port of target service
         '''
 
@@ -44,7 +44,7 @@ class target:
         self.vmcontrol_options = {}
 
 
-    def pedrpc_connect (self):
+    def pedrpc_connect(self):
         '''
         Pass specified target parameters to the PED-RPC server.
         '''
@@ -82,7 +82,7 @@ class target:
 
 ########################################################################################################################
 class connection (pgraph.edge.edge):
-    def __init__ (self, src, dst, callback=None):
+    def __init__(self, src, dst, callback=None):
         '''
         Extends pgraph.edge with a callback option. This allows us to register a function to call between node
         transmissions to implement functionality such as challenge response systems. The callback method must follow
@@ -95,9 +95,9 @@ class connection (pgraph.edge.edge):
         the data returned from the last socket transmission and sock is the live socket. A callback is also useful in
         situations where, for example, the size of the next packet is specified in the first packet.
 
-        @type  src:      Integer
+        @type  src:      int
         @param src:      Edge source ID
-        @type  dst:      Integer
+        @type  dst:      int
         @param dst:      Edge destination ID
         @type  callback: Function
         @param callback: (Optional, def=None) Callback function to pass received data to between node xmits
@@ -130,31 +130,31 @@ class session (pgraph.graph):
         '''
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
-        @type  session_filename:   String
+        @type  session_filename:   str
         @kwarg session_filename:   (Optional, def=None) Filename to serialize persistant data to
-        @type  skip:               Integer
+        @type  skip:               int
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         Float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
-        @type  log_level:          Integer
+        @type  log_level:          int
         @kwarg log_level:          (Optional, def=logger.INFO) Set the log level
-        @type  logfile:            String
+        @type  logfile:            str
         @kwarg logfile:            (Optional, def=None) Name of log file
-        @type  logfile_level:      Integer
+        @type  logfile_level:      int
         @kwarg logfile_level:      (Optional, def=logger.INFO) Set the log level for the logfile
-        @type  proto:              String
+        @type  proto:              str
         @kwarg proto:              (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl")
         @type  bind:               Tuple (host, port)
         @kwarg bind:               (Optional, def=random) Socket bind address and port
         @type  timeout:            Float
         @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
-        @type  restart_interval:   Integer
+        @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
-        @type  crash_threshold:    Integer
+        @type  crash_threshold:    int
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
-        @type  restart_sleep_time: Integer
+        @type  restart_sleep_time: int
         @kwarg restart_sleep_time: Optional, def=300) Time in seconds to sleep when target can't be restarted
-        @type  web_port:	   Integer
+        @type  web_port:	   int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser	
 	'''
 
@@ -226,7 +226,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def add_node (self, node):
+    def add_node(self, node):
         '''
         Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
         node is added.
@@ -245,7 +245,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def add_target (self, target):
+    def add_target(self, target):
         '''
         Add a target to the session. Multiple targets can be added for parallel fuzzing.
 
@@ -261,7 +261,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def connect (self, src, dst=None, callback=None):
+    def connect(self, src, dst=None, callback=None):
         '''
         Create a connection between the two requests (nodes) and register an optional callback to process in between
         transmissions of the source and destination request. Leverage this functionality to handle situations such as
@@ -287,11 +287,11 @@ class session (pgraph.graph):
         example, if you need to fill in the dynamic IP address of the target register a callback that snags the IP
         from sock.getpeername()[0].
 
-        @type  src:      String or Request (Node)
+        @type  src:      str or Request (Node)
         @param src:      Source request name or request node
-        @type  dst:      String or Request (Node)
+        @type  dst:      str or Request (Node)
         @param dst:      Destination request name or request node
-        @type  callback: Function
+        @type  callback: def
         @param callback: (Optional, def=None) Callback function to pass received data to between node xmits
 
         @rtype:  pgraph.edge
@@ -325,7 +325,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def export_file (self):
+    def export_file(self):
         '''
         Dump various object values to disk.
 
@@ -358,7 +358,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def fuzz (self, this_node=None, path=[]):
+    def fuzz(self, this_node=None, path=[]):
         '''
         Call this routine to get the ball rolling. No arguments are necessary as they are both utilized internally
         during the recursive traversal of the session graph.
@@ -427,7 +427,7 @@ class session (pgraph.graph):
                     self.restart_target(target)
 
                 # exception error handling routine, print log message and restart target.
-                def error_handler (e, msg, target, sock=None):
+                def error_handler(e, msg, target, sock=None):
                     if sock:
                         sock.close()
 
@@ -556,7 +556,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def import_file (self):
+    def import_file(self):
         '''
         Load varous object values from disk.
 
@@ -590,11 +590,11 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    #def log (self, msg, level=1):
+    #def log(self, msg, level=1):
         '''
         If the supplied message falls under the current log level, print the specified message to screen.
 
-        @type  msg: String
+        @type  msg: str
         @param msg: Message to log
         '''
 #
@@ -603,7 +603,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def num_mutations (self, this_node=None, path=[]):
+    def num_mutations(self, this_node=None, path=[]):
         '''
         Number of total mutations in the graph. The logic of this routine is identical to that of fuzz(). See fuzz()
         for inline comments. The member varialbe self.total_num_mutations is updated appropriately by this routine.
@@ -613,7 +613,7 @@ class session (pgraph.graph):
         @type  path:      List
         @param path:      (Optional, def=[]) Nodes along the path to the current one being fuzzed.
 
-        @rtype:  Integer
+        @rtype:  int
         @return: Total number of mutations in this session.
         '''
 
@@ -638,7 +638,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def pause (self):
+    def pause(self):
         '''
         If thet pause flag is raised, enter an endless loop until it is lowered.
         '''
@@ -651,7 +651,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def poll_pedrpc (self, target):
+    def poll_pedrpc(self, target):
         '''
         Poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
 
@@ -688,8 +688,8 @@ class session (pgraph.graph):
             # if the user-supplied crash threshold is reached, exhaust this node.
             if self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
                 # as long as we're not a group and not a repeat.
-                if not isinstance(self.fuzz_node.mutant, primitives.group):
-                    if not isinstance(self.fuzz_node.mutant, blocks.repeat):
+                if not isinstance(self.fuzz_node.mutant, primitives.Group):
+                    if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
                         skipped = self.fuzz_node.mutant.exhaust()
                         self.logger.warning("crash threshold reached for this primitive, exhausting %d mutants." % skipped)
                         self.total_mutant_index += skipped
@@ -709,7 +709,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def post_send (self, sock):
+    def post_send(self, sock):
         '''
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
@@ -729,7 +729,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def pre_send (self, sock):
+    def pre_send(self, sock):
         '''
         Overload or replace this routine to specify actions to run prior to each fuzz request. The order of events is
         as follows::
@@ -749,7 +749,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def restart_target (self, target, stop_first=True):
+    def restart_target(self, target, stop_first=True):
         '''
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
         restart the target process. Otherwise, do nothing.
@@ -787,7 +787,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def server_init (self):
+    def server_init(self):
         '''
         Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
         '''
@@ -823,7 +823,7 @@ class session (pgraph.graph):
 
 
     ####################################################################################################################
-    def transmit (self, sock, node, edge, target):
+    def transmit(self, sock, node, edge, target):
         '''
         Render and transmit a node, process callbacks accordingly.
 
@@ -901,7 +901,7 @@ class web_interface_handler (BaseHTTPServer.BaseHTTPRequestHandler):
         self.session = None
 
 
-    def commify (self, number):
+    def commify(self, number):
         number     = str(number)
         processing = 1
         regex      = re.compile(r"^(-?\d+)(\d{3})")
@@ -912,19 +912,19 @@ class web_interface_handler (BaseHTTPServer.BaseHTTPRequestHandler):
         return number
 
 
-    def do_GET (self):
+    def do_GET(self):
         self.do_everything()
 
 
-    def do_HEAD (self):
+    def do_HEAD(self):
         self.do_everything()
 
 
-    def do_POST (self):
+    def do_POST(self):
         self.do_everything()
 
 
-    def do_everything (self):
+    def do_everything(self):
         if "pause" in self.path:
             self.session.pause_flag = True
 
@@ -945,28 +945,28 @@ class web_interface_handler (BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(response)
 
 
-    def log_error (self, *args, **kwargs):
+    def log_error(self, *args, **kwargs):
         pass
 
 
-    def log_message (self, *args, **kwargs):
+    def log_message(self, *args, **kwargs):
         pass
 
 
-    def version_string (self):
+    def version_string(self):
         return "Sulley Fuzz Session"
 
 
-    def view_crash (self, path):
+    def view_crash(self, path):
         test_number = int(path.split("/")[-1])
         return "<html><pre>%s</pre></html>" % self.session.procmon_results[test_number]
 
 
-    def view_pcap (self, path):
+    def view_pcap(self, path):
         return path
 
 
-    def view_index (self):
+    def view_index(self):
         response = """
                     <html>
                     <head>
@@ -1156,7 +1156,7 @@ class web_interface_server (BaseHTTPServer.HTTPServer):
 
 ########################################################################################################################
 class web_interface_thread (threading.Thread):
-    def __init__ (self, session):
+    def __init__(self, session):
         threading.Thread.__init__(self, name="SulleyWebServer")
 
         self._stopevent = threading.Event()
@@ -1164,7 +1164,7 @@ class web_interface_thread (threading.Thread):
         self.server  = None
 
 
-    def run (self):
+    def run(self):
         self.server = web_interface_server(('', self.session.web_port), web_interface_handler, self.session)
         while not self._stopevent.isSet():
             self.server.handle_request()

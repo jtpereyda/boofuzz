@@ -60,7 +60,7 @@ def get_arguments(ea):
 
 
 ########################################################################################################################
-def find_ints (start_address):
+def find_ints(start_address):
     constants     = []
 
     # loop heads
@@ -84,7 +84,7 @@ def find_ints (start_address):
 
 
 ########################################################################################################################
-def find_strings (start_address):
+def find_strings(start_address):
     strings    = []
     string_arg = None
 

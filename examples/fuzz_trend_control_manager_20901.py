@@ -6,7 +6,7 @@
 # this was a really half assed fuzz. someone should take it further, see my notes in the requests file for more info.
 #
 
-from sulley   import *
+from sulley import *
 from requests import trend
 
 ########################################################################################################################

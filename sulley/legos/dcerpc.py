@@ -7,19 +7,19 @@ from sulley import blocks, primitives, sex
 
 
 ########################################################################################################################
-def ndr_pad (string):
+def ndr_pad(string):
     return "\x00" * ((4 - (len(string) & 3)) & 3)
 
 
 ########################################################################################################################
-class ndr_conformant_array (blocks.block):
+class ndr_conformant_array (blocks.Block):
     '''
     Note: this is not for fuzzing the RPC protocol but rather just representing an NDR string for fuzzing the actual
     client.
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -27,10 +27,10 @@ class ndr_conformant_array (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
 
-        self.push(primitives.string(self.value))
+        self.push(primitives.String(self.value))
 
 
-    def render (self):
+    def render(self):
         '''
         We overload and extend the render routine in order to properly pad and prefix the string.
 
@@ -38,7 +38,7 @@ class ndr_conformant_array (blocks.block):
         '''
 
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         # encode the empty string correctly:
         if self.rendered == "":
@@ -50,14 +50,14 @@ class ndr_conformant_array (blocks.block):
 
 
 ########################################################################################################################
-class ndr_string (blocks.block):
+class ndr_string (blocks.Block):
     '''
     Note: this is not for fuzzing the RPC protocol but rather just representing an NDR string for fuzzing the actual
     client.
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -65,10 +65,10 @@ class ndr_string (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.string(self.value))
+        self.push(primitives.String(self.value))
 
 
-    def render (self):
+    def render(self):
         '''
         We overload and extend the render routine in order to properly pad and prefix the string.
 
@@ -76,7 +76,7 @@ class ndr_string (blocks.block):
         '''
 
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         # encode the empty string correctly:
         if self.rendered == "":
@@ -97,14 +97,14 @@ class ndr_string (blocks.block):
 
 
 ########################################################################################################################
-class ndr_wstring (blocks.block):
+class ndr_wstring (blocks.Block):
     '''
     Note: this is not for fuzzing the RPC protocol but rather just representing an NDR string for fuzzing the actual
     client.
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -112,10 +112,10 @@ class ndr_wstring (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.string(self.value))
+        self.push(primitives.String(self.value))
 
 
-    def render (self):
+    def render(self):
         '''
         We overload and extend the render routine in order to properly pad and prefix the string.
 
@@ -123,7 +123,7 @@ class ndr_wstring (blocks.block):
         '''
 
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         # encode the empty string correctly:
         if self.rendered == "":

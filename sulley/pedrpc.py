@@ -6,7 +6,7 @@ import cPickle
 
 ########################################################################################################################
 class client:
-    def __init__ (self, host, port):
+    def __init__(self, host, port):
         self.__host           = host
         self.__port           = port
         self.__dbg_flag       = False
@@ -16,7 +16,7 @@ class client:
 
 
     ####################################################################################################################
-    def __getattr__ (self, method_name):
+    def __getattr__(self, method_name):
         '''
         This routine is called by default when a requested attribute (or method) is accessed that has no definition.
         Unfortunately __getattr__ only passes the requested method name and not the arguments. So we extend the
@@ -34,7 +34,7 @@ class client:
 
 
     ####################################################################################################################
-    def __connect (self):
+    def __connect(self):
         '''
         Connect to the PED-RPC server.
         '''
@@ -61,7 +61,7 @@ class client:
 
 
     ####################################################################################################################
-    def __disconnect (self):
+    def __disconnect(self):
         '''
         Ensure the socket is torn down.
         '''
@@ -73,13 +73,13 @@ class client:
 
 
     ####################################################################################################################
-    def __debug (self, msg):
+    def __debug(self, msg):
         if self.__dbg_flag:
             print "PED-RPC> %s" % msg
 
 
     ####################################################################################################################
-    def __method_missing (self, method_name, *args, **kwargs):
+    def __method_missing(self, method_name, *args, **kwargs):
         '''
         See the notes for __getattr__ for related notes. This method is called, in the Ruby fashion, with the method
         name and arguments for any requested but undefined class method.
@@ -127,7 +127,7 @@ class client:
 
 
     ####################################################################################################################
-    def __pickle_recv (self):
+    def __pickle_recv(self):
         '''
         This routine is used for marshaling arbitrary data from the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
@@ -161,7 +161,7 @@ class client:
 
 
     ####################################################################################################################
-    def __pickle_send (self, data):
+    def __pickle_send(self, data):
         '''
         This routine is used for marshaling arbitrary data to the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
@@ -186,7 +186,7 @@ class client:
 
 ########################################################################################################################
 class server:
-    def __init__ (self, host, port):
+    def __init__(self, host, port):
         self.__host           = host
         self.__port           = port
         self.__dbg_flag       = False
@@ -205,7 +205,7 @@ class server:
 
 
     ####################################################################################################################
-    def __disconnect (self):
+    def __disconnect(self):
         '''
         Ensure the socket is torn down.
         '''
@@ -217,13 +217,13 @@ class server:
 
 
     ####################################################################################################################
-    def __debug (self, msg):
+    def __debug(self, msg):
         if self.__dbg_flag:
             print "PED-RPC> %s" % msg
 
 
     ####################################################################################################################
-    def __pickle_recv (self):
+    def __pickle_recv(self):
         '''
         This routine is used for marshaling arbitrary data from the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
@@ -250,7 +250,7 @@ class server:
 
 
     ####################################################################################################################
-    def __pickle_send (self, data):
+    def __pickle_send(self, data):
         '''
         This routine is used for marshaling arbitrary data to the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
@@ -274,7 +274,7 @@ class server:
 
 
     ####################################################################################################################
-    def serve_forever (self):
+    def serve_forever(self):
         self.__debug("serving up a storm")
 
         while 1:

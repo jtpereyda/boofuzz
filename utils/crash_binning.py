@@ -51,7 +51,7 @@ class crash_binning:
     pydbg      = None
 
     ####################################################################################################################
-    def __init__ (self):
+    def __init__(self):
         '''
         '''
 
@@ -61,7 +61,7 @@ class crash_binning:
 
 
     ####################################################################################################################
-    def record_crash (self, pydbg, extra=None):
+    def record_crash(self, pydbg, extra=None):
         '''
         Given a PyDbg instantiation that at the current time is assumed to have "crashed" (access violation for example)
         record various details such as the disassemly around the violating address, the ID of the offending thread, the
@@ -132,7 +132,7 @@ class crash_binning:
 
 
     ####################################################################################################################
-    def crash_synopsis (self, crash=None):
+    def crash_synopsis(self, crash=None):
         '''
         For the supplied crash, generate and return a report containing the disassemly around the violating address,
         the ID of the offending thread, the call stack and the SEH unwind. If not crash is specified, then call through
@@ -185,7 +185,7 @@ class crash_binning:
 
 
     ####################################################################################################################
-    def export_file (self, file_name):
+    def export_file(self, file_name):
         '''
         Dump the entire object structure to disk.
 
@@ -215,7 +215,7 @@ class crash_binning:
 
 
     ####################################################################################################################
-    def import_file (self, file_name):
+    def import_file(self, file_name):
         '''
         Load the entire object structure from disk.
 
@@ -238,7 +238,7 @@ class crash_binning:
 
 
     ####################################################################################################################
-    def last_crash_synopsis (self):
+    def last_crash_synopsis(self):
         '''
         For the last recorded crash, generate and return a report containing the disassemly around the violating
         address, the ID of the offending thread, the call stack and the SEH unwind.

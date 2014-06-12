@@ -7,7 +7,7 @@ from sulley import blocks, primitives, sex
 
 
 ########################################################################################################################
-class string (blocks.block):
+class string (blocks.Block):
     '''
     [0x04][0x84][dword length][string]
 
@@ -17,8 +17,8 @@ class string (blocks.block):
         0x84 = length is 4 bytes
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -27,16 +27,16 @@ class string (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
 
-        str_block = blocks.block(name + "_STR", request)
-        str_block.push(primitives.string(self.value))
+        str_block = blocks.Block(name + "_STR", request)
+        str_block.push(primitives.String(self.value))
 
-        self.push(blocks.size(name + "_STR", request, endian=">", fuzzable=True))
+        self.push(blocks.Size(name + "_STR", request, endian=">", fuzzable=True))
         self.push(str_block)
 
 
-    def render (self):
+    def render(self):
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         self.rendered = self.prefix + "\x84" + self.rendered
 
@@ -44,7 +44,7 @@ class string (blocks.block):
 
 
 ########################################################################################################################
-class integer (blocks.block):
+class integer (blocks.Block):
     '''
     [0x02][0x04][dword]
 
@@ -54,8 +54,8 @@ class integer (blocks.block):
         0x04 = integer length is 4 bytes
     '''
 
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options={}):
+        blocks.Block.__init__(self, name, request, None, None, None, None)
 
         self.value   = value
         self.options = options
@@ -63,12 +63,12 @@ class integer (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.ber_integer DEFAULT VALUE")
 
-        self.push(primitives.dword(self.value, endian=">"))
+        self.push(primitives.DWord(self.value, endian=">"))
 
 
-    def render (self):
+    def render(self):
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         self.rendered = "\x02\x04" + self.rendered
         return self.rendered

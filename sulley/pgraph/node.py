@@ -47,7 +47,7 @@ class node (object):
     udraw_info      = ""
 
     ####################################################################################################################
-    def __init__ (self, id=None):
+    def __init__(self, id=None):
         '''
         '''
 
@@ -71,7 +71,7 @@ class node (object):
 
 
     ####################################################################################################################
-    def render_node_gml (self, graph):
+    def render_node_gml(self, graph):
         '''
         Render a node description suitable for use in a GML file using the set internal attributes.
 
@@ -129,7 +129,7 @@ class node (object):
 
 
     ####################################################################################################################
-    def render_node_graphviz (self, graph):
+    def render_node_graphviz(self, graph):
         '''
         Render a node suitable for use in a Pydot graph using the set internal attributes.
 
@@ -154,7 +154,7 @@ class node (object):
 
 
     ####################################################################################################################
-    def render_node_udraw (self, graph):
+    def render_node_udraw(self, graph):
         '''
         Render a node description suitable for use in a uDraw file using the set internal attributes.
 
@@ -203,7 +203,7 @@ class node (object):
 
 
     ####################################################################################################################
-    def render_node_udraw_update (self):
+    def render_node_udraw_update(self):
         '''
         Render a node update description suitable for use in a uDraw file using the set internal attributes.
 

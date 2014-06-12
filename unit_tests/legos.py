@@ -1,6 +1,6 @@
 from sulley import *
 
-def run ():
+def run():
     tag()
     ndr_string()
     ber()
@@ -11,7 +11,7 @@ def run ():
 
 
 ########################################################################################################################
-def tag ():
+def tag():
     s_initialize("UNIT TEST TAG 1")
     s_lego("tag", value="pedram")
 
@@ -22,7 +22,7 @@ def tag ():
 
 
 ########################################################################################################################
-def ndr_string ():
+def ndr_string():
     s_initialize("UNIT TEST NDR 1")
     s_lego("ndr_string", value="pedram")
 
@@ -32,7 +32,7 @@ def ndr_string ():
 
 
 ########################################################################################################################
-def ber ():
+def ber():
     s_initialize("UNIT TEST BER 1")
     s_lego("ber_string", value="pedram")
     req = s_get("UNIT TEST BER 1")

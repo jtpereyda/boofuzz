@@ -38,7 +38,7 @@ class edge (object):
     gml_line_width  = 1.0
 
     ####################################################################################################################
-    def __init__ (self, src, dst):
+    def __init__(self, src, dst):
         '''
         Class constructor.
 
@@ -65,7 +65,7 @@ class edge (object):
 
 
     ####################################################################################################################
-    def render_edge_gml (self, graph):
+    def render_edge_gml(self, graph):
         '''
         Render an edge description suitable for use in a GML file using the set internal attributes.
 
@@ -100,7 +100,7 @@ class edge (object):
 
 
     ####################################################################################################################
-    def render_edge_graphviz (self, graph):
+    def render_edge_graphviz(self, graph):
         '''
         Render an edge suitable for use in a Pydot graph using the set internal attributes.
 
@@ -126,7 +126,7 @@ class edge (object):
 
 
     ####################################################################################################################
-    def render_edge_udraw (self, graph):
+    def render_edge_udraw(self, graph):
         '''
         Render an edge description suitable for use in a GML file using the set internal attributes.
 
@@ -161,7 +161,7 @@ class edge (object):
 
 
     ####################################################################################################################
-    def render_edge_udraw_update (self):
+    def render_edge_udraw_update(self):
         '''
         Render an edge update description suitable for use in a GML file using the set internal attributes.
 
