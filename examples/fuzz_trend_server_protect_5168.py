@@ -57,8 +57,8 @@ def do_single(req, num):
 
 
 def do_fuzz():
-    sess   = sessions.session(session_filename="audits/trend_server_protect_5168.session")
-    target = sessions.target("192.168.181.133", 5168)
+    sess   = sessions.Session(session_filename="audits/trend_server_protect_5168.session")
+    target = sessions.Target("192.168.181.133", 5168)
 
     target.netmon    = pedrpc.client("192.168.181.133", 26001)
     target.procmon   = pedrpc.client("192.168.181.133", 26002)

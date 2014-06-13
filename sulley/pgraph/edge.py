@@ -13,12 +13,12 @@
 # Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-'''
+"""
 @author:       Pedram Amini
 @license:      GNU General Public License 2.0 or later
 @contact:      pedram.amini@gmail.com
 @organization: www.openrce.org
-'''
+"""
 
 class edge (object):
     '''

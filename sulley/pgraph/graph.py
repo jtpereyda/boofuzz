@@ -200,7 +200,7 @@ class graph (object):
         @type  id: Mixed
         @param id: Identifier of node to enumerate edges from
 
-        @rtype:  List
+        @rtype:  list
         @return: List of edges from the specified node
         '''
 
@@ -300,9 +300,9 @@ class graph (object):
         '''
         Find and return the node with the specified attribute / value pair.
 
-        @type  attribute: String
+        @type  attribute: str
         @param attribute: Attribute name we are looking for
-        @type  value:     Mixed
+        @type  value:     mixed
         @param value:     Value of attribute we are looking for
 
         @rtype:  Mixed

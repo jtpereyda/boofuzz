@@ -68,8 +68,8 @@ s_repeat("auth_nameserver", 0, 1000, 40, name="auth_nameservers")
 
 s_word(0)
 
-sess = sessions.session(proto="udp")
-target = sessions.target("224.0.0.251", 5353)
+sess = sessions.Session(proto="udp")
+target = sessions.Target("224.0.0.251", 5353)
 sess.add_target(target)
 sess.connect(s_get("query"), callback=insert_questions)
 

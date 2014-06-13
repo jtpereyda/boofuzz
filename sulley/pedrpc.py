@@ -4,7 +4,6 @@ import time
 import socket
 import cPickle
 
-########################################################################################################################
 class client:
     def __init__(self, host, port):
         self.__host           = host
@@ -14,10 +13,8 @@ class client:
         self.__retry          = 0
         self.NOLINGER         = struct.pack('ii', 1, 0)
 
-
-    ####################################################################################################################
     def __getattr__(self, method_name):
-        '''
+        """
         This routine is called by default when a requested attribute (or method) is accessed that has no definition.
         Unfortunately __getattr__ only passes the requested method name and not the arguments. So we extend the
         functionality with a little lambda magic to the routine method_missing(). Which is actually how Ruby handles
@@ -28,12 +25,10 @@ class client:
 
         @rtype:  Lambda
         @return: Lambda magic passing control (and in turn the arguments we want) to self.method_missing().
-        '''
+        """
 
         return lambda *args, **kwargs: self.__method_missing(method_name, *args, **kwargs)
 
-
-    ####################################################################################################################
     def __connect(self):
         '''
         Connect to the PED-RPC server.
