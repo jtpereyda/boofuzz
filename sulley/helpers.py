@@ -46,3 +46,6 @@ def get_max_udp_size():
     )
 
     return c.c_ulong.from_buffer(buf).value
+
+def calculate_four_byte_padding(string, character="\x00"):
+    return character * ((4 - (len(string) & 3)) & 3)

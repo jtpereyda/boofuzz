@@ -173,7 +173,7 @@ class Request(pgraph.node):
 
 
 class Block(object):
-    def __init__(self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=(),
+    def __init__(self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None,
                  dep_compare="=="):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
@@ -412,7 +412,7 @@ class Block(object):
                 item.reset()
 
 
-class Checksum(object):
+class Checksum:
     checksum_lengths = {
         "crc32": 4,
         "adler32": 4,
@@ -515,7 +515,7 @@ class Checksum(object):
             self.request.callbacks[self.block_name].append(self)
 
 
-class Repeat(object):
+class Repeat:
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -667,7 +667,7 @@ class Repeat(object):
         self.value          = self.original_value
 
 
-class Size(object):
+class Size:
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.

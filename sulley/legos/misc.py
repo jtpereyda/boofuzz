@@ -1,11 +1,15 @@
-import struct
+########################################################################################################################
+### Misc Types
+########################################################################################################################
+
 from sulley import blocks, primitives, sex
 
+class DNSHostname (blocks.Block):
+    def __init__(self, name, request, value, options=None):
+        if not options:
+            options = {}
 
-########################################################################################################################
-class dns_hostname (blocks.Block):
-    def __init__(self, name, request, value, options={}):
-        blocks.Block.__init__(self, name, request, None, None, None, None)
+        super(DNSHostname).__init__(name, request)
 
         self.value   = value
         self.options = options
@@ -15,11 +19,10 @@ class dns_hostname (blocks.Block):
 
         self.push(primitives.String(self.value))
 
-
     def render(self):
-        '''
+        """
         We overload and extend the render routine in order to properly insert substring lengths.
-        '''
+        """
 
         # let the parent do the initial render.
         blocks.Block.render(self)
@@ -37,9 +40,12 @@ class dns_hostname (blocks.Block):
 
 
 ########################################################################################################################
-class tag (blocks.Block):
-    def __init__(self, name, request, value, options={}):
-        blocks.Block.__init__(self, name, request, None, None, None, None)
+class Tag(blocks.Block):
+    def __init__(self, name, request, value, options=None):
+        if not options:
+            options = {}
+
+        super(Tag).__init__(name, request)
 
         self.value   = value
         self.options = options

@@ -4,22 +4,19 @@
 
 import struct
 from sulley import blocks, primitives, sex
+from sulley.helpers import calculate_four_byte_padding
 
-
-########################################################################################################################
-def xdr_pad(string):
-    return "\x00" * ((4 - (len(string) & 3)) & 3)
-
-
-########################################################################################################################
-class string (blocks.Block):
-    '''
+class String (blocks.Block):
+    """
     Note: this is not for fuzzing the XDR protocol but rather just representing an XDR string for fuzzing the actual
     client.
-    '''
+    """
 
-    def __init__(self, name, request, value, options={}):
-        blocks.Block.__init__(self, name, request, None, None, None, None)
+    def __init__(self, name, request, value, options=None):
+        if not options:
+            options = {}
+
+        super(String).__init__(name, request)
 
         self.value   = value
         self.options = options
@@ -29,13 +26,12 @@ class string (blocks.Block):
 
         self.push(primitives.String(self.value))
 
-
     def render(self):
-        '''
+        """
         We overload and extend the render routine in order to properly pad and prefix the string.
 
         [dword length][array][pad]
-        '''
+        """
 
         # let the parent do the initial render.
         blocks.Block.render(self)
@@ -44,6 +40,6 @@ class string (blocks.Block):
         if self.rendered == "":
             self.rendered = "\x00\x00\x00\x00"
         else:
-            self.rendered = struct.pack(">L", len(self.rendered)) + self.rendered + xdr_pad(self.rendered)
+            self.rendered = struct.pack(">L", len(self.rendered)) + self.rendered + calculate_four_byte_padding(self.rendered)
 
         return self.rendered
