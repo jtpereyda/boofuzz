@@ -13,54 +13,39 @@
 # Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-'''
-@author:       Pedram Amini
-@license:      GNU General Public License 2.0 or later
-@contact:      pedram.amini@gmail.com
-@organization: www.openrce.org
-'''
 
-import node
-
-class cluster (object):
-    '''
-    '''
+class Cluster(object):
 
     id    = None
     nodes = []
 
-    ####################################################################################################################
     def __init__(self, id=None):
-        '''
+        """
         Class constructor.
-        '''
+        """
 
         self.id    = id
         self.nodes = []
 
-
-   ####################################################################################################################
     def add_node(self, node):
-        '''
+        """
         Add a node to the cluster.
 
         @type  node: pGRAPH Node
         @param node: Node to add to cluster
-        '''
+        """
 
         self.nodes.append(node)
 
         return self
 
-
-    ####################################################################################################################
     def del_node(self, node_id):
-        '''
+        """
         Remove a node from the cluster.
 
-        @type  node: pGRAPH Node
-        @param node: Node to remove from cluster
-        '''
+        @type  node_id: pGRAPH Node
+        @param node_id: Node to remove from cluster
+        """
 
         for node in self.nodes:
             if node.id == node_id:
@@ -69,20 +54,18 @@ class cluster (object):
 
         return self
 
-
-    ####################################################################################################################
     def find_node(self, attribute, value):
-        '''
+        """
         Find and return the node with the specified attribute / value pair.
 
-        @type  attribute: String
+        @type  attribute: str
         @param attribute: Attribute name we are looking for
         @type  value:     Mixed
         @param value:     Value of attribute we are looking for
 
         @rtype:  Mixed
         @return: Node, if attribute / value pair is matched. None otherwise.
-        '''
+        """
 
         for node in self.nodes:
             if hasattr(node, attribute):
@@ -91,7 +74,5 @@ class cluster (object):
 
         return None
 
-
-    ####################################################################################################################
     def render(self):
         pass

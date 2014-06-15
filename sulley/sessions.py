@@ -76,7 +76,7 @@ class Target(object):
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
 
-class Connection(pgraph.edge):
+class Connection(pgraph.Edge):
     def __init__(self, src, dst, callback=None):
         """
         Extends pgraph.edge with a callback option. This allows us to register a function to call between node
@@ -103,7 +103,7 @@ class Connection(pgraph.edge):
         self.callback = callback
 
 
-class Session(pgraph.graph):
+class Session(pgraph.Graph):
     def __init__(self, session_filename=None, skip=0, sleep_time=1.0, log_level=logging.INFO, logfile=None,
                  logfile_level=logging.DEBUG, proto="tcp", bind=None, restart_interval=0, timeout=5.0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=300):
@@ -277,7 +277,7 @@ class Session(pgraph.graph):
         @type  callback: def
         @param callback: (Optional, def=None) Callback function to pass received data to between node xmits
 
-        @rtype:  pgraph.edge
+        @rtype:  pgraph.Edge
         @return: The edge between the src and dst.
         """
 
@@ -343,7 +343,7 @@ class Session(pgraph.graph):
         Call this routine to get the ball rolling. No arguments are necessary as they are both utilized internally
         during the recursive traversal of the session graph.
 
-        @type  this_node: node.node
+        @type  this_node: node.Node
         @param this_node: (Optional, def=None) Current node that is being fuzzed.
         @type  path:      list
         @param path:      (Optional, def=[]) Nodes along the path to the current one being fuzzed.

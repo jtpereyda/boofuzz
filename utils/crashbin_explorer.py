@@ -53,7 +53,7 @@ if test_number:
 #
 
 if graph_name:
-    graph = pgraph.graph()
+    graph = pgraph.Graph()
 
 for bin, crashes in crashbin.bins.iteritems():
     synopsis = crashbin.crash_synopsis(crashes[0]).split("\n")[0]
@@ -83,7 +83,7 @@ for bin, crashes in crashbin.bins.iteritems():
                     n.count += 1
                     n.label = "[%d] %s" % (n.count, entry)
 
-                edge = pgraph.edge(n.id, last)
+                edge = pgraph.Edge(n.id, last)
                 graph.add_edge(edge)
                 last = n.id
         print "%d," % crash.extra,
