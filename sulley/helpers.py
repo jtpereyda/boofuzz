@@ -21,17 +21,17 @@ def get_max_udp_size():
     lib     = None
 
     if windows:
-        SOL_SOCKET = c.c_int(0xffff)
-        SOL_MAX_MSG_SIZE = 0x2003
+        sol_socket = c.c_int(0xffff)
+        sol_max_msg_size = 0x2003
         lib = c.WinDLL('Ws2_32.dll')
-        OPT = c.c_int(SOL_MAX_MSG_SIZE)
+        opt = c.c_int(sol_max_msg_size)
     elif linux or mac:
         if mac:
             lib = c.cdll.LoadLibrary('libc.dylib')
         elif linux:
             lib = c.cdll.LoadLibrary('libc.so.6')
-        SOL_SOCKET = c.c_int(socket.SOL_SOCKET)
-        OPT        = c.c_int(socket.SO_SNDBUF)
+        sol_socket = c.c_int(socket.SOL_SOCKET)
+        opt        = c.c_int(socket.SO_SNDBUF)
 
     else:
         raise Exception("Unknown platform!")
@@ -44,8 +44,8 @@ def get_max_udp_size():
 
     lib.getsockopt(
         sock.fileno(),
-        SOL_SOCKET,
-        OPT,
+        sol_socket,
+        opt,
         buf,
         c.pointer(bufsize)
     )

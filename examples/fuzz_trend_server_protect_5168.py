@@ -60,16 +60,16 @@ def do_fuzz():
     sess   = sessions.Session(session_filename="audits/trend_server_protect_5168.session")
     target = sessions.Target("192.168.181.133", 5168)
 
-    target.netmon    = pedrpc.client("192.168.181.133", 26001)
-    target.procmon   = pedrpc.client("192.168.181.133", 26002)
-    target.vmcontrol = pedrpc.client("127.0.0.1",       26003)
+    target.netmon    = pedrpc.Client("192.168.181.133", 26001)
+    target.procmon   = pedrpc.Client("192.168.181.133", 26002)
+    target.vmcontrol = pedrpc.Client("127.0.0.1", 26003)
 
     target.procmon_options = \
-    {
-        "proc_name"      : "SpntSvc.exe",
-        "stop_commands"  : ['net stop "trend serverprotect"'],
-        "start_commands" : ['net start "trend serverprotect"'],
-    }
+        {
+            "proc_name"      : "SpntSvc.exe",
+            "stop_commands"  : ['net stop "trend serverprotect"'],
+            "start_commands" : ['net start "trend serverprotect"'],
+        }
 
     # start up the target.
     target.vmcontrol.restart_target()

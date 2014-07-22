@@ -90,7 +90,7 @@ class PcapThread (threading.Thread):
 
 
 ########################################################################################################################
-class NetworkMonitorPedrpcServer (pedrpc.server):
+class NetworkMonitorPedrpcServer (pedrpc.Server):
     def __init__(self, host, port, monitor_device, bpf_filter="", path="./", level=1):
         """
         @type  host:           str
@@ -108,7 +108,7 @@ class NetworkMonitorPedrpcServer (pedrpc.server):
         """
 
         # initialize the PED-RPC server.
-        pedrpc.server.__init__(self, host, port)
+        pedrpc.Server.__init__(self, host, port)
         self.device      = monitor_device
         self.filter      = bpf_filter
         self.log_path    = path

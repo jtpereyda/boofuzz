@@ -90,7 +90,7 @@ class DebuggerThread:
         return self.alive
 
 
-class NIXProcessMonitorPedrpcServer(pedrpc.server):
+class NIXProcessMonitorPedrpcServer(pedrpc.Server):
     def __init__(self, host, port, cbin, level=1):
         """
         @type host: str
@@ -101,7 +101,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.server):
         @param cbin: Where to save monitored process crashes for analysis
         """
 
-        pedrpc.server.__init__(self, host, port)
+        pedrpc.Server.__init__(self, host, port)
         self.crash_bin      = cbin
         self.log_level      = level
         self.dbg            = None

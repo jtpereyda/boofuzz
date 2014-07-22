@@ -40,6 +40,7 @@ class String (blocks.Block):
         if self.rendered == "":
             self.rendered = "\x00\x00\x00\x00"
         else:
-            self.rendered = struct.pack(">L", len(self.rendered)) + self.rendered + calculate_four_byte_padding(self.rendered)
+            size_header = struct.pack(">L", len(self.rendered))
+            self.rendered = size_header + self.rendered + calculate_four_byte_padding(self.rendered)
 
         return self.rendered

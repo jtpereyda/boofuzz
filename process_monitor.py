@@ -131,7 +131,7 @@ class DebuggerThread (threading.Thread):
 
 
 ########################################################################################################################
-class ProcessMonitorPedrpcServer (pedrpc.server):
+class ProcessMonitorPedrpcServer (pedrpc.Server):
     def __init__(self, host, port, crash_filename, proc=None, pid_to_ignore=None, level=1):
         """
         @type  host:           str
@@ -149,7 +149,7 @@ class ProcessMonitorPedrpcServer (pedrpc.server):
         """
 
         # initialize the PED-RPC server.
-        pedrpc.server.__init__(self, host, port)
+        pedrpc.Server.__init__(self, host, port)
 
         self.crash_filename   = crash_filename
         self.proc_name        = proc

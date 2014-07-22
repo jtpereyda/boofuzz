@@ -19,12 +19,12 @@ class Cluster(object):
     id    = None
     nodes = []
 
-    def __init__(self, id=None):
+    def __init__(self, cluster_id=None):
         """
         Class constructor.
         """
 
-        self.id    = id
+        self.id    = cluster_id
         self.nodes = []
 
     def add_node(self, node):

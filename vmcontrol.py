@@ -29,7 +29,7 @@ USAGE = "USAGE: vmcontrol.py"                                                   
         "\n    [--vbox]                 control an Oracle VirtualBox VM"
 
 ########################################################################################################################
-class vmcontrol_pedrpc_server (pedrpc.server):
+class vmcontrol_pedrpc_server (pedrpc.Server):
     def __init__(self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         '''
         @type  host:         String
@@ -49,7 +49,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
         '''
 
         # initialize the PED-RPC server.
-        pedrpc.server.__init__(self, host, port)
+        pedrpc.Server.__init__(self, host, port)
 
         self.host        = host
         self.port        = port
@@ -340,7 +340,7 @@ class vboxcontrol_pedrpc_server (vmcontrol_pedrpc_server):
         '''
 
         # initialize the PED-RPC server.
-        pedrpc.server.__init__(self, host, port)
+        pedrpc.Server.__init__(self, host, port)
 
         self.host        = host
         self.port        = port

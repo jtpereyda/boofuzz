@@ -33,9 +33,9 @@ def init_message(sock):
 
 sess                   = sessions.Session(session_filename="audits/trillian.session")
 target                 = sessions.Target("152.67.137.126", 5298)
-target.netmon          = pedrpc.client("152.67.137.126", 26001)
-target.procmon         = pedrpc.client("152.67.137.126", 26002)
-target.vmcontrol       = pedrpc.client("127.0.0.1", 26003)
+target.netmon          = pedrpc.Client("152.67.137.126", 26001)
+target.procmon         = pedrpc.Client("152.67.137.126", 26002)
+target.vmcontrol       = pedrpc.Client("127.0.0.1", 26003)
 target.procmon_options = {"proc_name": "trillian.exe"}
 
 # start up the target.

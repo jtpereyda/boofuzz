@@ -114,7 +114,7 @@ class Session(pgraph.Graph):
         @kwarg session_filename:   (Optional, def=None) Filename to serialize persistent data to
         @type  skip:               int
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
-        @type  sleep_time:         Float
+        @type  sleep_time:         float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
         @type  log_level:          int
         @kwarg log_level:          (Optional, def=logger.INFO) Set the log level
