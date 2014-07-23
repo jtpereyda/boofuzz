@@ -1,4 +1,3 @@
-import re
 import sys
 import zlib
 import time
@@ -7,7 +6,6 @@ import ssl
 import signal
 import cPickle
 import threading
-import BaseHTTPServer
 import httplib
 import logging
 import blocks
@@ -16,6 +14,11 @@ import sex
 import primitives
 
 from helpers import get_max_udp_size
+
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from web.app import app
 
 class Target(object):
     """
@@ -147,7 +150,7 @@ class Session(pgraph.Graph):
         except:
             self.signal_module = False
 
-        self.web_interface_thread = WebInterfaceThread(self)
+        self.web_interface_thread = self.build_webapp_thread(port=26000)
         self.session_filename     = session_filename
         self.skip                 = skip
         self.sleep_time           = sleep_time
@@ -184,7 +187,7 @@ class Session(pgraph.Graph):
         self.netmon_results      = {}
         self.procmon_results     = {}
         self.protmon_results     = {}
-        self.pause_flag          = False
+        self.is_paused          = False
         self.crashing_primitives = {}
 
         if self.proto == "tcp":
@@ -331,7 +334,7 @@ class Session(pgraph.Graph):
             "netmon_results"      : self.netmon_results,
             "procmon_results"     : self.procmon_results,
             "protmon_results"     : self.protmon_results,
-            "pause_flag"          : self.pause_flag
+            "is_paused"          : self.is_paused
         }
 
         fh = open(self.session_filename, "wb+")
@@ -564,7 +567,7 @@ class Session(pgraph.Graph):
         self.netmon_results      = data["netmon_results"]
         self.procmon_results     = data["procmon_results"]
         self.protmon_results     = data["protmon_results"]
-        self.pause_flag          = data["pause_flag"]
+        self.is_paused           = data["is_paused"]
 
     def log(self, msg, level=1):
         raise Exception("Depreciated!")
@@ -607,7 +610,7 @@ class Session(pgraph.Graph):
         If that pause flag is raised, enter an endless loop until it is lowered.
         """
         while 1:
-            if self.pause_flag:
+            if self.is_paused:
                 time.sleep(1)
             else:
                 break
@@ -662,10 +665,6 @@ class Session(pgraph.Graph):
             if not self.restart_target(target, stop_first=False):
                 self.logger.critical("Restarting the target failed, exiting.")
                 self.export_file()
-                try:
-                    self.web_interface_thread.join()
-                except:
-                    self.logger.debug("No server launched")
                 sys.exit(0)
 
     def post_send(self, sock):
@@ -762,11 +761,6 @@ class Session(pgraph.Graph):
                 """
                 self.export_file()
                 self.logger.critical("SIGINT received ... exiting")
-                try:
-                    self.web_interface_thread.join()
-                except:
-                    self.logger.debug("No server launched")
-
                 sys.exit(0)
             signal.signal(signal.SIGINT, exit_abruptly)
 
@@ -832,283 +826,10 @@ class Session(pgraph.Graph):
             # Note crash information
             self.protmon_results[self.total_mutant_index] = data
 
-
-# TODO: Refactor all this crap into a full-fledged flask app
-# noinspection PyPep8Naming,PyOldStyleClasses
-class WebInterfaceHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-
-        super(WebInterfaceHandler, self).__init__(*args, **kwargs)
-
-        self.session = None
-
-    # TODO: What the fuck?!
-    def commify(self, number):
-        number     = str(number)
-        processing = 1
-        regex      = re.compile(r"^(-?\d+)(\d{3})")
-        while processing:
-            (number, processing) = regex.subn(r"\1,\2", number)
-        return number
-
-    def do_GET(self):
-        self.do_everything()
-
-    def do_HEAD(self):
-        self.do_everything()
-
-    def do_POST(self):
-        self.do_everything()
-
-    def do_everything(self):
-        if "pause" in self.path:
-            self.session.pause_flag = True
-
-        if "resume" in self.path:
-            self.session.pause_flag = False
-
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-
-        if "view_crash" in self.path:
-            response = self.view_crash(self.path)
-        elif "view_pcap" in self.path:
-            response = self.view_pcap(self.path)
-        else:
-            response = self.view_index()
-
-        self.wfile.write(response)
-
-    def log_error(self, *args, **kwargs):
-        pass
-
-    def log_message(self, *args, **kwargs):
-        pass
-
-    def version_string(self):
-        return "Sulley Fuzz Session"
-
-    def view_crash(self, path):
-        test_number = int(path.split("/")[-1])
-        return "<html><pre>%s</pre></html>" % self.session.procmon_results[test_number]
-
-    def view_pcap(self, path):
-        return path
-
-    def view_index(self):
-        response = """
-                    <html>
-                    <head>
-                    <meta http-equiv="refresh" content="5">
-                        <title>Sulley Fuzz Control</title>
-                        <style>
-                            a:link    {color: #FF8200; text-decoration: none;}
-                            a:visited {color: #FF8200; text-decoration: none;}
-                            a:hover   {color: #C5C5C5; text-decoration: none;}
-
-                            body
-                            {
-                                background-color: #000000;
-                                font-family:      Arial, Helvetica, sans-serif;
-                                font-size:        12px;
-                                color:            #FFFFFF;
-                            }
-
-                            td
-                            {
-                                font-family:      Arial, Helvetica, sans-serif;
-                                font-size:        12px;
-                                color:            #A0B0B0;
-                            }
-
-                            .fixed
-                            {
-                                font-family:      Courier New;
-                                font-size:        12px;
-                                color:            #A0B0B0;
-                            }
-
-                            .input
-                            {
-                                font-family:      Arial, Helvetica, sans-serif;
-                                font-size:        11px;
-                                color:            #FFFFFF;
-                                background-color: #333333;
-                                border:           thin none;
-                                height:           20px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                    <center>
-                    <table border=0 cellpadding=5 cellspacing=0 width=750><tr><td>
-                    <!-- begin bounding table -->
-
-                    <table border=0 cellpadding=5 cellspacing=0 width="100%%">
-                    <tr bgcolor="#333333">
-                        <td><div style="font-size: 20px;">Sulley Fuzz Control</div></td>
-                        <td align=right><div style="font-weight: bold; font-size: 20px;">%(status)s</div></td>
-                    </tr>
-                    <tr bgcolor="#111111">
-                        <td colspan=2 align="center">
-                            <table border=0 cellpadding=0 cellspacing=5>
-                                <tr bgcolor="#111111">
-                                    <td><b>Total:</b></td>
-                                    <td>%(total_mutant_index)s</td>
-                                    <td>of</td>
-                                    <td>%(total_num_mutations)s</td>
-                                    <td class="fixed">%(progress_total_bar)s</td>
-                                    <td>%(progress_total)s</td>
-                                </tr>
-                                <tr bgcolor="#111111">
-                                    <td><b>%(current_name)s:</b></td>
-                                    <td>%(current_mutant_index)s</td>
-                                    <td>of</td>
-                                    <td>%(current_num_mutations)s</td>
-                                    <td class="fixed">%(progress_current_bar)s</td>
-                                    <td>%(progress_current)s</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <form method=get action="/pause">
-                                <input class="input" type="submit" value="Pause">
-                            </form>
-                        </td>
-                        <td align=right>
-                            <form method=get action="/resume">
-                                <input class="input" type="submit" value="Resume">
-                            </form>
-                        </td>
-                    </tr>
-                    </table>
-
-                    <!-- begin procmon results -->
-                    <table border=0 cellpadding=5 cellspacing=0 width="100%%">
-                        <tr bgcolor="#333333">
-                            <td nowrap>Test Case #</td>
-                            <td>Crash Synopsis</td>
-                            <td nowrap>Captured Bytes</td>
-                        </tr>
-                    """
-
-        procmon_result_keys = self.session.procmon_results.keys()
-        procmon_result_keys.sort()
-        for key in procmon_result_keys:
-            val   = self.session.procmon_results[key]
-            status_bytes = "&nbsp;"
-
-            if key in self.session.netmon_results:
-                status_bytes = self.commify(self.session.netmon_results[key])
-
-            response += '''<tr><td class="fixed"><a href="/view_crash/%(key)d">%(key)06d</a></td><td>%(value)s</td>
-            <td align=right>%(status_bytes)s</td></tr>''' % \
-                        {
-                            "key": key,
-                            "value": val.split("\n")[0],
-                            "status_bytes" : status_bytes
-                        }
-
-        response += """
-                    <!-- end procmon results -->
-                    </table>
-
-                    <!-- end bounding table -->
-                    </td></tr></table>
-                    </center>
-                    </body>
-                    </html>
-                   """
-
-        # what is the fuzzing status.
-        if self.session.pause_flag:
-            status = "<font color=red>PAUSED</font>"
-        else:
-            status = "<font color=green>RUNNING</font>"
-
-        # if there is a current fuzz node.
-        if self.session.fuzz_node:
-            # which node (request) are we currently fuzzing.
-            if self.session.fuzz_node.name:
-                current_name = self.session.fuzz_node.name
-            else:
-                current_name = "[N/A]"
-
-            # render sweet progress bars.
-            mutant_index  = float(self.session.fuzz_node.mutant_index)
-            num_mutations = float(self.session.fuzz_node.num_mutations())
-
-            progress_current     = mutant_index / num_mutations
-            num_bars             = int(progress_current * 50)
-            progress_current_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
-            progress_current     = "%.3f%%" % (progress_current * 100)
-
-            total_mutant_index = float(self.session.total_mutant_index)
-            total_num_mutations = float(self.session.total_num_mutations)
-
-            progress_total       = total_mutant_index / total_num_mutations
-            num_bars             = int(progress_total * 50)
-            progress_total_bar   = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
-            progress_total       = "%.3f%%" % (progress_total * 100)
-
-            response %= \
-                {
-                    "current_mutant_index"  : self.commify(self.session.fuzz_node.mutant_index),
-                    "current_name"          : current_name,
-                    "current_num_mutations" : self.commify(self.session.fuzz_node.num_mutations()),
-                    "progress_current"      : progress_current,
-                    "progress_current_bar"  : progress_current_bar,
-                    "progress_total"        : progress_total,
-                    "progress_total_bar"    : progress_total_bar,
-                    "status"                : status,
-                    "total_mutant_index"    : self.commify(self.session.total_mutant_index),
-                    "total_num_mutations"   : self.commify(self.session.total_num_mutations),
-                }
-        else:
-            response %= \
-                {
-                    "current_mutant_index"  : "",
-                    "current_name"          : "",
-                    "current_num_mutations" : "",
-                    "progress_current"      : "",
-                    "progress_current_bar"  : "",
-                    "progress_total"        : "",
-                    "progress_total_bar"    : "",
-                    "status"                : "<font color=yellow>UNAVAILABLE</font>",
-                    "total_mutant_index"    : "",
-                    "total_num_mutations"   : "",
-                }
-
-        return response
-
-
-# noinspection PyOldStyleClasses
-class WebInterfaceServer(BaseHTTPServer.HTTPServer):
-
-    def __init__(self, server_address, request_handler_class, session):
-        super(WebInterfaceServer, self).__init__(server_address, request_handler_class)
-        self.RequestHandlerClass.session = session
-
-
-class WebInterfaceThread (threading.Thread):
-    def __init__(self, session):
-        threading.Thread.__init__(self, name="SulleyWebServer")
-
-        self._stopevent = threading.Event()
-        self.session = session
-        self.server  = None
-
-    def run(self):
-        self.server = WebInterfaceServer(('', self.session.web_port), WebInterfaceHandler, self.session)
-        while not self._stopevent.isSet():
-            self.server.handle_request()
-
-    def join(self, timeout=None):
-        # A little dirty but no other solution afaik
-        self._stopevent.set()
-        conn = httplib.HTTPConnection("localhost:%d" % self.session.web_port)
-        conn.request("GET", "/")
-        conn.getresponse()
+    def build_webapp_thread(self, port=26000):
+        app.session = self
+        http_server = HTTPServer(WSGIContainer(app))
+        http_server.listen(port)
+        flask_thread = threading.Thread(target=IOLoop.instance().start)
+        flask_thread.daemon = True
+        return flask_thread
