@@ -59,7 +59,7 @@ for bin, crashes in crashbin.bins.iteritems():
     synopsis = crashbin.crash_synopsis(crashes[0]).split("\n")[0]
 
     if graph:
-        crash_node       = pgraph.node(crashes[0].exception_address)
+        crash_node       = pgraph.Node(crashes[0].exception_address)
         crash_node.count = len(crashes)
         crash_node.label = "[%d] %s.%08x" % (crash_node.count, crashes[0].exception_module, crash_node.id)
         graph.add_node(crash_node)
@@ -75,7 +75,7 @@ for bin, crashes in crashbin.bins.iteritems():
                 n = graph.find_node("id", address)
 
                 if not n:
-                    n       = pgraph.node(address)
+                    n       = pgraph.Node(address)
                     n.count = 1
                     n.label = "[%d] %s" % (n.count, entry)
                     graph.add_node(n)
