@@ -87,6 +87,8 @@ class BasePrimitive(object):
         self.mutant_index   = 0
         self.value          = self.original_value
 
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, repr(self.value))
 
 class Delim(BasePrimitive):
     def __init__(self, value=None, fuzzable=True, name=None):
@@ -176,7 +178,7 @@ class Group(BasePrimitive):
 
         super(Group, self).__init__()
 
-        assert(self.values > 0, "You can't have an empty value list for your group!")
+        assert self.values > 0, "You can't have an empty value list for your group!"
 
         self.name = name
         self.values = values
@@ -184,7 +186,7 @@ class Group(BasePrimitive):
         self.value = self.original_value = self.values[0]
 
         for val in self.values:
-            assert(isinstance(val, basestring), "Value list may only contain strings or raw data")
+            assert isinstance(val, basestring), "Value list may only contain strings or raw data"
 
     def mutate(self):
         """
@@ -604,8 +606,8 @@ class BitField(BasePrimitive):
 
         super(BitField, self).__init__()
 
-        assert(isinstance(value, (int, long)), "value must be an integer!")
-        assert(isinstance(width, (int, long)), "width must be an integer!")
+        assert isinstance(value, (int, long)), "value must be an integer!"
+        assert isinstance(width, (int, long)), "width must be an integer!"
 
         self.value = self.original_value = value
         self.width = width
@@ -620,7 +622,7 @@ class BitField(BasePrimitive):
         if not self.max_num:
             self.max_num = self.to_decimal("1" * width)
 
-        assert(isinstance(max_num, (int, long)), "max_num must be an integer!")
+        assert isinstance(max_num, (int, long)), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.

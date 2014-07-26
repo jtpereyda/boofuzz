@@ -10,7 +10,7 @@ REQUESTS = {}
 CURRENT  = None
 
 
-class Request(pgraph.node):
+class Request(object):
     def __init__(self, name):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
@@ -170,6 +170,9 @@ class Request(pgraph.node):
                     yield stack_item
             else:
                 yield item
+
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self.name)
 
 
 class Block(object):
@@ -411,6 +414,8 @@ class Block(object):
             if item.fuzzable:
                 item.reset()
 
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self.name)
 
 class Checksum:
     checksum_lengths = {
@@ -514,6 +519,8 @@ class Checksum:
 
             self.request.callbacks[self.block_name].append(self)
 
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self.name)
 
 class Repeat:
     """
@@ -666,6 +673,8 @@ class Repeat:
         self.mutant_index   = 0
         self.value          = self.original_value
 
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self.name)
 
 class Size:
     """
@@ -807,3 +816,6 @@ class Size:
         """
 
         self.bit_field.reset()
+
+    def __repr__(self):
+        return "<%s %s>" % (self.__class__.__name__, self.name)
