@@ -55,7 +55,7 @@ s_size("post blob", output_format="ascii", signed=True, fuzzable=True)
 s_static("\r\n\r\n")
 
 if s_block_start("post blob"):
-    s_string("A"*100 + "=" + "B"*100)
+    s_string("A" * 100 + "=" + "B" * 100)
 s_block_end()
 
 
