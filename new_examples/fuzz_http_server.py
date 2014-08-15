@@ -30,6 +30,7 @@ class Group(object):
     def __repr__(self):
         return '<%s [%s items]>' % (self.__class__.__name__, len(self.definition))
 
+    # noinspection PyMethodMayBeStatic
     def send_buffer(self, current_value):
         return "Sent %s!" % current_value
 

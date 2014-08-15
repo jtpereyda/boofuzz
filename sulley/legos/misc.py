@@ -1,8 +1,9 @@
-########################################################################################################################
+
 ### Misc Types
-########################################################################################################################
+
 
 from sulley import blocks, primitives, sex
+
 
 class DNSHostname (blocks.Block):
     def __init__(self, name, request, value, options=None):
@@ -39,7 +40,6 @@ class DNSHostname (blocks.Block):
         return self.rendered
 
 
-########################################################################################################################
 class Tag(blocks.Block):
     def __init__(self, name, request, value, options=None):
         if not options:

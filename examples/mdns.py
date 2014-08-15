@@ -16,6 +16,7 @@ from sulley import s_word, \
     s_binary,              \
     s_get
 
+
 def insert_questions(sess, node, edge, sock):
     node.names['Questions'].value = 1 + node.names['queries'].current_reps
     node.names['Authority'].value = 1 + node.names['auth_nameservers'].current_reps

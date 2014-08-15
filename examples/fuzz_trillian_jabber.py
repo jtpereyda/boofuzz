@@ -22,7 +22,9 @@ from sulley import sessions, \
     pedrpc, \
     s_get
 
+# noinspection PyUnresolvedReferences
 from requests import jabber
+
 
 def init_message(sock):
     init  = '<?xml version="1.0" encoding="UTF-8" ?>\n'

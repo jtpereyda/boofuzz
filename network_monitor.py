@@ -4,6 +4,7 @@ import getopt
 import time
 import sys
 import os
+# noinspection PyUnresolvedReferences
 import pcapy
 import impacket
 import impacket.ImpactDecoder
@@ -35,9 +36,9 @@ Network Device List:"""
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.
-                pcapy_device    = pcapy_device[pcapy_device.index("{"):pcapy_device.index("}") + 1]
+                pcapy_device = pcapy_device[pcapy_device.index("{"):pcapy_device.index("}") + 1]
                 subkey = r"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s" % pcapy_device
-                key    = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
+                key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
 
                 # if there is a DHCP address snag that, otherwise fall back to the IP address.
                 try:
@@ -53,15 +54,14 @@ Network Device List:"""
     return message
 
 
-########################################################################################################################
-class PcapThread (threading.Thread):
+class PcapThread(threading.Thread):
     def __init__(self, network_monitor, pcap, pcap_save_path):
         self.network_monitor = network_monitor
-        self.pcap            = pcap
-        self.decoder         = None
-        self.dumper          = self.pcap.dump_open(pcap_save_path)
-        self.active          = True
-        self.data_bytes      = 0
+        self.pcap = pcap
+        self.decoder = None
+        self.dumper = self.pcap.dump_open(pcap_save_path)
+        self.active = True
+        self.data_bytes = 0
 
         # register the appropriate decoder.
         if pcap.datalink() == pcapy.DLT_EN10MB:
@@ -89,8 +89,7 @@ class PcapThread (threading.Thread):
             self.pcap.dispatch(0, self.packet_handler)
 
 
-########################################################################################################################
-class NetworkMonitorPedrpcServer (pedrpc.Server):
+class NetworkMonitorPedrpcServer(pedrpc.Server):
     def __init__(self, host, port, monitor_device, bpf_filter="", path="./", level=1):
         """
         @type  host:           str
@@ -109,11 +108,11 @@ class NetworkMonitorPedrpcServer (pedrpc.Server):
 
         # initialize the PED-RPC server.
         pedrpc.Server.__init__(self, host, port)
-        self.device      = monitor_device
-        self.filter      = bpf_filter
-        self.log_path    = path
-        self.log_level   = level
-        self.pcap        = None
+        self.device = monitor_device
+        self.filter = bpf_filter
+        self.log_path = path
+        self.log_level = level
+        self.pcap = None
         self.pcap_thread = None
 
         # ensure the log path is valid.
@@ -137,8 +136,9 @@ class NetworkMonitorPedrpcServer (pedrpc.Server):
             self.log("stopping active packet capture thread.", 10)
 
             self.pcap_thread.active = False
-            self.pcap_thread        = None
+            self.pcap_thread = None
 
+    # noinspection PyMethodMayBeStatic
     def alive(self):
         """
         Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
@@ -202,8 +202,8 @@ class NetworkMonitorPedrpcServer (pedrpc.Server):
         self.log("retrieving PCAP for test case #%d" % test_number)
 
         pcap_log_path = "%s/%d.pcap" % (self.log_path, test_number)
-        fh            = open(pcap_log_path, "rb")
-        data          = fh.read()
+        fh = open(pcap_log_path, "rb")
+        data = fh.read()
         fh.close()
 
         return data
@@ -217,8 +217,6 @@ class NetworkMonitorPedrpcServer (pedrpc.Server):
         self.log_path = new_log_path
 
 
-########################################################################################################################
-
 if __name__ == "__main__":
     usage_message = create_usage()
     rpc_port = 26001
@@ -231,10 +229,10 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         log_error(usage_message)
 
-    device      = None
+    device = None
     pcap_filter = ""
-    log_path    = "./"
-    log_level   = 1
+    log_path = "./"
+    log_level = 1
 
     for opt, arg in opts:
         if opt in ("-d", "--device"):

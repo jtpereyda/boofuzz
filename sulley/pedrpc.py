@@ -4,6 +4,7 @@ import time
 import socket
 import cPickle
 
+
 class Client:
     def __init__(self, host, port):
         self.__host           = host
@@ -167,6 +168,7 @@ class Client:
         except:
             sys.stderr.write("PED-RPC> connection to server severed during send()\n")
             raise Exception
+
 
 class Server:
     def __init__(self, host, port):

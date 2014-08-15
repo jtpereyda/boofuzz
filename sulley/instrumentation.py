@@ -24,6 +24,7 @@ class External:
         self.stop       = stop
         self.__dbg_flag = False
 
+    # noinspection PyMethodMayBeStatic
     def alive(self):
         """
         Check if this script is alive. Always True.
@@ -84,6 +85,7 @@ class External:
         if self.stop:
             self.stop()
 
+    # noinspection PyMethodMayBeStatic
     def get_crash_synopsis(self):
         """
         Return the last recorded crash synopsis.

@@ -1,10 +1,11 @@
-########################################################################################################################
+
 ### XDR TYPES (http://www.freesoft.org/CIE/RFC/1832/index.htm)
-########################################################################################################################
+
 
 import struct
 from sulley import blocks, primitives, sex
 from sulley.helpers import calculate_four_byte_padding
+
 
 class String (blocks.Block):
     """

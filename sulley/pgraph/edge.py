@@ -15,19 +15,20 @@
 
 import pydot
 
+
 class Edge(object):
-    id    = None
-    src   = None
-    dst   = None
+    id = None
+    src = None
+    dst = None
 
     # general graph attributes.
     color = 0x000000
     label = ""
 
     # gml relevant attributes.
-    gml_arrow       = "none"
-    gml_stipple     = 1
-    gml_line_width  = 1.0
+    gml_arrow = "none"
+    gml_stipple = 1
+    gml_line_width = 1.0
 
     def __init__(self, src, dst):
         """
@@ -41,7 +42,7 @@ class Edge(object):
 
         # the unique id for any edge (provided that duplicates are not allowed) is the combination of the source and
         # the destination stored as a long long.
-        self.id  = (src << 32) + dst
+        self.id = (src << 32) + dst
         self.src = src
         self.dst = dst
 
@@ -50,9 +51,9 @@ class Edge(object):
         self.label = ""
 
         # gml relevant attributes.
-        self.gml_arrow       = "none"
-        self.gml_stipple     = 1
-        self.gml_line_width  = 1.0
+        self.gml_arrow = "none"
+        self.gml_stipple = 1
+        self.gml_line_width = 1.0
 
     def render_edge_gml(self, graph):
         """
@@ -86,12 +87,12 @@ class Edge(object):
             ]
           ]
         """ % {
-            "color" : self.color,
-            "srcNumber"      : src.number,
-            "dstNumber"      : dst.number,
-            "gml_arrow"      : self.gml_arrow,
-            "gml_stipple"    : self.gml_stipple,
-            "gml_line_width" : self.gml_line_width
+            "color": self.color,
+            "srcNumber": src.number,
+            "dstNumber": dst.number,
+            "gml_arrow": self.gml_arrow,
+            "gml_stipple": self.gml_stipple,
+            "gml_line_width": self.gml_line_width
         }
 
         return edge
@@ -147,10 +148,10 @@ class Edge(object):
           )
         )
         """ % {
-            "src"   : self.src,
-            "dst"   : self.dst,
-            "color" : self.color,
-            "label" : self.label,
+            "src": self.src,
+            "dst": self.dst,
+            "color": self.color,
+            "label": self.label,
 
         }
 
@@ -176,10 +177,10 @@ class Edge(object):
           "%(src)08x","%(dst)08x"
         )
         """ % {
-            "src"   : self.src,
-            "dst"   : self.dst,
-            "color" : self.color,
-            "label" : self.label,
+            "src": self.src,
+            "dst": self.dst,
+            "color": self.color,
+            "label": self.label,
         }
 
         return udraw

@@ -8,10 +8,8 @@ import sessions
 import utils
 from constants import BIG_ENDIAN, LITTLE_ENDIAN
 
-########################################################################################################################
-### REQUEST MANAGEMENT
-########################################################################################################################
 
+### REQUEST MANAGEMENT
 def s_get(name=None):
     """
     Return the request with the specified name or the current request if name is not specified. Use this to switch from
@@ -40,6 +38,7 @@ def s_get(name=None):
 
     return blocks.REQUESTS[name]
 
+
 def s_initialize(name):
     """
     Initialize a new block request. All blocks / primitives generated after this call apply to the named request.
@@ -52,7 +51,8 @@ def s_initialize(name):
         raise sex.SullyRuntimeError("blocks.REQUESTS ALREADY EXISTS: %s" % name)
 
     blocks.REQUESTS[name] = blocks.Request(name)
-    blocks.CURRENT        = blocks.REQUESTS[name]
+    blocks.CURRENT = blocks.REQUESTS[name]
+
 
 def s_mutate():
     """
@@ -64,6 +64,7 @@ def s_mutate():
     """
     return blocks.CURRENT.mutate()
 
+
 def s_num_mutations():
     """
     Determine the number of repetitions we will be making.
@@ -74,6 +75,7 @@ def s_num_mutations():
 
     return blocks.CURRENT.num_mutations()
 
+
 def s_render():
     """
     Render out and return the entire contents of the current request.
@@ -83,6 +85,7 @@ def s_render():
     """
 
     return blocks.CURRENT.render()
+
 
 def s_switch(name):
     """
@@ -98,9 +101,8 @@ def s_switch(name):
     blocks.CURRENT = blocks.REQUESTS[name]
 
 
-########################################################################################################################
-### BLOCK MANAGEMENT
-########################################################################################################################
+# ## BLOCK MANAGEMENT
+
 
 def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
     #TODO: Either convert this to a with() statement, or add a new one that is compatible.
@@ -134,6 +136,7 @@ def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_
 
     return True
 
+
 # noinspection PyUnusedLocal
 def s_block_end(name=None):
     """
@@ -143,6 +146,7 @@ def s_block_end(name=None):
     @param name: (Optional, def=None) Name of block to closed.
     """
     blocks.CURRENT.pop()
+
 
 def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
     """
@@ -167,6 +171,7 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, na
 
     checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, name)
     blocks.CURRENT.push(checksum)
+
 
 def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, name=None):
     """
@@ -194,6 +199,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
 
     repeat = blocks.Repeat(block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable, name)
     blocks.CURRENT.push(repeat)
+
 
 def s_size(block_name, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False, math=None,
            fuzzable=False, name=None):
@@ -232,6 +238,7 @@ def s_size(block_name, length=4, endian=LITTLE_ENDIAN, output_format="binary", i
     )
     blocks.CURRENT.push(size)
 
+
 def s_update(name, value):
     """
     Update the value of the named primitive in the currently open request.
@@ -248,9 +255,8 @@ def s_update(name, value):
     blocks.CURRENT.names[name].value = value
 
 
-########################################################################################################################
 ### PRIMITIVES
-########################################################################################################################
+
 
 def s_binary(value, name=None):
     """
@@ -274,13 +280,14 @@ def s_binary(value, name=None):
 
     value = ""
     while parsed:
-        pair   = parsed[:2]
+        pair = parsed[:2]
         parsed = parsed[2:]
 
         value += chr(int(pair, 16))
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)
+
 
 def s_delim(value, fuzzable=True, name=None):
     """
@@ -297,6 +304,7 @@ def s_delim(value, fuzzable=True, name=None):
     delim = primitives.Delim(value, fuzzable, name)
     blocks.CURRENT.push(delim)
 
+
 def s_group(name, values):
     """
     This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
@@ -311,6 +319,7 @@ def s_group(name, values):
 
     group = primitives.Group(name, values)
     blocks.CURRENT.push(group)
+
 
 # noinspection PyCallingNonCallable
 def s_lego(lego_type, value=None, options=()):
@@ -332,6 +341,7 @@ def s_lego(lego_type, value=None, options=()):
     # push the lego onto the stack and immediately pop to close the block.
     blocks.CURRENT.push(lego)
     blocks.CURRENT.pop()
+
 
 def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, step=None, name=None):
     """
@@ -357,6 +367,7 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     random = primitives.RandomData(value, min_length, max_length, num_mutations, fuzzable, step, name)
     blocks.CURRENT.push(random)
 
+
 def s_static(value, name=None):
     """
     Push a static value onto the current block stack.
@@ -371,6 +382,7 @@ def s_static(value, name=None):
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)
+
 
 def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
@@ -394,6 +406,7 @@ def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, ma
 
     s = primitives.String(value, size, padding, encoding, fuzzable, max_len, name)
     blocks.CURRENT.push(s)
+
 
 # noinspection PyTypeChecker
 def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False,
@@ -424,6 +437,7 @@ def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", sign
     bit_field = primitives.BitField(value, width, None, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(bit_field)
 
+
 def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
            name=None):
     """
@@ -431,7 +445,7 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
 
     @see: Aliases: s_char()
 
-    @type  value:         int
+    @type  value:         int|str
     @param value:         Default integer value
     @type  endian:        Character
     @param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
@@ -449,6 +463,7 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
 
     byte = primitives.Byte(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(byte)
+
 
 def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
            name=None):
@@ -476,6 +491,7 @@ def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     word = primitives.Word(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(word)
 
+
 def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
             name=None):
     """
@@ -501,6 +517,7 @@ def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, f
 
     dword = primitives.DWord(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(dword)
+
 
 def s_qword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
             name=None):
@@ -528,72 +545,78 @@ def s_qword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, f
     qword = primitives.QWord(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(qword)
 
-########################################################################################################################
-### ALIASES
-########################################################################################################################
 
-s_dunno              = s_raw = s_unknown = s_static
-s_sizer              = s_size
-s_bit                = s_bits = s_bit_field
-s_char               = s_byte
-s_short              = s_word
-s_long               = s_int = s_dword
-s_double             = s_qword
-s_repeater           = s_repeat
-s_intelword          = lambda x: s_long(x, endian=LITTLE_ENDIAN)
-s_intelhalfword      = lambda x: s_short(x, endian=LITTLE_ENDIAN)
-s_bigword            = lambda x: s_long(x, endian=BIG_ENDIAN)
-s_unistring          = lambda x: s_string(x, encoding="utf_16_le")
+### ALIASES
+
+
+s_dunno = s_raw = s_unknown = s_static
+s_sizer = s_size
+s_bit = s_bits = s_bit_field
+s_char = s_byte
+s_short = s_word
+s_long = s_int = s_dword
+s_double = s_qword
+s_repeater = s_repeat
+s_intelword = lambda x: s_long(x, endian=LITTLE_ENDIAN)
+s_intelhalfword = lambda x: s_short(x, endian=LITTLE_ENDIAN)
+s_bigword = lambda x: s_long(x, endian=BIG_ENDIAN)
+s_unistring = lambda x: s_string(x, encoding="utf_16_le")
+
 
 def s_cstring(x):
     s_string(x)
     s_static("\x00")
 
+
 # Not implemented aliases yet
 def not_impl(alias, args):
     raise NotImplementedError("%s isn't implemented yet. Args -> %s" % (alias, args))
 
-s_string_lf          = lambda args: not_impl("s_string_lf", args)
-s_string_or_env      = lambda args: not_impl("s_string_or_env", args)
-s_string_repeat      = lambda args: not_impl("s_string_repeat", args)
-s_string_variable    = lambda args: not_impl("s_string_variable", args)
-s_string_variables   = lambda args: not_impl("s_string_variables", args)
-s_binary_repeat      = lambda args: not_impl("s_binary_repeat", args)
+
+s_string_lf = lambda args: not_impl("s_string_lf", args)
+s_string_or_env = lambda args: not_impl("s_string_or_env", args)
+s_string_repeat = lambda args: not_impl("s_string_repeat", args)
+s_string_variable = lambda args: not_impl("s_string_variable", args)
+s_string_variables = lambda args: not_impl("s_string_variables", args)
+s_binary_repeat = lambda args: not_impl("s_binary_repeat", args)
 s_unistring_variable = lambda args: not_impl("s_unistring_variable", args)
-s_xdr_string         = lambda args: not_impl("s_xdr_string", args)
+s_xdr_string = lambda args: not_impl("s_xdr_string", args)
+
 
 def no_sizer(args):
     raise sex.SizerNotUtilizedError("Use the s_size primitive for including sizes. Args -> %s" % args)
 
-s_binary_block_size_intel_halfword_plus_variable = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian_variable  = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_plussome      = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_variable      = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian_mult      = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_variable      = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_mult          = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_plus          = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian           = lambda args: no_sizer(args)
-s_binary_block_size_word_intel_mult_plus         = lambda args: no_sizer(args)
-s_binary_block_size_intel_word_variable          = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_mult          = lambda args: no_sizer(args)
-s_blocksize_unsigned_string_variable             = lambda args: no_sizer(args)
-s_binary_block_size_intel_word_plus              = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword               = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian               = lambda args: no_sizer(args)
-s_blocksize_signed_string_variable               = lambda args: no_sizer(args)
-s_binary_block_size_byte_variable                = lambda args: no_sizer(args)
-s_binary_block_size_intel_word                   = lambda args: no_sizer(args)
-s_binary_block_size_byte_plus                    = lambda args: no_sizer(args)
-s_binary_block_size_byte_mult                    = lambda args: no_sizer(args)
-s_blocksize_asciihex_variable                    = lambda args: no_sizer(args)
-s_binary_block_size_byte                         = lambda args: no_sizer(args)
-s_blocksize_asciihex                             = lambda args: no_sizer(args)
-s_blocksize_string                               = lambda args: no_sizer(args)
 
-########################################################################################################################
+# A bunch of un-defined primitives from SPIKE
+s_binary_block_size_intel_halfword_plus_variable = lambda args: no_sizer(args)
+s_binary_block_size_halfword_bigendian_variable = lambda args: no_sizer(args)
+s_binary_block_size_word_bigendian_plussome = lambda args: no_sizer(args)
+s_binary_block_size_word_bigendian_variable = lambda args: no_sizer(args)
+s_binary_block_size_halfword_bigendian_mult = lambda args: no_sizer(args)
+s_binary_block_size_intel_halfword_variable = lambda args: no_sizer(args)
+s_binary_block_size_intel_halfword_mult = lambda args: no_sizer(args)
+s_binary_block_size_intel_halfword_plus = lambda args: no_sizer(args)
+s_binary_block_size_halfword_bigendian = lambda args: no_sizer(args)
+s_binary_block_size_word_intel_mult_plus = lambda args: no_sizer(args)
+s_binary_block_size_intel_word_variable = lambda args: no_sizer(args)
+s_binary_block_size_word_bigendian_mult = lambda args: no_sizer(args)
+s_blocksize_unsigned_string_variable = lambda args: no_sizer(args)
+s_binary_block_size_intel_word_plus = lambda args: no_sizer(args)
+s_binary_block_size_intel_halfword = lambda args: no_sizer(args)
+s_binary_block_size_word_bigendian = lambda args: no_sizer(args)
+s_blocksize_signed_string_variable = lambda args: no_sizer(args)
+s_binary_block_size_byte_variable = lambda args: no_sizer(args)
+s_binary_block_size_intel_word = lambda args: no_sizer(args)
+s_binary_block_size_byte_plus = lambda args: no_sizer(args)
+s_binary_block_size_byte_mult = lambda args: no_sizer(args)
+s_blocksize_asciihex_variable = lambda args: no_sizer(args)
+s_binary_block_size_byte = lambda args: no_sizer(args)
+s_blocksize_asciihex = lambda args: no_sizer(args)
+s_blocksize_string = lambda args: no_sizer(args)
+
+
 ### MISC
-########################################################################################################################
+
 
 def s_hex_dump(data, addr=0):
     """
@@ -623,9 +646,9 @@ def s_hex_dump(data, addr=0):
             dump += "\n%04x: " % addr
             byte_slice = ""
 
-        dump  += "%02x " % ord(byte)
+        dump += "%02x " % ord(byte)
         byte_slice += byte
-        addr  += 1
+        addr += 1
 
     remainder = addr % 16
 

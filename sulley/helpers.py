@@ -16,9 +16,9 @@ def get_max_udp_size():
         @return: The maximum length of a UDP packet the current platform supports
     """
     windows = platform.uname()[0] == "Windows"
-    mac     = platform.uname()[0] == "Darwin"
-    linux   = platform.uname()[0] == "Linux"
-    lib     = None
+    mac = platform.uname()[0] == "Darwin"
+    linux = platform.uname()[0] == "Linux"
+    lib = None
 
     if windows:
         sol_socket = c.c_int(0xffff)
@@ -31,7 +31,7 @@ def get_max_udp_size():
         elif linux:
             lib = c.cdll.LoadLibrary('libc.so.6')
         sol_socket = c.c_int(socket.SOL_SOCKET)
-        opt        = c.c_int(socket.SO_SNDBUF)
+        opt = c.c_int(socket.SO_SNDBUF)
 
     else:
         raise Exception("Unknown platform!")
@@ -52,8 +52,10 @@ def get_max_udp_size():
 
     return c.c_ulong.from_buffer(buf).value
 
+
 def calculate_four_byte_padding(string, character="\x00"):
     return character * ((4 - (len(string) & 3)) & 3)
+
 
 def crc16(string, value=0):
     """
@@ -78,8 +80,10 @@ def crc16(string, value=0):
 
     return value
 
+
 def crc32(string):
     return zlib.crc32(string) & 0xFFFFFFFF
+
 
 def uuid_bin_to_str(uuid):
     """
@@ -89,6 +93,7 @@ def uuid_bin_to_str(uuid):
     (block4, block5, block6) = struct.unpack(">HHL", uuid[8:16])
 
     return "%08x-%04x-%04x-%04x-%04x%08x" % (block1, block2, block3, block4, block5, block6)
+
 
 def uuid_str_to_bin(uuid):
     """
@@ -100,7 +105,7 @@ def uuid_str_to_bin(uuid):
 
     (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: long(x, 16), matches.groups())
 
-    uuid  = struct.pack('<LHH', uuid1, uuid2, uuid3)
+    uuid = struct.pack('<LHH', uuid1, uuid2, uuid3)
     uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
 
     return uuid

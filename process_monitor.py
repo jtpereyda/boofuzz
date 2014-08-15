@@ -12,8 +12,8 @@ import utils
 
 from sulley import pedrpc
 
-PORT  = 26002
-ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
+PORT = 26002
+ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 USAGE = """USAGE: process_monitor.py
     <-c|--crash_bin FILENAME> filename to serialize crash bin class to
     [-p|--proc_name NAME]     process name to search for and attach to
@@ -23,8 +23,7 @@ USAGE = """USAGE: process_monitor.py
     """
 
 
-########################################################################################################################
-class DebuggerThread (threading.Thread):
+class DebuggerThread(threading.Thread):
     def __init__(self, process_monitor, process, pid_to_ignore=None):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
@@ -32,14 +31,14 @@ class DebuggerThread (threading.Thread):
 
         threading.Thread.__init__(self)
 
-        self.process_monitor  = process_monitor
-        self.proc_name        = process
-        self.ignore_pid       = pid_to_ignore
+        self.process_monitor = process_monitor
+        self.proc_name = process
+        self.ignore_pid = pid_to_ignore
 
         self.access_violation = False
-        self.active           = True
-        self.dbg              = pydbg.pydbg()
-        self.pid              = None
+        self.active = True
+        self.dbg = pydbg.pydbg()
+        self.pid = None
 
         # give this thread a unique name.
         self.setName("%d" % time.time())
@@ -69,7 +68,7 @@ class DebuggerThread (threading.Thread):
 
         # save the the crash synopsis.
         self.process_monitor.last_synopsis = self.process_monitor.crash_bin.crash_synopsis()
-        first_line                         = self.process_monitor.last_synopsis.split("\n")[0]
+        first_line = self.process_monitor.last_synopsis.split("\n")[0]
 
         self.process_monitor.log("debugger thread-%s caught access violation: '%s'" % (self.getName(), first_line))
 
@@ -130,8 +129,7 @@ class DebuggerThread (threading.Thread):
         self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
 
 
-########################################################################################################################
-class ProcessMonitorPedrpcServer (pedrpc.Server):
+class ProcessMonitorPedrpcServer(pedrpc.Server):
     def __init__(self, host, port, crash_filename, proc=None, pid_to_ignore=None, level=1):
         """
         @type  host:           str
@@ -151,18 +149,18 @@ class ProcessMonitorPedrpcServer (pedrpc.Server):
         # initialize the PED-RPC server.
         pedrpc.Server.__init__(self, host, port)
 
-        self.crash_filename   = crash_filename
-        self.proc_name        = proc
-        self.ignore_pid       = pid_to_ignore
-        self.log_level        = level
+        self.crash_filename = crash_filename
+        self.proc_name = proc
+        self.ignore_pid = pid_to_ignore
+        self.log_level = level
 
-        self.stop_commands    = []
-        self.start_commands   = []
-        self.test_number      = None
-        self.debugger_thread  = None
-        self.crash_bin        = utils.crash_binning.crash_binning()
+        self.stop_commands = []
+        self.start_commands = []
+        self.test_number = None
+        self.debugger_thread = None
+        self.crash_bin = utils.crash_binning.CrashBinning()
 
-        self.last_synopsis    = ""
+        self.last_synopsis = ""
 
         if not os.access(os.path.dirname(self.crash_filename), os.X_OK):
             self.log("invalid path specified for crash bin: %s" % self.crash_filename)
@@ -181,6 +179,7 @@ class ProcessMonitorPedrpcServer (pedrpc.Server):
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
 
+    # noinspection PyMethodMayBeStatic
     def alive(self):
         """
         Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
@@ -258,7 +257,7 @@ class ProcessMonitorPedrpcServer (pedrpc.Server):
         # serialize the crash bin to disk.
         self.crash_bin.export_file(self.crash_filename)
         # for binary in self.crash_bin.bins.keys():
-        #     crashes += len(self.crash_bin.bins[binary])
+        # crashes += len(self.crash_bin.bins[binary])
         for binary, crash_list in self.crash_bin.bins.iteritems():
             crashes += len(crash_list)
         return not av
@@ -333,8 +332,6 @@ class ProcessMonitorPedrpcServer (pedrpc.Server):
         self.log("updating stop commands to: %s" % new_stop_commands)
         self.stop_commands = new_stop_commands
 
-
-########################################################################################################################
 
 if __name__ == "__main__":
     opts = None

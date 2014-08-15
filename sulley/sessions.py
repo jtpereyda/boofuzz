@@ -20,6 +20,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from web.app import app
 
+
 class Target(object):
     """
     Target descriptor container.
@@ -33,15 +34,15 @@ class Target(object):
         @param port: Port of target service
         """
 
-        self.host      = host
-        self.port      = port
+        self.host = host
+        self.port = port
 
         # set these manually once target is instantiated.
-        self.netmon            = None
-        self.procmon           = None
-        self.vmcontrol         = None
-        self.netmon_options    = {}
-        self.procmon_options   = {}
+        self.netmon = None
+        self.procmon = None
+        self.vmcontrol = None
+        self.netmon_options = {}
+        self.procmon_options = {}
         self.vmcontrol_options = {}
 
     def pedrpc_connect(self):
@@ -146,22 +147,23 @@ class Session(pgraph.Graph):
         self.max_udp = get_max_udp_size()
         try:
             import signal
+
             self.signal_module = True
         except:
             self.signal_module = False
 
         self.web_interface_thread = self.build_webapp_thread(port=26000)
-        self.session_filename     = session_filename
-        self.skip                 = skip
-        self.sleep_time           = sleep_time
-        self.proto                = proto.lower()
-        self.bind                 = bind
-        self.ssl                  = False
-        self.restart_interval     = restart_interval
-        self.timeout              = timeout
-        self.web_port             = web_port
-        self.crash_threshold      = crash_threshold
-        self.restart_sleep_time   = restart_sleep_time
+        self.session_filename = session_filename
+        self.skip = skip
+        self.sleep_time = sleep_time
+        self.proto = proto.lower()
+        self.bind = bind
+        self.ssl = False
+        self.restart_interval = restart_interval
+        self.timeout = timeout
+        self.web_port = web_port
+        self.crash_threshold = crash_threshold
+        self.restart_sleep_time = restart_sleep_time
 
         # Initialize logger
         self.logger = logging.getLogger("Sulley_logger")
@@ -181,13 +183,13 @@ class Session(pgraph.Graph):
         self.logger.addHandler(consolehandler)
 
         self.total_num_mutations = 0
-        self.total_mutant_index  = 0
-        self.fuzz_node           = None
-        self.targets             = []
-        self.netmon_results      = {}
-        self.procmon_results     = {}
-        self.protmon_results     = {}
-        self.is_paused          = False
+        self.total_mutant_index = 0
+        self.fuzz_node = None
+        self.targets = []
+        self.netmon_results = {}
+        self.procmon_results = {}
+        self.protmon_results = {}
+        self.is_paused = False
         self.crashing_primitives = {}
 
         if self.proto == "tcp":
@@ -195,7 +197,7 @@ class Session(pgraph.Graph):
 
         elif self.proto == "ssl":
             self.proto = socket.SOCK_STREAM
-            self.ssl   = True
+            self.ssl = True
 
         elif self.proto == "udp":
             self.proto = socket.SOCK_DGRAM
@@ -208,10 +210,10 @@ class Session(pgraph.Graph):
 
         # create a root node. we do this because we need to start fuzzing from a single point and the user may want
         # to specify a number of initial requests.
-        self.root       = pgraph.Node()
-        self.root.name  = "__ROOT_NODE__"
+        self.root = pgraph.Node()
+        self.root.name = "__ROOT_NODE__"
         self.root.label = self.root.name
-        self.last_recv  = None
+        self.last_recv = None
 
         self.add_node(self.root)
 
@@ -225,7 +227,7 @@ class Session(pgraph.Graph):
         """
 
         node.number = len(self.nodes)
-        node.id     = len(self.nodes)
+        node.id = len(self.nodes)
 
         if not node.id in self.nodes:
             self.nodes[node.id] = node
@@ -319,21 +321,21 @@ class Session(pgraph.Graph):
             return
 
         data = {
-            "session_filename"    : self.session_filename,
-            "skip"                : self.total_mutant_index,
-            "sleep_time"          : self.sleep_time,
-            "restart_sleep_time"  : self.restart_sleep_time,
-            "proto"               : self.proto,
-            "restart_interval"    : self.restart_interval,
-            "timeout"             : self.timeout,
-            "web_port"            : self.web_port,
-            "crash_threshold"     : self.crash_threshold,
-            "total_num_mutations" : self.total_num_mutations,
-            "total_mutant_index"  : self.total_mutant_index,
-            "netmon_results"      : self.netmon_results,
-            "procmon_results"     : self.procmon_results,
-            "protmon_results"     : self.protmon_results,
-            "is_paused"          : self.is_paused
+            "session_filename": self.session_filename,
+            "skip": self.total_mutant_index,
+            "sleep_time": self.sleep_time,
+            "restart_sleep_time": self.restart_sleep_time,
+            "proto": self.proto,
+            "restart_interval": self.restart_interval,
+            "timeout": self.timeout,
+            "web_port": self.web_port,
+            "crash_threshold": self.crash_threshold,
+            "total_num_mutations": self.total_num_mutations,
+            "total_mutant_index": self.total_mutant_index,
+            "netmon_results": self.netmon_results,
+            "procmon_results": self.procmon_results,
+            "protmon_results": self.protmon_results,
+            "is_paused": self.is_paused
         }
 
         fh = open(self.session_filename, "wb+")
@@ -374,14 +376,14 @@ class Session(pgraph.Graph):
         for edge in self.edges_from(this_node.id):
             # the destination node is the one actually being fuzzed.
             self.fuzz_node = self.nodes[edge.dst]
-            num_mutations  = self.fuzz_node.num_mutations()
+            num_mutations = self.fuzz_node.num_mutations()
 
             # keep track of the path as we fuzz through it, don't count the root node.
             # we keep track of edges as opposed to nodes because if there is more then one path through a set of
             # given nodes we don't want any ambiguity.
             path.append(edge)
 
-            current_path  = " -> ".join([self.nodes[e.src].name for e in path[1:]])
+            current_path = " -> ".join([self.nodes[e.src].name for e in path[1:]])
             current_path += " -> %s" % self.fuzz_node.name
 
             self.logger.info("current fuzz path: %s" % current_path)
@@ -552,22 +554,23 @@ class Session(pgraph.Graph):
             return
 
         # update the skip variable to pick up fuzzing from last test case.
-        self.skip                = data["total_mutant_index"]
-        self.session_filename    = data["session_filename"]
-        self.sleep_time          = data["sleep_time"]
-        self.restart_sleep_time  = data["restart_sleep_time"]
-        self.proto               = data["proto"]
-        self.restart_interval    = data["restart_interval"]
-        self.timeout             = data["timeout"]
-        self.web_port            = data["web_port"]
-        self.crash_threshold     = data["crash_threshold"]
+        self.skip = data["total_mutant_index"]
+        self.session_filename = data["session_filename"]
+        self.sleep_time = data["sleep_time"]
+        self.restart_sleep_time = data["restart_sleep_time"]
+        self.proto = data["proto"]
+        self.restart_interval = data["restart_interval"]
+        self.timeout = data["timeout"]
+        self.web_port = data["web_port"]
+        self.crash_threshold = data["crash_threshold"]
         self.total_num_mutations = data["total_num_mutations"]
-        self.total_mutant_index  = data["total_mutant_index"]
-        self.netmon_results      = data["netmon_results"]
-        self.procmon_results     = data["procmon_results"]
-        self.protmon_results     = data["protmon_results"]
-        self.is_paused           = data["is_paused"]
+        self.total_mutant_index = data["total_mutant_index"]
+        self.netmon_results = data["netmon_results"]
+        self.procmon_results = data["procmon_results"]
+        self.protmon_results = data["protmon_results"]
+        self.is_paused = data["is_paused"]
 
+    # noinspection PyMethodMayBeStatic
     def log(self, msg, level=1):
         raise Exception("Depreciated!")
 
@@ -586,11 +589,11 @@ class Session(pgraph.Graph):
         """
 
         if not this_node:
-            this_node                = self.root
+            this_node = self.root
             self.total_num_mutations = 0
 
         for edge in self.edges_from(this_node.id):
-            next_node                 = self.nodes[edge.dst]
+            next_node = self.nodes[edge.dst]
             self.total_num_mutations += next_node.num_mutations()
 
             if edge.src != self.root.id:
@@ -666,6 +669,7 @@ class Session(pgraph.Graph):
                 self.export_file()
                 sys.exit(0)
 
+    # noinspection PyMethodMayBeStatic
     def post_send(self, sock):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
@@ -684,6 +688,7 @@ class Session(pgraph.Graph):
         # default to doing nothing.
         pass
 
+    # noinspection PyMethodMayBeStatic
     def pre_send(self, sock):
         """
         Overload or replace this routine to specify actions to run prior to each fuzz request. The order of events is
@@ -744,7 +749,7 @@ class Session(pgraph.Graph):
         """
         Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
         """
-        self.total_mutant_index  = 0
+        self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
         # web interface thread doesn't catch KeyboardInterrupt
@@ -761,6 +766,7 @@ class Session(pgraph.Graph):
                 self.export_file()
                 self.logger.critical("SIGINT received ... exiting")
                 sys.exit(0)
+
             signal.signal(signal.SIGINT, exit_abruptly)
 
         # spawn the web interface.

@@ -2,44 +2,45 @@ from sulley import *
 
 import struct
 
+
 # crap ass trend xor "encryption" routine for control manager (20901)
-def trend_xor_encode(str):
-    '''
+def trend_xor_encode(string):
+    """
     Simple bidirectional XOR "encryption" routine used by this service.
-    '''
+    """
     key = 0xA8534344
     ret = ""
 
     # pad to 4 byte boundary.
-    pad = 4 - (len(str) % 4)
+    pad = 4 - (len(string) % 4)
 
     if pad == 4:
         pad = 0
 
-    str += "\x00" * pad
+    string += "\x00" * pad
 
-    while str:
-        dword  = struct.unpack("<L", str[:4])[0]
-        str    = str[4:]
+    while string:
+        dword = struct.unpack("<L", string[:4])[0]
+        string = string[4:]
         dword ^= key
-        ret   += struct.pack("<L", dword)
-        key    = dword
+        ret += struct.pack("<L", dword)
+        key = dword
 
     return ret
 
 
 # crap ass trend xor "encryption" routine for control manager (20901)
-def trend_xor_decode(str):
+def trend_xor_decode(string):
     key = 0xA8534344
     ret = ""
 
-    while str:
-        dword = struct.unpack("<L", str[:4])[0]
-        str   = str[4:]
-        tmp   = dword
-        tmp  ^= key
-        ret  += struct.pack("<L", tmp)
-        key   = dword
+    while string:
+        dword = struct.unpack("<L", string[:4])[0]
+        string = string[4:]
+        tmp = dword
+        tmp ^= key
+        ret += struct.pack("<L", tmp)
+        key = dword
 
     return ret
 
@@ -50,7 +51,6 @@ def rpc_request_encoder(data):
     return utils.dcerpc.request(0, data)
 
 
-########################################################################################################################
 s_initialize("20901")
 """
     Trend Micro Control Manager (DcsProcessor.exe)
@@ -67,29 +67,29 @@ s_size("body")
 
 # dword 3, crc32(block) (copy from eax at 0041EE8B)
 # TODO: CRC is non standard, nop out jmp at 0041EE99 and use bogus value:
-#s_checksum("body", algorithm="crc32")
+# s_checksum("body", algorithm="crc32")
 s_static("\xff\xff\xff\xff")
 
 # the body of the trend request contains a variable number of (2-byte) TLVs
 if s_block_start("body", encoder=trend_xor_encode):
-    s_word(0x0000, full_range=True)     # completely fuzz the type
-    s_size("string1", length=2)         # valid length
-    if s_block_start("string1"):        # fuzz string
-        s_string("A"*1000)
+    s_word(0x0000, full_range=True)  # completely fuzz the type
+    s_size("string1", length=2)  # valid length
+    if s_block_start("string1"):  # fuzz string
+        s_string("A" * 1000)
         s_block_end()
 
-    s_random("\x00\x00", 2, 2)          # random type
-    s_size("string2", length=2)         # valid length
-    if s_block_start("string2"):        # fuzz string
-        s_string("B"*10)
+    s_random("\x00\x00", 2, 2)  # random type
+    s_size("string2", length=2)  # valid length
+    if s_block_start("string2"):  # fuzz string
+        s_string("B" * 10)
     s_block_end()
 
     # try a table overflow.
     if s_block_start("repeat me"):
-        s_random("\x00\x00", 2, 2)      # random type
-        s_size("string3", length=2)     # valid length
-        if s_block_start("string3"):    # fuzz string
-            s_string("C"*10)
+        s_random("\x00\x00", 2, 2)  # random type
+        s_size("string3", length=2)  # valid length
+        if s_block_start("string3"):  # fuzz string
+            s_string("C" * 10)
             s_block_end()
     s_block_end()
 
@@ -97,8 +97,6 @@ if s_block_start("body", encoder=trend_xor_encode):
     s_repeat("repeat me", min_reps=100, max_reps=1000, step=50)
 s_block_end("body")
 
-
-########################################################################################################################
 """
     Trend Micro Server Protect (SpNTsvc.exe)
 
@@ -124,7 +122,7 @@ for op, submax in [(0x1, 22), (0x2, 19), (0x3, 85), (0x5, 25), (0xa, 49), (0x1f,
     if s_block_start("everything", encoder=rpc_request_encoder):
         # [in] long trend_req_num,
         s_group("subs", values=map(chr, range(1, submax)))
-        s_static("\x00")                 # subs is actually a little endian word
+        s_static("\x00")  # subs is actually a little endian word
         s_static(struct.pack("<H", op))  # opcode
 
         # [in][size_is(arg_4)] byte overflow_str[],
@@ -137,11 +135,9 @@ for op, submax in [(0x1, 22), (0x2, 19), (0x3, 85), (0x5, 25), (0xa, 49), (0x1f,
         s_size("the string")
 
         # [in] long arg_6
-        s_static(struct.pack("<L", 0x5000)) # output buffer size
+        s_static(struct.pack("<L", 0x5000))  # output buffer size
     s_block_end()
 
-
-########################################################################################################################
 s_initialize("5005")
 """
     Trend Micro Server Protect (EarthAgent.exe)
@@ -149,7 +145,7 @@ s_initialize("5005")
     Some custom protocol listening on TCP port 5005
 """
 
-s_static("\x21\x43\x65\x87")      # magic
+s_static("\x21\x43\x65\x87")  # magic
 # command
 s_static("\x00\x00\x00\x00")  # dunno
 s_static("\x01\x00\x00\x00")  # dunno, but observed static

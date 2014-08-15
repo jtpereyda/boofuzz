@@ -114,6 +114,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
 
+    # noinspection PyMethodMayBeStatic
     def alive(self):
         """
         Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
@@ -241,7 +242,6 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
         return self.last_synopsis
 
-########################################################################################################################
 
 if __name__ == "__main__":
     # parse command line options.

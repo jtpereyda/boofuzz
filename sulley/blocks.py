@@ -1,4 +1,3 @@
-import pgraph
 import primitives
 import sex
 import zlib
@@ -7,7 +6,7 @@ import struct
 from constants import LITTLE_ENDIAN
 
 REQUESTS = {}
-CURRENT  = None
+CURRENT = None
 
 
 class Request(object):
@@ -20,16 +19,16 @@ class Request(object):
         @param name: Name of this request
         """
 
-        self.name          = name
-        self.label         = name    # node label for graph rendering.
-        self.stack         = []      # the request stack.
-        self.block_stack   = []      # list of open blocks, -1 is last open block.
-        self.closed_blocks = {}      # dictionary of closed blocks.
-        self.callbacks     = {}      # dictionary of list of sizers / checksums that were unable to complete rendering.
-        self.names         = {}      # dictionary of directly accessible primitives.
-        self.rendered      = ""      # rendered block structure.
-        self.mutant_index  = 0       # current mutation index.
-        self.mutant        = None    # current primitive being mutated.
+        self.name = name
+        self.label = name  # node label for graph rendering.
+        self.stack = []  # the request stack.
+        self.block_stack = []  # list of open blocks, -1 is last open block.
+        self.closed_blocks = {}  # dictionary of closed blocks.
+        self.callbacks = {}  # dictionary of list of sizers / checksums that were unable to complete rendering.
+        self.names = {}  # dictionary of directly accessible primitives.
+        self.rendered = ""  # rendered block structure.
+        self.mutant_index = 0  # current mutation index.
+        self.mutant = None  # current primitive being mutated.
 
     def mutate(self):
         mutated = False
@@ -145,7 +144,7 @@ class Request(object):
         Reset every block and primitives mutant state under this request.
         """
 
-        self.mutant_index  = 1
+        self.mutant_index = 1
         self.closed_blocks = {}
 
         for item in self.stack:
@@ -199,21 +198,21 @@ class Block(object):
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
 
-        self.name          = name
-        self.request       = request
-        self.group         = group
-        self.encoder       = encoder
-        self.dep           = dep
-        self.dep_value     = dep_value
-        self.dep_values    = dep_values
-        self.dep_compare   = dep_compare
+        self.name = name
+        self.request = request
+        self.group = group
+        self.encoder = encoder
+        self.dep = dep
+        self.dep_value = dep_value
+        self.dep_values = dep_values
+        self.dep_compare = dep_compare
 
-        self.stack         = []     # block item stack.
-        self.rendered      = ""     # rendered block contents.
-        self.fuzzable      = True   # blocks are always fuzzable because they may contain fuzzable items.
-        self.group_idx     = 0      # if this block is tied to a group, the index within that group.
+        self.stack = []  # block item stack.
+        self.rendered = ""  # rendered block contents.
+        self.fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
+        self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self.fuzz_complete = False  # whether or not we are done fuzzing this block.
-        self.mutant_index  = 0      # current mutation index.
+        self.mutant_index = 0  # current mutation index.
 
     def mutate(self):
         mutated = False
@@ -408,7 +407,7 @@ class Block(object):
         """
 
         self.fuzz_complete = False
-        self.group_idx     = 0
+        self.group_idx = 0
 
         for item in self.stack:
             if item.fuzzable:
@@ -416,6 +415,7 @@ class Block(object):
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
 
 class Checksum:
     checksum_lengths = {
@@ -445,14 +445,14 @@ class Checksum:
         """
 
         self.block_name = block_name
-        self.request    = request
-        self.algorithm  = algorithm
-        self.length     = length
-        self.endian     = endian
-        self.name       = name
+        self.request = request
+        self.algorithm = algorithm
+        self.length = length
+        self.endian = endian
+        self.name = name
 
-        self.rendered   = ""
-        self.fuzzable   = False
+        self.rendered = ""
+        self.fuzzable = False
 
         if not self.length and self.algorithm in self.checksum_lengths:
             self.length = self.checksum_lengths[self.algorithm]
@@ -481,7 +481,7 @@ class Checksum:
                 # TODO: is this right?
                 if self.endian == ">":
                     (a, b, c, d) = struct.unpack("<LLLL", digest)
-                    digest       = struct.pack(">LLLL", a, b, c, d)
+                    digest = struct.pack(">LLLL", a, b, c, d)
 
                 return digest
 
@@ -491,7 +491,7 @@ class Checksum:
                 # TODO: is this right?
                 if self.endian == ">":
                     (a, b, c, d, e) = struct.unpack("<LLLLL", digest)
-                    digest          = struct.pack(">LLLLL", a, b, c, d, e)
+                    digest = struct.pack(">LLLLL", a, b, c, d, e)
 
                 return digest
 
@@ -509,7 +509,7 @@ class Checksum:
 
         # if the target block for this sizer is already closed, render the checksum.
         if self.block_name in self.request.closed_blocks:
-            block_data    = self.request.closed_blocks[self.block_name].rendered
+            block_data = self.request.closed_blocks[self.block_name].rendered
             self.rendered = self.checksum(block_data)
 
         # otherwise, add this checksum block to the requests callback list.
@@ -521,6 +521,7 @@ class Checksum:
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
 
 class Repeat:
     """
@@ -552,22 +553,22 @@ class Repeat:
         @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
-        self.block_name     = block_name
-        self.request        = request
-        self.variable       = variable
-        self.min_reps       = min_reps
-        self.max_reps       = max_reps
-        self.step           = step
-        self.fuzzable       = fuzzable
-        self.name           = name
+        self.block_name = block_name
+        self.request = request
+        self.variable = variable
+        self.min_reps = min_reps
+        self.max_reps = max_reps
+        self.step = step
+        self.fuzzable = fuzzable
+        self.name = name
 
-        self.value          = ""
-        self.original_value = ""   # default to nothing!
-        self.rendered       = ""                         # rendered value
-        self.fuzz_complete  = False                      # flag if this primitive has been completely fuzzed
-        self.fuzz_library   = []                         # library of static fuzz heuristics to cycle through.
-        self.mutant_index   = 0                          # current mutation number
-        self.current_reps   = min_reps                   # current number of repetitions
+        self.value = ""
+        self.original_value = ""  # default to nothing!
+        self.rendered = ""  # rendered value
+        self.fuzz_complete = False  # flag if this primitive has been completely fuzzed
+        self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
+        self.mutant_index = 0  # current mutation number
+        self.current_reps = min_reps  # current number of repetitions
 
         # ensure the target block exists.
         if self.block_name not in self.request.names:
@@ -620,7 +621,7 @@ class Repeat:
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or self.fuzz_complete:
-            self.value        = self.original_value
+            self.value = self.original_value
             self.current_reps = self.min_reps
             return False
 
@@ -630,7 +631,7 @@ class Repeat:
             self.current_reps = self.fuzz_library[self.mutant_index]
 
         # set the current value as a multiple of the rendered block based on the current fuzz library count.
-        block      = self.request.closed_blocks[self.block_name]
+        block = self.request.closed_blocks[self.block_name]
         self.value = block.rendered * self.fuzz_library[self.mutant_index]
 
         # increment the mutation count.
@@ -659,7 +660,7 @@ class Repeat:
 
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:
-            block      = self.request.closed_blocks[self.block_name]
+            block = self.request.closed_blocks[self.block_name]
             self.value = block.rendered * self.variable.value
 
         self.rendered = self.value
@@ -669,12 +670,13 @@ class Repeat:
         """
         Reset the fuzz state of this primitive.
         """
-        self.fuzz_complete  = False
-        self.mutant_index   = 0
-        self.value          = self.original_value
+        self.fuzz_complete = False
+        self.mutant_index = 0
+        self.value = self.original_value
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
 
 class Size:
     """
@@ -710,31 +712,31 @@ class Size:
         @param name:          Name of this sizer field
         """
 
-        self.block_name    = block_name
-        self.request       = request
-        self.length        = length
-        self.endian        = endian
-        self.format        = output_format
-        self.inclusive     = inclusive
-        self.signed        = signed
-        self.math          = math
-        self.fuzzable      = fuzzable
-        self.name          = name
+        self.block_name = block_name
+        self.request = request
+        self.length = length
+        self.endian = endian
+        self.format = output_format
+        self.inclusive = inclusive
+        self.signed = signed
+        self.math = math
+        self.fuzzable = fuzzable
+        self.name = name
 
-        self.original_value = "N/A"    # for get_primitive
-        self.s_type         = "size"   # for ease of object identification
-        self.bit_field      = primitives.BitField(
+        self.original_value = "N/A"  # for get_primitive
+        self.s_type = "size"  # for ease of object identification
+        self.bit_field = primitives.BitField(
             0,
             self.length * 8,
             endian=self.endian,
             output_format=self.format,
             signed=self.signed
         )
-        self.rendered       = ""
-        self.fuzz_complete  = self.bit_field.fuzz_complete
-        self.fuzz_library   = self.bit_field.fuzz_library
-        self.mutant_index   = self.bit_field.mutant_index
-        self.value          = self.bit_field.value
+        self.rendered = ""
+        self.fuzz_complete = self.bit_field.fuzz_complete
+        self.fuzz_library = self.bit_field.fuzz_library
+        self.mutant_index = self.bit_field.mutant_index
+        self.value = self.bit_field.value
 
         if not self.math:
             self.math = lambda (x): x
@@ -749,10 +751,10 @@ class Size:
 
         num = self.num_mutations() - self.mutant_index
 
-        self.fuzz_complete          = True
-        self.mutant_index           = self.num_mutations()
+        self.fuzz_complete = True
+        self.mutant_index = self.num_mutations()
         self.bit_field.mutant_index = self.num_mutations()
-        self.value                  = self.original_value
+        self.value = self.original_value
 
         return num
 
@@ -799,9 +801,9 @@ class Size:
             else:
                 self_size = 0
 
-            block                = self.request.closed_blocks[self.block_name]
+            block = self.request.closed_blocks[self.block_name]
             self.bit_field.value = self.math(len(block.rendered) + self_size)
-            self.rendered        = self.bit_field.render()
+            self.rendered = self.bit_field.render()
 
         # otherwise, add this sizer block to the requests callback list.
         else:

@@ -10,14 +10,15 @@ class BasePrimitive(object):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
+
     def __init__(self):
-        self.fuzz_complete  = False     # this flag is raised when the mutations are exhausted.
-        self.fuzz_library   = []        # library of static fuzz heuristics to cycle through.
-        self.fuzzable       = True      # flag controlling whether or not the given primitive is to be fuzzed.
-        self.mutant_index   = 0         # current mutation index into the fuzz library.
-        self.original_value = None      # original value of primitive.
-        self.rendered       = ""        # rendered value of primitive.
-        self.value          = None      # current value of primitive.
+        self.fuzz_complete = False  # this flag is raised when the mutations are exhausted.
+        self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
+        self.fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
+        self.mutant_index = 0  # current mutation index into the fuzz library.
+        self.original_value = None  # original value of primitive.
+        self.rendered = ""  # rendered value of primitive.
+        self.value = None  # current value of primitive.
 
     def exhaust(self):
         """
@@ -29,9 +30,9 @@ class BasePrimitive(object):
 
         num = self.num_mutations() - self.mutant_index
 
-        self.fuzz_complete  = True
-        self.mutant_index   = self.num_mutations()
-        self.value          = self.original_value
+        self.fuzz_complete = True
+        self.mutant_index = self.num_mutations()
+        self.value = self.original_value
 
         return num
 
@@ -83,12 +84,13 @@ class BasePrimitive(object):
         Reset this primitive to the starting mutation state.
         """
 
-        self.fuzz_complete  = False
-        self.mutant_index   = 0
-        self.value          = self.original_value
+        self.fuzz_complete = False
+        self.mutant_index = 0
+        self.value = self.original_value
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, repr(self.value))
+
 
 class Delim(BasePrimitive):
     def __init__(self, value=None, fuzzable=True, name=None):
@@ -106,9 +108,9 @@ class Delim(BasePrimitive):
         super(Delim, self).__init__()
 
         self.fuzzable = fuzzable
-        self.name     = name
-        self.value    = value
-        self.s_type   = "delim"  # for ease of object identification
+        self.name = name
+        self.value = value
+        self.s_type = "delim"  # for ease of object identification
 
         if self.value:
             self.fuzz_library.append(self.value * 2)
@@ -320,10 +322,10 @@ class Static(BasePrimitive):
         super(Static, self).__init__()
 
         self.fuzz_complete = True
-        self.fuzzable      = False
-        self.value         = self.original_value = value
-        self.name          = name
-        self.s_type        = "static"
+        self.fuzzable = False
+        self.value = self.original_value = value
+        self.name = name
+        self.s_type = "static"
 
     def mutate(self):
         """
@@ -479,7 +481,7 @@ class String(BasePrimitive):
                     s = s[:loc] + "\x00" + s[loc:]
                 self.fuzz_library.append(s)
 
-            # TODO: Add easy and sane string injection from external file/s
+                # TODO: Add easy and sane string injection from external file/s
 
         # TODO: Make this more clear
         if max_len > 0:
@@ -639,7 +641,7 @@ class BitField(BasePrimitive):
             self.add_integer_boundaries(self.max_num / 32)
             self.add_integer_boundaries(self.max_num)
 
-        # TODO: Add injectable arbitrary bit fields
+            # TODO: Add injectable arbitrary bit fields
 
     def add_integer_boundaries(self, integer):
         """
@@ -662,13 +664,13 @@ class BitField(BasePrimitive):
 
         if self.format == "binary":
             bit_stream = ""
-            rendered   = ""
+            rendered = ""
 
             # pad the bit stream to the next byte boundary.
             if self.width % 8 == 0:
                 bit_stream += self.to_binary()
             else:
-                bit_stream  = "0" * (8 - (self.width % 8))
+                bit_stream = "0" * (8 - (self.width % 8))
                 bit_stream += self.to_binary()
 
             # convert the bit stream from a string of bits into raw bytes.
@@ -726,6 +728,7 @@ class BitField(BasePrimitive):
 
         return "".join(map(lambda x: str((number >> x) & 1), range(bit_count - 1, -1, -1)))
 
+    # noinspection PyMethodMayBeStatic
     def to_decimal(self, binary):
         """
         Convert a binary string to a decimal number.
@@ -773,7 +776,7 @@ class DWord(BitField):
 
         super(DWord, self).__init__(*args, **kwargs)
 
-        self.s_type  = "dword"
+        self.s_type = "dword"
 
         if type(self.value) not in [int, long]:
             self.value = struct.unpack(self.endian + "L", self.value)[0]
@@ -785,7 +788,7 @@ class QWord(BitField):
 
         super(QWord, self).__init__(*args, **kwargs)
 
-        self.s_type  = "qword"
+        self.s_type = "qword"
 
         if type(self.value) not in [int, long]:
             self.value = struct.unpack(self.endian + "Q", self.value)[0]

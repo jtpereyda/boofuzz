@@ -20,11 +20,13 @@
 #
 
 from sulley import utils, s_get, s_mutate, s_render, sessions, pedrpc
+# noinspection PyUnresolvedReferences
 from requests import trend
 
 req = num = None
 #req = "5168: op-3"
 #num = "\x04"
+
 
 def rpc_bind(sock):
     bind = utils.dcerpc.bind("25288888-bd5b-11d1-9d53-0080c83a5c2c", "1.0")
@@ -66,9 +68,9 @@ def do_fuzz():
 
     target.procmon_options = \
         {
-            "proc_name"      : "SpntSvc.exe",
-            "stop_commands"  : ['net stop "trend serverprotect"'],
-            "start_commands" : ['net start "trend serverprotect"'],
+            "proc_name": "SpntSvc.exe",
+            "stop_commands": ['net stop "trend serverprotect"'],
+            "start_commands": ['net start "trend serverprotect"'],
         }
 
     # start up the target.

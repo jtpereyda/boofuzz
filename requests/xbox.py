@@ -4,10 +4,12 @@ mediaconnect port 2869
 
 from sulley import *
 
-########################################################################################################################
+
 s_initialize("mediaconnect: get album list")
 
-# POST /upnphost/udhisapi.dll?control=uuid:848a20cc-91bc-4a02-8180-187baa537527+urn:microsoft-com:serviceId:MSContentDirectory HTTP/1.1
+# POST /upnphost/udhisapi.dll?
+#      control=uuid:848a20cc-91bc-4a02-8180-187baa537527+urn:microsoft-com:serviceId:MSContentDirectory
+#      HTTP/1.1
 s_group("verbs", values=["GET", "POST"])
 s_delim(" ")
 s_delim("/")
@@ -66,11 +68,13 @@ s_static("\r\n")
 
 # Content-Length: 547
 s_static("Content-Length: ")
-s_sizer("content", format="ascii", signed=True, fuzzable=True)
+s_sizer("content", output_format="ascii", signed=True, fuzzable=True)
 s_static("\r\n\r\n")
 
 if s_block_start("content"):
-    # <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    # <s:Envelope
+    #     xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"
+    #         s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     s_delim("<")
     s_string("s")
     s_delim(":")

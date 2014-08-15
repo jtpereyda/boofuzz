@@ -16,6 +16,7 @@
 import pydot
 import copy
 
+
 class Graph(object):
     """
     @todo: Add support for clusters
@@ -524,7 +525,7 @@ class Graph(object):
         """
         Render the uDraw graph description.
 
-        @rtype:  String
+        @rtype:  str
         @return: uDraw graph description.
         """
 

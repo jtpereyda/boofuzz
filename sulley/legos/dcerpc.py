@@ -1,10 +1,10 @@
-########################################################################################################################
-### MSRPC NDR TYPES
-########################################################################################################################
+# ## MSRPC NDR TYPES
+
 
 import struct
 from sulley import blocks, primitives, sex
 from sulley.helpers import calculate_four_byte_padding
+
 
 class NdrConformantArray(blocks.Block):
     """
@@ -18,7 +18,7 @@ class NdrConformantArray(blocks.Block):
 
         super(NdrConformantArray).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:
@@ -45,7 +45,8 @@ class NdrConformantArray(blocks.Block):
 
         return self.rendered
 
-class NdrString (blocks.Block):
+
+class NdrString(blocks.Block):
     """
     Note: this is not for fuzzing the RPC protocol but rather just representing an NDR string for fuzzing the actual
     client.
@@ -57,7 +58,7 @@ class NdrString (blocks.Block):
 
         super(NdrString).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:
@@ -83,15 +84,16 @@ class NdrString (blocks.Block):
             self.rendered += "\x00"
 
             # format accordingly.
-            length        = len(self.rendered)
+            length = len(self.rendered)
             self.rendered = "" \
-                + struct.pack("<L", length)   \
-                + struct.pack("<L", 0)      \
-                + struct.pack("<L", length) \
-                + self.rendered             \
-                + calculate_four_byte_padding(self.rendered)
+                            + struct.pack("<L", length) \
+                            + struct.pack("<L", 0) \
+                            + struct.pack("<L", length) \
+                            + self.rendered \
+                            + calculate_four_byte_padding(self.rendered)
 
         return self.rendered
+
 
 class NdrWString(blocks.Block):
     """
@@ -105,7 +107,7 @@ class NdrWString(blocks.Block):
 
         super(NdrWString).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:
@@ -131,12 +133,12 @@ class NdrWString(blocks.Block):
             self.rendered = self.rendered.encode("utf-16le") + "\x00"
 
             # format accordingly.
-            length        = len(self.rendered)
+            length = len(self.rendered)
             self.rendered = "" \
-                    + struct.pack("<L", length) \
-                    + struct.pack("<L", 0)      \
-                    + struct.pack("<L", length) \
-                    + self.rendered             \
-                    + calculate_four_byte_padding(self.rendered)
+                            + struct.pack("<L", length) \
+                            + struct.pack("<L", 0) \
+                            + struct.pack("<L", length) \
+                            + self.rendered \
+                            + calculate_four_byte_padding(self.rendered)
 
         return self.rendered

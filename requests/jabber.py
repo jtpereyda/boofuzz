@@ -1,7 +1,6 @@
 from sulley import *
 
 
-########################################################################################################################
 s_initialize("chat init")
 
 """
@@ -14,8 +13,6 @@ s_initialize("chat init")
 s_static('<?xml version="1.0" encoding="UTF-8" ?>')
 s_static('<stream:stream to="152.67.137.126" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">')
 
-
-########################################################################################################################
 s_initialize("chat message")
 s_static('<message to="TSR@GIZMO" type="chat">\n')
 s_static('<body></body>\n')
@@ -43,7 +40,14 @@ s_static("<body>")
 s_string("hello from python!")
 s_static("</body>\n")
 
-# s_static('<html xmlns="http://www.w3.org/1999/xhtml"><body><font face="Helvetica" ABSZ="12" color="#000000">hello from python</font></body></html><x xmlns="jabber:x:event">\n')
+# s_static('
+#      <html xmlns="http://www.w3.org/1999/xhtml">
+#        <body>
+#          <font face="Helvetica" ABSZ="12" color="#000000">hello from python</font>
+#        </body>
+#      </html>
+#      <x xmlns="jabber:x:event">\n
+# ')
 s_static('<html xmlns="http://www.w3.org/1999/xhtml"><body>')
 s_static("<")
 s_string("font")
