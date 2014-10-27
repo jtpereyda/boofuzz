@@ -300,6 +300,7 @@ class ProcessMonitorPedrpcServer (pedrpc.server):
 
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
+        return True
 
     def stop_target (self):
         """
