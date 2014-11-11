@@ -287,7 +287,7 @@ class graph (object):
 
         # step through all the edges looking for the given attribute/value pair.
         else:
-            for edges in self.edges.values():
+            for edge in self.edges.values():
                 if hasattr(edge, attribute):
                     if getattr(edge, attribute) == value:
                         return edge
