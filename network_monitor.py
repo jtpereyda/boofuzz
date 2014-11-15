@@ -65,7 +65,7 @@ class PcapThread (threading.Thread):
         self.data_bytes      = 0
 
         # register the appropriate decoder.
-        if pcap.datalink() == pcapy.DLT_EN10MB:
+        if pcap.datalink() == pcapy.DLT_EN10MB or pcap.datalink() == pcapy.DLT_NULL:
             self.decoder = impacket.ImpactDecoder.EthDecoder()
         elif pcap.datalink() == pcapy.DLT_LINUX_SLL:
             self.decoder = impacket.ImpactDecoder.LinuxSLLDecoder()
