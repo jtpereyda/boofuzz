@@ -184,9 +184,10 @@ class Group(BasePrimitive):
         self.name = name
         self.values = values
         self.s_type = "group"
-        self.value = self.original_value = self.values[0]
 
-        assert self.values > 0, "You can't have an empty value list for your group!"
+        assert len(self.values) > 0, "You can't have an empty value list for your group!"
+
+        self.value = self.original_value = self.values[0]
 
         for val in self.values:
             assert isinstance(val, basestring), "Value list may only contain strings or raw data"

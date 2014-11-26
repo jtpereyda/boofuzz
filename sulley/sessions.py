@@ -342,7 +342,7 @@ class Session(pgraph.Graph):
         fh.write(zlib.compress(cPickle.dumps(data, protocol=2)))
         fh.close()
 
-    def fuzz(self, this_node=None, path=[]):
+    def fuzz(self, this_node=None, path=()):
         """
         Call this routine to get the ball rolling. No arguments are necessary as they are both utilized internally
         during the recursive traversal of the session graph.
@@ -368,6 +368,9 @@ class Session(pgraph.Graph):
                 self.server_init()
             except:
                 return
+
+        if type(path) == tuple:
+            path = list(path)
 
         # TODO: complete parallel fuzzing, will likely have to thread out each target
         target = self.targets[0]
@@ -574,7 +577,7 @@ class Session(pgraph.Graph):
     def log(self, msg, level=1):
         raise Exception("Depreciated!")
 
-    def num_mutations(self, this_node=None, path=[]):
+    def num_mutations(self, this_node=None, path=()):
         """
         Number of total mutations in the graph. The logic of this routine is identical to that of fuzz(). See fuzz()
         for inline comments. The member variable self.total_num_mutations is updated appropriately by this routine.
@@ -591,6 +594,9 @@ class Session(pgraph.Graph):
         if not this_node:
             this_node = self.root
             self.total_num_mutations = 0
+
+        if type(path) == tuple:
+            path = list(path)
 
         for edge in self.edges_from(this_node.id):
             next_node = self.nodes[edge.dst]
