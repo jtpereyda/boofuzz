@@ -180,12 +180,13 @@ class Group(BasePrimitive):
 
         super(Group, self).__init__()
 
-        assert self.values > 0, "You can't have an empty value list for your group!"
 
         self.name = name
         self.values = values
         self.s_type = "group"
         self.value = self.original_value = self.values[0]
+
+        assert self.values > 0, "You can't have an empty value list for your group!"
 
         for val in self.values:
             assert isinstance(val, basestring), "Value list may only contain strings or raw data"
@@ -624,7 +625,7 @@ class BitField(BasePrimitive):
         if not self.max_num:
             self.max_num = self.to_decimal("1" * width)
 
-        assert isinstance(max_num, (int, long)), "max_num must be an integer!"
+        assert isinstance(self.max_num, (int, long)), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.
@@ -744,11 +745,12 @@ class BitField(BasePrimitive):
 
 
 class Byte(BitField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, value, *args, **kwargs):
         # Inject the one parameter we care to pass in (width)
-        kwargs["width"] = 8
+        width = 8
+        max_num = None
 
-        super(Byte, self).__init__(*args, **kwargs)
+        super(Byte, self).__init__(value, width, max_num, *args, **kwargs)
 
         self.s_type = "byte"
 
@@ -757,11 +759,12 @@ class Byte(BitField):
 
 
 class Word(BitField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, value, *args, **kwargs):
         # Inject our width argument
-        kwargs["width"] = 16
+        width = 16
+        max_num = None
 
-        super(Word, self).__init__(*args, **kwargs)
+        super(Word, self).__init__(value, width, max_num, *args, **kwargs)
 
         self.s_type = "word"
 
@@ -770,11 +773,12 @@ class Word(BitField):
 
 
 class DWord(BitField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, value, *args, **kwargs):
         # Inject our width argument
-        kwargs["width"] = 32
+        width = 32
+        max_num = None
 
-        super(DWord, self).__init__(*args, **kwargs)
+        super(DWord, self).__init__(value, width, max_num, *args, **kwargs)
 
         self.s_type = "dword"
 
@@ -783,10 +787,11 @@ class DWord(BitField):
 
 
 class QWord(BitField):
-    def __init__(self, *args, **kwargs):
-        kwargs["width"] = 64
+    def __init__(self, value, *args, **kwargs):
+        width = 64
+        max_num = None
 
-        super(QWord, self).__init__(*args, **kwargs)
+        super(QWord, self).__init__(value, width, max_num, *args, **kwargs)
 
         self.s_type = "qword"
 
