@@ -369,7 +369,7 @@ class Session(pgraph.Graph):
             except:
                 return
 
-        if type(path) == tuple:
+        if isinstance(path, tuple):
             path = list(path)
 
         # TODO: complete parallel fuzzing, will likely have to thread out each target
@@ -595,7 +595,7 @@ class Session(pgraph.Graph):
             this_node = self.root
             self.total_num_mutations = 0
 
-        if type(path) == tuple:
+        if isinstance(path, tuple):
             path = list(path)
 
         for edge in self.edges_from(this_node.id):
