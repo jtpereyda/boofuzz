@@ -369,6 +369,9 @@ class Session(pgraph.Graph):
             except:
                 return
 
+        if isinstance(path, tuple):
+            path = list(path)
+
         # TODO: complete parallel fuzzing, will likely have to thread out each target
         target = self.targets[0]
 
@@ -592,6 +595,9 @@ class Session(pgraph.Graph):
             this_node = self.root
             self.total_num_mutations = 0
 
+        if isinstance(path, tuple):
+            path = list(path)
+
         for edge in self.edges_from(this_node.id):
             next_node = self.nodes[edge.dst]
             self.total_num_mutations += next_node.num_mutations()
@@ -681,7 +687,7 @@ class Session(pgraph.Graph):
 
         @see: pre_send()
 
-        @type  sock: Socket
+        @type  sock: socket.socket
         @param sock: Connected socket to target
         """
 
