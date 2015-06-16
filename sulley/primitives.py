@@ -677,7 +677,7 @@ class bit_field (base_primitive):
         self.mutant_index  = 0         # current mutation number
 
         if self.max_num == None:
-            self.max_num = self.to_decimal("1" * width)
+            self.max_num = self.to_decimal("1" + "0" * width)
 
         assert(type(self.max_num) is int or type(self.max_num) is long)
 
@@ -708,7 +708,7 @@ class bit_field (base_primitive):
                 except:
                     continue
 
-                if fuzz_int <= self.max_num:
+                if fuzz_int < self.max_num:
                     self.fuzz_library.append(fuzz_int)
 
             fh.close()
@@ -728,7 +728,7 @@ class bit_field (base_primitive):
             case = integer + i
 
             # ensure the border case falls within the valid range for this field.
-            if 0 <= case <= self.max_num:
+            if 0 <= case < self.max_num:
                 if case not in self.fuzz_library:
                     self.fuzz_library.append(case)
 
@@ -773,12 +773,13 @@ class bit_field (base_primitive):
         else:
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
             if self.signed and self.to_binary()[0] == "1":
-                max_num = self.to_decimal("0" + "1" * (self.width - 1))
-                # chop off the sign bit.
-                val = self.value & max_num
+                max_num = self.to_decimal("1" + "0" * (self.width - 1))
+
+                # mask off the sign bit.
+                val = self.value & self.to_decimal("1" * (self.width - 1))
 
                 # account for the fact that the negative scale works backwards.
-                val = max_num - val
+                val = max_num - val - 1
 
                 # toss in the negative sign.
                 self.rendered = "%d" % ~val
