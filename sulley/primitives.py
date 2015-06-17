@@ -659,11 +659,8 @@ class bit_field (base_primitive):
 
         assert(type(width) is int or type(value) is long)
 
-        if type(value) in [int, long]:
+        if type(value) in [int, long, list, tuple]:
             self.value         = self.original_value = value
-        elif type(value) in [list, tuple]:
-            self.original_value = value
-            self.value         = value[0]
         else:
             raise AssertionError()
 
@@ -680,6 +677,7 @@ class bit_field (base_primitive):
         self.fuzz_complete = False     # flag if this primitive has been completely fuzzed
         self.fuzz_library  = []        # library of fuzz heuristics
         self.mutant_index  = 0         # current mutation number
+        self.cyclic_index  = 0         # when cycling through non-mutating values
 
         if self.max_num == None:
             self.max_num = self.to_decimal("1" + "0" * width)
@@ -814,13 +812,13 @@ class bit_field (base_primitive):
         @return: Bit string
         '''
         if number == None:
-            if type(self.original_value) in [list, tuple]:
-                # We have been given a list to cycle through...
-                if self.mutant_index == self.num_mutations():
+            if type(self.value) in [list, tuple]:
+                # We have been given a list to cycle through that is not being mutated...
+                if self.cyclic_index == len(self.value):
                     # Reset the index.
-                    self.mutant_index = 0
-                number = self.original_value[self.mutant_index]
-                self.mutant_index += 1
+                    self.cyclic_index = 0
+                number = self.value[self.cyclic_index]
+                self.cyclic_index += 1
             else:
                 number = self.value
 
