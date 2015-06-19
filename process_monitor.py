@@ -151,7 +151,7 @@ class ProcessMonitorPedrpcServer (pedrpc.server):
         # initialize the PED-RPC server.
         pedrpc.server.__init__(self, host, port)
 
-        self.crash_filename   = crash_filename
+        self.crash_filename   = os.path.abspath(crash_filename)
         self.proc_name        = proc
         self.ignore_pid       = pid_to_ignore
         self.log_level        = level
