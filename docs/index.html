@@ -10,13 +10,21 @@
 
 <h2>Table of Contents</h2>
 <ol>
-    <li><a href="index.html">Overview</a></li>
+    <li><a href="#introduction">Introduction</a></li>
     <ul>
-        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#dir_struct">Sulley Directory Structure</a></li>
         <li><a href="#author">Author</a></li>
     </ul>
     <li><a href="#installation">Installation and Requirements</a></li>
     <li><a href="#representation">Data Representation</a></li>
+    <ul>
+        <li><a href="#static">Static, Binary and Random Primitives</a></li>
+        <li><a href="#integers">Integer Primitives</a></li>
+        <li><a href="#strings">String and Delimiter Primitives</a></li>
+        <li><a href="#blocks">Blocks</a></li>
+        <li><a href="#helpers">Block Helpers</a></li>
+        <li><a href="#legos">Legos</a></li>
+    </ul>
     <li><a href="#session">Session</a></li>
     <li><a href="#post_mortem">Post Mortem</a></li>
     <li><a href="#walkthrough">A Complete Walkthrough</a></li>
@@ -28,14 +36,14 @@
 <a name="introduction"></a><h2>Introduction</h2>
 Sulley is a fuzzer development and fuzz testing framework consisting of multiple extensible components. Sulley (IMHO) exceeds the capabilities of most previously published fuzzing technologies, commercial and public domain. The goal of the framework is to simplify not only data representation but to simplify data transmission and target monitoring as well. Sulley is affectionately named after the creature from <a href="http://www.imdb.com/title/tt0198781/">Monsters Inc.</a>, because, well, he is fuzzy.
 <br><br>
-Modern day fuzzers are, for the most part, solely focus on data generation. Sulley not only has impressive data generation but has taken this a step further and includes many other important aspects a modern fuzzer should provide. Sulley watches the network and methodically maintains records. Sulley instruments and monitors the health of the target, capable of reverting to a good state using multiple methods. Sulley detects, tracks and categorizes detected faults. Sulley can fuzz in parallel, significantly increasing test speed. Sulley can automatically determine what unique sequence of test cases trigger faults. Sulley does all this, and more, automatically and without attendance. Overall usage of Sulley breaks down to the following:
+Modern day fuzzers, for the most part, solely focus on data generation. Sulley not only has impressive data generation but has taken this a step further and includes many other important aspects a modern fuzzer should provide. Sulley watches the network and methodically maintains records. Sulley instruments and monitors the health of the target, and has a number of methods for reverting the target to a healthy state. Sulley detects, tracks and categorizes detected faults. Sulley can fuzz in parallel, significantly increasing test speed. Sulley can automatically determine the unique sequence of test cases that triggered a fault. Sulley does all this, and more, automatically and without attendance. Overall usage of Sulley breaks down to the following:
 <ul>
-    <li> <b>Data Representation</b>: First step in using any fuzzer. Run your target and tickle some interfaces while snagging the packets. Break down the protocol into indvidual <b><i>requests</i></b> and represent that as blocks in Sulley.
-    <li> <b>Session</b>: Link your developed requests together to form a <b><i>session</i></b>, attach the various available Sulley monitoring <b><i>agents</i></b> (socket, debugger, etc...) and commence fuzzing.
+    <li> <b>Data Representation</b>: First step in using any fuzzer. Define your data as <b><i>Requests</i></b> built from a hierachy of Blocks, Legos and Primitives that will be sent to your target to tickle its interfaces.
+    <li> <b>Session</b>: Link your developed requests together to form a <b><i>session</i></b>, attach the various available Sulley monitoring <b><i>agents</i></b> (socket, debugger, etc...) to manage the fuzzing and monitor your target.
     <li> <b>Post Mortem</b>: Review the generated data and monitored results. Replay individual test cases.
 </ul>
 
-<h3>Sulley Directory Structure</h3>
+<h3><a name="dir_struct"></a>Sulley Directory Structure</h3>
 There is some rhyme and reason to the Sulley directory structure. Maintaining the directory structure will ensure that everything remains organized while you expand the fuzzer with Legos, requests and utilities. The following hierarchy outlines what you will need to know about the directory structure:
 <ul>
     <li> <b>archived_fuzzies</b>: This is a free form directory, organized by fuzz target name, to store archived fuzzers and data generated from fuzz sessions.
@@ -89,7 +97,7 @@ There is some rhyme and reason to the Sulley directory structure. Maintaining th
 
 
 <!--------------------------------------------------------------------------------------------------------------------->
-<a name="author"></a><h2>Authors</h2>
+<a name="author"></a><h3>Authors</h3>
 Pedram Amini<br>
 <a href="http://pedram.openrce.org">http://pedram.openrce.org</a>
 <br><br>
@@ -101,7 +109,7 @@ Sulley is additionally maintained and built upon by members of the <a href="http
 
 <!--------------------------------------------------------------------------------------------------------------------->
 <a name="installation"></a><h2>Installation and Requirements</h2>
-For simple data representation and transmission there are no requirements. However, the various monitoring components do have further needs:
+For simple data representation and transmission there are no requirements. However, the various monitoring components do have further dependencies:
 <ul>
     <li> <b>network_monitor.py</b>: <a href="http://oss.coresecurity.com/projects/pcapy.html">CORE Pcapy</a>, <a href="http://oss.coresecurity.com/projects/impacket.html">CORE Impacket</a>
     <li> <b>process_monitor.py</b>: <a href="http://www.openrce.org/downloads/details/208/PaiMei">PaiMei</a>
@@ -116,9 +124,12 @@ Aitel had it right with <a href="http://www.immunityinc.com/resources-freesoftwa
 s_initialize("new request")
 </pre>
 Now you start adding primitives, blocks and nested blocks to the request. Each primitive can be individually <i>rendered</i> and <i>mutated</i>. Rendering a primitive returns its contents in raw data format. Mutating a primitive transforms its internal contents. The concepts of rendering and mutating are abstracted from fuzzer developers for the most part, so don't worry about it. Know however that each mutatable primitive accepts a default value which is restored when the fuzzable values are exhausted.
-
-<h3>Static and Random Primitives</h3>
-Let's begin with the simplest primitive, s_static(), which adds a static unmutating value of arbitrary length to the request. There are various aliases sprinkled throughout Sulley for your convenience, s_dunno(), s_raw() and s_unknown() are aliases of s_static():
+<br><br>
+Primitives, blocks etc. all take an optional <i>name</i> keyword argument. Specifying a name allows you to access the named item directly from the request via <i>request.names["name"]</i> instead of having to walk the block structure to reach the desired element. The name of a block is also required when using <a href="#helpers">Block Helpers</a>, as we will see later.
+<br><br>
+Most of Sulley's primitives are driven by "fuzz heuristics" that will cause a series of value mutations. You will want to carefully consider which types of primitive you require for each element of your data, whether it is worth mutating its value, and the manner in which it mutates.
+<h3><a name="static"></a>Static Binary and Random Data</h3>
+We will begin with the simplest primitive; s_static(). This adds a static unmutating value of arbitrary length to the request. There are various aliases sprinkled throughout Sulley for your convenience, s_dunno(), s_raw() and s_unknown() are aliases of s_static():
 <pre class="code">
 # these are all equivalent:
 s_static("pedram\x00was\x01here\x02")
@@ -126,50 +137,63 @@ s_raw("pedram\x00was\x01here\x02")
 s_dunno("pedram\x00was\x01here\x02")
 s_unknown("pedram\x00was\x01here\x02")
 </pre>
-Primitives, blocks etc. all take an optional <i>name</i> keyword argument. Specifying a name allows you to access the named item directly from the request via <i>request.names["name"]</i> instead of having to walk the block structure to reach the desired element.
-<br><br>
-Related to the above, but not equivalent, is the s_binary() primitive which accepts binary data represented in multiple formats. SPIKE users will recognize this API, its functionality is (or rather should be) equivalent to what you are already familiar with:
+The next primitive is s_binary() which accepts binary data represented in multiple formats. SPIKE users should recognize this API:
 <pre class="code">
     # yeah, it can handle all these formats.
     s_binary("0xde 0xad be ef \xca fe 00 01 02 0xba0xdd f0 0d", name="complex")
 </pre>
-Most of Sulley's primitives are driven by "fuzz heuristics" and therefore have a limited number of mutations. An exception to this is the s_random() primitive which can be utilized to generate random data of varying lengths. This primitive takes two mandatory arguments, 'min_length' and 'max_length', specifying the minimum and maximum length of random data to generate on each iteration respectively. This primitive also accepts the following optional keyword arguments:
+Like the s_static() primitive, the s_binary() primitive will always render the same value.
+<br><br>
+The next primitive is s_random(), this is used to generate random data of varying lengths. This primitive takes thres mandatory arguments; its default value and two keyword arguments 'min_length' and 'max_length'. These specify the minimum and maximum length of random data that will be generated for each mutation. To fill a fixed sized field with random data set both 'min_length' and 'max_length' to the same value. The s_random() primitive also accepts the following optional keyword arguments:
 <ul>
-    <li> <b>num_mutations</b>: <i>(integer, default=25)</i> Number of mutations to make before reverting to default.
-    <li> <b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.
-    <li> <b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.
+    <li><b>num_mutations</b>: <i>(integer, default=25)</i> Number of mutations to make before reverting to default.</li>
+    <li><b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.</li>
+    <li><b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.</li>
 </ul>
-The 'num_mutations' keyword argument specifies how many times this primitive should be re-rendered before it is considered exhausted. To fill a static sized field with random data, set the values for 'min_length' and 'max_length' to be the same.
 
-<h3>Integers</h3>
-Binary and ASCII protocols alike have various sized integers sprinkled all throughout them, for instance the Content-Length field in HTTP. Like most fuzzing frameworks, a portion of Sulley is dedicated to representing these types:
+<h3><a name="integers"></a>Integer Primitives</h3>
+Binary and ASCII protocols alike have various sized integers sprinkled all throughout them, for instance the Content-Length field in HTTP. Like most fuzzing frameworks, a portion of Sulley is dedicated to representing integers with the following sizes:
 <ul>
-    <li> 1 byte: s_byte(), s_char()
-    <li> 2 bytes: s_word(), s_short()
-    <li> 4 bytes: s_dword(), s_long(), s_int()
-    <li> 8 bytes: s_qword(), s_double()
+    <li><b>1 byte</b>: s_byte(), s_char()</li>
+    <li><b>2 bytes</b>: s_word(), s_short()</li>
+    <li><b>4 bytes</b>: s_dword(), s_long(), s_int()</li>
+    <li><b>8 bytes</b>: s_qword(), s_double()</li>
 </ul>
-The integer types each accept at least a single parameter, the default integer value. Additionally the following optional keyword arguments may be specified:
+The integer types each take a mandatory parameter, the default value, see the note below on <i>Value</i>. Additionally the following optional keyword arguments may be specified:
 <ul>
-    <li> <b>endian</b>: <i>(character, default='&lt;')</i> Endianess of the bit field. Specify '&lt;' for little endian and '&gt;' for big endian.
-    <li> <b>format</b>: <i>(string, default="binary")</i> Output format, "binary" or "ascii", controls the format which the integer primitives renders in. For example the value 100 is rendered as "100" in ASCII and "\x64" in binary.
-    <li> <b>signed</b>: <i>(boolean, default=False)</i> Make size signed vs. unsigned, applicable only when format="ascii".
-    <li> <b>full_range</b>: <i>(boolean, default=False)</i> If enabled then this primitive mutates through all possible values. More on this later.
-    <li> <b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.
-    <li> <b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.
+    <li><b>endian</b>: <i>(character, default='&lt;')</i> Endianess of the bit field. Specify '&lt;' for little endian and '&gt;' for big endian.</li>
+    <li><b>format</b>: <i>(string, default="binary")</i> Output format, "binary" or "ascii", controls the format which the integer primitives renders in. For example the value 100 is rendered as the three characters "1", "0", "0" in ASCII and "\x64" in binary.</li>
+    <li><b>signed</b>: <i>(boolean, default=False)</i> Make size signed vs. unsigned, applicable only when format="ascii".</li>
+    <li><b>full_range</b>: <i>(boolean, default=False)</i> If enabled then this primitive mutates through all possible values, see below.</li>
+    <li><b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.</li>
+    <li><b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.</li>
 </ul>
-The <i>full_range</i> modifier is of particular interest from above. Consider you want to fuzz a DWORD value, that's 4,294,967,295 total possible values. At a rate of 10 test cases per second, it would take 13 years to finish fuzzing this single primitive! To reduce this vast input space Sulley defaults to trying only "smart" values. This includes the plus and minus 10 border cases around 0, the maximum integer value (MAX_VAL), MAX_VAL divided by 2, MAX_VAL divided by 3, MAX_VAL divided by 4, MAX_VAL divided by 8, MAX_VAL divided by 16 and MAX_VAL divided by 32. Exhausting this reduced input space of 141 test cases requires only seconds.
-
-<h3>Strings and Delimiters</h3>
-Strings can be found everywhere. E-mail addresses, hostnames, usernames, passwords and more all examples of string components you will no doubt come across when fuzzing. Sulley provides the s_string() primitive for representing these fields. The primitive takes a single mandatory argument specifying the default, valid, value for the primitive. The following additional keyword arguments may be specified:
+The <i>Value</i> may either be a single Python integer expressed in decimal (for example 1, 23, or 378), octal (for example 01, 027, or 0667), or hexadecimal (for example 0x1, 0x17, or 0x1FA8). Alternatively a list, or tuple of integer values may be specified. Lists are enclosed in square braces ('[' and ']') with each value separated by a comma. Tuples are enclosed in round braces ('(' and ')') with each value also separted by a comma. When a list of values is specified then each time the primitive is rendered the next value in the list/tuple is selected, once all values for the primitive have been used, the value will cycle back to the first value in the list/tuple. Note that the value used will cycle through the list/tuple regardless of whether the primitive is set to "fuzzable" or not. However, if the primitive is not fuzzable there is no guarantee that all of the specified values will be used, that will depend upon the number of supplied values and the number of possible mutations arrising from other fields in the data. If the primitive is set to fuzzable then there is a guarantee that all of the supplied values will be used, although this will inflate the total number of mutations for the fuzzing session. Consider the following scenarios:
+<pre class="code">
+# Scenario One                                        # Scenario Two
+s_byte([1, 2, 3, 4, 10, 128, -1], name="A")           s_byte([1, 2, 3, 4, 10, 128, -1, -1 -2], name="A", fuzzable=False)
+s_byte([0, 1, 2], name="B")                           s_byte([0, 1, 2], name="B", fuzzable=False)
+s_byte(0, name="C")                                   s_byte(0, name="C")
+</pre>
+In scenario One first primitive "A" will be fuzzed, during this time primitive "B" will cycle through its defined values, and primitive "C" will remain at its default value. Once all values for primitive "A" have been exhausted, primitive "B" will be fuzzed, at which point primitive "A" will commence cycling through its values. Finally, primitive "C" will be fuzzed (a byte will yield 112 mutations), while both primitives "A" and "B" will continue to cycle. This will result in a total of 121 mutations. Note that since the number of values for primitive "A" is not an exact multiple of the number of values for primitive "B" and the number of mutations triggered by primitive C is sufficiently large, all combinations of primitives "A" and "B" will occur in the fuzzed data.
+<br><br>
+In scenario Two primitives "A" and "B" will not be fuzzed. Fuzzing will commence with primitive "C". However, primitives "A" and "B" will cycle through their respective values. This will result in a total of 112 mutations (those arrising from fuzzing the single byte primitive). Note that in this scenarion, as there is an exact multiple of values for primitive "A" as the number of values for primitive "B", not all combinations of values for primitives "A" and "B" will be generated; when primitive "A" is "1" primitive "B" will always be "0", when primitive "A" is "2" primitive "B" will always bb "1", and so on. You may want to consider the effect that this will have on the data generated by your fuzzer. Note that you are not restricted to using only valid values for primitives defined with a list of values, you may include any combination of valid and invalid values, and may even repeat values as required.
+<br><br>
+The <i>full_range</i> modifier is of particular interest from above. It is only really appropriate to use this for 1, or maybe 2, byte values. Consider the effect of using it to fuzz a DWORD value, that's 4,294,967,295 total possible values. At a hyperthetical rate of 10 test cases per second, it would take 13 years to finish fuzzing this single primitive! To reduce this vast input space Sulley defaults to trying only "smart" values. This includes the plus and minus 10 border cases around 0, the maximum integer value (MAX_VAL), MAX_VAL divided by 2, MAX_VAL divided by 3, MAX_VAL divided by 4, MAX_VAL divided by 8, MAX_VAL divided by 16 and MAX_VAL divided by 32. Exhausting this reduced input space of 141 test cases requires only seconds.
+<br><br>
+If you specify <i>full_range</i> modifier for a primitive that has a list of values, then during the fuzzing phase of that primitive it will yield its full range of values. During the fuzzing phase of other primitives, the value will cycle only through the defined list of values..
+<h3><a name="strings"></a>String and Delimiter Primitives</h3>
+Strings can be found everywhere; E-mail addresses, hostnames, usernames, passwords, etc are all examples of string primitives that you will no doubt come across when fuzzing. Sulley provides the s_string() primitive for representing these fields. The primitive takes a single mandatory argument specifying the default value for the primitive. The following additional keyword arguments may be specified:
 <ul>
-    <li> <b>size</b>: <i>(integer, default=-1)</i> Static size for this string. For dynamic sizing, leave this as -1.
-    <li> <b>padding</b>: <i>(character, default='\x00')</i> If an explicit size is specified and the generated string is smaller than size, use this value to padd the field up to size.
-    <li> <b>encoding</b>: <i>(string, default="ascii")</i> Encoding to use for string. Valid options include whatever the Python str.encode() routine can accept. For Microsoft Unicode strings, specify "utf_16_le".
-    <li> <b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.
-    <li> <b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.
+    <li><b>size</b>: <i>(integer, default=-1)</i> Static size for this string. For dynamic sizing, leave this as -1.</li>
+    <li><b>padding</b>: <i>(character, default='\x00')</i> If an explicit size is specified and the generated string is smaller than size, use this value to padd the field up to size.</li>
+    <li><b>encoding</b>: <i>(string, default="ascii")</i> Encoding to use for string. Valid options include whatever the Python str.encode() routine can accept. For Microsoft Unicode strings, specify "utf_16_le".</li>
+    <li><b>fuzzable</b>: <i>(boolean, default=True)</i> Enable or disable fuzzing of this primitive.</li>
+    <li><b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.</li>
 </ul>
-Strings are frequently parsed into sub-fields through the usage of delimiters. The space character for example is used as a delimiter in the HTTP request "GET /index.html HTTP/1.0". The front slash (/) and dot (.) characters in that same request are also delimiters. When defining a protocol in Sulley, be sure to represent delimiters using the s_delim() primitive. As with other primitives, the first argument is mandatory and used to specify the default value. Also as with other primitives, s_delim() accepts the optionals 'fuzzable' and 'name' keyword arguments. Delimiter mutations include repetition, substitution and exclusion. As a complete example, consider the following sequence of primitives for fuzzing the HTML body tag.
+Strings are frequently made up of a number of sub-fields these may be represented as separate delimiters. For example, the space character is used as a delimiter within an HTTP request "GET /index.html HTTP/1.0". The front slash (/) and dot (.) characters in that same request may also be considered as delimiters. When defining a protocol in Sulley, be sure to represent delimiters using the s_delim() primitive. As with other primitives, the first argument is mandatory and used to specify the default value.
+<br><br>
+As with other primitives; s_string() and s_delim() accept the optional 'fuzzable' and 'name' keyword arguments. String mutations include a large number of common base values, adaptations of the supplied values, and very long values in an attempt to cause buffer overflows. Delimiter mutations include repetition, substitution and exclusion. As an example, consider the following sequence of primitives for fuzzing the HTML body tag.
 <pre class="code">
 # fuzzes the string: &lt;BODY bgcolor="black"&gt;
 s_delim("&lt;")
@@ -183,15 +207,15 @@ s_delim("\"")
 s_delim("&gt;")
 </pre>
 
-<h3>Blocks</h3>
-Having mastered primitives, let's next take a look at how they may be organized and nested within blocks. New blocks are defined and opened with s_block_start() and closed with s_block_end(). Each block must be given a name, specified as the first argument to s_block_start(). This routine also accepts the following optional keyword arguments:
+<h3><a name="blocks"></a>Blocks</h3>
+Having mastered primitives, let's next take a look at how they may be organized and nested within blocks. New blocks are defined and opened with s_block_start() and closed with s_block_end(). Each block must be given a name, specified as the first argument to s_block_start(). The block definition also accepts the following optional keyword arguments:
 <ul>
-    <li> <b>group</b>: <i>(string, default=None)</i> Name of group to associate this block with, more on this later.
-    <li> <b>encoder</b>: <i>(function pointer, default=None)</i> Pointer to a function to pass rendered data to prior to returning it.
-    <li> <b>dep</b>: <i>(string, default=None)</i> Optional primitive whose specific value this block is dependant on.
-    <li> <b>dep_value</b>: <i>(mixed, default=None)</i> Value that field "dep" must contain for block to be rendered.
-    <li> <b>dep_values</b>: <i>(list of mixed types, default=[])</i> Values that field "dep" may contain for block to be rendered.
-    <li> <b>dep_compare</b> <i>(string, default="==")</i> Comparison method to apply to dependency. Valid options include: "==", "!=", "&gt;", "&gt;=", "&lt;" and "&lt;=".
+    <li><b>group</b>: <i>(string, default=None)</i> Name of group to associate this block with, more on this later.</li>
+    <li><b>encoder</b>: <i>(function pointer, default=None)</i> Pointer to a function to pass rendered data to prior to returning it.</li>
+    <li><b>dep</b>: <i>(string, default=None)</i> Optional primitive whose specific value this block is dependant on.</li>
+    <li><b>dep_value</b>: <i>(mixed, default=None)</i> Value that field "dep" must contain for block to be rendered.</li>
+    <li><b>dep_values</b>: <i>(list of mixed types, default=[])</i> Values that field "dep" may contain for block to be rendered.</li>
+    <li><b>dep_compare</b> <i>(string, default="==")</i> Comparison method to apply to dependency. Valid options include: "==", "!=", "&gt;", "&gt;=", "&lt;" and "&lt;=".</li>
 </ul>
 Grouping, encoding and dependencies are powerful features not seen in most other frameworks and deserve further dissection.
 
@@ -283,7 +307,7 @@ s_block_end()
 </pre>
 Block dependencies can be chained together in any number of ways allowing for powerful (and unfortunately complex) combinations.
 
-<h3>Block Helpers</h3>
+<h3><a name="helpers"></a>Block Helpers</h3>
 An important aspect of data generation that you must become familiar with to effectively utilize Sulley are block helpers. This includes sizers, checksums and repeaters.
 
 <h4>Sizers</h4>
@@ -292,7 +316,7 @@ SPIKE users will be familiar with the s_sizer() (or s_size()) block helper. This
     <li> <b>length</b>: <i>(integer, default=4)</i> Length of size field.
     <li> <b>endian</b>: <i>(character, default='&lt;')</i> Endianess of the bit field. Specify '&lt;' for little endian and '&gt;' for big endian.
     <li> <b>format</b>: <i>(string, default="binary")</i> Output format, "binary" or "ascii", controls the format which the integer primitives renders in.
-    <li> <b>inclusive</b>: <i>(boolean, default=False)</i> Should the sizer count its own length? 
+    <li> <b>inclusive</b>: <i>(boolean, default=False)</i> Should the sizer count its own length?
     <li> <b>signed</b>: <i>(boolean, default=False)</i> Make size signed vs. unsigned, applicable only when format="ascii".
     <li> <b>fuzzable</b>: <i>(boolean, default=False)</i> Enable or disable fuzzing of this primitive.
     <li> <b>name</b>: <i>(string, default=None)</i> As with all Sulley objects specifying a name gives you direct access to this primitive throughout the request.
@@ -322,16 +346,16 @@ Consider the following example that ties all three of the introduced helpers tog
 if s_block_start("table entry"):
     # we don't know what the valid types are, so we'll fill this in with random data.
     s_random("\x00\x00", 2, 2)
-    
+
     # next, we insert a sizer of length 2 for the string field to follow.
     s_size("string field", length=2)
-    
+
     # block helpers only apply to blocks, so encapsulate the string primitive in one.
     if s_block_start("string field"):
         # the default string will simply be a short sequence of C's.
         s_string("C" * 10)
     s_block_end()
-    
+
     # append the CRC-32 checksum of the string to the table entry.
     s_checksum("string field")
 s_block_end()
@@ -341,7 +365,7 @@ s_repeat("table entry", min_reps=100, max_reps=1000, step=50)
 </pre>
 This Sulley script will fuzz not only table entry parsing but may potentially discover a fault in the processing of overly long tables.
 
-<h3>Legos</h3>
+<h3><a name="legos"></a>Legos</h3>
 Sulley utilizes "Legos" for representing user-defined components such as e-mail addresses, hostnames and protocol primitives used in Microsoft RPC, XDR, ASN.1 and others. In ASN.1 / BER strings are represented as the sequence [0x04][0x84][dword length][string]. When fuzzing an ASN.1 based protocol, including the length and type prefixes in front of every string can become cumbersome. Instead we can define a Lego and reference it:
 <pre class="code">
 s_lego("ber_string", "anonymous")
@@ -589,7 +613,7 @@ $ ./utils/crashbin_explorer.py audits/trillian_jabber.crashbin -t 1416
             0x7c910f2b cmp ecx,[edx+0x4]
             0x7c910f2e mov [ebp+0x14],edx
             0x7c910f31 jnz 0x7c911f21
-    
+
     stack unwind:
             ntdll.dll:7c910d5c
             rendezvous.dll:49023967

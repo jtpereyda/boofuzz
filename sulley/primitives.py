@@ -662,7 +662,7 @@ class bit_field (base_primitive):
         if type(value) in [int, long, list, tuple]:
             self.value         = self.original_value = value
         else:
-            raise AssertionError()
+            raise ValueError("The supplied value must be either an Int, Long, List or Tuple.")
 
         self.width         = width
         self.max_num       = max_num
