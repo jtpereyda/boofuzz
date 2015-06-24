@@ -22,7 +22,7 @@ ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 USAGE = "USAGE: vmcontrol.py"                                                             \
         "\n    <-x|--vmx FILENAME|NAME> path to VMX to control or name of VirtualBox image" \
         "\n    <-r|--vmrun FILENAME>    path to vmrun.exe or VBoxManage"                    \
-        "\n    [-s|--snapshot NAME>     set the snapshot name"                              \
+        "\n    <-s|--snapshot NAME>     set the snapshot name"                              \
         "\n    [-l|--log_level LEVEL]   log level (default 1), increase for more verbosity" \
         "\n    [-i|--interactive]       Interactive mode, prompts for input values"         \
         "\n    [--port PORT]            TCP port to bind this agent to"                      \
@@ -73,7 +73,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
                         print "[*] Using %s" % vmrun
                         break
             except:
-                print "[!] Error while trying to find vmrun.exe. Try again without -I."
+                print "[!] Error while trying to find vmrun.exe. Try again without -i."
                 sys.exit(1)
 
             # get vmx path
@@ -98,7 +98,7 @@ class vmcontrol_pedrpc_server (pedrpc.server):
                         print "[!] No .vmx file found in the selected folder, please try again"
             except:
                 raise
-                print "[!] Error while trying to find the .vmx file. Try again without -I."
+                print "[!] Error while trying to find the .vmx file. Try again without -i."
                 sys.exit(1)
 
         # Grab snapshot name and log level if we're in interactive mode
@@ -564,7 +564,7 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         ERR(USAGE)
 
-    vmrun       = r"C:\progra~1\vmware\vmware~1\vmrun.exe"
+    vmrun       = None
     vmx         = None
     snap_name   = None
     log_level   = 1
@@ -585,7 +585,7 @@ if __name__ == "__main__":
         print "[!] Interactive mode currently only works on Windows operating systems."
         ERR(USAGE)
 
-    if not vmx and not interactive:
+    if (not vmx or not vmrun or not snap_name) and not interactive:
         ERR(USAGE)
     
     if not virtualbox:
