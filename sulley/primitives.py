@@ -657,11 +657,13 @@ class bit_field (base_primitive):
         @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
         '''
 
-        assert(type(value) is int or type(value) is long)
         assert(type(width) is int or type(value) is long)
 
+        if type(value) in [int, long, list, tuple]:
+            self.value         = self.original_value = value
+        else:
+            raise ValueError("The supplied value must be either an Int, Long, List or Tuple.")
 
-        self.value         = self.original_value = value
         self.width         = width
         self.max_num       = max_num
         self.endian        = endian
@@ -675,6 +677,7 @@ class bit_field (base_primitive):
         self.fuzz_complete = False     # flag if this primitive has been completely fuzzed
         self.fuzz_library  = []        # library of fuzz heuristics
         self.mutant_index  = 0         # current mutation number
+        self.cyclic_index  = 0         # when cycling through non-mutating values
 
         if self.max_num == None:
             self.max_num = self.to_decimal("1" + "0" * width)
@@ -687,15 +690,20 @@ class bit_field (base_primitive):
             for i in xrange(0, self.max_num):
                 self.fuzz_library.append(i)
         else:
-            # try only "smart" values.
-            self.add_integer_boundaries(0)
-            self.add_integer_boundaries(self.max_num / 2)
-            self.add_integer_boundaries(self.max_num / 3)
-            self.add_integer_boundaries(self.max_num / 4)
-            self.add_integer_boundaries(self.max_num / 8)
-            self.add_integer_boundaries(self.max_num / 16)
-            self.add_integer_boundaries(self.max_num / 32)
-            self.add_integer_boundaries(self.max_num)
+            if type(value) in [list, tuple]:
+                # Use the supplied values as the fuzz library.
+                for val in value:
+                    self.fuzz_library.append(val)
+            else:
+                # try only "smart" values.
+                self.add_integer_boundaries(0)
+                self.add_integer_boundaries(self.max_num / 2)
+                self.add_integer_boundaries(self.max_num / 3)
+                self.add_integer_boundaries(self.max_num / 4)
+                self.add_integer_boundaries(self.max_num / 8)
+                self.add_integer_boundaries(self.max_num / 16)
+                self.add_integer_boundaries(self.max_num / 32)
+                self.add_integer_boundaries(self.max_num)
 
         # if the optional file '.fuzz_ints' is found, parse each line as a new entry for the fuzz library.
         try:
@@ -803,9 +811,16 @@ class bit_field (base_primitive):
         @rtype:  String
         @return: Bit string
         '''
-
         if number == None:
-            number = self.value
+            if type(self.value) in [list, tuple]:
+                # We have been given a list to cycle through that is not being mutated...
+                if self.cyclic_index == len(self.value):
+                    # Reset the index.
+                    self.cyclic_index = 0
+                number = self.value[self.cyclic_index]
+                self.cyclic_index += 1
+            else:
+                number = self.value
 
         if bit_count == None:
             bit_count = self.width
@@ -831,7 +846,7 @@ class bit_field (base_primitive):
 class byte (bit_field):
     def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
         self.s_type  = "byte"
-        if type(value) not in [int, long]:
+        if type(value) not in [int, long, list, tuple]:
             value       = struct.unpack(endian + "B", value)[0]
 
         bit_field.__init__(self, value, 8, None, endian, format, signed, full_range, fuzzable, name)
@@ -841,7 +856,7 @@ class byte (bit_field):
 class word (bit_field):
     def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
         self.s_type  = "word"
-        if type(value) not in [int, long]:
+        if type(value) not in [int, long, list, tuple]:
             value = struct.unpack(endian + "H", value)[0]
 
         bit_field.__init__(self, value, 16, None, endian, format, signed, full_range, fuzzable, name)
@@ -851,7 +866,7 @@ class word (bit_field):
 class dword (bit_field):
     def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
         self.s_type  = "dword"
-        if type(value) not in [int, long]:
+        if type(value) not in [int, long, list, tuple]:
             value = struct.unpack(endian + "L", value)[0]
 
         bit_field.__init__(self, value, 32, None, endian, format, signed, full_range, fuzzable, name)
@@ -861,7 +876,7 @@ class dword (bit_field):
 class qword (bit_field):
     def __init__ (self, value, endian="<", format="binary", signed=False, full_range=False, fuzzable=True, name=None):
         self.s_type  = "qword"
-        if type(value) not in [int, long]:
+        if type(value) not in [int, long, list, tuple]:
             value = struct.unpack(endian + "Q", value)[0]
 
         bit_field.__init__(self, value, 64, None, endian, format, signed, full_range, fuzzable, name)
