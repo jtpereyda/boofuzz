@@ -557,7 +557,7 @@ class session (pgraph.graph):
                 except AttributeError:
                     # signal.pause() is missing for Windows; wait 1ms and loop instead
                     while True:
-                        time.sleep(1)
+                        time.sleep(0.001)
 
 
     ####################################################################################################################
