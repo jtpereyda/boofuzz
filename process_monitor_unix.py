@@ -172,9 +172,11 @@ class nix_process_monitor_pedrpc_server(pedrpc.server):
         self.test_number = test_number
 
     def start_target (self):
-        '''
+        """
         Start up the target process by issuing the commands in self.start_commands.
-        '''
+
+        @returns True if successful. No failure detection yet.
+        """
 
         self.log("starting target process")
         
@@ -184,6 +186,7 @@ class nix_process_monitor_pedrpc_server(pedrpc.server):
         threading.Thread(target=self.dbg.start_monitoring).start()
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
+        return True
 
     def stop_target (self):
         '''

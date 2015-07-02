@@ -291,6 +291,8 @@ class ProcessMonitorPedrpcServer (pedrpc.server):
     def start_target (self):
         """
         Start up the target process by issuing the commands in self.start_commands.
+
+        @returns True if successful. No failure detection yet.
         """
 
         self.log("starting target process")
