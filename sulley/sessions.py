@@ -551,8 +551,13 @@ class session (pgraph.graph):
             # if fuzzing is not finished, web interface thread will catch it
             if self.total_mutant_index == self.total_num_mutations:
                 import signal
-                while True:
-                    signal.pause()
+                try:
+                    while True:
+                        signal.pause()
+                except AttributeError:
+                    # signal.pause() is missing for Windows; wait 1ms and loop instead
+                    while True:
+                        time.sleep(0.001)
 
 
     ####################################################################################################################
