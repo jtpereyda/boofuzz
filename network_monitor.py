@@ -27,9 +27,10 @@ def create_usage():
     [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity
     [--port PORT]             TCP port to bind this agent to
 
-Network Device List:"""
+Network Device List:
+"""
     for index, pcapy_device in enumerate(pcapy.findalldevs()):
-        IFS.append(device)
+        IFS.append(pcapy_device)
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
             import _winreg
@@ -218,9 +219,10 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
 
 
 if __name__ == "__main__":
+    IFS = []
+    device = None
     usage_message = create_usage()
     rpc_port = 26001
-    IFS = []
     opts = None
 
     # parse command line options.
@@ -229,7 +231,6 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         log_error(usage_message)
 
-    device = None
     pcap_filter = ""
     log_path = "./"
     log_level = 1
