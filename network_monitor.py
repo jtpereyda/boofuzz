@@ -19,7 +19,29 @@ def log_error(message=None):
         sys.exit(1)
 
 
-def create_usage():
+def get_ifs():
+    """
+    Get a list of network interfaces on the system.
+
+    :rtype : list[str]
+    :return: List of network interfaces.
+    """
+    ifs = []
+    for index, pcapy_device in enumerate(pcapy.findalldevs()):
+        ifs.append(pcapy_device)
+    return ifs
+
+
+def create_usage(ifs):
+    """
+    Return usage string.
+
+    :type ifs: list[str]
+    :param ifs: List of network interfaces to include in help text.
+
+    :rtype : str
+    :return: Usage text.
+    """
     message = """USAGE: network_monitor.py
     <-d|--device DEVICE #>    device to sniff on (see list below)
     [-f|--filter PCAP FILTER] BPF filter string
@@ -29,8 +51,7 @@ def create_usage():
 
 Network Device List:
 """
-    for index, pcapy_device in enumerate(pcapy.findalldevs()):
-        IFS.append(pcapy_device)
+    for index, pcapy_device in enumerate(ifs):
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
             import _winreg
@@ -218,10 +239,9 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         self.log_path = new_log_path
 
 
-if __name__ == "__main__":
-    IFS = []
-    device = None
-    usage_message = create_usage()
+def main():
+    ifs = get_ifs()
+    usage_message = create_usage(ifs)
     rpc_port = 26001
     opts = None
 
@@ -231,13 +251,14 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         log_error(usage_message)
 
+    device = None
     pcap_filter = ""
     log_path = "./"
     log_level = 1
 
     for opt, arg in opts:
         if opt in ("-d", "--device"):
-            device = IFS[int(arg)]
+            device = ifs[int(arg)]
         if opt in ("-f", "--filter"):
             pcap_filter = arg
         if opt in ("-P", "--log_path"):
@@ -255,3 +276,6 @@ if __name__ == "__main__":
         servlet.serve_forever()
     except:
         pass
+
+if __name__ == "__main__":
+    main()
