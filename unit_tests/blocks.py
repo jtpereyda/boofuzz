@@ -93,9 +93,12 @@ def dependencies():
         s_static("TWO" * 100)
         s_block_end()
 
+    assert(s_num_mutations() == 2)
+    assert(s_mutate() == True)
     assert (s_render().find("TWO") == -1)
-    s_mutate()
+    assert(s_mutate() == True)
     assert (s_render().find("ONE") == -1)
+    assert(s_mutate() == False)
 
 
 def repeaters():

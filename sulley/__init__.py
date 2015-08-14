@@ -201,8 +201,8 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     blocks.CURRENT.push(repeat)
 
 
-def s_size(block_name, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False, math=None,
-           fuzzable=False, name=None):
+def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False,
+           math=None, fuzzable=False, name=None):
     """
     Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
     currently open blocks.
@@ -211,6 +211,8 @@ def s_size(block_name, length=4, endian=LITTLE_ENDIAN, output_format="binary", i
 
     @type  block_name:    str
     @param block_name:    Name of block to apply sizer to
+    @type  offset:        int
+    @param offset:        (Optional, def=0) Offset to calculated size of block
     @type  length:        int
     @param length:        (Optional, def=4) Length of sizer
     @type  endian:        Character
@@ -234,7 +236,7 @@ def s_size(block_name, length=4, endian=LITTLE_ENDIAN, output_format="binary", i
         raise sex.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
 
     size = blocks.Size(
-        block_name, blocks.CURRENT, length, endian, output_format, inclusive, signed, math, fuzzable, name
+        block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
     )
     blocks.CURRENT.push(size)
 

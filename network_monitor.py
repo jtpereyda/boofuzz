@@ -8,6 +8,7 @@ import os
 import pcapy
 import impacket
 import impacket.ImpactDecoder
+import signal
 from sulley import pedrpc
 
 
@@ -27,9 +28,10 @@ def create_usage():
     [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity
     [--port PORT]             TCP port to bind this agent to
 
-Network Device List:"""
+Network Device List:
+"""
     for index, pcapy_device in enumerate(pcapy.findalldevs()):
-        IFS.append(device)
+        IFS.append(pcapy_device)
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
             import _winreg
@@ -64,7 +66,7 @@ class PcapThread(threading.Thread):
         self.data_bytes = 0
 
         # register the appropriate decoder.
-        if pcap.datalink() == pcapy.DLT_EN10MB:
+        if pcap.datalink() == pcapy.DLT_EN10MB or pcap.datalink() == pcapy.DLT_NULL:
             self.decoder = impacket.ImpactDecoder.EthDecoder()
         elif pcap.datalink() == pcapy.DLT_LINUX_SLL:
             self.decoder = impacket.ImpactDecoder.LinuxSLLDecoder()
@@ -218,9 +220,9 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
 
 
 if __name__ == "__main__":
+    IFS = []
     usage_message = create_usage()
     rpc_port = 26001
-    IFS = []
     opts = None
 
     # parse command line options.
@@ -251,6 +253,17 @@ if __name__ == "__main__":
 
     try:
         servlet = NetworkMonitorPedrpcServer("0.0.0.0", rpc_port, device, pcap_filter, log_path, log_level)
-        servlet.serve_forever()
+        t = threading.Thread(target=servlet.serve_forever)
+        t.daemon = True
+        t.start()
+        # Now wait in a way that will not block signals like SIGINT
+        try:
+            while True:
+                signal.pause()
+        except AttributeError:
+            # signal.pause() is missing for Windows; wait 1ms and loop instead
+            while True:
+                time.sleep(.001)
+
     except:
         pass
