@@ -11,6 +11,8 @@ import impacket.ImpactDecoder
 import signal
 from sulley import pedrpc
 
+MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
+
 
 def log_error(message=None):
     try:
@@ -195,7 +197,7 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         self.log("initializing capture for test case #%d" % test_number)
 
         # open the capture device and set the BPF filter.
-        self.pcap = pcapy.open_live(self.device, -1, 1, 100)
+        self.pcap = pcapy.open_live(self.device, MAX_PACKET_LENGTH, 1, 100)
         self.pcap.setfilter(self.filter)
 
         # instantiate the capture thread.
