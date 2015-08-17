@@ -470,10 +470,10 @@ class Checksum:
 
         if type(self.algorithm) is str:
             if self.algorithm == "crc32":
-                return struct.pack(self.endian + "L", zlib.crc32(data))
+                return struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
 
             elif self.algorithm == "adler32":
-                return struct.pack(self.endian + "L", zlib.adler32(data))
+                return struct.pack(self.endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
 
             elif self.algorithm == "md5":
                 digest = hashlib.md5(data).digest()
@@ -684,8 +684,8 @@ class Size:
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, block_name, request, length=4, endian="<", output_format="binary", inclusive=False, signed=False,
-                 math=None, fuzzable=False, name=None):
+    def __init__(self, block_name, request, offset=0, length=4, endian="<", output_format="binary", inclusive=False,
+                 signed=False, math=None, fuzzable=False, name=None):
         """
         Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
         currently open blocks.
@@ -696,6 +696,8 @@ class Size:
         @param request:       Request this block belongs to
         @type  length:        int
         @param length:        (Optional, def=4) Length of sizer
+        @type  offset:        int
+        @param offset:        (Optional, def=0) Offset for calculated size value
         @type  endian:        chr
         @param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
         @type  output_format: str
@@ -714,6 +716,7 @@ class Size:
 
         self.block_name = block_name
         self.request = request
+        self.offset = offset
         self.length = length
         self.endian = endian
         self.format = output_format
@@ -802,7 +805,7 @@ class Size:
                 self_size = 0
 
             block = self.request.closed_blocks[self.block_name]
-            self.bit_field.value = self.math(len(block.rendered) + self_size)
+            self.bit_field.value = self.math(len(block.rendered) + self_size + self.offset)
             self.rendered = self.bit_field.render()
 
         # otherwise, add this sizer block to the requests callback list.

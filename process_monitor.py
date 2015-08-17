@@ -149,7 +149,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # initialize the PED-RPC server.
         pedrpc.Server.__init__(self, host, port)
 
-        self.crash_filename = crash_filename
+        self.crash_filename = os.path.abspath(crash_filename)
         self.proc_name = proc
         self.ignore_pid = pid_to_ignore
         self.log_level = level
@@ -299,6 +299,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
+        return True
 
     def stop_target(self):
         """

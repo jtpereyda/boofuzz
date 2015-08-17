@@ -610,7 +610,7 @@ class BitField(BasePrimitive):
 
         super(BitField, self).__init__()
 
-        assert isinstance(value, (int, long)), "value must be an integer!"
+        assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, (int, long)), "width must be an integer!"
 
         self.value = self.original_value = value
@@ -622,9 +622,10 @@ class BitField(BasePrimitive):
         self.full_range = full_range
         self.fuzzable = fuzzable
         self.name = name
+        self.cyclic_index  = 0         # when cycling through non-mutating values
 
         if not self.max_num:
-            self.max_num = self.to_decimal("1" * width)
+            self.max_num = self.to_decimal("1" + "0" * width)
 
         assert isinstance(self.max_num, (int, long)), "max_num must be an integer!"
 
@@ -633,15 +634,20 @@ class BitField(BasePrimitive):
             for i in xrange(0, self.max_num):
                 self.fuzz_library.append(i)
         else:
-            # try only "smart" values.
-            self.add_integer_boundaries(0)
-            self.add_integer_boundaries(self.max_num / 2)
-            self.add_integer_boundaries(self.max_num / 3)
-            self.add_integer_boundaries(self.max_num / 4)
-            self.add_integer_boundaries(self.max_num / 8)
-            self.add_integer_boundaries(self.max_num / 16)
-            self.add_integer_boundaries(self.max_num / 32)
-            self.add_integer_boundaries(self.max_num)
+            if type(value) in [list, tuple]:
+                # Use the supplied values as the fuzz library.
+                for val in value:
+                    self.fuzz_library.append(val)
+            else:
+                # try only "smart" values.
+                self.add_integer_boundaries(0)
+                self.add_integer_boundaries(self.max_num / 2)
+                self.add_integer_boundaries(self.max_num / 3)
+                self.add_integer_boundaries(self.max_num / 4)
+                self.add_integer_boundaries(self.max_num / 8)
+                self.add_integer_boundaries(self.max_num / 16)
+                self.add_integer_boundaries(self.max_num / 32)
+                self.add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
 
@@ -655,7 +661,7 @@ class BitField(BasePrimitive):
         for i in xrange(-10, 10):
             case = integer + i
             # ensure the border case falls within the valid range for this field.
-            if 0 <= case <= self.max_num:
+            if 0 <= case < self.max_num:
                 if case not in self.fuzz_library:
                     self.fuzz_library.append(case)
 
@@ -693,15 +699,15 @@ class BitField(BasePrimitive):
             # Otherwise we have ascii/something else
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
             if self.signed and self.to_binary()[0] == "1":
-                max_num = self.to_decimal("0" + "1" * (self.width - 1))
+                max_num = self.to_decimal("1" + "0" * (self.width - 1))
                 # chop off the sign bit.
-                val = self.value & max_num
+                val = self.value & self.to_decimal("1" * (self.width - 1))
 
                 # account for the fact that the negative scale works backwards.
-                val = max_num - val
+                val = max_num - val - 1
 
                 # toss in the negative sign.
-                self.rendered = "%d" % (-val - 1)
+                self.rendered = "%d" % ~val
 
             # unsigned integer or positive signed integer.
             else:
@@ -721,9 +727,16 @@ class BitField(BasePrimitive):
         @rtype:  str
         @return: Bit string
         """
-
         if not number:
-            number = self.value
+            if type(self.value) in [list, tuple]:
+                # We have been given a list to cycle through that is not being mutated...
+                if self.cyclic_index == len(self.value):
+                    # Reset the index.
+                    self.cyclic_index = 0
+                number = self.value[self.cyclic_index]
+                self.cyclic_index += 1
+            else:
+                number = self.value
 
         if not bit_count:
             bit_count = self.width
@@ -755,7 +768,7 @@ class Byte(BitField):
 
         self.s_type = "byte"
 
-        if type(self.value) not in [int, long]:
+        if type(self.value) not in [int, long, list, tuple]:
             self.value = struct.unpack(self.endian + "B", self.value)[0]
 
 
@@ -769,7 +782,7 @@ class Word(BitField):
 
         self.s_type = "word"
 
-        if type(self.value) not in [int, long]:
+        if type(self.value) not in [int, long, list, tuple]:
             self.value = struct.unpack(self.endian + "H", self.value)[0]
 
 
@@ -783,7 +796,7 @@ class DWord(BitField):
 
         self.s_type = "dword"
 
-        if type(self.value) not in [int, long]:
+        if type(self.value) not in [int, long, list, tuple]:
             self.value = struct.unpack(self.endian + "L", self.value)[0]
 
 
@@ -796,5 +809,5 @@ class QWord(BitField):
 
         self.s_type = "qword"
 
-        if type(self.value) not in [int, long]:
+        if type(self.value) not in [int, long, list, tuple]:
             self.value = struct.unpack(self.endian + "Q", self.value)[0]
