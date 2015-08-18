@@ -24,9 +24,12 @@ from web.app import app
 class Target(object):
     """
     Target descriptor container.
+    Encapsulates connection logic for the target, as well as pedrpc connection logic.
+
+    Contains a logger which is configured by Session.add_target().
     """
 
-    def __init__(self, host, port, bind=None, proto="tcp", timeout=5.0, logger=None):
+    def __init__(self, host, port, proto="tcp", bind=None, timeout=5.0):
         """
         @type  host: str
         @param host: Hostname or IP address of target system
@@ -38,8 +41,6 @@ class Target(object):
         @kwarg bind:               (Optional, def=random) Socket bind address and port
         @type  timeout:            float
         @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
-        @type logger:              logging.RootLogger
-        @param logger:             For debug/info messages, etc.
         """
         self.max_udp = get_max_udp_size()
 
@@ -50,7 +51,7 @@ class Target(object):
         self.timeout = timeout
         self.proto = proto.lower()
         self._sock = None
-        self.logger = logger
+        self.logger = None
 
         if self.proto == "tcp":
             self.proto = socket.SOCK_STREAM
@@ -73,7 +74,20 @@ class Target(object):
         self.procmon_options = {}
         self.vmcontrol_options = {}
 
+    def close(self):
+        """
+        Close connection to the target.
+
+        :return: None
+        """
+        self._sock.close()
+
     def open(self):
+        """
+        Opens connection to the target. Make sure to call close!
+
+        :return: None
+        """
         self._sock = socket.socket(socket.AF_INET, self.proto)
 
         if self.bind:
@@ -89,37 +103,6 @@ class Target(object):
         if self.ssl:
             ssl_sock = ssl.wrap_socket(self._sock)
             self._sock = httplib.FakeSocket(self._sock, ssl_sock)
-
-    def send(self, data):
-        # TCP/SSL
-        if self.proto == socket.SOCK_STREAM:
-            self._sock.send(data)
-        # UDP
-        elif self.proto == socket.SOCK_DGRAM:
-            # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
-            # If our data is over the max UDP size for this platform, truncate before sending
-            if len(data) > self.max_udp:
-                self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
-                data = data[:self.max_udp]
-
-            self._sock.sendto(data, (self.host, self.port))
-
-        self.logger.debug("Packet sent : " + repr(data))
-
-    def close(self):
-        self._sock.close()
-
-    def recv(self, max_bytes):
-        """
-        Receive up to max_bytes data.
-
-        :param max_bytes: Maximum number of bytes to receive.
-        :type max_bytes: int
-
-        :return: Received data.
-        """
-        print(self._sock.proto)
-        return self._sock.recv(max_bytes)
 
     def pedrpc_connect(self):
         """
@@ -154,6 +137,41 @@ class Target(object):
             # connection established.
             for key in self.netmon_options.keys():
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
+
+    def recv(self, max_bytes):
+        """
+        Receive up to max_bytes data from the target.
+
+        :param max_bytes: Maximum number of bytes to receive.
+        :type max_bytes: int
+
+        :return: Received data.
+        """
+        print(self._sock.proto)
+        return self._sock.recv(max_bytes)
+
+    def send(self, data):
+        """
+        Send data to the target. Only valid after calling open!
+
+        :param data: Data to send.
+
+        :return: None
+        """
+        # TCP/SSL
+        if self.proto == socket.SOCK_STREAM:
+            self._sock.send(data)
+        # UDP
+        elif self.proto == socket.SOCK_DGRAM:
+            # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
+            # If our data is over the max UDP size for this platform, truncate before sending
+            if len(data) > self.max_udp:
+                self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
+                data = data[:self.max_udp]
+
+            self._sock.sendto(data, (self.host, self.port))
+
+        self.logger.debug("Packet sent : " + repr(data))
 
 
 class Connection(pgraph.Edge):
