@@ -20,6 +20,6 @@ setup(
                  'utils': './utils',
                  'web': './web'
                  },
-    package_data={'web': ['templates/*']},
+    package_data={'web': ['templates/*', 'static/css/*]},
     install_requires=['pydot2==1.0.33', 'tornado==4.0.2', 'Flask==0.10.1']
 )
