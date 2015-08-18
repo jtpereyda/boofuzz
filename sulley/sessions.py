@@ -448,36 +448,12 @@ class Session(pgraph.Graph):
                                 continue
 
                         try:
-                            # establish a connection to the target.
-                            sock = socket.socket(socket.AF_INET, self.proto)
-                        except Exception, e:
-                            error_handler(e, "failed creating socket", target)
+                            sock = self.connect_target(target)
+                        except socket.error, e:
+                            error_handler(e, "socket connection failed", target, sock)
                             continue
 
-                        if self.bind:
-                            try:
-                                sock.bind(self.bind)
-                            except Exception, e:
-                                error_handler(e, "failed binding on socket", target, sock)
-                                continue
 
-                        try:
-                            sock.settimeout(self.timeout)
-                            # Connect is needed only for TCP stream
-                            if self.proto == socket.SOCK_STREAM:
-                                sock.connect((target.host, target.port))
-                        except Exception, e:
-                            error_handler(e, "failed connecting on socket", target, sock)
-                            continue
-
-                        # if SSL is requested, then enable it.
-                        if self.ssl:
-                            try:
-                                ssl_sock = ssl.wrap_socket(sock)
-                                sock = httplib.FakeSocket(sock, ssl_sock)
-                            except Exception, e:
-                                error_handler(e, "failed ssl setup", target, sock)
-                                continue
 
                         # if the user registered a pre-send function, pass it the sock and let it do the deed.
                         try:
@@ -542,6 +518,41 @@ class Session(pgraph.Graph):
                     signal.pause()
         else:
             raise Exception("No signal.pause() on windows. #Fixme!")
+
+    def connect_target(self, target):
+        # try:
+        # establish a connection to the target.
+        sock = socket.socket(socket.AF_INET, self.proto)
+        # except Exception, e:
+        #     error_handler(e, "failed creating socket", target)
+        #     continue
+
+        if self.bind:
+            # try:
+            sock.bind(self.bind)
+            # except Exception, e:
+            #     error_handler(e, "failed binding on socket", target, sock)
+            #     continue
+
+        # try:
+        sock.settimeout(self.timeout)
+        # Connect is needed only for TCP stream
+        if self.proto == socket.SOCK_STREAM:
+            sock.connect((target.host, target.port))
+        # except Exception, e:
+        #     error_handler(e, "failed connecting on socket", target, sock)
+        #     continue
+
+        # if SSL is requested, then enable it.
+        if self.ssl:
+            # try:
+            ssl_sock = ssl.wrap_socket(sock)
+            sock = httplib.FakeSocket(sock, ssl_sock)
+            # except Exception, e:
+            #     error_handler(e, "failed ssl setup", target, sock)
+            #     continue
+
+        return sock
 
     def import_file(self):
         """
