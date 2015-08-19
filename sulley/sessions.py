@@ -2,18 +2,15 @@ import sys
 import zlib
 import time
 import socket
-import ssl
 import signal
 import cPickle
 import threading
-import httplib
 import logging
 import blocks
 import pgraph
 import sex
 import primitives
-
-from helpers import get_max_udp_size
+import socket_connection
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
@@ -42,29 +39,10 @@ class Target(object):
         @type  timeout:            float
         @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
         """
-        self.max_udp = get_max_udp_size()
-
-        self.host = host
-        self.port = port
-        self.bind = bind
-        self.ssl = False
-        self.timeout = timeout
-        self.proto = proto.lower()
-        self._sock = None
         self.logger = None
 
-        if self.proto == "tcp":
-            self.proto = socket.SOCK_STREAM
-
-        elif self.proto == "ssl":
-            self.proto = socket.SOCK_STREAM
-            self.ssl = True
-
-        elif self.proto == "udp":
-            self.proto = socket.SOCK_DGRAM
-
-        else:
-            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+        self.target_connection = socket_connection.SocketConnection(
+            host=host, port=port, proto=proto, bind=bind, timeout=timeout)
 
         # set these manually once target is instantiated.
         self.netmon = None
@@ -80,7 +58,7 @@ class Target(object):
 
         :return: None
         """
-        self._sock.close()
+        self.target_connection.close()
 
     def open(self):
         """
@@ -88,21 +66,7 @@ class Target(object):
 
         :return: None
         """
-        self._sock = socket.socket(socket.AF_INET, self.proto)
-
-        if self.bind:
-            self._sock.bind(self.bind)
-
-        self._sock.settimeout(self.timeout)
-
-        # Connect is needed only for TCP stream
-        if self.proto == socket.SOCK_STREAM:
-            self._sock.connect((self.host, self.port))
-
-        # if SSL is requested, then enable it.
-        if self.ssl:
-            ssl_sock = ssl.wrap_socket(self._sock)
-            self._sock = httplib.FakeSocket(self._sock, ssl_sock)
+        self.target_connection.open()
 
     def pedrpc_connect(self):
         """
@@ -147,10 +111,7 @@ class Target(object):
 
         :return: Received data.
         """
-        try:
-            return self._sock.recv(max_bytes)
-        except socket.timeout:
-            return bytes('')
+        return self.target_connection.recv(max_bytes=max_bytes)
 
     def send(self, data):
         """
@@ -160,20 +121,19 @@ class Target(object):
 
         :return: None
         """
-        # TCP/SSL
-        if self.proto == socket.SOCK_STREAM:
-            self._sock.send(data)
-        # UDP
-        elif self.proto == socket.SOCK_DGRAM:
-            # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
-            # If our data is over the max UDP size for this platform, truncate before sending
-            if len(data) > self.max_udp:
-                self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
-                data = data[:self.max_udp]
+        self.target_connection.send(data=data)
 
-            self._sock.sendto(data, (self.host, self.port))
+    def set_logger(self, logger):
+        """
+        Set this object's (and it's aggregated classes') logger.
 
-        self.logger.debug("Packet sent : " + repr(data))
+        :param logger: Logger to use.
+        :type logger: logging.Logger
+
+        :return: None
+        """
+        self.logger = logger
+        self.target_connection.set_logger(logger=logger)
 
 
 class Connection(pgraph.Edge):
@@ -310,13 +270,13 @@ class Session(pgraph.Graph):
         """
         Add a target to the session. Multiple targets can be added for parallel fuzzing.
 
-        @type  target: session.target
+        @type  target: Target
         @param target: Target to add to session
         """
 
         # pass specified target parameters to the PED-RPC server.
         target.pedrpc_connect()
-        target.logger = self.logger
+        target.set_logger(logger=self.logger)
 
         # add target to internal list.
         self.targets.append(target)
