@@ -147,8 +147,10 @@ class Target(object):
 
         :return: Received data.
         """
-        print(self._sock.proto)
-        return self._sock.recv(max_bytes)
+        try:
+            return self._sock.recv(max_bytes)
+        except socket.timeout:
+            return bytes('')
 
     def send(self, data):
         """
@@ -848,7 +850,6 @@ class Session(pgraph.Graph):
             self.targets[0].send(data)
         except socket.error, inst:
             self.logger.error("Socket error on send: %s" % inst)
-            raise
 
         try:
             # Receive data
@@ -856,15 +857,13 @@ class Session(pgraph.Graph):
             self.last_recv = self.targets[0].recv(10000)
         except socket.error, inst:
             self.logger.error("Socket error on receive: %s" % inst)
-            raise
-
 
         # If we have data in our recv buffer
         if self.last_recv:
             self.logger.debug("received: [%d] %s" % (len(self.last_recv), repr(self.last_recv)))
         # Assume a crash?
         else:
-            self.logger.warning("Nothing received on socket.")
+            self.logger.warning("Nothing received from target.")
             # Increment individual crash count
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
             # Note crash information
