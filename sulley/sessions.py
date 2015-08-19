@@ -24,18 +24,47 @@ from web.app import app
 class Target(object):
     """
     Target descriptor container.
+    Encapsulates connection logic for the target, as well as pedrpc connection logic.
+
+    Contains a logger which is configured by Session.add_target().
     """
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, proto="tcp", bind=None, timeout=5.0):
         """
         @type  host: str
         @param host: Hostname or IP address of target system
         @type  port: int
         @param port: Port of target service
+        @type  proto:              str
+        @kwarg proto:              (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl")
+        @type  bind:               tuple (host, port)
+        @kwarg bind:               (Optional, def=random) Socket bind address and port
+        @type  timeout:            float
+        @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
         """
+        self.max_udp = get_max_udp_size()
 
         self.host = host
         self.port = port
+        self.bind = bind
+        self.ssl = False
+        self.timeout = timeout
+        self.proto = proto.lower()
+        self._sock = None
+        self.logger = None
+
+        if self.proto == "tcp":
+            self.proto = socket.SOCK_STREAM
+
+        elif self.proto == "ssl":
+            self.proto = socket.SOCK_STREAM
+            self.ssl = True
+
+        elif self.proto == "udp":
+            self.proto = socket.SOCK_DGRAM
+
+        else:
+            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         # set these manually once target is instantiated.
         self.netmon = None
@@ -44,6 +73,36 @@ class Target(object):
         self.netmon_options = {}
         self.procmon_options = {}
         self.vmcontrol_options = {}
+
+    def close(self):
+        """
+        Close connection to the target.
+
+        :return: None
+        """
+        self._sock.close()
+
+    def open(self):
+        """
+        Opens connection to the target. Make sure to call close!
+
+        :return: None
+        """
+        self._sock = socket.socket(socket.AF_INET, self.proto)
+
+        if self.bind:
+            self._sock.bind(self.bind)
+
+        self._sock.settimeout(self.timeout)
+
+        # Connect is needed only for TCP stream
+        if self.proto == socket.SOCK_STREAM:
+            self._sock.connect((self.host, self.port))
+
+        # if SSL is requested, then enable it.
+        if self.ssl:
+            ssl_sock = ssl.wrap_socket(self._sock)
+            self._sock = httplib.FakeSocket(self._sock, ssl_sock)
 
     def pedrpc_connect(self):
         """
@@ -79,6 +138,43 @@ class Target(object):
             for key in self.netmon_options.keys():
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
+    def recv(self, max_bytes):
+        """
+        Receive up to max_bytes data from the target.
+
+        :param max_bytes: Maximum number of bytes to receive.
+        :type max_bytes: int
+
+        :return: Received data.
+        """
+        try:
+            return self._sock.recv(max_bytes)
+        except socket.timeout:
+            return bytes('')
+
+    def send(self, data):
+        """
+        Send data to the target. Only valid after calling open!
+
+        :param data: Data to send.
+
+        :return: None
+        """
+        # TCP/SSL
+        if self.proto == socket.SOCK_STREAM:
+            self._sock.send(data)
+        # UDP
+        elif self.proto == socket.SOCK_DGRAM:
+            # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
+            # If our data is over the max UDP size for this platform, truncate before sending
+            if len(data) > self.max_udp:
+                self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
+                data = data[:self.max_udp]
+
+            self._sock.sendto(data, (self.host, self.port))
+
+        self.logger.debug("Packet sent : " + repr(data))
+
 
 class Connection(pgraph.Edge):
     def __init__(self, src, dst, callback=None):
@@ -109,8 +205,8 @@ class Connection(pgraph.Edge):
 
 class Session(pgraph.Graph):
     def __init__(self, session_filename=None, skip=0, sleep_time=1.0, log_level=logging.INFO, logfile=None,
-                 logfile_level=logging.DEBUG, proto="tcp", bind=None, restart_interval=0, timeout=5.0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=300):
+                 logfile_level=logging.DEBUG, restart_interval=0, web_port=26000, crash_threshold=3,
+                 restart_sleep_time=300):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -126,12 +222,6 @@ class Session(pgraph.Graph):
         @kwarg logfile:            (Optional, def=None) Name of log file
         @type  logfile_level:      int
         @kwarg logfile_level:      (Optional, def=logger.INFO) Set the log level for the logfile
-        @type  proto:              str
-        @kwarg proto:              (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl")
-        @type  bind:               tuple (host, port)
-        @kwarg bind:               (Optional, def=random) Socket bind address and port
-        @type  timeout:            float
-        @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
@@ -144,7 +234,6 @@ class Session(pgraph.Graph):
 
         super(Session, self).__init__()
 
-        self.max_udp = get_max_udp_size()
         try:
             import signal
 
@@ -156,11 +245,7 @@ class Session(pgraph.Graph):
         self.session_filename = session_filename
         self.skip = skip
         self.sleep_time = sleep_time
-        self.proto = proto.lower()
-        self.bind = bind
-        self.ssl = False
         self.restart_interval = restart_interval
-        self.timeout = timeout
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
@@ -191,19 +276,6 @@ class Session(pgraph.Graph):
         self.protmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
-
-        if self.proto == "tcp":
-            self.proto = socket.SOCK_STREAM
-
-        elif self.proto == "ssl":
-            self.proto = socket.SOCK_STREAM
-            self.ssl = True
-
-        elif self.proto == "udp":
-            self.proto = socket.SOCK_DGRAM
-
-        else:
-            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         # import settings if they exist.
         self.import_file()
@@ -244,6 +316,7 @@ class Session(pgraph.Graph):
 
         # pass specified target parameters to the PED-RPC server.
         target.pedrpc_connect()
+        target.logger = self.logger
 
         # add target to internal list.
         self.targets.append(target)
@@ -325,9 +398,7 @@ class Session(pgraph.Graph):
             "skip": self.total_mutant_index,
             "sleep_time": self.sleep_time,
             "restart_sleep_time": self.restart_sleep_time,
-            "proto": self.proto,
             "restart_interval": self.restart_interval,
-            "timeout": self.timeout,
             "web_port": self.web_port,
             "crash_threshold": self.crash_threshold,
             "total_num_mutations": self.total_num_mutations,
@@ -448,59 +519,33 @@ class Session(pgraph.Graph):
                                 continue
 
                         try:
-                            # establish a connection to the target.
-                            sock = socket.socket(socket.AF_INET, self.proto)
-                        except Exception, e:
-                            error_handler(e, "failed creating socket", target)
+                            target.open()
+                        except socket.error, e:
+                            error_handler(e, "socket connection failed", target, target)
                             continue
-
-                        if self.bind:
-                            try:
-                                sock.bind(self.bind)
-                            except Exception, e:
-                                error_handler(e, "failed binding on socket", target, sock)
-                                continue
-
-                        try:
-                            sock.settimeout(self.timeout)
-                            # Connect is needed only for TCP stream
-                            if self.proto == socket.SOCK_STREAM:
-                                sock.connect((target.host, target.port))
-                        except Exception, e:
-                            error_handler(e, "failed connecting on socket", target, sock)
-                            continue
-
-                        # if SSL is requested, then enable it.
-                        if self.ssl:
-                            try:
-                                ssl_sock = ssl.wrap_socket(sock)
-                                sock = httplib.FakeSocket(sock, ssl_sock)
-                            except Exception, e:
-                                error_handler(e, "failed ssl setup", target, sock)
-                                continue
 
                         # if the user registered a pre-send function, pass it the sock and let it do the deed.
                         try:
-                            self.pre_send(sock)
+                            self.pre_send(target)
                         except Exception, e:
-                            error_handler(e, "pre_send() failed", target, sock)
+                            error_handler(e, "pre_send() failed", target, target)
                             continue
 
                         # send out valid requests for each node in the current path up to the node we are fuzzing.
                         try:
                             for e in path[:-1]:
                                 node = self.nodes[e.dst]
-                                self.transmit(sock, node, e)
+                                self.transmit(target, node, e)
                         except Exception, e:
-                            error_handler(e, "failed transmitting a node up the path", target, sock)
+                            error_handler(e, "failed transmitting a node up the path", target, target)
                             continue
 
                         # now send the current node we are fuzzing.
                         try:
-                            self.transmit(sock, self.fuzz_node, edge)
+                            self.transmit(target, self.fuzz_node, edge)
                         except Exception, e:
-                            error_handler(e, "failed transmitting fuzz node", target, sock)
-                            continue
+                            error_handler(e, "failed transmitting fuzz node", target, target)
+                            raise
 
                         # if we reach this point the send was successful for break out of the while(1).
                         break
@@ -509,12 +554,12 @@ class Session(pgraph.Graph):
                     # We do this outside the try/except loop because if our fuzz causes a crash then the post_send()
                     # will likely fail and we don't want to sit in an endless loop.
                     try:
-                        self.post_send(sock)
+                        self.post_send(target)
                     except Exception, e:
-                        error_handler(e, "post_send() failed", target, sock)
+                        error_handler(e, "post_send() failed", target, target)
 
                     # done with the socket.
-                    sock.close()
+                    target.close()
 
                     # delay in between test cases.
                     self.logger.info("sleeping for %f seconds" % self.sleep_time)
@@ -564,9 +609,7 @@ class Session(pgraph.Graph):
         self.session_filename = data["session_filename"]
         self.sleep_time = data["sleep_time"]
         self.restart_sleep_time = data["restart_sleep_time"]
-        self.proto = data["proto"]
         self.restart_interval = data["restart_interval"]
-        self.timeout = data["timeout"]
         self.web_port = data["web_port"]
         self.crash_threshold = data["crash_threshold"]
         self.total_num_mutations = data["total_num_mutations"]
@@ -807,34 +850,23 @@ class Session(pgraph.Graph):
 
         # Try to send payload down-range
         try:
-            # TCP/SSL
-            if self.proto == socket.SOCK_STREAM:
-                sock.send(data)
-            # UDP
-            elif self.proto == socket.SOCK_DGRAM:
-                # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
-                # If our data is over the max UDP size for this platform, truncate before sending
-                if len(data) > self.max_udp:
-                    self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
-                    data = data[:self.max_udp]
+            self.targets[0].send(data)
+        except socket.error, inst:
+            self.logger.error("Socket error on send: %s" % inst)
 
-                sock.sendto(data, (self.targets[0].host, self.targets[0].port))
-
-            self.logger.debug("Packet sent : " + repr(data))
-
+        try:
             # Receive data
             # TODO: Remove magic number (10000)
-            self.last_recv = sock.recv(10000)
-
-        except Exception, inst:
-            self.logger.error("Socket error, send: %s" % inst)
+            self.last_recv = self.targets[0].recv(10000)
+        except socket.error, inst:
+            self.logger.error("Socket error on receive: %s" % inst)
 
         # If we have data in our recv buffer
         if self.last_recv:
             self.logger.debug("received: [%d] %s" % (len(self.last_recv), repr(self.last_recv)))
         # Assume a crash?
         else:
-            self.logger.warning("Nothing received on socket.")
+            self.logger.warning("Nothing received from target.")
             # Increment individual crash count
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
             # Note crash information
