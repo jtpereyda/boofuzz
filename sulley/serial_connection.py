@@ -5,18 +5,24 @@ import serial
 class SerialConnection(itarget_connection.ITargetConnection):
     """
     ITargetConnection implementation using serial ports.
+
+    Messages are time-delimited, based on a parameter given to the constructor.
     """
-    def __init__(self, port, baudrate):
+
+    def __init__(self, port, baudrate, message_separator_time=0.300):
         """
-        @type  port: int | str
-        @param port: Serial port name or number.
-        @type baudrate: int
-        @param baudrate: Baud rate for port.
+        @type  port:                   int | str
+        @param port:                   Serial port name or number.
+        @type baudrate:                int
+        @param baudrate:               Baud rate for port.
+        @type message_separator_time:  float
+        @param message_separator_time: The amount of time to wait before considering a reply from the target complete.
         """
         self._device = None
         self.port = port
         self.baudrate = baudrate
         self.logger = None
+        self.message_separator_time = message_separator_time
 
     def close(self):
         """
@@ -44,7 +50,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         :return: Received data.
         """
 
-        self._device.timeout = 0.010
+        self._device.timeout = self.message_separator_time
 
         fragment = self._device.read(size=1024)
         data = fragment
@@ -55,7 +61,6 @@ class SerialConnection(itarget_connection.ITargetConnection):
             fragment = self._device.read(size=1024)
             data += fragment
 
-        print("recv:{0}".format(data))
         return data
 
     def send(self, data):
@@ -66,7 +71,6 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
         :return: None
         """
-        print("send:{0}".format(data))
         self._device.write(data)
 
     def set_logger(self, logger):
