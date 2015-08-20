@@ -11,6 +11,7 @@ import pgraph
 import sex
 import primitives
 import socket_connection
+import ifuzz_logger
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
@@ -39,9 +40,10 @@ class Target(object):
         @type  timeout:            float
         @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
         """
-        self.logger = None
+        self._logger = None
+        self._fuzz_data_logger = None
 
-        self.target_connection = socket_connection.SocketConnection(
+        self._target_connection = socket_connection.SocketConnection(
             host=host, port=port, proto=proto, bind=bind, timeout=timeout)
 
         # set these manually once target is instantiated.
@@ -58,7 +60,7 @@ class Target(object):
 
         :return: None
         """
-        self.target_connection.close()
+        self._target_connection.close()
 
     def open(self):
         """
@@ -66,7 +68,7 @@ class Target(object):
 
         :return: None
         """
-        self.target_connection.open()
+        self._target_connection.open()
 
     def pedrpc_connect(self):
         """
@@ -111,7 +113,12 @@ class Target(object):
 
         :return: Received data.
         """
-        return self.target_connection.recv(max_bytes=max_bytes)
+        data = self._target_connection.recv(max_bytes=max_bytes)
+
+        if self._fuzz_data_logger is not None:
+            self._fuzz_data_logger.log_recv(data)
+
+        return data
 
     def send(self, data):
         """
@@ -121,7 +128,9 @@ class Target(object):
 
         :return: None
         """
-        self.target_connection.send(data=data)
+        if self._fuzz_data_logger is not None:
+            self._fuzz_data_logger.log_send(data)
+        self._target_connection.send(data=data)
 
     def set_logger(self, logger):
         """
@@ -132,8 +141,19 @@ class Target(object):
 
         :return: None
         """
-        self.logger = logger
-        self.target_connection.set_logger(logger=logger)
+        self._logger = logger
+        self._target_connection.set_logger(logger=logger)
+
+    def set_fuzz_data_logger(self, fuzz_data_logger):
+        """
+        Set this object's fuzz data logger -- for sent and received fuzz data.
+
+        :param fuzz_data_logger: New logger.
+        :type fuzz_data_logger: ifuzz_logger.IFuzzLogger
+
+        :return: None
+        """
+        self._fuzz_data_logger = fuzz_data_logger
 
 
 class Connection(pgraph.Edge):
@@ -166,7 +186,7 @@ class Connection(pgraph.Edge):
 class Session(pgraph.Graph):
     def __init__(self, session_filename=None, skip=0, sleep_time=1.0, log_level=logging.INFO, logfile=None,
                  logfile_level=logging.DEBUG, restart_interval=0, web_port=26000, crash_threshold=3,
-                 restart_sleep_time=300):
+                 restart_sleep_time=300, fuzz_data_logger=None):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -188,8 +208,10 @@ class Session(pgraph.Graph):
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: int
         @kwarg restart_sleep_time: Optional, def=300) Time in seconds to sleep when target can't be restarted
-        @type  web_port:	   int
+        @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
+        @type fuzz_data_logger:    ifuzz_logger.IFuzzLogger
+        @kwarg fuzz_data_logger:   For saving data sent to and from the target.
         """
 
         super(Session, self).__init__()
@@ -209,6 +231,7 @@ class Session(pgraph.Graph):
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
+        self._fuzz_data_logger = fuzz_data_logger
 
         # Initialize logger
         self.logger = logging.getLogger("Sulley_logger")
@@ -277,6 +300,7 @@ class Session(pgraph.Graph):
         # pass specified target parameters to the PED-RPC server.
         target.pedrpc_connect()
         target.set_logger(logger=self.logger)
+        target.set_fuzz_data_logger(fuzz_data_logger=self._fuzz_data_logger)
 
         # add target to internal list.
         self.targets.append(target)
@@ -459,6 +483,7 @@ class Session(pgraph.Graph):
                 # if we don't need to skip the current test case.
                 if self.total_mutant_index > self.skip:
                     self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index, num_mutations))
+                    self._fuzz_data_logger.open_test_case(self.total_mutant_index)
 
                     # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
                     # occurs, restart the target.
