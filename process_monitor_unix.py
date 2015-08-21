@@ -4,6 +4,7 @@ import getopt
 import signal
 import time
 import threading
+import subprocess
 
 from sulley import pedrpc
 
@@ -63,7 +64,7 @@ class DebuggerThread:
 
     def spawn_target(self):
         print self.tokens
-        self.pid = os.spawnv(os.P_NOWAIT, self.tokens[0], self.tokens)
+        self.pid = subprocess.Popen(self.tokens).pid
         self.alive = True
 
     def start_monitoring(self):
