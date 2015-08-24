@@ -720,6 +720,9 @@ class Session(pgraph.Graph):
 
         @type  target: session.target
         @param target: Target we are restarting
+
+        @rtype : bool
+        @returns: False if restart failed (such that we know it failed). True otherwise.
         """
 
         # vm restarting is the preferred method so try that first.
@@ -750,6 +753,8 @@ class Session(pgraph.Graph):
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.pedrpc_connect()
+
+        return True
 
     def server_init(self):
         """
