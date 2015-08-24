@@ -17,7 +17,7 @@ def commify(number):
 @app.route("/togglepause")
 def pause():
     # Flip our state
-    app.session.pause_flag = not app.session.pause_flag
+    app.session.is_paused = not app.session.is_paused
     return redirect('/')
 
 
