@@ -207,11 +207,11 @@ class Session(pgraph.Graph):
         @type  crash_threshold:    int
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: int
-        @kwarg restart_sleep_time: Optional, def=300) Time in seconds to sleep when target can't be restarted
+        @kwarg restart_sleep_time: (Optional, def=300) Time in seconds to sleep when target can't be restarted
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    ifuzz_logger.IFuzzLogger
-        @kwarg fuzz_data_logger:   For saving data sent to and from the target.
+        @kwarg fuzz_data_logger:   (Optional, def=None) For saving data sent to and from the target.
         """
 
         super(Session, self).__init__()
@@ -483,7 +483,8 @@ class Session(pgraph.Graph):
                 # if we don't need to skip the current test case.
                 if self.total_mutant_index > self.skip:
                     self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index, num_mutations))
-                    self._fuzz_data_logger.open_test_case(self.total_mutant_index)
+                    if self._fuzz_data_logger is not None:
+                        self._fuzz_data_logger.open_test_case(self.total_mutant_index)
 
                     # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
                     # occurs, restart the target.
@@ -530,7 +531,7 @@ class Session(pgraph.Graph):
                             self.transmit(target, self.fuzz_node, edge)
                         except Exception, e:
                             error_handler(e, "failed transmitting fuzz node", target, target)
-                            raise
+                            continue
 
                         # if we reach this point the send was successful for break out of the while(1).
                         break
