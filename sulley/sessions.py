@@ -191,6 +191,7 @@ class Session(pgraph.Graph):
         self.protmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
+        self._crash_synopses = []  # List of crash reports for the current test case
 
         if self.proto == "tcp":
             self.proto = socket.SOCK_STREAM
@@ -523,6 +524,9 @@ class Session(pgraph.Graph):
                     # poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
                     self.poll_pedrpc(target)
 
+                    # Log failure(s), restart target, etc.
+                    self._process_failures(target=target)
+
                     # serialize the current session state to disk.
                     self.export_file()
 
@@ -627,7 +631,7 @@ class Session(pgraph.Graph):
         """
         Poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
 
-        @type  target: session.target
+        @type  target: Target
         @param target: Session target whose PED-RPC services we are polling
         """
         # kill the pcap thread and see how many bytes the sniffer recorded.
@@ -639,6 +643,36 @@ class Session(pgraph.Graph):
         # check if our fuzz crashed the target. procmon.post_send() returns False if the target access violated.
         if target.procmon and not target.procmon.post_send():
             self.logger.info("procmon detected access violation on test case #%d" % self.total_mutant_index)
+            self.log_fail(target.procmon.get_crash_synopsis())
+
+    def log_fail(self, synopsis):
+        """
+        Log a failure for the current test case.
+
+        @param synopsis: Description of failure.
+
+        @return: None
+        """
+        self._crash_synopses.append(synopsis)
+
+    def _process_failures(self, target):
+        """
+        If self.crash_synopses contains any entries, perform these failure-related actions:
+         - save failures to self.procmon_results (for website)
+         - log failures
+         - target restart
+         - sys.exit(0) if target restart fails
+         - clear self.crash_synopses
+
+        Should be called after each fuzz test case.
+
+        @param target: Target to restart if failure occurred.
+        @type target: Target
+
+        @return: None
+        """
+        if len(self._crash_synopses) > 0:
+            self.logger.info("Failure detected on test case #%d" % self.total_mutant_index)
 
             # retrieve the primitive that caused the crash and increment it's individual crash count.
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
@@ -653,7 +687,12 @@ class Session(pgraph.Graph):
             self.logger.info(msg)
 
             # print crash synopsis
-            self.procmon_results[self.total_mutant_index] = target.procmon.get_crash_synopsis()
+            if len(self._crash_synopses) > 1:
+                # Prepend a header if > 1 failure report, so that they are visible from the main web page
+                synopsis = "({0} reports) {1}".format(len(self._crash_synopses), "\n".join(self._crash_synopses))
+            else:
+                synopsis = "\n".join(self._crash_synopses)
+            self.procmon_results[self.total_mutant_index] = synopsis
             self.logger.info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
@@ -667,6 +706,9 @@ class Session(pgraph.Graph):
                         )
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
+
+            # Clear crash data for next test case
+            self._crash_synopses = []
 
             # start the target back up.
             # If it returns False, stop the test
