@@ -56,7 +56,10 @@ def index():
     mutant_index = float(app.session.fuzz_node.mutant_index)
     num_mutations = float(app.session.fuzz_node.num_mutations())
 
-    progress_current = mutant_index / num_mutations
+    try:
+        progress_current = mutant_index / num_mutations
+    except ZeroDivisionError:
+        progress_current = 0
     num_bars = int(progress_current * 50)
     progress_current_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
     progress_current = "%.3f%%" % (progress_current * 100)
@@ -64,7 +67,10 @@ def index():
     total_mutant_index = float(app.session.total_mutant_index)
     total_num_mutations = float(app.session.total_num_mutations)
 
-    progress_total = total_mutant_index / total_num_mutations
+    try:
+        progress_total = total_mutant_index / total_num_mutations
+    except ZeroDivisionError:
+        progress_total = 0
     num_bars = int(progress_total * 50)
     progress_total_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
     progress_total = "%.3f%%" % (progress_total * 100)
