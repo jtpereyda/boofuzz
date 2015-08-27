@@ -1,15 +1,17 @@
 import itarget_connection
 import serial
+import re
 
 
 class SerialConnection(itarget_connection.ITargetConnection):
     """
     ITargetConnection implementation using serial ports.
 
-    Messages are time-delimited, based on a parameter given to the constructor.
+    Messages are time-delimited, based on a parameter given to the constructor, and may also be delimited by a
+    specific message terminator regex.
     """
 
-    def __init__(self, port, baudrate, message_separator_time=0.300):
+    def __init__(self, port, baudrate, message_separator_time=0.300, message_terminator=None):
         """
         @type  port:                   int | str
         @param port:                   Serial port name or number.
@@ -17,12 +19,18 @@ class SerialConnection(itarget_connection.ITargetConnection):
         @param baudrate:               Baud rate for port.
         @type message_separator_time:  float
         @param message_separator_time: The amount of time to wait before considering a reply from the target complete.
+                                       This is different than a timeout, as the message is considered complete, not
+                                       timed out.
+        @type message_terminator:      str
+        @param message_terminator:     (Optional, def=None) Regex string to search for. When found, indicates a
+                                       completed message.
         """
         self._device = None
         self.port = port
         self.baudrate = baudrate
         self.logger = None
         self.message_separator_time = message_separator_time
+        self.message_terminator = message_terminator
 
     def close(self):
         """
@@ -58,6 +66,9 @@ class SerialConnection(itarget_connection.ITargetConnection):
         # Serial ports can be slow and render only a few bytes at a time.
         # Therefore, we keep reading until we get nothing, in hopes of getting a full packet.
         while fragment:
+            # Quit if we find the message terminator
+            if self.message_terminator is not None and re.search(self.message_terminator, data) is not None:
+                break
             fragment = self._device.read(size=1024)
             data += fragment
 
