@@ -822,8 +822,7 @@ class Session(pgraph.Graph):
                 "no vmcontrol or procmon channel available ... sleeping for %d seconds" % self.restart_sleep_time
             )
             time.sleep(self.restart_sleep_time)
-            # TODO: should be good to relaunch test for crash before returning False
-            return False
+            return True
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.pedrpc_connect()
