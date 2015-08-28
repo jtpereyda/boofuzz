@@ -1,5 +1,5 @@
 import sessions
-import serial_connection
+import serial_connection_low_level
 
 
 class SerialTarget(sessions.Target):
@@ -27,7 +27,7 @@ class SerialTarget(sessions.Target):
         """
         super(SerialTarget, self).__init__(host="", port=1)
 
-        self._target_connection = serial_connection.SerialConnection(
+        self._target_connection = serial_connection_low_level.SerialConnection(
             port=port,
             baudrate=baudrate,
             message_separator_time=message_separator_time,
