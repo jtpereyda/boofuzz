@@ -1,9 +1,10 @@
+import time
 import itarget_connection
 
 
 class SerialConnectionGeneric(itarget_connection.ITargetConnection):
     """
-    ITargetConnection implementation using serial ports. Designed to utilize SerialConnectionLowLevel.
+    ITargetConnection implementation for generic serial ports. Designed to utilize SerialConnectionLowLevel.
 
     Since serial ports provide no default functionality for separating messages/packets, this class provides
     several means:
@@ -49,6 +50,8 @@ class SerialConnectionGeneric(itarget_connection.ITargetConnection):
         self.message_separator_time = message_separator_time
         self.content_checker = content_checker
 
+        self._leftover_bytes = b''
+
     def close(self):
         """
         Close connection to the target.
@@ -77,17 +80,33 @@ class SerialConnectionGeneric(itarget_connection.ITargetConnection):
 
         self._connection.timeout = min(.001, self.message_separator_time, self.timeout)
 
-        fragment = self._connection.recv(max_bytes=max_bytes)
-        data = fragment
-        #
-        # # Serial ports can be slow and render only a few bytes at a time.
-        # # Therefore, we keep reading until we get nothing, in hopes of getting a full packet.
-        # while fragment:
-        #     # Quit if we find the message terminator
-        #     if self.message_terminator is not None and re.search(self.message_terminator, data) is not None:
-        #         break
-        #     fragment = self._device.read(size=1024)
-        #     data += fragment
+        start_time = last_byte_time = time.time()
+
+        data = self._leftover_bytes
+        self._leftover_bytes = b''
+
+        while len(data) < max_bytes:
+            # Update timer for message_separator_time
+            if len(data) > 0:
+                last_byte_time = time.time()
+
+            # Try recv again
+            fragment = self._connection.recv(max_bytes=max_bytes-len(data))
+            data += fragment
+
+            # User-supplied content_checker function
+            if self.content_checker is not None:
+                num_valid_bytes = self.content_checker(data)
+                if num_valid_bytes > 0:
+                    self._leftover_bytes = data[num_valid_bytes:]
+                    return data[0:num_valid_bytes]
+
+            # Check timeout and message_separator_time
+            cur_time = time.time()
+            if self.timeout is not None and cur_time - start_time >= self.timeout:
+                return data
+            if self.message_separator_time is not None and cur_time - last_byte_time >= self.message_separator_time:
+                return data
 
         return data
 
