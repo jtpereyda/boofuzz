@@ -2,7 +2,7 @@ import time
 import itarget_connection
 
 
-class SerialConnectionGeneric(itarget_connection.ITargetConnection):
+class SerialConnection(itarget_connection.ITargetConnection):
     """
     ITargetConnection implementation for generic serial ports. Designed to utilize SerialConnectionLowLevel.
 

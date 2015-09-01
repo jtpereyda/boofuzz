@@ -2,10 +2,10 @@ import itarget_connection
 import serial
 
 
-class SerialConnection(itarget_connection.ITargetConnection):
+class SerialConnectionLowLevel(itarget_connection.ITargetConnection):
     """
-    A basic wrapper for a serial object. This class provides no
-    Separated from SerialConnectionGeneric to allow for effective unit testing.
+    A basic wrapper for a serial object.
+    Separated from SerialConnection to allow for effective unit testing.
     Implements ITargetConnection.
     """
 
