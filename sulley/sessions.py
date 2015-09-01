@@ -164,7 +164,7 @@ class Session(pgraph.Graph):
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
 
-        self.web_interface_thread = self.build_webapp_thread(port=web_port)
+        self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
         # Initialize logger
         self.logger = logging.getLogger("Sulley_logger")
