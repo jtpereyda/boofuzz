@@ -525,7 +525,7 @@ class Session(pgraph.Graph):
                                 self.transmit(target, node, e)
                         except Exception, e:
                             error_handler(e, "failed transmitting a node up the path", target, target)
-                            continue
+                            raise
 
                         # now send the current node we are fuzzing.
                         try:
