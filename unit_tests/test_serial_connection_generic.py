@@ -109,39 +109,66 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = "ABCDEFG"
+        data = b'ABCDEFG'
         uut.send(data=data)
         # Then
         self.assertEqual(len(self.mock.send_data_list), 1)
-        self.assertEqual(self.mock.send_data_list[0], "ABCDEFG")
+        self.assertEqual(self.mock.send_data_list[0], b'ABCDEFG')
+
+    def test_send_return_none(self):
+        """
+        Verify that MockSerialConnection.send() is called again when it returns None.
+
+        Given: A SerialConnectionGeneric using MockSerialConnection.
+
+        When: Calling SerialConnectionGeneric.send(data) with 10 bytes.
+        and: MockSerialConnection.send() returns: None, 10.
+
+        Then: Verify MockSerialConnection.send() was called exactly 2 times.
+        and: Verify MockSerialConnection.send() received the expected data each time.
+        """
+        uut = SerialConnectionGeneric(connection=self.mock)
+        # When
+        data = b'123456789A'
+        self.mock.send_return_queue = [None, 10]
+        uut.send(data=data)
+        # Then
+        self.assertEqual(len(self.mock.send_data_list), 2)
+        self.assertEqual(self.mock.send_data_list, [b'123456789A',
+                                                    b'123456789A'])
 
     def test_send_multiple(self):
         """
+        Verify that MockSerialConnection.send() is called repeatedly until it sends all the data.
+
         Given: A SerialConnectionGeneric using MockSerialConnection.
 
         When: Calling SerialConnectionGeneric.send(data) with 9 bytes.
-        and: MockSerialConnection.send() returns: 0, 0, 1, 2, 3, 2, 1.
+        and: MockSerialConnection.send() returns: 0, None, 0, 1, 2, 3, 2, 1.
 
         Then: Verify MockSerialConnection.send() was called exactly 7 times.
         and: Verify MockSerialConnection.send() received the expected data each time.
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = "123456789"
-        self.mock.send_return_queue = [0, 0, 1, 2, 3, 2, 1]
+        data = b'123456789'
+        self.mock.send_return_queue = [0, None, 0, 1, 2, 3, 2, 1]
         uut.send(data=data)
         # Then
-        self.assertEqual(len(self.mock.send_data_list), 7)
-        self.assertEqual(self.mock.send_data_list, ["123456789",
-                                                    "123456789",
-                                                    "123456789",
-                                                    "23456789",
-                                                    "456789",
-                                                    "789",
-                                                    "9"])
+        self.assertEqual(len(self.mock.send_data_list), 8)
+        self.assertEqual(self.mock.send_data_list, [b'123456789',
+                                                    b'123456789',
+                                                    b'123456789',
+                                                    b'123456789',
+                                                    b'23456789',
+                                                    b'456789',
+                                                    b'789',
+                                                    b'9'])
 
     def test_send_off_by_one(self):
         """
+        Verify that MockSerialConnection.send() is called again when it sends all but 1 byte.
+
         Given: A SerialConnectionGeneric using MockSerialConnection.
 
         When: Calling SerialConnectionGeneric.send(data) with 9 bytes.
@@ -152,16 +179,18 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = "123456789"
+        data = b'123456789'
         self.mock.send_return_queue = [8, 1]
         uut.send(data=data)
         # Then
         self.assertEqual(len(self.mock.send_data_list), 2)
-        self.assertEqual(self.mock.send_data_list, ["123456789",
-                                                    "9"])
+        self.assertEqual(self.mock.send_data_list, [b'123456789',
+                                                    b'9'])
 
     def test_send_one_byte(self):
         """
+        Verify that MockSerialConnection.send() is called again when it returns 0 after being given 1 byte.
+
         Given: A SerialConnectionGeneric using MockSerialConnection.
 
         When: Calling SerialConnectionGeneric.send(data) with 1 byte.
@@ -172,16 +201,18 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = "1"
+        data = b'1'
         self.mock.send_return_queue = [0, 1]
         uut.send(data=data)
         # Then
         self.assertEqual(len(self.mock.send_data_list), 2)
-        self.assertEqual(self.mock.send_data_list, ["1",
-                                                    "1"])
+        self.assertEqual(self.mock.send_data_list, [b'1',
+                                                    b'1'])
 
     def test_send_many(self):
         """
+        Verify that send works properly when MockSerialConnection.send() sends 1 byte at a time.
+
         Given: A SerialConnectionGeneric using MockSerialConnection.
 
         When: Calling SerialConnectionGeneric.send(data) with 9 bytes.
@@ -192,15 +223,17 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = "123456789"
+        data = b'123456789'
         self.mock.send_return_queue = [0]*500 + [len(data)]
         uut.send(data=data)
         # Then
         self.assertEqual(len(self.mock.send_data_list), 501)
-        self.assertEqual(self.mock.send_data_list, ["123456789"]*501)
+        self.assertEqual(self.mock.send_data_list, [b'123456789']*501)
 
     def test_send_zero_bytes(self):
         """
+        Verify that send() doesn't fail when given 0 bytes.
+
         Given: A SerialConnectionGeneric using MockSerialConnection.
 
         When: Calling SerialConnectionGeneric.send(data) with 0 bytes.
@@ -211,7 +244,7 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        data = ""
+        data = b''
         self.mock.send_return_queue = [0, 1]
         uut.send(data=data)
         # Then
@@ -219,13 +252,15 @@ class TestSerialConnection(unittest.TestCase):
         if len(self.mock.send_data_list) == 0:
             self.assertEqual(self.mock.send_data_list, [])
         else:
-            self.assertEqual(self.mock.send_data_list, [""])
+            self.assertEqual(self.mock.send_data_list, [b''])
 
     ###########################################################################
     # Receive tests
     ###########################################################################
     def test_recv_simple(self):
         """
+        Verify that recv() works in the normal case.
+
         Given: A SerialConnectionGeneric using MockSerialConnection,
                with no timeout/message_separator_time/content_checker.
 
@@ -237,14 +272,16 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        self.mock.recv_return_queue = ["0123456"]
+        self.mock.recv_return_queue = [b'0123456']
         data = uut.recv(max_bytes=7)
         # Then
         self.assertEqual(self.mock.recv_max_bytes_lengths, [7])
-        self.assertEqual(data, "0123456")
+        self.assertEqual(data, b'0123456')
 
     def test_recv_max_bytes_only(self):
         """
+        Verify that recv() calls MockSerialConnection.recv() repeatedly until it gets max_bytes of data.
+
         Given: A SerialConnectionGeneric using MockSerialConnection,
                with no timeout/message_separator_time/content_checker.
 
@@ -257,11 +294,11 @@ class TestSerialConnection(unittest.TestCase):
         """
         uut = SerialConnectionGeneric(connection=self.mock)
         # When
-        self.mock.recv_return_queue = ["", "", "", "1", "22", "123", "1234"]
+        self.mock.recv_return_queue = [b'', b'', b'', b'1', b'22', b'123', b'1234']
         data = uut.recv(max_bytes=10)
         # Then
         self.assertEqual(self.mock.recv_max_bytes_lengths, [10, 10, 10, 10, 9, 7, 4])
-        self.assertEqual(data, b"1221231234")
+        self.assertEqual(data, b'1221231234')
 
     def test_recv_timeout(self):
         """
@@ -318,7 +355,7 @@ class TestSerialConnection(unittest.TestCase):
     def test_recv_message_separator_time(self):
         """
         Verify that message_separator_time works correctly.
-        Receive a message over time t > message_separator_time, where each part of the message is delayed by
+        Receive a message over time t, where t > message_separator_time, and each part of the message is delayed by
         t' < message_separator_time.
 
         Given: A SerialConnectionGeneric using MockSerialConnection,
@@ -336,7 +373,7 @@ class TestSerialConnection(unittest.TestCase):
         uut = SerialConnectionGeneric(connection=self.mock, timeout=.060, message_separator_time=.020)
 
         # When
-        self.mock.recv_return_queue = [b"1"] * 60
+        self.mock.recv_return_queue = [b'1'] * 60
         self.mock.recv_wait_times = [.001] * 60
         data = uut.recv(max_bytes=60)
 
@@ -364,13 +401,13 @@ class TestSerialConnection(unittest.TestCase):
         uut = SerialConnectionGeneric(connection=self.mock, timeout=.060, message_separator_time=.020)
 
         # When
-        self.mock.recv_return_queue = [b"1", b"2", b"3"*58]
+        self.mock.recv_return_queue = [b'1', b'2', b'3'*58]
         self.mock.recv_wait_times = [.001, .040, .001]
         data = uut.recv(max_bytes=60)
 
         # Then
         self.assertEqual(len(self.mock.recv_max_bytes_lengths), 2)
-        self.assertEqual(data, b"12")
+        self.assertEqual(data, b'12')
 
     def test_recv_message_content_checker(self):
         """
@@ -418,19 +455,19 @@ class TestSerialConnection(unittest.TestCase):
                                       content_checker=test_checker)
 
         # When
-        self.mock.recv_return_queue = [b"12", b"34", b"56", b"78", b"9A", b"BC"]
+        self.mock.recv_return_queue = [b'12', b'34', b'56', b'78', b'9A', b'BC']
 
         data = uut.recv(max_bytes=100)
         self.assertEqual(len(self.mock.recv_max_bytes_lengths), 2)
-        self.assertEqual(data, b"123")
+        self.assertEqual(data, b'123')
 
         data = uut.recv(max_bytes=100)
         self.assertEqual(len(self.mock.recv_max_bytes_lengths), 4)
-        self.assertEqual(data, b"45678")
+        self.assertEqual(data, b'45678')
 
         data = uut.recv(max_bytes=100)
         self.assertEqual(len(self.mock.recv_max_bytes_lengths), 6)
-        self.assertEqual(data, b"9AB")
+        self.assertEqual(data, b'9AB')
 
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
         :return: None
         """
-        self._device.write(data)
+        return self._device.write(data)
 
     def set_logger(self, logger):
         """

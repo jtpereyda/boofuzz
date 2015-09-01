@@ -120,7 +120,9 @@ class SerialConnectionGeneric(itarget_connection.ITargetConnection):
         """
         bytes_sent = 0
         while bytes_sent < len(data):
-            bytes_sent += self._connection.send(data[bytes_sent:])
+            bytes_sent_this_round = self._connection.send(data[bytes_sent:])
+            if bytes_sent_this_round is not None:
+                bytes_sent += bytes_sent_this_round
         return bytes_sent
 
     def set_logger(self, logger):

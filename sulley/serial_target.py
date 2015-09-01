@@ -32,7 +32,7 @@ class SerialTarget(sessions.Target):
             connection=serial_connection_low_level.SerialConnection(port=port, baudrate=baudrate),
             timeout=timeout,
             message_separator_time=message_separator_time,
-            content_checker=message_separator_time
+            content_checker=content_checker
         )
 
         # set these manually once target is instantiated.
