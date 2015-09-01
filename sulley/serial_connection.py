@@ -1,10 +1,12 @@
 import time
 import itarget_connection
+import iserial_like
 
 
 class SerialConnection(itarget_connection.ITargetConnection):
     """
-    ITargetConnection implementation for generic serial ports. Designed to utilize SerialConnectionLowLevel.
+    ITargetConnection implementation for generic serial ports.
+    Designed to utilize SerialConnectionLowLevel (see __init__).
 
     Since serial ports provide no default functionality for separating messages/packets, this class provides
     several means:
@@ -30,17 +32,18 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
     def __init__(self, connection, timeout=None, message_separator_time=None, content_checker=None):
         """
-        @type  connection:             itarget_connection.ITargetConnection
+        @type  connection:             iserial_like.ISerialLike
         @param connection:             Low level connection, e.g., SerialConnectionLowLevel.
         @type timeout:                 float
         @param timeout:                For recv(). After timeout seconds from receive start,
                                        recv() will return all received data, if any.
         @type message_separator_time:  float
-        @param message_separator_time: After message_separator_time seconds _without receiving any more data_,
+        @param message_separator_time: (Optional, def=None)
+                                       After message_separator_time seconds _without receiving any more data_,
                                        recv() will return.
         @type content_checker:         function(str) -> int
         @param content_checker:        (Optional, def=None) User-defined function.
-                                           recv() will pass received bytes to this method.
+                                           recv() will pass all bytes received so far to this method.
                                            If the method returns n > 0, recv() will return n bytes.
                                            If it returns 0, recv() will keep on reading.
         """

@@ -1,12 +1,12 @@
-import itarget_connection
+import iserial_like
 import serial
 
 
-class SerialConnectionLowLevel(itarget_connection.ITargetConnection):
+class SerialConnectionLowLevel(iserial_like.ISerialLike):
     """
     A basic wrapper for a serial object.
     Separated from SerialConnection to allow for effective unit testing.
-    Implements ITargetConnection.
+    Implements serial_like.ISerialLike.
     """
 
     def __init__(self, port, baudrate, timeout=None):
@@ -22,7 +22,6 @@ class SerialConnectionLowLevel(itarget_connection.ITargetConnection):
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
-        self._logger = None
 
     def close(self):
         """
@@ -58,19 +57,6 @@ class SerialConnectionLowLevel(itarget_connection.ITargetConnection):
 
         :param data: Data to send.
 
-        :return: None
+        :return: Number of bytes actually sent.
         """
         return self._device.write(data)
-
-    def set_logger(self, logger):
-        """
-        Set this object's (and it's aggregated classes') logger.
-
-        Note: Logger is unused, but necessary to fulfill ITargetConnection.
-
-        :param logger: Logger to use.
-        :type logger: logging.Logger
-
-        :return: None
-        """
-        self._logger = logger

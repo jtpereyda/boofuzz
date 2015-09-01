@@ -1,10 +1,15 @@
 import unittest
-from sulley import itarget_connection
+from sulley import iserial_like
 from sulley.serial_connection import SerialConnection
 import time
 
 
-class MockSerialConnection(itarget_connection.ITargetConnection):
+class MockSerial(iserial_like.ISerialLike):
+    """
+    Mock ISerialLike class.
+    Methods include code for unit testing. See each method for details.
+    """
+
     def __init__(self):
         self.close_called = False
         self.open_called = False
@@ -35,6 +40,13 @@ class MockSerialConnection(itarget_connection.ITargetConnection):
         """
         Receive up to max_bytes data.
 
+        Mock method:
+         - Waits some amount of time according to self.recv_wait_times
+         - Appends max_bytes to self.recv_max_bytes_lengths
+         - Returns based on self.recv_return_queue
+            * If empty, returns b'' if self.recv_return_nothing_by_default is True, or
+              b'0'*max_bytes otherwise.
+
         :param max_bytes: Maximum number of bytes to receive.
         :type max_bytes: int
 
@@ -53,7 +65,7 @@ class MockSerialConnection(itarget_connection.ITargetConnection):
         elif self.recv_return_nothing_by_default:
             return b''
         else:
-            return [0]*max_bytes
+            return b'0' * max_bytes
 
     def send(self, data):
         """
@@ -72,13 +84,13 @@ class MockSerialConnection(itarget_connection.ITargetConnection):
 
 class TestSerialConnection(unittest.TestCase):
     def setUp(self):
-        self.mock = MockSerialConnection()
+        self.mock = MockSerial()
 
     def test_open(self):
         """
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
         When: Calling SerialConnection.open().
-        Then: MockSerialConnection.open() is called.
+        Then: MockSerial.open() is called.
         """
         uut = SerialConnection(connection=self.mock)
         uut.open()
@@ -86,9 +98,9 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_close(self):
         """
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
         When: Calling SerialConnection.close().
-        Then: MockSerialConnection.close() is called.
+        Then: MockSerial.close() is called.
         """
         uut = SerialConnection(connection=self.mock)
         uut.close()
@@ -99,13 +111,13 @@ class TestSerialConnection(unittest.TestCase):
     ###########################################################################
     def test_send_basic(self):
         """
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data)
-        and: MockSerialConnection.send() returns len(data).
+        and: MockSerial.send() returns len(data).
 
-        Then: Verify MockSerialConnection.send() was called only once.
-        and: Verify MockSerialConnection.send() received the expected data.
+        Then: Verify MockSerial.send() was called only once.
+        and: Verify MockSerial.send() received the expected data.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -117,15 +129,15 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_send_return_none(self):
         """
-        Verify that MockSerialConnection.send() is called again when it returns None.
+        Verify that MockSerial.send() is called again when it returns None.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 10 bytes.
-        and: MockSerialConnection.send() returns: None, 10.
+        and: MockSerial.send() returns: None, 10.
 
-        Then: Verify MockSerialConnection.send() was called exactly 2 times.
-        and: Verify MockSerialConnection.send() received the expected data each time.
+        Then: Verify MockSerial.send() was called exactly 2 times.
+        and: Verify MockSerial.send() received the expected data each time.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -139,15 +151,15 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_send_multiple(self):
         """
-        Verify that MockSerialConnection.send() is called repeatedly until it sends all the data.
+        Verify that MockSerial.send() is called repeatedly until it sends all the data.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 9 bytes.
-        and: MockSerialConnection.send() returns: 0, None, 0, 1, 2, 3, 2, 1.
+        and: MockSerial.send() returns: 0, None, 0, 1, 2, 3, 2, 1.
 
-        Then: Verify MockSerialConnection.send() was called exactly 7 times.
-        and: Verify MockSerialConnection.send() received the expected data each time.
+        Then: Verify MockSerial.send() was called exactly 7 times.
+        and: Verify MockSerial.send() received the expected data each time.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -167,15 +179,15 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_send_off_by_one(self):
         """
-        Verify that MockSerialConnection.send() is called again when it sends all but 1 byte.
+        Verify that MockSerial.send() is called again when it sends all but 1 byte.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 9 bytes.
-        and: MockSerialConnection.send() returns: 8, 1.
+        and: MockSerial.send() returns: 8, 1.
 
-        Then: Verify MockSerialConnection.send() was called exactly 2 times.
-        and: Verify MockSerialConnection.send() received the expected data each time.
+        Then: Verify MockSerial.send() was called exactly 2 times.
+        and: Verify MockSerial.send() received the expected data each time.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -189,15 +201,15 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_send_one_byte(self):
         """
-        Verify that MockSerialConnection.send() is called again when it returns 0 after being given 1 byte.
+        Verify that MockSerial.send() is called again when it returns 0 after being given 1 byte.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 1 byte.
-        and: MockSerialConnection.send() returns: 0, 1.
+        and: MockSerial.send() returns: 0, 1.
 
-        Then: Verify MockSerialConnection.send() was called exactly 2 times.
-        and: Verify MockSerialConnection.send() received the expected data each time.
+        Then: Verify MockSerial.send() was called exactly 2 times.
+        and: Verify MockSerial.send() received the expected data each time.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -211,36 +223,36 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_send_many(self):
         """
-        Verify that send works properly when MockSerialConnection.send() sends 1 byte at a time.
+        Verify that send works properly when MockSerial.send() sends 1 byte at a time.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 9 bytes.
-        and: MockSerialConnection.send() returns: 0, 500 times, followed by len(data).
+        and: MockSerial.send() returns: 0, 500 times, followed by len(data).
 
-        Then: Verify MockSerialConnection.send() was called exactly 501 times.
-        and: Verify MockSerialConnection.send() received the expected data each time.
+        Then: Verify MockSerial.send() was called exactly 501 times.
+        and: Verify MockSerial.send() received the expected data each time.
         """
         uut = SerialConnection(connection=self.mock)
         # When
         data = b'123456789'
-        self.mock.send_return_queue = [0]*500 + [len(data)]
+        self.mock.send_return_queue = [0] * 500 + [len(data)]
         uut.send(data=data)
         # Then
         self.assertEqual(len(self.mock.send_data_list), 501)
-        self.assertEqual(self.mock.send_data_list, [b'123456789']*501)
+        self.assertEqual(self.mock.send_data_list, [b'123456789'] * 501)
 
     def test_send_zero_bytes(self):
         """
         Verify that send() doesn't fail when given 0 bytes.
 
-        Given: A SerialConnection using MockSerialConnection.
+        Given: A SerialConnection using MockSerial.
 
         When: Calling SerialConnection.send(data) with 0 bytes.
-        and:  MockSerialConnection.send() set to return len(data).
+        and:  MockSerial.send() set to return len(data).
 
-        Then: Verify MockSerialConnection.send() was called either 0 or 1 times.
-        and:  Verify MockSerialConnection.send() received 0 bytes, if anything.
+        Then: Verify MockSerial.send() was called either 0 or 1 times.
+        and:  Verify MockSerial.send() received 0 bytes, if anything.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -261,14 +273,14 @@ class TestSerialConnection(unittest.TestCase):
         """
         Verify that recv() works in the normal case.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
                with no timeout/message_separator_time/content_checker.
 
         When: User calls SerialConnection.recv.
-          and: MockSerialConnection.recv set to return data of length max_bytes.
+          and: MockSerial.recv set to return data of length max_bytes.
 
-        Then: SerialConnection calls MockSerialConnection.recv exactly once.
-         and: SerialConnection.recv returns exactly what MockSerialConnection.recv returned.
+        Then: SerialConnection calls MockSerial.recv exactly once.
+         and: SerialConnection.recv returns exactly what MockSerial.recv returned.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -280,17 +292,17 @@ class TestSerialConnection(unittest.TestCase):
 
     def test_recv_max_bytes_only(self):
         """
-        Verify that recv() calls MockSerialConnection.recv() repeatedly until it gets max_bytes of data.
+        Verify that recv() calls MockSerial.recv() repeatedly until it gets max_bytes of data.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
                with no timeout/message_separator_time/content_checker.
 
         When: User calls SerialConnection.recv(10).
-          and: MockSerialConnection.recv set to return 0, 0, 0, 1, 2, 3, 4 bytes.
+          and: MockSerial.recv set to return 0, 0, 0, 1, 2, 3, 4 bytes.
 
-        Then: SerialConnection calls MockSerialConnection.recv exactly 7 times,
+        Then: SerialConnection calls MockSerial.recv exactly 7 times,
               with max_bytes decreasing as appropriate.
-         and: SerialConnection.recv returns the concatenation of MockSerialConnection.recv() return values.
+         and: SerialConnection.recv returns the concatenation of MockSerial.recv() return values.
         """
         uut = SerialConnection(connection=self.mock)
         # When
@@ -304,14 +316,14 @@ class TestSerialConnection(unittest.TestCase):
         """
         Verify that recv() returns partial messages after the timeout expires.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
                with timeout set to a smallish value.
 
         When: User calls SerialConnection.recv(n) several times with different values of n.
-          and: MockSerialConnection.recv set to return a single message, then repeatedly return nothing.
+          and: MockSerial.recv set to return a single message, then repeatedly return nothing.
 
-        Then: SerialConnection.recv calls MockSerialConnection.recv at least once.
-         and: SerialConnection.recv returns the MockSerialConnection.recv() return value after the timeout.
+        Then: SerialConnection.recv calls MockSerial.recv at least once.
+         and: SerialConnection.recv returns the MockSerial.recv() return value after the timeout.
 
         Note: Timeout functionality is tested, but not the precise timing.
         """
@@ -358,15 +370,15 @@ class TestSerialConnection(unittest.TestCase):
         Receive a message over time t, where t > message_separator_time, and each part of the message is delayed by
         t' < message_separator_time.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
           and: timeout set to 60ms.
           and: message_separator_time set 20ms
 
         When: User calls SerialConnection.recv(60).
-         and: MockSerialConnection.recv set to return increasing bytes.
-         and: MockSerialConnection.recv set to delay 1ms on each call.
+         and: MockSerial.recv set to return increasing bytes.
+         and: MockSerial.recv set to delay 1ms on each call.
 
-        Then: SerialConnection.recv calls MockSerialConnection.recv more than 20 times.
+        Then: SerialConnection.recv calls MockSerial.recv more than 20 times.
          and: SerialConnection.recv returns data with more than 20 bytes.
         """
         # Given
@@ -386,22 +398,22 @@ class TestSerialConnection(unittest.TestCase):
         Verify that message_separator_time works correctly.
         Receive a message that times out with message_separator_time, but which would not time out with only a timeout.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
           and: timeout set to 60ms.
           and: message_separator_time set 20ms
 
         When: User calls SerialConnection.recv(60).
-         and: MockSerialConnection.recv set to return 1 byte, then 1 byte, then 58 bytes.
-         and: MockSerialConnection.recv set to delay 1ms, then 40ms, then 1ms.
+         and: MockSerial.recv set to return 1 byte, then 1 byte, then 58 bytes.
+         and: MockSerial.recv set to delay 1ms, then 40ms, then 1ms.
 
-        Then: SerialConnection.recv calls MockSerialConnection.recv twice.
+        Then: SerialConnection.recv calls MockSerial.recv twice.
          and: SerialConnection.recv returns only the first two bytes.
         """
         # Given
         uut = SerialConnection(connection=self.mock, timeout=.060, message_separator_time=.020)
 
         # When
-        self.mock.recv_return_queue = [b'1', b'2', b'3'*58]
+        self.mock.recv_return_queue = [b'1', b'2', b'3' * 58]
         self.mock.recv_wait_times = [.001, .040, .001]
         data = uut.recv(max_bytes=60)
 
@@ -416,15 +428,15 @@ class TestSerialConnection(unittest.TestCase):
         Verify behavior when the content_checker consumes a part of the buffer, the full buffer, and then part of it
         again.
 
-        Given: A SerialConnection using MockSerialConnection,
+        Given: A SerialConnection using MockSerial,
           and: timeout set to 100ms.
           and: message_separator_time set 20ms
           and: content_checker set to a function that returns 0, 3, 0, 5, 0, 3
 
         When: User calls SerialConnection.recv(100) 3 times.
-         and: MockSerialConnection.recv set to return 2 bytes repeatedly.
+         and: MockSerial.recv set to return 2 bytes repeatedly.
 
-        Then: SerialConnection.recv calls MockSerialConnection.recv 6 times.
+        Then: SerialConnection.recv calls MockSerial.recv 6 times.
          and: SerialConnection.recv returns only the first 3 bytes, then the next 5 bytes, then the next 3.
         """
         # Given
@@ -452,9 +464,9 @@ class TestSerialConnection(unittest.TestCase):
                 return 0
 
         uut = SerialConnection(connection=self.mock,
-                                      timeout=.100,
-                                      message_separator_time=.020,
-                                      content_checker=test_checker)
+                               timeout=.100,
+                               message_separator_time=.020,
+                               content_checker=test_checker)
 
         # When
         self.mock.recv_return_queue = [b'12', b'34', b'56', b'78', b'9A', b'BC']
