@@ -12,9 +12,7 @@
           </tr>
           <tr bgcolor="#111111">
             <td colspan=2 align="center">
-              <pre>
-                {{ crashinfo }}
-              </pre>
+              <pre>{{ crashinfo.decode('utf-8', errors='replace') }}</pre>
             </td>
           </tr>
         </table>
