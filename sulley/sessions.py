@@ -271,6 +271,7 @@ class Session(pgraph.Graph):
         self.root.name = "__ROOT_NODE__"
         self.root.label = self.root.name
         self.last_recv = None
+        self.last_send = None
 
         self.add_node(self.root)
 
@@ -884,6 +885,7 @@ class Session(pgraph.Graph):
         # Try to send payload down-range
         try:
             self.targets[0].send(data)
+            self.last_send = data
         except socket.error, inst:
             self.logger.error("Socket error on send: %s" % inst)
 
