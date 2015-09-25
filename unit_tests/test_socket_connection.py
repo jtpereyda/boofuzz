@@ -1,6 +1,7 @@
 import threading
 import unittest
 import logging
+import struct
 from sulley.socket_connection import SocketConnection
 import socket
 
@@ -140,6 +141,59 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
+
+    def test_raw(self):
+        """
+        Given: A SocketConnection 'raw' object and a UDP server, set to respond.
+        When: Calling SocketConnection.open(), .send() with a valid UDP packet, .recv(), and .close()
+        Then: The server receives data from send().
+         And: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
+                             'Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
+                             'but creative artists very seldom. "')
+        udp_header_len = 8
+
+        # Given
+        server = MiniTestServer(use_udp=True)
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='raw')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # When
+        eth_header = "\xff" * 6  # Dst address: Broadcast
+        eth_header += "\x00" * 6  # Src address
+        eth_header += "\x08\x00"  # Type: IP
+
+        ip_header = "\x45"  # Version | Header Length
+        ip_header += "\x00"  # "Differentiated Services Field"
+        ip_header += "\x00\x1f"  # Total Length
+        ip_header += "\x00\x01"  # ID Field
+        ip_header += "\x00\x00"  # Flags, Fragment Offset
+        ip_header += "\x40"  # Time to live
+        ip_header += "\x11"  # Protocol: UDP
+        ip_header += "\x1a\x1f"  # Header checksum
+
+        udp_header = struct.pack(">", server.active_port)  # Src port
+        udp_header += struct.pack(">", server.active_port)  # Dst port
+        udp_header += struct.pack(">", len(data_to_send) + udp_header_len)  # Length
+        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+
+        raw_packet = eth_header + ip_header + udp_header + data_to_send
+
+        uut.open()
+        uut.send(data=data_to_send)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Then
+        self.assertEqual(data_to_send, server.received)
+        self.assertEqual(received, bytes(''))
 
 
 if __name__ == '__main__':
