@@ -87,6 +87,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :return: Received data.
         """
+        if self.proto == 'raw':
+            # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to dump
+            # everything off the interface anyway, which is probably not what the user wants.
+            return bytes('')
+
         try:
             return self._sock.recv(max_bytes)
         except socket.timeout:
