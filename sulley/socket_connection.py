@@ -35,17 +35,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self._sock = None
         self.logger = None
 
-        if self.proto == "tcp":
-            self.proto = socket.SOCK_STREAM
-
-        elif self.proto == "ssl":
-            self.proto = socket.SOCK_STREAM
-            self.ssl = True
-
-        elif self.proto == "udp":
-            self.proto = socket.SOCK_DGRAM
-
-        else:
+        if self.proto not in ["tcp", "ssl", "udp", "raw"]:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
     def close(self):
@@ -62,19 +52,29 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :return: None
         """
-        self._sock = socket.socket(socket.AF_INET, self.proto)
-
-        if self.bind:
-            self._sock.bind(self.bind)
+        # Create socket and bind if needed
+        if self.proto == "tcp" or self.proto == "ssl":
+            self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if self.bind:
+                self._sock.bind(self.bind)
+        elif self.proto == "udp":
+            self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            if self.bind:
+                self._sock.bind(self.bind)
+        elif self.proto == "raw":
+            self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+            self._sock.bind((self.host, 0))
+        else:
+            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         self._sock.settimeout(self.timeout)
 
         # Connect is needed only for TCP stream
-        if self.proto == socket.SOCK_STREAM:
+        if self.proto == "tcp" or self.proto == "ssl":
             self._sock.connect((self.host, self.port))
 
         # if SSL is requested, then enable it.
-        if self.ssl:
+        if self.proto == "ssl":
             ssl_sock = ssl.wrap_socket(self._sock)
             self._sock = httplib.FakeSocket(self._sock, ssl_sock)
 
@@ -100,11 +100,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :return: None
         """
-        # TCP/SSL
-        if self.proto == socket.SOCK_STREAM:
+        if self.proto in ["tcp", "ssl"]:
             self._sock.send(data)
-        # UDP
-        elif self.proto == socket.SOCK_DGRAM:
+        elif self.proto == "udp":
             # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
             # If our data is over the max UDP size for this platform, truncate before sending
             if len(data) > self.max_udp:
@@ -112,6 +110,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 data = data[:self.max_udp]
 
             self._sock.sendto(data, (self.host, self.port))
+        elif self.proto == "raw":
+            self._sock.send(data)
+        else:
+            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         self.logger.debug("Packet sent : " + repr(data))
 
