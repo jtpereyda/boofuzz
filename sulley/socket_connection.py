@@ -9,7 +9,7 @@ from helpers import get_max_udp_size
 
 class SocketConnection(itarget_connection.ITargetConnection):
     """
-    ITargetConnection implementation using sockets. Supports UDP, TCP, SSL.
+    ITargetConnection implementation using sockets. Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
     """
     def __init__(self, host, port, proto="tcp", bind=None, timeout=5.0):
         """
@@ -17,12 +17,14 @@ class SocketConnection(itarget_connection.ITargetConnection):
         @param host: Hostname or IP address of target system
         @type  port: int
         @param port: Port of target service
-        @type  proto:              str
-        @kwarg proto:              (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl")
-        @type  bind:               tuple (host, port)
-        @kwarg bind:               (Optional, def=random) Socket bind address and port
-        @type  timeout:            float
-        @kwarg timeout:            (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
+        @type  proto:   str
+        @kwarg proto:   (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl", "raw-l2", "raw-l3")
+                        raw-l2: Send packets at layer 2. Must include link layer header (e.g. Ethernet frame).
+                        raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
+        @type  bind:    tuple (host, port)
+        @kwarg bind:    (Optional, def=random) Socket bind address and port
+        @type  timeout: float
+        @kwarg timeout: (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
         """
         self.max_udp = get_max_udp_size()
 
@@ -35,7 +37,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self._sock = None
         self.logger = None
 
-        if self.proto not in ["tcp", "ssl", "udp", "raw"]:
+        if self.proto not in ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
     def close(self):
@@ -61,8 +63,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             if self.bind:
                 self._sock.bind(self.bind)
-        elif self.proto == "raw":
+        elif self.proto == "raw-l2":
             self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+            self._sock.bind((self.host, 0))
+        elif self.proto == "raw-l3":
+            self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM)
             self._sock.bind((self.host, 0))
         else:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
@@ -87,9 +92,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :return: Received data.
         """
-        if self.proto == 'raw':
-            # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to dump
-            # everything off the interface anyway, which is probably not what the user wants.
+        if self.proto in ['raw-l2', 'raw-l3']:
+            # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
+            # dump everything off the interface anyway, which is probably not what the user wants.
             return bytes('')
 
         try:
@@ -115,8 +120,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 data = data[:self.max_udp]
 
             self._sock.sendto(data, (self.host, self.port))
-        elif self.proto == "raw":
+        elif self.proto == "raw-l2":
             self._sock.send(data)
+        elif self.proto == "raw-l3":
+            self._sock.sendto(data, (self.host, self.port, 0, 0, '\xFF'*6))
         else:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 

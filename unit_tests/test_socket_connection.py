@@ -3,12 +3,12 @@ import unittest
 import logging
 import struct
 import zlib
-import itertools
 from sulley.socket_connection import SocketConnection
 import socket
 
 
 THREAD_ERROR_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
+ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux docs for if_ether.h
 
 
 class MiniTestServer(object):
@@ -159,18 +159,18 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
-    def test_raw(self):
+    def test_raw_l2(self):
         """
-        Given: A SocketConnection 'raw' object.
-          and: A raw UDP packet.
+        Given: A SocketConnection 'raw-l2' object.
+          and: A raw UDP/IP/Ethernet packet.
           and: A UDP server, configured to respond.
-        When: Calling SocketConnection.open(), .send() with a valid UDP packet, .recv(), and .close()
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
         Then: The server receives data from send().
          And: SocketConnection.recv() returns bytes('').
         """
         data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             'Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             'but creative artists very seldom. "')
+                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
+                             ' but creative artists very seldom. "')
         udp_header_len = 8
         ip_header_len = 20
 
@@ -183,7 +183,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host="eth0", port=0, proto='raw')
+        uut = SocketConnection(host="eth0", port=0, proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -241,8 +241,97 @@ class TestSocketConnection(unittest.TestCase):
 
         # Ethernet frame check sequence
         crc = zlib.crc32(raw_packet) & 0xFFFFFFFF
-
         raw_packet += struct.pack("<I", crc)
+
+        # When
+        uut.open()
+        uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_ERROR_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(data_to_send, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3(self):
+        """
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet.
+          and: A UDP server, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: The server receives data from send().
+         And: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
+                             ' prudent marriages?""')
+        udp_header_len = 8
+        ip_header_len = 20
+
+        # Given
+        server = MiniTestServer(use_udp=True)
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="eth0", port=ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        ip_header = "\x45"  # Version | Header Length
+        ip_header += "\x00"  # "Differentiated Services Field"
+        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
+        ip_header += "\x00\x01"  # ID Field
+        ip_header += "\x40\x00"  # Flags, Fragment Offset
+        ip_header += "\x40"  # Time to live
+        ip_header += "\x11"  # Protocol: UDP
+        ip_header += "\x00\x00"  # Header checksum
+        ip_header += "\xac\x10\x03\x7d"  # Src IP address
+        # ip_header += "\x7F\x00\x00\x01"  # Dst IP address
+        ip_header += "\xac\x10\x03\x7e"  # Dst IP address
+
+        # IPv4 Checksum
+        def ones_complement_sum_carry_16(a, b):
+            """
+            Compute ones complement and carry at 16 bits.
+            :type a: int
+            :type b: int
+            :return: Sum of a and b, ones complement, carry at 16 bits.
+            """
+            c = a + b
+            return (c & 0xffff) + (c >> 16)
+
+        def checksum(msg):
+            """
+            Return IPv4 checksum of msg.
+            :param msg: Message to compute checksum over.
+            :return: IPv4 checksum of msg.
+            """
+            # Pad with 0 byte if needed
+            if len(msg) % 2 == 1:
+                msg += "\x00"
+
+            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
+            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
+            return ~total & 0xffff
+
+        checksum = struct.pack(">H", checksum(ip_header))
+        ip_header = ip_header[:10] + checksum + ip_header[12:]
+
+        # UDP
+        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
+        udp_header += struct.pack(">H", server.active_port)  # Dst port
+        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
+        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+
+        raw_packet = ip_header + udp_header + data_to_send
 
         # When
         uut.open()
