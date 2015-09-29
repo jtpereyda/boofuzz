@@ -4,11 +4,11 @@ import logging
 import struct
 import zlib
 from sulley.socket_connection import SocketConnection
+from sulley import socket_connection
 import socket
 
 
 THREAD_ERROR_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
-ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux docs for if_ether.h
 
 
 class MiniTestServer(object):
@@ -280,7 +280,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host="eth0", port=ETH_P_IP, proto='raw-l3')
+        uut = SocketConnection(host="eth0", port=socket_connection.ETH_P_IP, proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -347,6 +347,54 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, bytes(''))
 
+    def test_required_args_port(self):
+        """
+        Given: No preconditions.
+        When: Constructing SocketConnections with:
+              protocol types in [default, 'udp', 'tcp', 'ssl'] and
+              no port argument.
+        Then: Constructor raises exception.
+        """
+        with self.assertRaises(Exception):
+            SocketConnection(host='127.0.0.1')
+        with self.assertRaises(Exception):
+            SocketConnection(host='127.0.0.1', proto='tcp')
+        with self.assertRaises(Exception):
+            SocketConnection(host='127.0.0.1', proto='udp')
+        with self.assertRaises(Exception):
+            SocketConnection(host='127.0.0.1', proto='ssl')
+
+    def test_optional_args_port(self):
+        """
+        Given: No preconditions.
+        When: Constructing SocketConnections with:
+              protocol types in ['raw-l2', 'raw-l3'] and
+              no port argument.
+        Then: Constructor raises no exception.
+        """
+        SocketConnection(host='127.0.0.1', proto='raw-l2')
+        SocketConnection(host='127.0.0.1', proto='raw-l3')
+
+    def test_required_args_host(self):
+        """
+        Given: No preconditions.
+        When: Constructing SocketConnections with:
+              protocol types in [default, 'udp', 'tcp', 'ssl', 'raw-l2', 'raw-l3] and
+              no host argument.
+        Then: Constructor raises exception.
+        """
+        with self.assertRaises(Exception):
+            SocketConnection(port=5)
+        with self.assertRaises(Exception):
+            SocketConnection(port=5, proto='tcp')
+        with self.assertRaises(Exception):
+            SocketConnection(port=5, proto='udp')
+        with self.assertRaises(Exception):
+            SocketConnection(port=5, proto='ssl')
+        with self.assertRaises(Exception):
+            SocketConnection(port=5, proto='raw-l2')
+        with self.assertRaises(Exception):
+            SocketConnection(port=5, proto='raw-l3')
 
 if __name__ == '__main__':
     unittest.main()
