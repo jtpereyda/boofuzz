@@ -12,43 +12,59 @@ THREAD_ERROR_TIMEOUT = 10  # Time to wait for a thread before considering it fai
 
 
 class MiniTestServer(object):
-    def __init__(self, stay_silent=False, use_udp=False, host="0.0.0.0"):
+    """
+    Small server class for testing SocketConnection.
+    """
+    def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
         self.data_to_send = bytes("\xFE\xEB\xDA\xED")
         self.active_port = None
         self.stay_silent = stay_silent
-        self.use_udp = use_udp
+        self.proto = proto
         self.host = host
 
     def bind(self):
-        if not self.use_udp:
+        """
+        Bind server, and call listen if using TCP, meaning that the client test code can successfully connect.
+        """
+        if self.proto == 'tcp':
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        else:
+        elif self.proto == 'udp':
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        else:
+            raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
         self.server_socket.bind((self.host, 0))  # let OS choose a free port
+
+        if self.proto == 'tcp':
+            self.server_socket.listen(1)
+
         self.active_port = self.server_socket.getsockname()[1]
-        return self.active_port
 
     def serve_once(self):
-        if not self.use_udp:
-            # Set up server
-            self.server_socket.settimeout(5)
-            self.server_socket.listen(1)
+        """
+        Serve one connection and send a reply, unless stay_silent is set.
+        :return:
+        """
+        self.server_socket.settimeout(5)
+
+        if self.proto == 'tcp':
             (client_socket, address) = self.server_socket.accept()
 
-            # Handle connection
-            client_socket.settimeout(1)  # timeout after 1s to keep tests from hanging
             self.received = client_socket.recv(10000)
+
             if not self.stay_silent:
                 client_socket.send(self.data_to_send)
+
             client_socket.close()
-        else:
-            self.server_socket.settimeout(5)  # timeout after 1s to keep tests from hanging
+        elif self.proto == 'udp':
             data, addr = self.server_socket.recvfrom(1024)
             self.received = data
-            self.server_socket.sendto(self.data_to_send, addr)
+            if not self.stay_silent:
+                self.server_socket.sendto(self.data_to_send, addr)
+        else:
+            raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
         self.server_socket.close()
         self.server_socket = None
@@ -135,7 +151,7 @@ class TestSocketConnection(unittest.TestCase):
                              ' why, tidiness is a toil for giants."')
 
         # Given
-        server = MiniTestServer(use_udp=True)
+        server = MiniTestServer(proto='udp')
         server.bind()
 
         t = threading.Thread(target=server.serve_once)
@@ -175,7 +191,7 @@ class TestSocketConnection(unittest.TestCase):
         ip_header_len = 20
 
         # Given
-        server = MiniTestServer(use_udp=True)
+        server = MiniTestServer(proto='udp')
         server.data_to_send = "GKC"
         server.bind()
 
@@ -272,7 +288,7 @@ class TestSocketConnection(unittest.TestCase):
         ip_header_len = 20
 
         # Given
-        server = MiniTestServer(use_udp=True)
+        server = MiniTestServer(proto='udp')
         server.data_to_send = "GKC"
         server.bind()
 
