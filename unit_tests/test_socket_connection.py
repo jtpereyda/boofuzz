@@ -8,9 +8,129 @@ from sulley.socket_connection import SocketConnection
 from sulley import socket_connection
 import socket
 
-
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
+
+UDP_HEADER_LEN = 8
+IP_HEADER_LEN = 20
+
+ETHER_TYPE_IPV4 = "\x08\x00"  # Ethernet frame EtherType for IPv4
+IPV4_PROTOCOL_UDP = "\x11"  # Protocol code for UDP in IPv4 packet
+
+
+def udp_packet(payload, src_port, dst_port):
+    """
+    Create a UDP packet.
+
+    :param payload: Payload / next layer protocol.
+    :type payload: str
+
+    :param src_port: 16-bit source port number.
+    :type src_port: int
+
+    :param dst_port: 16-bit destination port number.
+    :type dst_port: int
+
+    :return: UDP packet.
+    :rtype: str
+    """
+    udp_header = struct.pack(">H", src_port)  # Src port
+    udp_header += struct.pack(">H", dst_port)  # Dst port
+    udp_header += struct.pack(">H", len(payload) + UDP_HEADER_LEN)  # Length
+    udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+    return udp_header + payload
+
+
+def ones_complement_sum_carry_16(a, b):
+    """
+    Compute ones complement and carry at 16 bits.
+    :type a: int
+    :type b: int
+    :return: Sum of a and b, ones complement, carry at 16 bits.
+    """
+    c = a + b
+    return (c & 0xffff) + (c >> 16)
+
+
+def ipv4_checksum(msg):
+    """
+    Return IPv4 checksum of msg.
+    :param msg: Message to compute checksum over.
+    :return: IPv4 checksum of msg.
+    """
+    # Pad with 0 byte if needed
+    if len(msg) % 2 == 1:
+        msg += "\x00"
+
+    collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
+    msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+    total = reduce(ones_complement_sum_carry_16, msg_words, 0)
+    return ~total & 0xffff
+
+
+def ip_packet(payload, src_ip, dst_ip, protocol=IPV4_PROTOCOL_UDP):
+    """
+    Create an IPv4 packet.
+
+    :type payload: str
+    :param payload: Contents of next layer up.
+
+    :type src_ip: str
+    :param src_ip: 4-byte source IP address.
+
+    :type dst_ip: str
+    :param dst_ip: 4-byte destination IP address.
+
+    :type protocol: str
+    :param protocol: Single-byte string identifying next layer's protocol. Default "\x11" UDP.
+
+    :return: IPv4 packet.
+    :rtype: str
+    """
+    ip_header = "\x45"  # Version | Header Length
+    ip_header += "\x00"  # "Differentiated Services Field"
+    ip_header += struct.pack(">H", IP_HEADER_LEN + len(payload))  # Length
+    ip_header += "\x00\x01"  # ID Field
+    ip_header += "\x40\x00"  # Flags, Fragment Offset
+    ip_header += "\x40"  # Time to live
+    ip_header += protocol
+    ip_header += "\x00\x00"  # Header checksum (fill in zeros in order to compute checksum)
+    ip_header += src_ip
+    ip_header += dst_ip
+
+    checksum = struct.pack(">H", ipv4_checksum(ip_header))
+    ip_header = ip_header[:10] + checksum + ip_header[12:]
+
+    return ip_header + payload
+
+
+def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
+    """
+    Create an Ethernet frame.
+
+    :param payload: Network layer content.
+    :type payload: str
+
+    :param src_mac: 6-byte source MAC address.
+    :type src_mac: str
+
+    :param dst_mac: 6-byte destination MAC address.
+    :type dst_mac: str
+
+    :param ether_type: EtherType indicating protocol of next layer; default "\x08\x00" IPv4.
+    :type ether_type: str
+
+    :return: Ethernet frame
+    :rtype: str
+    """
+    eth_header = dst_mac
+    eth_header += src_mac
+    eth_header += ether_type
+    raw_packet = eth_header + payload
+    # Ethernet frame check sequence
+    crc = zlib.crc32(raw_packet) & 0xFFFFFFFF
+    raw_packet += struct.pack("<I", crc)
+    return raw_packet
 
 
 def get_packed_ip_address(ifname):
@@ -214,8 +334,6 @@ class TestSocketConnection(unittest.TestCase):
         data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
                              ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
                              ' but creative artists very seldom. "')
-        udp_header_len = 8
-        ip_header_len = 20
 
         # Given
         server = MiniTestServer(proto='udp')
@@ -230,61 +348,16 @@ class TestSocketConnection(unittest.TestCase):
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
-        eth_header = "\xff" * 6  # Dst address: Broadcast
-        eth_header += "\x00" * 6  # Src address
-        eth_header += "\x08\x00"  # Type: IP
-
-        ip_header = "\x45"  # Version | Header Length
-        ip_header += "\x00"  # "Differentiated Services Field"
-        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
-        ip_header += "\x00\x01"  # ID Field
-        ip_header += "\x40\x00"  # Flags, Fragment Offset
-        ip_header += "\x40"  # Time to live
-        ip_header += "\x11"  # Protocol: UDP
-        ip_header += "\x00\x00"  # Header checksum
-        ip_header += self.local_ip[0:3] + "\x00"  # Src IP address
-        ip_header += self.local_ip                # Dst IP address
-
-        # IPv4 Checksum
-        def ones_complement_sum_carry_16(a, b):
-            """
-            Compute ones complement and carry at 16 bits.
-            :type a: int
-            :type b: int
-            :return: Sum of a and b, ones complement, carry at 16 bits.
-            """
-            c = a + b
-            return (c & 0xffff) + (c >> 16)
-
-        def checksum(msg):
-            """
-            Return IPv4 checksum of msg.
-            :param msg: Message to compute checksum over.
-            :return: IPv4 checksum of msg.
-            """
-            # Pad with 0 byte if needed
-            if len(msg) % 2 == 1:
-                msg += "\x00"
-
-            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
-            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
-            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
-            return ~total & 0xffff
-
-        checksum = struct.pack(">H", checksum(ip_header))
-        ip_header = ip_header[:10] + checksum + ip_header[12:]
-
-        # UDP
-        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
-        udp_header += struct.pack(">H", server.active_port)  # Dst port
-        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
-        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
-
-        raw_packet = eth_header + ip_header + udp_header + data_to_send
-
-        # Ethernet frame check sequence
-        crc = zlib.crc32(raw_packet) & 0xFFFFFFFF
-        raw_packet += struct.pack("<I", crc)
+        raw_packet = ethernet_frame(
+            payload=ip_packet(
+                payload=udp_packet(
+                    payload=data_to_send,
+                    src_port=server.active_port + 1,
+                    dst_port=server.active_port),
+                src_ip=self.local_ip[0:3] + "\x00",
+                dst_ip=self.local_ip),
+            src_mac="\x00" * 6,
+            dst_mac="\xff" * 6)
 
         # When
         uut.open()
@@ -311,8 +384,6 @@ class TestSocketConnection(unittest.TestCase):
         """
         data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
                              ' prudent marriages?""')
-        udp_header_len = 8
-        ip_header_len = 20
 
         # Given
         server = MiniTestServer(proto='udp')
@@ -326,54 +397,13 @@ class TestSocketConnection(unittest.TestCase):
         uut = SocketConnection(host="eth0", port=socket_connection.ETH_P_IP, proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
-        # Assemble packet...
-        ip_header = "\x45"  # Version | Header Length
-        ip_header += "\x00"  # "Differentiated Services Field"
-        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
-        ip_header += "\x00\x01"  # ID Field
-        ip_header += "\x40\x00"  # Flags, Fragment Offset
-        ip_header += "\x40"  # Time to live
-        ip_header += "\x11"  # Protocol: UDP
-        ip_header += "\x00\x00"  # Header checksum
-        ip_header += self.local_ip[0:3] + "\x00"  # Src IP address
-        ip_header += self.local_ip                # Dst IP address
-
-        # IPv4 Checksum
-        def ones_complement_sum_carry_16(a, b):
-            """
-            Compute ones complement and carry at 16 bits.
-            :type a: int
-            :type b: int
-            :return: Sum of a and b, ones complement, carry at 16 bits.
-            """
-            c = a + b
-            return (c & 0xffff) + (c >> 16)
-
-        def checksum(msg):
-            """
-            Return IPv4 checksum of msg.
-            :param msg: Message to compute checksum over.
-            :return: IPv4 checksum of msg.
-            """
-            # Pad with 0 byte if needed
-            if len(msg) % 2 == 1:
-                msg += "\x00"
-
-            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
-            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
-            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
-            return ~total & 0xffff
-
-        checksum = struct.pack(">H", checksum(ip_header))
-        ip_header = ip_header[:10] + checksum + ip_header[12:]
-
-        # UDP
-        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
-        udp_header += struct.pack(">H", server.active_port)  # Dst port
-        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
-        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
-
-        raw_packet = ip_header + udp_header + data_to_send
+        raw_packet = ip_packet(
+            payload=udp_packet(
+                payload=data_to_send,
+                src_port=server.active_port + 1,
+                dst_port=server.active_port),
+            src_ip=self.local_ip[0:3] + "\x00",
+            dst_ip=self.local_ip)
 
         # When
         uut.open()
@@ -404,8 +434,6 @@ class TestSocketConnection(unittest.TestCase):
         data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
                              ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
                              ' but creative artists very seldom. "')
-        udp_header_len = 8
-        ip_header_len = 20
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -420,61 +448,16 @@ class TestSocketConnection(unittest.TestCase):
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
-        eth_header = "\xff" * 6  # Dst address: Broadcast
-        eth_header += "\x00" * 6  # Src address
-        eth_header += "\x08\x00"  # Type: IP
-
-        ip_header = "\x45"  # Version | Header Length
-        ip_header += "\x00"  # "Differentiated Services Field"
-        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
-        ip_header += "\x00\x01"  # ID Field
-        ip_header += "\x40\x00"  # Flags, Fragment Offset
-        ip_header += "\x40"  # Time to live
-        ip_header += "\x11"  # Protocol: UDP
-        ip_header += "\x00\x00"  # Header checksum
-        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
-        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
-
-        # IPv4 Checksum
-        def ones_complement_sum_carry_16(a, b):
-            """
-            Compute ones complement and carry at 16 bits.
-            :type a: int
-            :type b: int
-            :return: Sum of a and b, ones complement, carry at 16 bits.
-            """
-            c = a + b
-            return (c & 0xffff) + (c >> 16)
-
-        def checksum(msg):
-            """
-            Return IPv4 checksum of msg.
-            :param msg: Message to compute checksum over.
-            :return: IPv4 checksum of msg.
-            """
-            # Pad with 0 byte if needed
-            if len(msg) % 2 == 1:
-                msg += "\x00"
-
-            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
-            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
-            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
-            return ~total & 0xffff
-
-        checksum = struct.pack(">H", checksum(ip_header))
-        ip_header = ip_header[:10] + checksum + ip_header[12:]
-
-        # UDP
-        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
-        udp_header += struct.pack(">H", server.active_port)  # Dst port
-        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
-        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
-
-        raw_packet = eth_header + ip_header + udp_header + data_to_send
-
-        # Ethernet frame check sequence
-        crc = zlib.crc32(raw_packet) & 0xFFFFFFFF
-        raw_packet += struct.pack("<I", crc)
+        raw_packet = ethernet_frame(
+            payload=ip_packet(
+                payload=udp_packet(
+                    payload=data_to_send,
+                    src_port=server.active_port + 1,
+                    dst_port=server.active_port),
+                src_ip="\x7F\x00\x00\x01",
+                dst_ip="\x7F\x00\x00\x01"),
+            src_mac="\x00" * 6,
+            dst_mac="\xff" * 6)
 
         # When
         uut.open()
@@ -505,8 +488,6 @@ class TestSocketConnection(unittest.TestCase):
         """
         data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
                              ' prudent marriages?""')
-        udp_header_len = 8
-        ip_header_len = 20
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -521,53 +502,13 @@ class TestSocketConnection(unittest.TestCase):
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
-        ip_header = "\x45"  # Version | Header Length
-        ip_header += "\x00"  # "Differentiated Services Field"
-        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
-        ip_header += "\x00\x01"  # ID Field
-        ip_header += "\x40\x00"  # Flags, Fragment Offset
-        ip_header += "\x40"  # Time to live
-        ip_header += "\x11"  # Protocol: UDP
-        ip_header += "\x00\x00"  # Header checksum
-        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
-        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
-
-        # IPv4 Checksum
-        def ones_complement_sum_carry_16(a, b):
-            """
-            Compute ones complement and carry at 16 bits.
-            :type a: int
-            :type b: int
-            :return: Sum of a and b, ones complement, carry at 16 bits.
-            """
-            c = a + b
-            return (c & 0xffff) + (c >> 16)
-
-        def checksum(msg):
-            """
-            Return IPv4 checksum of msg.
-            :param msg: Message to compute checksum over.
-            :return: IPv4 checksum of msg.
-            """
-            # Pad with 0 byte if needed
-            if len(msg) % 2 == 1:
-                msg += "\x00"
-
-            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
-            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
-            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
-            return ~total & 0xffff
-
-        checksum = struct.pack(">H", checksum(ip_header))
-        ip_header = ip_header[:10] + checksum + ip_header[12:]
-
-        # UDP
-        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
-        udp_header += struct.pack(">H", server.active_port)  # Dst port
-        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
-        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
-
-        raw_packet = ip_header + udp_header + data_to_send
+        raw_packet = ip_packet(
+            payload=udp_packet(
+                payload=data_to_send,
+                src_port=server.active_port + 1,
+                dst_port=server.active_port),
+            src_ip="\x7F\x00\x00\x01",
+            dst_ip="\x7F\x00\x00\x01")
 
         # When
         uut.open()
@@ -631,6 +572,7 @@ class TestSocketConnection(unittest.TestCase):
             SocketConnection(port=5, proto='raw-l2')
         with self.assertRaises(Exception):
             SocketConnection(port=5, proto='raw-l3')
+
 
 if __name__ == '__main__':
     unittest.main()
