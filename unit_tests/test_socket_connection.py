@@ -1,3 +1,4 @@
+import fcntl
 import threading
 import unittest
 import logging
@@ -10,6 +11,24 @@ import socket
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
+
+
+def get_packed_ip_address(ifname):
+    """
+    Returns IP address of the ifname interface as 4-byte string.
+
+    :type ifname: str
+    :param ifname: Interface whose IP address should be returned.
+
+    :rtype: str
+    :return: IP address of ifname.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24]
 
 
 class MiniTestServer(object):
@@ -81,7 +100,7 @@ class MiniTestServer(object):
 
 class TestSocketConnection(unittest.TestCase):
     def setUp(self):
-        pass
+        self.local_ip = get_packed_ip_address('eth0')
 
     def test_tcp_client(self):
         """
@@ -223,8 +242,8 @@ class TestSocketConnection(unittest.TestCase):
         ip_header += "\x40"  # Time to live
         ip_header += "\x11"  # Protocol: UDP
         ip_header += "\x00\x00"  # Header checksum
-        ip_header += "\xac\x10\x03\x7d"  # Src IP address
-        ip_header += "\xac\x10\x03\x7e"  # Dst IP address
+        ip_header += self.local_ip[0:3] + "\x00"  # Src IP address
+        ip_header += self.local_ip                # Dst IP address
 
         # IPv4 Checksum
         def ones_complement_sum_carry_16(a, b):
@@ -316,9 +335,8 @@ class TestSocketConnection(unittest.TestCase):
         ip_header += "\x40"  # Time to live
         ip_header += "\x11"  # Protocol: UDP
         ip_header += "\x00\x00"  # Header checksum
-        ip_header += "\xac\x10\x03\x7d"  # Src IP address
-        # ip_header += "\x7F\x00\x00\x01"  # Dst IP address
-        ip_header += "\xac\x10\x03\x7e"  # Dst IP address
+        ip_header += self.local_ip[0:3] + "\x00"  # Src IP address
+        ip_header += self.local_ip                # Dst IP address
 
         # IPv4 Checksum
         def ones_complement_sum_carry_16(a, b):
