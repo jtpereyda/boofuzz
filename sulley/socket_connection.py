@@ -6,7 +6,7 @@ import httplib
 import sex
 from helpers import get_max_udp_size
 
-ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux docs for if_ether.h
+ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
 
 
 class SocketConnection(itarget_connection.ITargetConnection):
@@ -16,7 +16,14 @@ class SocketConnection(itarget_connection.ITargetConnection):
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_HOST_REQUIRED = ["tcp", "ssl", "udp"]
 
-    def __init__(self, host, port=None, proto="tcp", bind=None, timeout=5.0, ethernet_proto=ETH_P_IP, l2_dst='\xFF'*6):
+    def __init__(self,
+                 host,
+                 port=None,
+                 proto="tcp",
+                 bind=None,
+                 timeout=5.0,
+                 ethernet_proto=socket.ntohs(ETH_P_IP),
+                 l2_dst='\xFF'*6):
         """
         @type  host:    str
         @param host:    Hostname or IP address of target system,

@@ -8,7 +8,8 @@ from sulley import socket_connection
 import socket
 
 
-THREAD_ERROR_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
+THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
+ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
 
 
 class MiniTestServer(object):
@@ -32,6 +33,8 @@ class MiniTestServer(object):
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         elif self.proto == 'udp':
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        elif self.proto == 'raw':
+            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
@@ -60,6 +63,11 @@ class MiniTestServer(object):
             client_socket.close()
         elif self.proto == 'udp':
             data, addr = self.server_socket.recvfrom(1024)
+            self.received = data
+            if not self.stay_silent:
+                self.server_socket.sendto(self.data_to_send, addr)
+        elif self.proto == 'raw':
+            data, addr = self.server_socket.recvfrom(10000)
             self.received = data
             if not self.stay_silent:
                 self.server_socket.sendto(self.data_to_send, addr)
@@ -101,7 +109,7 @@ class TestSocketConnection(unittest.TestCase):
         uut.close()
 
         # Wait for the other thread to terminate
-        t.join(THREAD_ERROR_TIMEOUT)
+        t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.isAlive())
 
         # Then
@@ -134,7 +142,7 @@ class TestSocketConnection(unittest.TestCase):
         uut.close()
 
         # Wait for the other thread to terminate
-        t.join(THREAD_ERROR_TIMEOUT)
+        t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.isAlive())
 
         # Then
@@ -168,7 +176,7 @@ class TestSocketConnection(unittest.TestCase):
         uut.close()
 
         # Wait for the other thread to terminate
-        t.join(THREAD_ERROR_TIMEOUT)
+        t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.isAlive())
 
         # Then
@@ -266,7 +274,7 @@ class TestSocketConnection(unittest.TestCase):
         uut.close()
 
         # Wait for the other thread to terminate
-        t.join(THREAD_ERROR_TIMEOUT)
+        t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.isAlive())
 
         # Then
@@ -356,11 +364,205 @@ class TestSocketConnection(unittest.TestCase):
         uut.close()
 
         # Wait for the other thread to terminate
-        t.join(THREAD_ERROR_TIMEOUT)
+        t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.isAlive())
 
         # Then
         self.assertEqual(data_to_send, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l2_loopback(self):
+        """
+        Test 'raw' protocol with the loopback interface 'lo'.
+        So far this has only worked if the server is also using a raw socket.
+
+        Given: A SocketConnection 'raw-l2' object.
+          and: A raw UDP/IP/Ethernet packet.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: The server receives the raw packet data from send().
+         And: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
+                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
+                             ' but creative artists very seldom. "')
+        udp_header_len = 8
+        ip_header_len = 20
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        eth_header = "\xff" * 6  # Dst address: Broadcast
+        eth_header += "\x00" * 6  # Src address
+        eth_header += "\x08\x00"  # Type: IP
+
+        ip_header = "\x45"  # Version | Header Length
+        ip_header += "\x00"  # "Differentiated Services Field"
+        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
+        ip_header += "\x00\x01"  # ID Field
+        ip_header += "\x40\x00"  # Flags, Fragment Offset
+        ip_header += "\x40"  # Time to live
+        ip_header += "\x11"  # Protocol: UDP
+        ip_header += "\x00\x00"  # Header checksum
+        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
+        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
+
+        # IPv4 Checksum
+        def ones_complement_sum_carry_16(a, b):
+            """
+            Compute ones complement and carry at 16 bits.
+            :type a: int
+            :type b: int
+            :return: Sum of a and b, ones complement, carry at 16 bits.
+            """
+            c = a + b
+            return (c & 0xffff) + (c >> 16)
+
+        def checksum(msg):
+            """
+            Return IPv4 checksum of msg.
+            :param msg: Message to compute checksum over.
+            :return: IPv4 checksum of msg.
+            """
+            # Pad with 0 byte if needed
+            if len(msg) % 2 == 1:
+                msg += "\x00"
+
+            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
+            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
+            return ~total & 0xffff
+
+        checksum = struct.pack(">H", checksum(ip_header))
+        ip_header = ip_header[:10] + checksum + ip_header[12:]
+
+        # UDP
+        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
+        udp_header += struct.pack(">H", server.active_port)  # Dst port
+        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
+        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+
+        raw_packet = eth_header + ip_header + udp_header + data_to_send
+
+        # Ethernet frame check sequence
+        crc = zlib.crc32(raw_packet) & 0xFFFFFFFF
+        raw_packet += struct.pack("<I", crc)
+
+        # When
+        uut.open()
+        uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(raw_packet, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3_loopback(self):
+        """
+        Test 'raw' protocol with the loopback interface 'lo'.
+        So far this has only worked if the server is also using a raw socket. This is a notable shortcoming, either
+        of the loopback interface or of SocketConnection's implementation.
+
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: The server receives the raw packet data from send(), with an Ethernet header appended.
+         And: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
+                             ' prudent marriages?""')
+        udp_header_len = 8
+        ip_header_len = 20
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        ip_header = "\x45"  # Version | Header Length
+        ip_header += "\x00"  # "Differentiated Services Field"
+        ip_header += struct.pack(">H", ip_header_len + udp_header_len + len(data_to_send))  # Length
+        ip_header += "\x00\x01"  # ID Field
+        ip_header += "\x40\x00"  # Flags, Fragment Offset
+        ip_header += "\x40"  # Time to live
+        ip_header += "\x11"  # Protocol: UDP
+        ip_header += "\x00\x00"  # Header checksum
+        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
+        ip_header += "\x7F\x00\x00\x01"  # Dst IP address
+
+        # IPv4 Checksum
+        def ones_complement_sum_carry_16(a, b):
+            """
+            Compute ones complement and carry at 16 bits.
+            :type a: int
+            :type b: int
+            :return: Sum of a and b, ones complement, carry at 16 bits.
+            """
+            c = a + b
+            return (c & 0xffff) + (c >> 16)
+
+        def checksum(msg):
+            """
+            Return IPv4 checksum of msg.
+            :param msg: Message to compute checksum over.
+            :return: IPv4 checksum of msg.
+            """
+            # Pad with 0 byte if needed
+            if len(msg) % 2 == 1:
+                msg += "\x00"
+
+            collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
+            msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+            total = reduce(ones_complement_sum_carry_16, msg_words, 0)
+            return ~total & 0xffff
+
+        checksum = struct.pack(">H", checksum(ip_header))
+        ip_header = ip_header[:10] + checksum + ip_header[12:]
+
+        # UDP
+        udp_header = struct.pack(">H", server.active_port + 1)  # Src port
+        udp_header += struct.pack(">H", server.active_port)  # Dst port
+        udp_header += struct.pack(">H", len(data_to_send) + udp_header_len)  # Length
+        udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+
+        raw_packet = ip_header + udp_header + data_to_send
+
+        # When
+        uut.open()
+        uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
     def test_required_args_port(self):

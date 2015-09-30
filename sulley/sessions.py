@@ -33,7 +33,14 @@ class Target(object):
         eth_target = Target(host='eth0', l2_dst='\xFF'*6)
     """
 
-    def __init__(self, host, port=None, proto="tcp", bind=None, timeout=5.0, ethernet_proto=socket_connection.ETH_P_IP, l2_dst='\xFF'*6):
+    def __init__(self,
+                 host,
+                 port=None,
+                 proto="tcp",
+                 bind=None,
+                 timeout=5.0,
+                 ethernet_proto=socket.ntohs(socket_connection.ETH_P_IP),
+                 l2_dst='\xFF'*6):
         """
         @type  host:    str
         @param host:    Hostname or IP address of target system,
