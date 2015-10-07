@@ -176,6 +176,7 @@ class session (pgraph.graph):
         # Initialize logger
         self.logger = logging.getLogger("Sulley_logger")
         self.logger.setLevel(log_level)
+        self.logger.propagate = False  # Propagating messages to the root logger can result in duplicate logs.
         formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] -> %(message)s')
 
         if logfile != None:
