@@ -518,37 +518,35 @@ class Checksum:
         """
         Calculate the checksum of the specified block using the specified algorithm.
         """
-        # Note on self-referential checksums:
-        # If Checksum.block_name refers to a parent block of the checksum,
-        # we must handle two situations:
-        # 1. If the block is not yet finished (AKA closed), we render a default
+        # Algorithm summary:
+        # 1. If the block is already finished (AKA closed), we calculate
+        #    the checksum by rendering the target block's stack, but subbing in
+        #    a stand-in value for self (the stand-in is necessary to avoid
+        #    infinite recursion if the target block is the checksum's parent).
+        # 2. If the block is not yet finished (closed), we render a default
         #    stand-in value (all zeros), and push self onto the target block's
         #    callback stack.
-        # 2. If the block is already finished (closed), we can safely calculate
-        #    the checksum using what the parent block already rendered.
-        #    This works because we previously rendered the checksum block with
-        #    the stand-in value, as required when the checksum computes over
-        #    itself.
-        #
-        # Even if the checksum block is not self-referential, we still need to
-        # check whether block_name is finished and provide the callback if not.
 
         if self.block_name in self.request.closed_blocks:
             # The block has already been closed, so we can compute the checksum!
             self.rendered = self.checksum(
-                self.request.closed_blocks[self.block_name].rendered
+                ''.join(block.rendered
+                        if block is not self
+                        else self.checksum_lengths[self.algorithm] * '\x00'
+                        for block in self.request.closed_blocks[self.block_name].stack)
+
             )
         else:
             # The block is not closed, so we
-            # 1) add this checksum block to the requests callback list of the target block...
+            # 1) add this checksum block to the requests callback list of the
+            # target block...
             if self.block_name not in self.request.callbacks:
                 self.request.callbacks[self.block_name] = []
 
-            self.request.callbacks.get(self.block_name, []).append(self)
+            self.request.callbacks[self.block_name].append(self)
 
-            # and 2) Render a stand-in value in case the checksum block (self) is used in
-            #   a) a Size block calculation or
-            #   b) a self-referential checksum calculation (as in IPv4).
+            # 2) Render a stand-in value, necessary if the checksum block
+            # (self) is used in a Size block calculation or something similar.
             self.rendered = self.checksum_lengths[self.algorithm] * '\x00'
 
     def __repr__(self):
