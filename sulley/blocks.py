@@ -460,6 +460,9 @@ class Checksum:
 
         self.rendered = self.checksum_lengths[self.algorithm] * '\x00'
 
+        # Set the recursion flag before calling a method that may cause a recursive loop.
+        self._recursion_flag = False
+
     def checksum(self, data):
         """
         Calculate and return the checksum (in raw bytes) over the supplied data.
@@ -514,27 +517,32 @@ class Checksum:
         else:
             return self.algorithm(data)
 
+    def _get_dummy_value(self):
+        return self.checksum_lengths[self.algorithm] * '\x00'
+
     def render(self):
         """
         Calculate the checksum of the specified block using the specified algorithm.
         """
         # Algorithm summary:
-        # 1. If the block is already finished (AKA closed), we calculate
-        #    the checksum by rendering the target block's stack, but subbing in
-        #    a stand-in value for self (the stand-in is necessary to avoid
-        #    infinite recursion if the target block is the checksum's parent).
-        # 2. If the block is not yet finished (closed), we render a default
+        # 1. If the recursion flag is set, just set a dummy value.
+        # 2. If the target block is already finished (AKA closed), we calculate
+        #    the checksum by rendering the target block's stack. But first, we
+        #    set the recursion flag. That way, if the target block itself
+        #    renders this checksum object, we won't infinitely recur.
+        # 3. If the block is not yet finished (closed), we render a default
         #    stand-in value (all zeros), and push self onto the target block's
         #    callback stack.
 
-        if self.block_name in self.request.closed_blocks:
+        if self._recursion_flag:
+            self.rendered = self._get_dummy_value()
+        elif self.block_name in self.request.closed_blocks:
             # The block has already been closed, so we can compute the checksum!
+            self._recursion_flag = True
+            self.request.closed_blocks[self.block_name].render()
+            self._recursion_flag = False
             self.rendered = self.checksum(
-                ''.join(block.rendered
-                        if block is not self
-                        else self.checksum_lengths[self.algorithm] * '\x00'
-                        for block in self.request.closed_blocks[self.block_name].stack)
-
+                self.request.closed_blocks[self.block_name].rendered
             )
         else:
             # The block is not closed, so we
@@ -547,7 +555,7 @@ class Checksum:
 
             # 2) Render a stand-in value, necessary if the checksum block
             # (self) is used in a Size block calculation or something similar.
-            self.rendered = self.checksum_lengths[self.algorithm] * '\x00'
+            self.rendered = self._get_dummy_value()
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -841,7 +849,7 @@ class Size:
             # and fill in a dummy value to support other Size objects that depend on this one
             self.bit_field.value = 0
             self.rendered = self.bit_field.render()
-            if not self.block_name in self.request.callbacks:
+            if self.block_name not in self.request.callbacks:
                 self.request.callbacks[self.block_name] = []
 
             self.request.callbacks[self.block_name].append(self)
