@@ -1,3 +1,4 @@
+from sulley import helpers
 import itarget_connection
 import socket
 import ssl
@@ -22,7 +23,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  proto="tcp",
                  bind=None,
                  timeout=5.0,
-                 ethernet_proto=socket.ntohs(ETH_P_IP),
+                 ethernet_proto=ETH_P_IP,
                  l2_dst='\xFF'*6):
         """
         @type  host:    str
@@ -141,7 +142,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         :return: None
         """
         self.logger.debug(
-            "Attempting to send {0} bytes: {1}".format(len(data), repr(data)))
+            "Attempting to send {0} bytes: {1}".format(len(data), helpers.hex_str(data)))
 
         if self.proto in ["tcp", "ssl"]:
             self._sock.send(data)

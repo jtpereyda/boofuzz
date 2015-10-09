@@ -39,7 +39,7 @@ class Target(object):
                  proto="tcp",
                  bind=None,
                  timeout=5.0,
-                 ethernet_proto=socket.ntohs(socket_connection.ETH_P_IP),
+                 ethernet_proto=socket_connection.ETH_P_IP,
                  l2_dst='\xFF'*6):
         """
         @type  host:    str
