@@ -1,3 +1,4 @@
+import collections
 from sulley import helpers
 import primitives
 import sex
@@ -25,7 +26,8 @@ class Request(object):
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
         self.closed_blocks = {}  # dictionary of closed blocks.
-        self.callbacks = {}  # dictionary of list of sizers / checksums that were unable to complete rendering.
+        # dictionary of list of sizers / checksums that were unable to complete rendering:
+        self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
         self.rendered = ""  # rendered block structure.
         self.mutant_index = 0  # current mutation index.
@@ -424,7 +426,7 @@ class Checksum:
         "adler32": 4,
         "md5": 16,
         "sha1": 20,
-        'ipv4': 2,
+        "ipv4": 2,
     }
 
     def __init__(self, block_name, request, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
@@ -439,7 +441,7 @@ class Checksum:
         @type  algorithm:  str or def
         @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
         @type  length:     int
-        @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate
+        @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
         @type  endian:     Character
         @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
         @type  name:       str
@@ -458,7 +460,7 @@ class Checksum:
         if not self.length and self.algorithm in self.checksum_lengths:
             self.length = self.checksum_lengths[self.algorithm]
 
-        self.rendered = self.checksum_lengths[self.algorithm] * '\x00'
+        self.rendered = self._get_dummy_value()
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
@@ -481,15 +483,7 @@ class Checksum:
             elif self.algorithm == "adler32":
                 return struct.pack(self.endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
 
-            elif self.algorithm == 'ipv4':
-                print("checksum on:{0}".format(
-                    ' '.join("{:02x}".format(ord(b)) for b in data)
-                ))
-                print("result     :{0}".format(
-                    ' '.join(
-                        "{:02x}".format(ord(b))
-                        for b in struct.pack(self.endian + "H", helpers.ipv4_checksum(data)))
-                ))
+            elif self.algorithm == "ipv4":
                 return struct.pack(self.endian + "H", helpers.ipv4_checksum(data))
 
             elif self.algorithm == "md5":
@@ -533,14 +527,18 @@ class Checksum:
         # 3. If the block is not yet finished (closed), we render a default
         #    stand-in value (all zeros), and push self onto the target block's
         #    callback stack.
+        #    This ensures that the item will be rendered after the target block
+        #    is ready, and keeps us from unnecssary calculations.
 
         if self._recursion_flag:
             self.rendered = self._get_dummy_value()
         elif self.block_name in self.request.closed_blocks:
-            # The block has already been closed, so we can compute the checksum!
+            # render parent (excluding self via self._recursion_flag)
             self._recursion_flag = True
             self.request.closed_blocks[self.block_name].render()
             self._recursion_flag = False
+
+            # Compute the checksum!
             self.rendered = self.checksum(
                 self.request.closed_blocks[self.block_name].rendered
             )
@@ -548,9 +546,6 @@ class Checksum:
             # The block is not closed, so we
             # 1) add this checksum block to the requests callback list of the
             # target block...
-            if self.block_name not in self.request.callbacks:
-                self.request.callbacks[self.block_name] = []
-
             self.request.callbacks[self.block_name].append(self)
 
             # 2) Render a stand-in value, necessary if the checksum block

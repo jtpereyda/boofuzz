@@ -9,7 +9,7 @@ import utils
 from constants import BIG_ENDIAN, LITTLE_ENDIAN
 
 
-### REQUEST MANAGEMENT
+# REQUEST MANAGEMENT
 def s_get(name=None):
     """
     Return the request with the specified name or the current request if name is not specified. Use this to switch from
@@ -33,7 +33,7 @@ def s_get(name=None):
     # ensure this gotten request is the new current.
     s_switch(name)
 
-    if not name in blocks.REQUESTS:
+    if name not in blocks.REQUESTS:
         raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     return blocks.REQUESTS[name]
@@ -95,7 +95,7 @@ def s_switch(name):
     @param name: Name of request
     """
 
-    if not name in blocks.REQUESTS:
+    if name not in blocks.REQUESTS:
         raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     blocks.CURRENT = blocks.REQUESTS[name]
@@ -105,7 +105,7 @@ def s_switch(name):
 
 
 def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
-    #TODO: Either convert this to a with() statement, or add a new one that is compatible.
+    # TODO: Either convert this to a with() statement, or add a new one that is compatible.
     """
     Open a new block under the current request. This routine always returns True so you can make your fuzzer pretty
     with indenting::
@@ -148,7 +148,7 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None, dep=None):
+def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
     currently open blocks.
@@ -158,9 +158,9 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, na
     @type  algorithm:  str
     @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
     @type  length:     int
-    @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate
+    @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
     @type  endian:     Character
-    @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+    @param endian:     (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
     @type  name:       str
     @param name:       Name of this checksum field
     """
@@ -240,8 +240,6 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
     )
     blocks.CURRENT.push(size)
 
-    return size
-
 
 def s_update(name, value):
     """
@@ -253,13 +251,13 @@ def s_update(name, value):
     @param value: Updated value
     """
 
-    if not name in blocks.CURRENT:
+    if name not in blocks.CURRENT:
         raise sex.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
 
     blocks.CURRENT.names[name].value = value
 
 
-### PRIMITIVES
+# PRIMITIVES
 
 
 def s_binary(value, name=None):
@@ -338,7 +336,7 @@ def s_lego(lego_type, value=None, options=()):
     # generate a unique name for this lego.
     name = "LEGO_%08x" % len(blocks.CURRENT.names)
 
-    if not lego_type in legos.BIN:
+    if lego_type not in legos.BIN:
         raise sex.SullyRuntimeError("INVALID LEGO TYPE SPECIFIED: %s" % lego_type)
     lego = legos.BIN[lego_type](name, blocks.CURRENT, value, options)
 
@@ -550,7 +548,7 @@ def s_qword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, f
     blocks.CURRENT.push(qword)
 
 
-### ALIASES
+# ALIASES
 
 
 s_dunno = s_raw = s_unknown = s_static
@@ -619,7 +617,7 @@ s_blocksize_asciihex = lambda args: no_sizer(args)
 s_blocksize_string = lambda args: no_sizer(args)
 
 
-### MISC
+# MISC
 
 
 def s_hex_dump(data, addr=0):
