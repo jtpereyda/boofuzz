@@ -148,7 +148,7 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
+def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None, dep=None):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
     currently open blocks.
@@ -156,7 +156,7 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, na
     @type  block_name: str
     @param block_name: Name of block to apply sizer to
     @type  algorithm:  str
-    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1)
+    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
     @type  length:     int
     @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate
     @type  endian:     Character
@@ -239,6 +239,8 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
         block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
     )
     blocks.CURRENT.push(size)
+
+    return size
 
 
 def s_update(name, value):

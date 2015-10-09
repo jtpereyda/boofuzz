@@ -109,3 +109,47 @@ def uuid_str_to_bin(uuid):
     uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
 
     return uuid
+
+
+def _ones_complement_sum_carry_16(a, b):
+    """
+    Compute ones complement and carry at 16 bits.
+    :type a: int
+    :type b: int
+    :return: Sum of a and b, ones complement, carry at 16 bits.
+    """
+    pre_sum = a + b
+    return (pre_sum & 0xffff) + (pre_sum >> 16)
+
+
+def ipv4_checksum(msg):
+    """
+    Return IPv4 checksum of msg.
+    :param msg: Message to compute checksum over.
+    :type msg: str
+
+    :return: IPv4 checksum of msg.
+    :rtype: int
+    """
+    # Pad with 0 byte if needed
+    if len(msg) % 2 == 1:
+        msg += "\x00"
+
+    def collate_bytes(msb, lsb):
+        return (ord(msb) << 8) + ord(lsb)
+
+    msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+    total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
+    return ~total & 0xffff
+
+
+def hex_str(s):
+    """
+    Returns a hex-formatted string based on s.
+    :param s: Some string.
+    :type s: str
+
+    :return: Hex-formatted string representing s.
+    :rtype: str
+    """
+    return ' '.join("{:02x}".format(ord(b)) for b in s)
