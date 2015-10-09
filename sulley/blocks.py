@@ -398,10 +398,8 @@ class Block(object):
             self.rendered = self.encoder(self.rendered)
 
         # the block is now closed, clear out all the entries from the request back splice dictionary.
-        print("callbacks:{0}".format(self.request.callbacks))
         if self.name in self.request.callbacks:
             for item in self.request.callbacks[self.name]:
-                item.block_callback()
                 item.render()
 
     def reset(self):
@@ -516,37 +514,42 @@ class Checksum:
         else:
             return self.algorithm(data)
 
-    def block_callback(self):
-        """
-        Calculate the checksum.  This method is designed to be called _exactly once_.
-        """
-        # Render the current parent block, but with a dummy checksum value.
-        temp_block_data = ""
-        for item in self.request.closed_blocks[self.block_name].stack:
-            if item is not self:
-                item.render()
-                temp_block_data += item.rendered
-            else:
-                temp_block_data += self.checksum_lengths[self.algorithm] * '\x00'
-
-        self.rendered = self.checksum(temp_block_data)
-        print(">>>>block callback: Rendered!")
-        print(self.request.closed_blocks[self.block_name].stack)
-
     def render(self):
         """
         Calculate the checksum of the specified block using the specified algorithm.
         """
+        # Note on self-referential checksums:
+        # If Checksum.block_name refers to a parent block of the checksum,
+        # we must handle two situations:
+        # 1. If the block is not yet finished (AKA closed), we render a default
+        #    stand-in value (all zeros), and push self onto the target block's
+        #    callback stack.
+        # 2. If the block is already finished (closed), we can safely calculate
+        #    the checksum using what the parent block already rendered.
+        #    This works because we previously rendered the checksum block with
+        #    the stand-in value, as required when the checksum computes over
+        #    itself.
+        #
+        # Even if the checksum block is not self-referential, we still need to
+        # check whether block_name is finished and provide the callback if not.
 
         if self.block_name in self.request.closed_blocks:
-            # if the target block for this sizer is already closed, do nothing.
-            pass  # already pushed onto callbacks, I think
-        # otherwise, add this checksum block to the requests callback list.
+            # The block has already been closed, so we can compute the checksum!
+            self.rendered = self.checksum(
+                self.request.closed_blocks[self.block_name].rendered
+            )
         else:
+            # The block is not closed, so we
+            # 1) add this checksum block to the requests callback list of the target block...
             if self.block_name not in self.request.callbacks:
                 self.request.callbacks[self.block_name] = []
 
-            self.request.callbacks[self.block_name].append(self)
+            self.request.callbacks.get(self.block_name, []).append(self)
+
+            # and 2) Render a stand-in value in case the checksum block (self) is used in
+            #   a) a Size block calculation or
+            #   b) a self-referential checksum calculation (as in IPv4).
+            self.rendered = self.checksum_lengths[self.algorithm] * '\x00'
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -814,9 +817,6 @@ class Size:
         """
 
         return self.bit_field.num_mutations()
-
-    def block_callback(self):
-        pass
 
     def render(self):
         """
