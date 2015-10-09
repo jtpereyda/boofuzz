@@ -109,3 +109,15 @@ def uuid_str_to_bin(uuid):
     uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
 
     return uuid
+
+
+def hex_str(s):
+    """
+    Returns a hex-formatted string based on s.
+    :param s: Some string.
+    :type s: str
+
+    :return: Hex-formatted string representing s.
+    :rtype: str
+    """
+    return ' '.join("{:02x}".format(ord(b)) for b in s)
