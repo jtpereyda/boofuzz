@@ -1,5 +1,8 @@
 *.pyc
 archived_fuzzies/*.session
 docs/
+build/
+dist/
+*.egg-info/
 .idea/
 testing/
