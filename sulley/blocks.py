@@ -404,6 +404,12 @@ class Block(object):
             for item in self.request.callbacks[self.name]:
                 item.render()
 
+        # now collect and merge the rendered items (again).
+        self.rendered = ""
+
+        for item in self.stack:
+            self.rendered += item.rendered
+
     def reset(self):
         """
         Reset the primitives on this blocks stack to the starting mutation state.
@@ -528,7 +534,7 @@ class Checksum:
         #    stand-in value (all zeros), and push self onto the target block's
         #    callback stack.
         #    This ensures that the item will be rendered after the target block
-        #    is ready, and keeps us from unnecssary calculations.
+        #    is ready, and keeps us from unnecessary calculations.
 
         if self._recursion_flag:
             self.rendered = self._get_dummy_value()
