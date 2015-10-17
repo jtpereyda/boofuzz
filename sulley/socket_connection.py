@@ -15,7 +15,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
     ITargetConnection implementation using sockets. Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
-    _PROTOCOLS_HOST_REQUIRED = ["tcp", "ssl", "udp"]
+    _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
 
     def __init__(self,
                  host,
@@ -39,7 +39,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                         raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
 
         @type  bind:    tuple (host, port)
-        @kwarg bind:    (Optional, def=None) Socket bind address and port
+        @kwarg bind:    (Optional, def=None) Socket bind address and port. Required if using recv() with 'udp' protocol.
 
         @type  timeout: float
         @kwarg timeout: (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
@@ -70,7 +70,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         if self.proto not in self._PROTOCOLS:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
-        if self.proto in self._PROTOCOLS_HOST_REQUIRED and self.port == None:
+        if self.proto in self._PROTOCOLS_PORT_REQUIRED and self.port is None:
             raise ValueError("__init__() argument port required for protocol {0}".format(self.proto))
 
     def close(self):
@@ -92,16 +92,14 @@ class SocketConnection(itarget_connection.ITargetConnection):
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         elif self.proto == "udp":
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            if self.bind:
+                self._sock.bind(self.bind)
         elif self.proto == "raw-l2":
             self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
         elif self.proto == "raw-l3":
             self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM)
         else:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
-
-        # bind if requested
-        if self.bind:
-            self._sock.bind(self.bind)
 
         self._sock.settimeout(self.timeout)
 
@@ -123,15 +121,26 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :return: Received data.
         """
-        if self.proto in ['raw-l2', 'raw-l3']:
-            # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
-            # dump everything off the interface anyway, which is probably not what the user wants.
-            return bytes('')
-
         try:
-            return self._sock.recv(max_bytes)
+            if self.proto in ['tcp', 'ssl']:
+                data = self._sock.recv(max_bytes)
+            elif self.proto == 'udp':
+                if self.bind:
+                    data, _ = self._sock.recvfrom(max_bytes)
+                else:
+                    raise sex.SullyRuntimeError(
+                        "SocketConnection.recv() for UDP requires a bind address/port."
+                        " Current value:".format(self.bind))
+            elif self.proto in ['raw-l2', 'raw-l3']:
+                # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
+                # dump everything off the interface anyway, which is probably not what the user wants.
+                data = bytes('')
+            else:
+                raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
-            return bytes('')
+            data = bytes('')
+
+        return data
 
     def send(self, data):
         """

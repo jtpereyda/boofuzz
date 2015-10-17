@@ -55,7 +55,7 @@ class Target(object):
                         raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
 
         @type  bind:    tuple (host, port)
-        @kwarg bind:    (Optional, def=None) Socket bind address and port
+        @kwarg bind:    (Optional, def=None) Socket bind address and port. Required if using recv() with 'udp' protocol.
 
         @type  timeout: float
         @kwarg timeout: (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
