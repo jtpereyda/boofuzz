@@ -566,7 +566,7 @@ class Session(pgraph.Graph):
                             self.transmit(target, self.fuzz_node, edge)
                         except Exception, e:
                             error_handler(e, "failed transmitting fuzz node", target, target)
-                            raise
+                            continue
 
                         # if we reach this point the send was successful for break out of the while(1).
                         break
