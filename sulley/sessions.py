@@ -462,7 +462,6 @@ class Session(pgraph.Graph):
         for edge in self.edges_from(this_node.id):
             # the destination node is the one actually being fuzzed.
             self.fuzz_node = self.nodes[edge.dst]
-            num_mutations = self.fuzz_node.num_mutations()
 
             # keep track of the path as we fuzz through it, don't count the root node.
             # we keep track of edges as opposed to nodes because if there is more then one path through a set of
@@ -510,7 +509,8 @@ class Session(pgraph.Graph):
 
                 # if we don't need to skip the current test case.
                 if self.total_mutant_index > self.skip:
-                    self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index, num_mutations))
+                    self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index,
+                                                           (self.fuzz_node.num_mutations())))
                     if self._fuzz_data_logger is not None:
                         self._fuzz_data_logger.open_test_case(self.total_mutant_index)
 
