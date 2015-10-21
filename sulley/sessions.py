@@ -484,9 +484,6 @@ class Session(pgraph.Graph):
         if isinstance(path, tuple):
             path = list(path)
 
-        # TODO: complete parallel fuzzing, will likely have to thread out each target
-        target = self.targets[0]
-
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
             # the destination node is the one actually being fuzzed.
@@ -503,22 +500,12 @@ class Session(pgraph.Graph):
             self.logger.info("current fuzz path: %s" % current_path)
             self.logger.info("fuzzed %d of %d total cases" % (self.total_mutant_index, self.total_num_mutations))
 
-            done_with_fuzz_node = False
-
-            # loop through all possible mutations of the fuzz node.
-            while not done_with_fuzz_node:
-
-                # if we have exhausted the mutations of the fuzz node, break out of the while(1).
-                # note: when mutate() returns False, the node has been reverted to the default (valid) state.
-                if not self.fuzz_node.mutate():
-                    self.logger.error("all possible mutations for current fuzz node exhausted")
-                    done_with_fuzz_node = True
-                    continue
-
-                # make a record in the session that a mutation was made.
+            # Loop through and yield all possible mutations of the fuzz node.
+            # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
+            while self.fuzz_node.mutate():
                 self.total_mutant_index += 1
-
                 yield (edge, path)
+            self.logger.error("all possible mutations for current fuzz node exhausted")
 
             # recursively fuzz the remainder of the nodes in the session graph.
             self.fuzz_case_iterator(self.fuzz_node, path)
