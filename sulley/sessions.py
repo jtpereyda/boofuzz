@@ -1,4 +1,5 @@
 import sys
+import signal
 import zlib
 import time
 import socket
@@ -246,13 +247,6 @@ class Session(pgraph.Graph):
         """
 
         super(Session, self).__init__()
-
-        try:
-            import signal
-
-            self.signal_module = True
-        except:
-            self.signal_module = False
 
         self.session_filename = session_filename
         self.skip = skip
@@ -602,18 +596,17 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
-        # loop to keep the main thread running and be able to receive signals
-        if self.signal_module:
-            # wait for a signal only if fuzzing is finished (this function is recursive)
-            # if fuzzing is not finished, web interface thread will catch it
-            if self.total_mutant_index == self.total_num_mutations:
-                try:
-                    while True:
-                        signal.pause()
-                except AttributeError:
-                    # signal.pause() is missing for Windows; wait 1ms and loop instead
-                    while True:
-                        time.sleep(0.001)
+        # Loop to keep the main thread running and be able to receive signals.
+        # Wait for a signal only if fuzzing is finished (this function is recursive).
+        # If fuzzing is not finished, web interface thread will catch it.
+        if self.total_mutant_index == self.total_num_mutations:
+            try:
+                while True:
+                    signal.pause()
+            except AttributeError:
+                # signal.pause() is missing for Windows; wait 1ms and loop instead
+                while True:
+                    time.sleep(0.001)
 
     def import_file(self):
         """
