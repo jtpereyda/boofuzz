@@ -1,5 +1,4 @@
 import sys
-import signal
 import zlib
 import time
 import socket
@@ -866,19 +865,17 @@ class Session(pgraph.Graph):
         # web interface thread doesn't catch KeyboardInterrupt
         # add a signal handler, and exit on SIGINT
         # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-        # TODO: doesn't work on OS where the signal module isn't available
 
-        if self.signal_module:
-            # noinspection PyUnusedLocal
-            def exit_abruptly(signal_recv, frame_recv):
-                """
-                Save current settings (just in case) and exit
-                """
-                self.export_file()
-                self.logger.critical("SIGINT received ... exiting")
-                sys.exit(0)
+        # noinspection PyUnusedLocal
+        def exit_abruptly(signal_recv, frame_recv):
+            """
+            Save current settings (just in case) and exit
+            """
+            self.export_file()
+            self.logger.critical("SIGINT received ... exiting")
+            sys.exit(0)
 
-            signal.signal(signal.SIGINT, exit_abruptly)
+        signal.signal(signal.SIGINT, exit_abruptly)
 
         # spawn the web interface.
         self.web_interface_thread.start()
