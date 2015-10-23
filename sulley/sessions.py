@@ -426,12 +426,12 @@ class Session(pgraph.Graph):
         fh.close()
 
     def fuzz(self):
-        # TODO: Implement skip logic:
-        # # if we don't need to skip the current test case.
-        # if self.total_mutant_index > self.skip:
-
         num_cases_actually_fuzzed = 0
         for fuzz_args in self.fuzz_case_iterator():
+            # skip until we pass self.skip
+            if self.total_mutant_index <= self.skip:
+                continue
+
             # if we need to pause, do so.
             self.pause()
 
