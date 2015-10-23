@@ -432,7 +432,7 @@ class Session(pgraph.Graph):
         :return: None
         """
         num_cases_actually_fuzzed = 0
-        for fuzz_args in self.fuzz_case_iterator():
+        for fuzz_args in self._fuzz_case_iterator():
             # skip until we pass self.skip
             if self.total_mutant_index <= self.skip:
                 continue
@@ -445,7 +445,7 @@ class Session(pgraph.Graph):
                 self.logger.error("restart interval of %d reached" % self.restart_interval)
                 self.restart_target(self.targets[0])
 
-            self.fuzz_current_case(*fuzz_args)
+            self._fuzz_current_case(*fuzz_args)
 
             num_cases_actually_fuzzed += 1
 
@@ -455,12 +455,21 @@ class Session(pgraph.Graph):
             helpers.pause_for_signal()
 
     def fuzz_single_case(self, mutant_index):
+        """
+        Fuzz a test case by mutant_index.
+
+        :type mutant_index: int
+        :param mutant_index: Non-negative integer.
+
+        :return: None
+        :raise sex.SulleyRuntimeError
+        """
         self._reset_fuzz_state()
 
         fuzz_index = 0
-        for fuzz_args in self.fuzz_case_iterator():
+        for fuzz_args in self._fuzz_case_iterator():
             if fuzz_index == mutant_index:
-                self.fuzz_current_case(*fuzz_args)
+                self._fuzz_current_case(*fuzz_args)
                 break
             fuzz_index += 1
 
@@ -474,7 +483,7 @@ class Session(pgraph.Graph):
         if self.fuzz_node:
             self.fuzz_node.reset()
 
-    def fuzz_case_iterator(self, this_node=None, path=()):
+    def _fuzz_case_iterator(self, this_node=None, path=()):
         """
         Iterates over fuzz cases and mutates appropriately.
         On each iteration, one may call fuzz_current_case to do the
@@ -528,13 +537,21 @@ class Session(pgraph.Graph):
             self.logger.error("all possible mutations for current fuzz node exhausted")
 
             # recursively fuzz the remainder of the nodes in the session graph.
-            self.fuzz_case_iterator(self.fuzz_node, path)
+            self._fuzz_case_iterator(self.fuzz_node, path)
 
         # finished with the last node on the path, pop it off the path stack.
         if path:
             path.pop()
 
-    def fuzz_current_case(self, edge, path):
+    def _fuzz_current_case(self, edge, path):
+        """
+        Fuzzes the current test case. Current test case is controlled by
+        fuzz_case_iterator().
+
+        :param edge:
+        :param path:
+        :return:
+        """
         target = self.targets[0]
 
         # exception error handling routine, print log message and restart target.
