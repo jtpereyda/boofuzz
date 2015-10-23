@@ -483,7 +483,7 @@ class Session(pgraph.Graph):
         try:
             with open(self.session_filename, "rb") as f:
                 data = cPickle.loads(zlib.decompress(f.read()))
-        except Exception:
+        except (IOError, zlib.error, cPickle.UnpicklingError):
             return
 
         # update the skip variable to pick up fuzzing from last test case.
