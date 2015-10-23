@@ -296,6 +296,8 @@ class Session(pgraph.Graph):
 
         self.add_node(self.root)
 
+        self.server_init()
+
     def add_node(self, node):
         """
         Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
@@ -422,6 +424,13 @@ class Session(pgraph.Graph):
         fh.close()
 
     def fuzz(self):
+        """
+        Call this routine to get the ball rolling.
+        Iterates through and fuzzes all fuzz cases, skipping according to
+        self.skip and restarting based on self.restart_interval.
+
+        :return: None
+        """
         num_cases_actually_fuzzed = 0
         for fuzz_args in self.fuzz_case_iterator():
             # skip until we pass self.skip
@@ -445,18 +454,43 @@ class Session(pgraph.Graph):
         if self.total_mutant_index == self.total_num_mutations:
             helpers.pause_for_signal()
 
+    def fuzz_single_case(self, mutant_index):
+        self._reset_fuzz_state()
+
+        fuzz_index = 0
+        for fuzz_args in self.fuzz_case_iterator():
+            if fuzz_index == mutant_index:
+                self.fuzz_current_case(*fuzz_args)
+                break
+            fuzz_index += 1
+
+    def _reset_fuzz_state(self):
+        """
+        Restart the object's fuzz state.
+
+        :return: None
+        """
+        self.total_mutant_index = 0
+        if self.fuzz_node:
+            self.fuzz_node.reset()
+
     def fuzz_case_iterator(self, this_node=None, path=()):
         """
-        Call this routine to get the ball rolling. No arguments are necessary as they are both utilized internally
+        Iterates over fuzz cases and mutates appropriately.
+        On each iteration, one may call fuzz_current_case to do the
+        actual fuzzing.
+
+        No arguments are necessary as they are both utilized internally
         during the recursive traversal of the session graph.
 
         @type  this_node: node.Node
         @param this_node: (Optional, def=None) Current node that is being fuzzed.
         @type  path:      list
         @param path:      (Optional, def=[]) Nodes along the path to the current one being fuzzed.
-        """
 
-        # if no node is specified, then we start from the root node and initialize the session.
+        :raise sex.SullyRuntimeError:
+        """
+        # if no node is specified, then we start from the root node..
         if not this_node:
             # we can't fuzz if we don't have at least one target and one request.
             if not self.targets:
@@ -466,11 +500,6 @@ class Session(pgraph.Graph):
                 raise sex.SullyRuntimeError("No requests specified in session")
 
             this_node = self.root
-
-            try:
-                self.server_init()
-            except:
-                return
 
         if isinstance(path, tuple):
             path = list(path)
@@ -604,7 +633,7 @@ class Session(pgraph.Graph):
         try:
             with open(self.session_filename, "rb") as f:
                 data = cPickle.loads(zlib.decompress(f.read()))
-        except:
+        except Exception:
             return
 
         # update the skip variable to pick up fuzzing from last test case.
