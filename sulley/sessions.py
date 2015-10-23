@@ -312,7 +312,7 @@ class Session(pgraph.Graph):
         node.number = len(self.nodes)
         node.id = len(self.nodes)
 
-        if not node.id in self.nodes:
+        if node.id not in self.nodes:
             self.nodes[node.id] = node
 
         return self
@@ -426,21 +426,23 @@ class Session(pgraph.Graph):
         fh.close()
 
     def fuzz(self):
-        # TODO: Implement restart interval logic:
-        # # if we've hit the restart interval, restart the target.
-        # if self.restart_interval and self.total_mutant_index % self.restart_interval == 0:
-        #     self.logger.error("restart interval of %d reached" % self.restart_interval)
-        #     self.restart_target(target)
-
         # TODO: Implement skip logic:
         # # if we don't need to skip the current test case.
         # if self.total_mutant_index > self.skip:
 
+        num_cases_actually_fuzzed = 0
         for fuzz_args in self.fuzz_case_iterator():
             # if we need to pause, do so.
             self.pause()
 
+            # Check restart interval
+            if num_cases_actually_fuzzed and num_cases_actually_fuzzed % self.restart_interval == 0:
+                self.logger.error("restart interval of %d reached" % self.restart_interval)
+                self.restart_target(self.targets[0])
+
             self.fuzz_current_case(*fuzz_args)
+
+            num_cases_actually_fuzzed += 1
 
         # Loop to keep the main thread running and be able to receive signals.
         # Wait for a signal only if fuzzing is finished (this function is recursive).
