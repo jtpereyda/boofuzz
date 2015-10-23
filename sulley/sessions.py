@@ -110,11 +110,8 @@ class Target(object):
         # If the process monitor is alive, set it's options
         if self.procmon:
             while 1:
-                try:
-                    if self.procmon.alive():
-                        break
-                except:
-                    pass
+                if self.procmon.alive():
+                    break
 
                 time.sleep(1)
 
@@ -125,11 +122,8 @@ class Target(object):
         # If the network monitor is alive, set it's options
         if self.netmon:
             while 1:
-                try:
-                    if self.netmon.alive():
-                        break
-                except:
-                    pass
+                if self.netmon.alive():
+                    break
 
                 time.sleep(1)
 
