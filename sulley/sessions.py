@@ -437,9 +437,6 @@ class Session(pgraph.Graph):
             if self.total_mutant_index <= self.skip:
                 continue
 
-            # if we need to pause, do so.
-            self.pause()
-
             # Check restart interval
             if num_cases_actually_fuzzed \
                     and self.restart_interval\
@@ -466,8 +463,6 @@ class Session(pgraph.Graph):
         :return: None
         :raise sex.SulleyRuntimeError
         """
-        self._reset_fuzz_state()
-
         fuzz_index = 0
         for fuzz_args in self._fuzz_case_iterator():
             if fuzz_index == mutant_index:
@@ -830,6 +825,8 @@ class Session(pgraph.Graph):
             if not self.edges_from(self.root.id):
                 raise sex.SullyRuntimeError("No requests specified in session")
 
+            self._reset_fuzz_state()
+
             this_node = self.root
 
         if isinstance(path, tuple):
@@ -875,6 +872,9 @@ class Session(pgraph.Graph):
         :return:
         """
         target = self.targets[0]
+
+        # if we need to pause, do so.
+        self.pause()
 
         # exception error handling routine, print log message and restart target.
         def error_handler(error, msg, error_target, error_sock=None):
