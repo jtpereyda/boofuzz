@@ -441,7 +441,9 @@ class Session(pgraph.Graph):
             self.pause()
 
             # Check restart interval
-            if num_cases_actually_fuzzed and num_cases_actually_fuzzed % self.restart_interval == 0:
+            if num_cases_actually_fuzzed \
+                    and self.restart_interval\
+                    and num_cases_actually_fuzzed % self.restart_interval == 0:
                 self.logger.error("restart interval of %d reached" % self.restart_interval)
                 self.restart_target(self.targets[0])
 
