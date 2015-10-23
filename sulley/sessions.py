@@ -18,6 +18,8 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from web.app import app
 
+from sulley import helpers
+
 
 class Target(object):
     """
@@ -444,17 +446,10 @@ class Session(pgraph.Graph):
 
             num_cases_actually_fuzzed += 1
 
-        # Loop to keep the main thread running and be able to receive signals.
-        # Wait for a signal only if fuzzing is finished (this function is recursive).
-        # If fuzzing is not finished, web interface thread will catch it.
+        # If fuzzing is finished, pause thread and wait for a signal.
+        # If fuzzing is not finished, web interface thread will catch it. (Does this line still apply?)
         if self.total_mutant_index == self.total_num_mutations:
-            try:
-                while True:
-                    signal.pause()
-            except AttributeError:
-                # signal.pause() is missing for Windows; wait 1ms and loop instead
-                while True:
-                    time.sleep(0.001)
+            helpers.pause_for_signal()
 
     def fuzz_case_iterator(self, this_node=None, path=()):
         """
