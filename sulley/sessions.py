@@ -856,7 +856,8 @@ class Session(pgraph.Graph):
             self.logger.error("all possible mutations for current fuzz node exhausted")
 
             # recursively fuzz the remainder of the nodes in the session graph.
-            self._fuzz_case_iterator(self.fuzz_node, path)
+            for x in self._fuzz_case_iterator(self.fuzz_node, path):
+                yield x
 
         # finished with the last node on the path, pop it off the path stack.
         if path:
