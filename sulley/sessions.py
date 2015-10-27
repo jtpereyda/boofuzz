@@ -460,7 +460,7 @@ class Session(pgraph.Graph):
         :return: None
         :raise sex.SulleyRuntimeError
         """
-        fuzz_index = 0
+        fuzz_index = 1
         for fuzz_args in self._fuzz_case_iterator():
             if fuzz_index == mutant_index:
                 self._fuzz_current_case(*fuzz_args)
