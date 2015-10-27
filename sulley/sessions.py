@@ -18,8 +18,6 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from web.app import app
 
-from sulley import helpers
-
 
 class Target(object):
     """
@@ -429,6 +427,10 @@ class Session(pgraph.Graph):
         Iterates through and fuzzes all fuzz cases, skipping according to
         self.skip and restarting based on self.restart_interval.
 
+        If you want the web server to be available, your program must persist
+        after calling this method. sulley.helpers.pause_for_signal is
+        available to this end.
+
         :return: None
         """
         num_cases_actually_fuzzed = 0
@@ -447,11 +449,6 @@ class Session(pgraph.Graph):
             self._fuzz_current_case(*fuzz_args)
 
             num_cases_actually_fuzzed += 1
-
-        # If fuzzing is finished, pause thread and wait for a signal.
-        # If fuzzing is not finished, web interface thread will catch it. (Does this line still apply?)
-        if self.total_mutant_index == self.total_num_mutations:
-            helpers.pause_for_signal()
 
     def fuzz_single_case(self, mutant_index):
         """
