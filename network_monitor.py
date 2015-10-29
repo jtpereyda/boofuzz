@@ -8,8 +8,8 @@ import os
 import pcapy
 import impacket
 import impacket.ImpactDecoder
-import signal
 from sulley import pedrpc
+from sulley import helpers
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 
@@ -280,13 +280,7 @@ def main():
         t.daemon = True
         t.start()
         # Now wait in a way that will not block signals like SIGINT
-        try:
-            while True:
-                signal.pause()
-        except AttributeError:
-            # signal.pause() is missing for Windows; wait 1ms and loop instead
-            while True:
-                time.sleep(.001)
+        helpers.pause_for_signal()
 
     except:
         pass

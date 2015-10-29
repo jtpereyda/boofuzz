@@ -6,6 +6,8 @@ import zlib
 # noinspection PyPep8Naming
 import struct
 import re
+import signal
+import time
 
 
 def get_max_udp_size():
@@ -153,3 +155,24 @@ def hex_str(s):
     :rtype: str
     """
     return ' '.join("{:02x}".format(ord(b)) for b in s)
+
+
+def pause_for_signal():
+    """
+    Pauses the current thread in a way that can still receive signals like SIGINT from Ctrl+C.
+
+    Implementation notes:
+     - Linux uses signal.pause()
+     - Windows uses a loop that sleeps for 1 ms at a time, allowing signals
+       to interrupt the thread fairly quickly.
+
+    :return: None
+    :rtype: None
+    """
+    try:
+        while True:
+            signal.pause()
+    except AttributeError:
+        # signal.pause() is missing for Windows; wait 1ms and loop instead
+        while True:
+            time.sleep(0.001)
