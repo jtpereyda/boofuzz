@@ -6,6 +6,8 @@ import struct
 import zlib
 from sulley.socket_connection import SocketConnection
 from sulley import socket_connection
+from sulley import ip_constants
+from sulley import helpers
 import socket
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
@@ -15,7 +17,6 @@ UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
 ETHER_TYPE_IPV4 = "\x08\x00"  # Ethernet frame EtherType for IPv4
-IPV4_PROTOCOL_UDP = "\x11"  # Protocol code for UDP in IPv4 packet
 
 
 def udp_packet(payload, src_port, dst_port):
@@ -52,23 +53,7 @@ def ones_complement_sum_carry_16(a, b):
     return (c & 0xffff) + (c >> 16)
 
 
-def ipv4_checksum(msg):
-    """
-    Return IPv4 checksum of msg.
-    :param msg: Message to compute checksum over.
-    :return: IPv4 checksum of msg.
-    """
-    # Pad with 0 byte if needed
-    if len(msg) % 2 == 1:
-        msg += "\x00"
-
-    collate_bytes = lambda msb, lsb: (ord(msb) << 8) + ord(lsb)
-    msg_words = map(collate_bytes, msg[0::2], msg[1::2])
-    total = reduce(ones_complement_sum_carry_16, msg_words, 0)
-    return ~total & 0xffff
-
-
-def ip_packet(payload, src_ip, dst_ip, protocol=IPV4_PROTOCOL_UDP):
+def ip_packet(payload, src_ip, dst_ip, protocol=chr(ip_constants.IPV4_PROTOCOL_UDP)):
     """
     Create an IPv4 packet.
 
@@ -98,7 +83,7 @@ def ip_packet(payload, src_ip, dst_ip, protocol=IPV4_PROTOCOL_UDP):
     ip_header += src_ip
     ip_header += dst_ip
 
-    checksum = struct.pack(">H", ipv4_checksum(ip_header))
+    checksum = struct.pack(">H", helpers.ipv4_checksum(ip_header))
     ip_header = ip_header[:10] + checksum + ip_header[12:]
 
     return ip_header + payload
@@ -560,17 +545,25 @@ class TestSocketConnection(unittest.TestCase):
               no host argument.
         Then: Constructor raises exception.
         """
+        # This method tests bad argument lists. Therefore we ignore
+        # PyArgumentList inspections.
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5)
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5, proto='tcp')
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5, proto='udp')
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5, proto='ssl')
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5, proto='raw-l2')
         with self.assertRaises(Exception):
+            # noinspection PyArgumentList
             SocketConnection(port=5, proto='raw-l3')
 
 

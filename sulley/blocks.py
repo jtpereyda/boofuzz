@@ -110,6 +110,7 @@ class Request(object):
 
         # process remaining callbacks.
         for key in self.callbacks.keys():
+            print("Request callback: {0}".format(item))
             for item in self.callbacks[key]:
                 item.render()
 
@@ -401,6 +402,7 @@ class Block(object):
 
         # the block is now closed, clear out all the entries from the request back splice dictionary.
         if self.name in self.request.callbacks:
+            print("Block callback: {0}".format(item))
             for item in self.request.callbacks[self.name]:
                 item.render()
 
@@ -433,25 +435,39 @@ class Checksum:
         "md5": 16,
         "sha1": 20,
         "ipv4": 2,
+        "udp": 2
     }
 
-    def __init__(self, block_name, request, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
+    def __init__(self, block_name, request, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None,
+                 ipv4_src_block_name=None,
+                 ipv4_dst_block_name=None):
         """
         Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
         currently open blocks.
 
         @type  block_name: str
         @param block_name: Name of block to apply sizer to
+
         @type  request:    s_request
         @param request:    Request this block belongs to
+
         @type  algorithm:  str or def
         @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
+
         @type  length:     int
         @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
+
         @type  endian:     Character
         @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+
         @type  name:       str
         @param name:       Name of this checksum field
+
+        @type ipv4_src_block_name: str
+        @param ipv4_src_block_name: Name of block rendering IPv4 source address.
+
+        @type ipv4_dst_block_name: str
+        @param ipv4_dst_block_name: Name of block rendering IPv4 destination address.
         """
 
         self.block_name = block_name
@@ -460,28 +476,35 @@ class Checksum:
         self.length = length
         self.endian = endian
         self.name = name
+        self._ipv4_src_block_name = ipv4_src_block_name
+        self._ipv4_dst_block_name = ipv4_dst_block_name
 
         self.fuzzable = False
 
-        if not self.length and self.algorithm in self.checksum_lengths:
+        if not self.length and self.algorithm in self.checksum_lengths.iterkeys():
             self.length = self.checksum_lengths[self.algorithm]
+
+        if self.algorithm == 'udp':
+            if not self._ipv4_src_block_name:
+                raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_src_block_name")
+            if not self._ipv4_dst_block_name:
+                raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_dst_block_name")
 
         self.rendered = self._get_dummy_value()
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def checksum(self, data):
+    def _checksum(self):
         """
-        Calculate and return the checksum (in raw bytes) over the supplied data.
+        Calculate and return the checksum (in raw bytes).
 
-        @type  data: Raw
-        @param data: Rendered block data to calculate checksum over.
+        Precondition: _render_dependencies() was just called.
 
-        @rtype:  Raw
+        @rtype:  str
         @return: Checksum.
         """
-
+        data = self.request.closed_blocks[self.block_name].rendered
         if type(self.algorithm) is str:
             if self.algorithm == "crc32":
                 return struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
@@ -491,6 +514,14 @@ class Checksum:
 
             elif self.algorithm == "ipv4":
                 return struct.pack(self.endian + "H", helpers.ipv4_checksum(data))
+
+            elif self.algorithm == "udp":
+                return struct.pack(self.endian + "H",
+                                   helpers.udp_checksum(msg=data,
+                                                        src_addr=
+                                                        self.request.closed_blocks[self._ipv4_src_block_name].rendered,
+                                                        dst_addr=
+                                                        self.request.closed_blocks[self._ipv4_dst_block_name].rendered,))
 
             elif self.algorithm == "md5":
                 digest = hashlib.md5(data).digest()
@@ -520,6 +551,50 @@ class Checksum:
     def _get_dummy_value(self):
         return self.checksum_lengths[self.algorithm] * '\x00'
 
+    def _dependencies_check_and_set(self):
+        """
+        Checks all dependent blocks and sets callbacks as needed.
+
+        :return: True if all dependencies are closed. False otherwise.
+        """
+        all_passed = True
+        if self.block_name not in self.request.closed_blocks:
+            if self not in self.request.callbacks[self.block_name]:
+                self.request.callbacks[self.block_name].append(self)
+            print("Setting block_name callback")
+            all_passed = False
+        if self._ipv4_src_block_name and self._ipv4_src_block_name not in self.request.closed_blocks:
+            print("Setting src callback")
+            if self not in self.request.callbacks[self._ipv4_src_block_name]:
+                self.request.callbacks[self._ipv4_src_block_name].append(self)
+            all_passed = False
+        if self._ipv4_dst_block_name and self._ipv4_dst_block_name not in self.request.closed_blocks:
+            print("Setting dst callback")
+            if self not in self.request.callbacks[self._ipv4_dst_block_name]:
+                self.request.callbacks[self._ipv4_dst_block_name].append(self)
+            all_passed = False
+        return all_passed
+
+    def _render_dependencies(self):
+        """
+        Renders all dependencies.
+        Precondition: _dependencies_check_and_set() returns True.
+
+        :return None
+        """
+        if self.block_name:
+            self._recursion_flag = True
+            self.request.closed_blocks[self.block_name].render()
+            self._recursion_flag = False
+        elif self._ipv4_src_block_name:
+            self._recursion_flag = True
+            self.request.closed_blocks[self._ipv4_src_block_name].render()
+            self._recursion_flag = False
+        elif self._ipv4_dst_block_name:
+            self._recursion_flag = True
+            self.request.closed_blocks[self._ipv4_dst_block_name].render()
+            self._recursion_flag = False
+
     def render(self):
         """
         Calculate the checksum of the specified block using the specified algorithm.
@@ -537,22 +612,22 @@ class Checksum:
         #    is ready, and keeps us from unnecessary calculations.
 
         if self._recursion_flag:
-            self.rendered = self._get_dummy_value()
-        elif self.block_name in self.request.closed_blocks:
-            # render parent (excluding self via self._recursion_flag)
-            self._recursion_flag = True
-            self.request.closed_blocks[self.block_name].render()
-            self._recursion_flag = False
-
-            # Compute the checksum!
-            self.rendered = self.checksum(
-                self.request.closed_blocks[self.block_name].rendered
-            )
+            print("Enter Checksum.render() (recursion flag set")
         else:
+            print("Enter Checksum.render() (recursion flag not set")
+        if self._recursion_flag:
+            self.rendered = self._get_dummy_value()
+        elif self._dependencies_check_and_set():
+            print("dependencies ready!")
+            self._render_dependencies()
+
+            self.rendered = self._checksum()
+        else:
+            print("dependencies not ready")
             # The block is not closed, so we
-            # 1) add this checksum block to the requests callback list of the
-            # target block...
-            self.request.callbacks[self.block_name].append(self)
+            # 1) add this checksum block to the requests callback list of all
+            # dependent block...
+            # (this is done in _dependencies_check_and_set())
 
             # 2) Render a stand-in value, necessary if the checksum block
             # (self) is used in a Size block calculation or something similar.
