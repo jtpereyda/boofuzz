@@ -9,13 +9,6 @@ Checksum contains only the Sulley block logic for a checksum, not specific
 algorithm implementations.
 Algorithms are implemented with a library or a free function.
 
-Callback
---------
-Checksum takes advantage of callbacks to ensure that it is calculated _after_
-its target block is calculated.
-When a Checksum block is rendered, it will append itself to its Request's
-callback list.
-
 Recursion
 ---------
 To enable a checksum to be calculated over its parent block, it is necessary
@@ -25,13 +18,6 @@ When Checksum renders itself for the sake of calculations, it will set a
 recursion flag on itself.
 Then, when the parent block again renders the Checksum, Checksum will check its
 own recursion flag and return its default value.
-
-Notes
------
-The recursion and callback methods were both created with similar goals.
-Recursion could make the callback unnecessary, but until no other blocks use
-callbacks, neglecting to use it here could result in a checksum over
-not-yet-calculated information.
 
 UDP
 ---
