@@ -544,14 +544,11 @@ class Checksum:
         # Algorithm summary:
         # 1. If the recursion flag is set, just render a dummy value.
         # 2. If the recursion flag is not set, we calculate
-        #    the checksum by rendering the target block's stack. But first, we
-        #    set the recursion flag. That way, if the target block itself
-        #    renders this checksum object, we won't infinitely recur.
-        # 3. If the block is not yet finished (closed), we render a default
-        #    stand-in value (all zeros), and push self onto the target block's
-        #    callback stack.
-        #    This ensures that the item will be rendered after the target block
-        #    is ready, and keeps us from unnecessary calculations.
+        #     a. Set the recursion flag (avoids recursion loop in step b if
+        #        target block contains self)
+        #     b. Render the target block.
+        #     c. Clear recursion flag.
+        #     d. Calculate the checksum and render.
 
         if self._recursion_flag:
             self.rendered = self._get_dummy_value()

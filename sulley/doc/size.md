@@ -2,13 +2,20 @@ Size Class
 ==========
 The Size class creates a block that calculates the size of another block.
 
-Recursion
----------
-To enable a size to be calculated over a Size block's parent block, it is
-necessary to account for recursion.
-This is done with a recursion flag.
+Calculation
+-----------
+To calculate the size of its target block, Size simply calls `len()` on the
+target (all Sulley Primitives must support `__len__()`).
 
-When Size renders its target block for the sake of calculations, it will set a
-recursion flag on itself.
-Then, if the target block again renders the Size block, the size block will
-check its own recursion flag and return its default value.
+Design Considerations
+---------------------
+Size was originally calculated by rendering the target block, or using
+callbacks to wait for it to get rendered.
+This resulted in dependency issues if a block contained both Size and Checksum
+primitives, or in blocks that referenced each other.
+Checksum naturally depends on Size's value, but if Size depends on Checksum's
+value, we have a recursion problem.
+
+The current design is motivated by the fact that, in reality, Size does not
+depend on Checksum's value. Depending on the length method rather than
+rendering more closely matches reality.

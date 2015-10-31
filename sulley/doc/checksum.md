@@ -19,6 +19,9 @@ recursion flag on itself.
 Then, when the parent block again renders the Checksum, Checksum will check its
 own recursion flag and return its default value.
 
+Note: To avoid recursion problems with Size, it is important that Checksum's
+length method not call render on itself.
+
 UDP
 ---
 UDP is special in that it is computed over a pseudo-header, including selected
