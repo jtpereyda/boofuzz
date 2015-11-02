@@ -565,30 +565,6 @@ class Checksum:
     def _get_dummy_value(self):
         return self.checksum_lengths[self.algorithm] * '\x00'
 
-    def _dependencies_check_and_set(self):
-        """
-        Checks all dependent blocks and sets callbacks as needed.
-
-        :return: True if all dependencies are closed. False otherwise.
-        """
-        all_passed = True
-        if self.block_name not in self.request.names:
-            if self not in self.request.callbacks[self.block_name]:
-                self.request.callbacks[self.block_name].append(self)
-            print("Setting block_name callback")
-            all_passed = False
-        if self._ipv4_src_block_name and self._ipv4_src_block_name not in self.request.names:
-            print("Setting src callback")
-            if self not in self.request.callbacks[self._ipv4_src_block_name]:
-                self.request.callbacks[self._ipv4_src_block_name].append(self)
-            all_passed = False
-        if self._ipv4_dst_block_name and self._ipv4_dst_block_name not in self.request.names:
-            print("Setting dst callback")
-            if self not in self.request.callbacks[self._ipv4_dst_block_name]:
-                self.request.callbacks[self._ipv4_dst_block_name].append(self)
-            all_passed = False
-        return all_passed
-
     def _render_dependencies(self):
         """
         Renders all dependencies.
@@ -622,10 +598,6 @@ class Checksum:
         #     c. Clear recursion flag.
         #     d. Calculate the checksum and render.
 
-        # if self._recursion_flag:
-        #     print("Enter Checksum.render() (recursion flag set")
-        # else:
-        #     print("Enter Checksum.render() (recursion flag not set")
         if self._recursion_flag:
             self.rendered = self._get_dummy_value()
         else:
