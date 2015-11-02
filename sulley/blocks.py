@@ -79,7 +79,6 @@ class Request(object):
         Push an item into the block structure. If no block is open, the item goes onto the request stack. otherwise,
         the item goes onto the last open blocks stack.
         """
-
         # if the item has a name, add it to the internal dictionary of names.
         if hasattr(item, "name") and item.name:
             # ensure the name doesn't already exist.
@@ -110,7 +109,6 @@ class Request(object):
 
         # process remaining callbacks.
         for key in self.callbacks.keys():
-            print("Request callback: {0}".format(item))
             for item in self.callbacks[key]:
                 item.render()
 
@@ -176,6 +174,12 @@ class Request(object):
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
+    def __len__(self):
+        length = 0
+        for item in self.stack:
+            length += len(item)
+        return length
 
 
 class Block(object):
@@ -402,7 +406,6 @@ class Block(object):
 
         # the block is now closed, clear out all the entries from the request back splice dictionary.
         if self.name in self.request.callbacks:
-            print("Block callback: {0}".format(item))
             for item in self.request.callbacks[self.name]:
                 item.render()
 
@@ -426,6 +429,12 @@ class Block(object):
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
+    def __len__(self):
+        length = 0
+        for item in self.stack:
+            length += len(item)
+        return length
 
 
 class Checksum:
@@ -455,8 +464,8 @@ class Checksum:
         @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
 
         @type  length:     int
-        @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
-
+        @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate.
+                           Must be specified manually when using custom algorithm.
         @type  endian:     Character
         @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
 
@@ -504,24 +513,24 @@ class Checksum:
         @rtype:  str
         @return: Checksum.
         """
-        data = self.request.closed_blocks[self.block_name].rendered
+        data = self.request.names[self.block_name].rendered
         if type(self.algorithm) is str:
             if self.algorithm == "crc32":
-                return struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
 
             elif self.algorithm == "adler32":
-                return struct.pack(self.endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self.endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
 
             elif self.algorithm == "ipv4":
-                return struct.pack(self.endian + "H", helpers.ipv4_checksum(data))
+                check = struct.pack(self.endian + "H", helpers.ipv4_checksum(data))
 
             elif self.algorithm == "udp":
                 return struct.pack(self.endian + "H",
                                    helpers.udp_checksum(msg=data,
                                                         src_addr=
-                                                        self.request.closed_blocks[self._ipv4_src_block_name].rendered,
+                                                        self.request.names[self._ipv4_src_block_name].rendered,
                                                         dst_addr=
-                                                        self.request.closed_blocks[self._ipv4_dst_block_name].rendered,))
+                                                        self.request.names[self._ipv4_dst_block_name].rendered,))
 
             elif self.algorithm == "md5":
                 digest = hashlib.md5(data).digest()
@@ -531,7 +540,7 @@ class Checksum:
                     (a, b, c, d) = struct.unpack("<LLLL", digest)
                     digest = struct.pack(">LLLL", a, b, c, d)
 
-                return digest
+                check = digest
 
             elif self.algorithm == "sha1":
                 digest = hashlib.sha1(data).digest()
@@ -541,12 +550,17 @@ class Checksum:
                     (a, b, c, d, e) = struct.unpack("<LLLLL", digest)
                     digest = struct.pack(">LLLLL", a, b, c, d, e)
 
-                return digest
+                check = digest
 
             else:
                 raise sex.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self.algorithm)
         else:
-            return self.algorithm(data)
+            check = self.algorithm(data)
+
+        if self.length:
+            return check[:self.length]
+        else:
+            return check
 
     def _get_dummy_value(self):
         return self.checksum_lengths[self.algorithm] * '\x00'
@@ -558,17 +572,17 @@ class Checksum:
         :return: True if all dependencies are closed. False otherwise.
         """
         all_passed = True
-        if self.block_name not in self.request.closed_blocks:
+        if self.block_name not in self.request.names:
             if self not in self.request.callbacks[self.block_name]:
                 self.request.callbacks[self.block_name].append(self)
             print("Setting block_name callback")
             all_passed = False
-        if self._ipv4_src_block_name and self._ipv4_src_block_name not in self.request.closed_blocks:
+        if self._ipv4_src_block_name and self._ipv4_src_block_name not in self.request.names:
             print("Setting src callback")
             if self not in self.request.callbacks[self._ipv4_src_block_name]:
                 self.request.callbacks[self._ipv4_src_block_name].append(self)
             all_passed = False
-        if self._ipv4_dst_block_name and self._ipv4_dst_block_name not in self.request.closed_blocks:
+        if self._ipv4_dst_block_name and self._ipv4_dst_block_name not in self.request.names:
             print("Setting dst callback")
             if self not in self.request.callbacks[self._ipv4_dst_block_name]:
                 self.request.callbacks[self._ipv4_dst_block_name].append(self)
@@ -584,15 +598,15 @@ class Checksum:
         """
         if self.block_name:
             self._recursion_flag = True
-            self.request.closed_blocks[self.block_name].render()
+            self.request.names[self.block_name].render()
             self._recursion_flag = False
         elif self._ipv4_src_block_name:
             self._recursion_flag = True
-            self.request.closed_blocks[self._ipv4_src_block_name].render()
+            self.request.names[self._ipv4_src_block_name].render()
             self._recursion_flag = False
         elif self._ipv4_dst_block_name:
             self._recursion_flag = True
-            self.request.closed_blocks[self._ipv4_dst_block_name].render()
+            self.request.names[self._ipv4_dst_block_name].render()
             self._recursion_flag = False
 
     def render(self):
@@ -600,41 +614,33 @@ class Checksum:
         Calculate the checksum of the specified block using the specified algorithm.
         """
         # Algorithm summary:
-        # 1. If the recursion flag is set, just set a dummy value.
-        # 2. If the target block is already finished (AKA closed), we calculate
-        #    the checksum by rendering the target block's stack. But first, we
-        #    set the recursion flag. That way, if the target block itself
-        #    renders this checksum object, we won't infinitely recur.
-        # 3. If the block is not yet finished (closed), we render a default
-        #    stand-in value (all zeros), and push self onto the target block's
-        #    callback stack.
-        #    This ensures that the item will be rendered after the target block
-        #    is ready, and keeps us from unnecessary calculations.
+        # 1. If the recursion flag is set, just render a dummy value.
+        # 2. If the recursion flag is not set, we calculate
+        #     a. Set the recursion flag (avoids recursion loop in step b if
+        #        target block contains self)
+        #     b. Render the target block.
+        #     c. Clear recursion flag.
+        #     d. Calculate the checksum and render.
 
-        if self._recursion_flag:
-            print("Enter Checksum.render() (recursion flag set")
-        else:
-            print("Enter Checksum.render() (recursion flag not set")
+        # if self._recursion_flag:
+        #     print("Enter Checksum.render() (recursion flag set")
+        # else:
+        #     print("Enter Checksum.render() (recursion flag not set")
         if self._recursion_flag:
             self.rendered = self._get_dummy_value()
-        elif self._dependencies_check_and_set():
-            print("dependencies ready!")
+        else:
+            # render target (excluding self via self._recursion_flag)
             self._render_dependencies()
 
             self.rendered = self._checksum()
-        else:
-            print("dependencies not ready")
-            # The block is not closed, so we
-            # 1) add this checksum block to the requests callback list of all
-            # dependent block...
-            # (this is done in _dependencies_check_and_set())
 
-            # 2) Render a stand-in value, necessary if the checksum block
-            # (self) is used in a Size block calculation or something similar.
-            self.rendered = self._get_dummy_value()
+        return self.rendered
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
+    def __len__(self):
+        return self.length
 
 
 class Repeat:
@@ -791,6 +797,9 @@ class Repeat:
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
 
+    def __len__(self):
+        return self.current_reps * len(self.request.names[self.block_name])
+
 
 class Size:
     """
@@ -903,32 +912,23 @@ class Size:
     def render(self):
         """
         Render the sizer.
-        """
 
+        :return Rendered value.
+        """
         # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
         if self.fuzzable and self.bit_field.mutant_index and not self.bit_field.fuzz_complete:
             self.rendered = self.bit_field.render()
-
-        # if the target block for this sizer is already closed, render the size.
-        elif self.block_name in self.request.closed_blocks:
-            if self.inclusive:
-                self_size = self.length
-            else:
-                self_size = 0
-
-            block = self.request.closed_blocks[self.block_name]
-            self.bit_field.value = self.math(len(block.rendered) + self_size + self.offset)
-            self.rendered = self.bit_field.render()
-
-        # otherwise, add this sizer block to the requests callback list.
         else:
-            # and fill in a dummy value to support other Size objects that depend on this one
-            self.bit_field.value = 0
-            self.rendered = self.bit_field.render()
-            if self.block_name not in self.request.callbacks:
-                self.request.callbacks[self.block_name] = []
+            length = self.offset
+            if self.inclusive:
+                length += self.length
+            length += len(self.request.names[self.block_name])
 
-            self.request.callbacks[self.block_name].append(self)
+            self.bit_field.value = self.math(length)
+
+            self.rendered = self.bit_field.render()
+
+        return self.rendered
 
     def reset(self):
         """
@@ -939,3 +939,6 @@ class Size:
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
+
+    def __len__(self):
+        return self.length

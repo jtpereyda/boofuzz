@@ -91,6 +91,9 @@ class BasePrimitive(object):
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, repr(self.value))
 
+    def __len__(self):
+        return len(self.value)
+
 
 class Delim(BasePrimitive):
     def __init__(self, value=None, fuzzable=True, name=None):
@@ -179,7 +182,6 @@ class Group(BasePrimitive):
         """
 
         super(Group, self).__init__()
-
 
         self.name = name
         self.values = values
@@ -622,7 +624,7 @@ class BitField(BasePrimitive):
         self.full_range = full_range
         self.fuzzable = fuzzable
         self.name = name
-        self.cyclic_index  = 0         # when cycling through non-mutating values
+        self.cyclic_index = 0         # when cycling through non-mutating values
 
         if not self.max_num:
             self.max_num = self.to_decimal("1" + "0" * width)
@@ -636,7 +638,7 @@ class BitField(BasePrimitive):
         else:
             if type(value) in [list, tuple]:
                 # Use the supplied values as the fuzz library.
-                for val in value:
+                for val in iter(value):
                     self.fuzz_library.append(val)
             else:
                 # try only "smart" values.
@@ -756,6 +758,9 @@ class BitField(BasePrimitive):
         """
 
         return int(binary, 2)
+
+    def __len__(self):
+        return self.width / 8
 
 
 class Byte(BitField):
