@@ -290,7 +290,8 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='udp')
+        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='udp',
+                               bind=(socket.gethostname(), 0))
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # When
