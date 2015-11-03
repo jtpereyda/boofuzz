@@ -149,7 +149,7 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None,
+def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fuzzable=True, name=None,
                ipv4_src_block_name=None,
                ipv4_dst_block_name=None):
     """
@@ -168,6 +168,9 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, na
     @type  endian:     Character
     @param endian:     (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
 
+    @type  fuzzable:   bool
+    @param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
+
     @type  name:       str
     @param name:       Name of this checksum field
 
@@ -182,7 +185,7 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, na
     if block_name in blocks.CURRENT.block_stack:
         raise sex.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
-    checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, name,
+    checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
                                ipv4_src_block_name=ipv4_src_block_name,
                                ipv4_dst_block_name=ipv4_dst_block_name)
     blocks.CURRENT.push(checksum)

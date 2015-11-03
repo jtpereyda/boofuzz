@@ -437,7 +437,7 @@ class Block(object):
         return length
 
 
-class Checksum:
+class Checksum(primitives.BasePrimitive):
     checksum_lengths = {
         "crc32": 4,
         "adler32": 4,
@@ -447,7 +447,8 @@ class Checksum:
         "udp": 2
     }
 
-    def __init__(self, block_name, request, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None,
+    def __init__(self, block_name, request, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fuzzable=True,
+                 name=None,
                  ipv4_src_block_name=None,
                  ipv4_dst_block_name=None):
         """
@@ -469,6 +470,9 @@ class Checksum:
         @type  endian:     Character
         @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
 
+        @type  fuzzable:   bool
+        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
+
         @type  name:       str
         @param name:       Name of this checksum field
 
@@ -478,6 +482,7 @@ class Checksum:
         @type ipv4_dst_block_name: str
         @param ipv4_dst_block_name: Name of block rendering IPv4 destination address.
         """
+        super(Checksum, self).__init__()
 
         self.block_name = block_name
         self.request = request
@@ -488,10 +493,18 @@ class Checksum:
         self._ipv4_src_block_name = ipv4_src_block_name
         self._ipv4_dst_block_name = ipv4_dst_block_name
 
-        self.fuzzable = False
+        self.fuzzable = fuzzable
 
         if not self.length and self.algorithm in self.checksum_lengths.iterkeys():
             self.length = self.checksum_lengths[self.algorithm]
+
+        # Edge cases and a couple arbitrary strings (all 1s, all Es)
+        self.fuzz_library = ['\x00' * self.length,
+                             '\x11' * self.length,
+                             '\xEE' * self.length,
+                             '\xFF' * self.length,
+                             '\xFF' * (self.length - 1) + '\xFE',
+                             '\x00' * (self.length - 1) + '\x01']
 
         if self.algorithm == 'udp':
             if not self._ipv4_src_block_name:
@@ -527,10 +540,10 @@ class Checksum:
             elif self.algorithm == "udp":
                 return struct.pack(self.endian + "H",
                                    helpers.udp_checksum(msg=data,
-                                                        src_addr=
-                                                        self.request.names[self._ipv4_src_block_name].rendered,
-                                                        dst_addr=
-                                                        self.request.names[self._ipv4_dst_block_name].rendered,))
+                                                        src_addr=self.request.names[self._ipv4_src_block_name].rendered,
+                                                        dst_addr=self.request.names[self._ipv4_dst_block_name].rendered,
+                                                        )
+                                   )
 
             elif self.algorithm == "md5":
                 digest = hashlib.md5(data).digest()
@@ -590,15 +603,18 @@ class Checksum:
         Calculate the checksum of the specified block using the specified algorithm.
         """
         # Algorithm summary:
-        # 1. If the recursion flag is set, just render a dummy value.
-        # 2. If the recursion flag is not set, we calculate
+        # 1. If fuzzable, use fuzz library.
+        # 2. Else-if the recursion flag is set, just render a dummy value.
+        # 3. Else (if the recursion flag is not set), we calculate
         #     a. Set the recursion flag (avoids recursion loop in step b if
         #        target block contains self)
         #     b. Render the target block.
         #     c. Clear recursion flag.
         #     d. Calculate the checksum and render.
 
-        if self._recursion_flag:
+        if self.fuzzable and self.mutant_index and not self.fuzz_complete:
+            self.rendered = self.fuzz_library[self.mutant_index]
+        elif self._recursion_flag:
             self.rendered = self._get_dummy_value()
         else:
             # render target (excluding self via self._recursion_flag)
