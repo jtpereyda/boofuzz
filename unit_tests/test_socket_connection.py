@@ -325,103 +325,6 @@ class TestSocketConnection(unittest.TestCase):
 
     def test_raw_l2(self):
         """
-        Given: A SocketConnection 'raw-l2' object.
-          and: A raw UDP/IP/Ethernet packet.
-          and: A UDP server, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives data from send().
-         And: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             ' but creative artists very seldom. "')
-
-        # Given
-        server = MiniTestServer(proto='udp')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="eth0", port=0, proto='raw-l2')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        # Assemble packet...
-        raw_packet = ethernet_frame(
-            payload=ip_packet(
-                payload=udp_packet(
-                    payload=data_to_send,
-                    src_port=server.active_port + 1,
-                    dst_port=server.active_port),
-                src_ip=self.local_ip[0:3] + "\x00",
-                dst_ip=self.local_ip),
-            src_mac="\x00" * 6,
-            dst_mac="\xff" * 6)
-
-        # When
-        uut.open()
-        uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
-
-    def test_raw_l3(self):
-        """
-        Given: A SocketConnection 'raw-l3' object.
-          and: A raw UDP/IP packet.
-          and: A UDP server, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives data from send().
-         And: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
-                             ' prudent marriages?""')
-
-        # Given
-        server = MiniTestServer(proto='udp')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="eth0", port=socket_connection.ETH_P_IP, proto='raw-l3')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        raw_packet = ip_packet(
-            payload=udp_packet(
-                payload=data_to_send,
-                src_port=server.active_port + 1,
-                dst_port=server.active_port),
-            src_ip=self.local_ip[0:3] + "\x00",
-            dst_ip=self.local_ip)
-
-        # When
-        uut.open()
-        uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
-
-    def test_raw_l2_loopback(self):
-        """
         Test 'raw' protocol with the loopback interface 'lo'.
         So far this has only worked if the server is also using a raw socket.
 
@@ -474,7 +377,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
-    def test_raw_l3_loopback(self):
+    def test_raw_l3(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
         So far this has only worked if the server is also using a raw socket. This is a notable shortcoming, either
