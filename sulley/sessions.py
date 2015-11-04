@@ -294,8 +294,6 @@ class Session(pgraph.Graph):
 
         self.add_node(self.root)
 
-        self.server_init()
-
     def add_node(self, node):
         """
         Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
@@ -433,6 +431,8 @@ class Session(pgraph.Graph):
 
         :return: None
         """
+        self.server_init()
+
         num_cases_actually_fuzzed = 0
         for fuzz_args in self._fuzz_case_iterator():
             # skip until we pass self.skip
@@ -719,26 +719,27 @@ class Session(pgraph.Graph):
         """
         Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
         """
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations()
+        if not self.web_interface_thread.isAlive():
+            self.total_mutant_index = 0
+            self.total_num_mutations = self.num_mutations()
 
-        # web interface thread doesn't catch KeyboardInterrupt
-        # add a signal handler, and exit on SIGINT
-        # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            # web interface thread doesn't catch KeyboardInterrupt
+            # add a signal handler, and exit on SIGINT
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
 
-        # noinspection PyUnusedLocal
-        def exit_abruptly(signal_recv, frame_recv):
-            """
-            Save current settings (just in case) and exit
-            """
-            self.export_file()
-            self.logger.critical("SIGINT received ... exiting")
-            sys.exit(0)
+            # noinspection PyUnusedLocal
+            def exit_abruptly(signal_recv, frame_recv):
+                """
+                Save current settings (just in case) and exit
+                """
+                self.export_file()
+                self.logger.critical("SIGINT received ... exiting")
+                sys.exit(0)
 
-        signal.signal(signal.SIGINT, exit_abruptly)
+            signal.signal(signal.SIGINT, exit_abruptly)
 
-        # spawn the web interface.
-        self.web_interface_thread.start()
+            # spawn the web interface.
+            self.web_interface_thread.start()
 
     def transmit(self, sock, node, edge):
         """
