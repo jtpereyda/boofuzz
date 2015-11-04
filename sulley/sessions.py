@@ -367,7 +367,7 @@ class Session(pgraph.Graph):
         """
 
         # if only a source was provided, then make it the destination and set the source to the root node.
-        if not dst:
+        if dst is None:
             dst = src
             src = self.root
 
@@ -382,7 +382,7 @@ class Session(pgraph.Graph):
         if src != self.root and not self.find_node("name", src.name):
             self.add_node(src)
 
-        if not self.find_node("name", dst.name):
+        if self.find_node("name", dst.name) is None:
             self.add_node(dst)
 
         # create an edge between the two nodes and add it to the graph.
@@ -513,7 +513,7 @@ class Session(pgraph.Graph):
         @return: Total number of mutations in this session.
         """
 
-        if not this_node:
+        if this_node is None:
             this_node = self.root
             self.total_num_mutations = 0
 
@@ -814,7 +814,7 @@ class Session(pgraph.Graph):
         :raise sex.SullyRuntimeError:
         """
         # if no node is specified, then we start from the root node..
-        if not this_node:
+        if this_node is None:
             # we can't fuzz if we don't have at least one target and one request.
             if not self.targets:
                 raise sex.SullyRuntimeError("No targets specified in session")

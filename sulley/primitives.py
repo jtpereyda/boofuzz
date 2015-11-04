@@ -94,6 +94,14 @@ class BasePrimitive(object):
     def __len__(self):
         return len(self.value)
 
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
+
 
 class Delim(BasePrimitive):
     def __init__(self, value=None, fuzzable=True, name=None):
@@ -761,6 +769,14 @@ class BitField(BasePrimitive):
 
     def __len__(self):
         return self.width / 8
+
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
 
 
 class Byte(BitField):

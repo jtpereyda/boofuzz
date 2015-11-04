@@ -23,16 +23,16 @@ class Graph(object):
     @todo: Potentially swap node list with a node dictionary for increased performance
     """
 
-    id       = None
+    id = None
     clusters = []
-    edges    = {}
-    nodes    = {}
+    edges = {}
+    nodes = {}
 
     def __init__(self, graph_id=None):
-        self.id       = graph_id
+        self.id = graph_id
         self.clusters = []
-        self.edges    = {}
-        self.nodes    = {}
+        self.edges = {}
+        self.nodes = {}
 
     def add_cluster(self, cluster):
         """
@@ -61,7 +61,7 @@ class Graph(object):
                 return self
 
         # ensure the source and destination nodes exist.
-        if self.find_node("id", graph_edge.src) and self.find_node("id", graph_edge.dst):
+        if self.find_node("id", graph_edge.src) is not None and self.find_node("id", graph_edge.dst) is not None:
             self.edges[graph_edge.id] = graph_edge
 
         return self
@@ -89,7 +89,7 @@ class Graph(object):
 
         node.number = len(self.nodes)
 
-        if not node.id in self.nodes:
+        if node.id not in self.nodes:
             self.nodes[node.id] = node
 
         return self
@@ -248,7 +248,7 @@ class Graph(object):
 
         # step through all the edges looking for the given attribute/value pair.
         else:
-            #TODO: Verify that this actually works? Was broken when I got here ;-P
+            # TODO: Verify that this actually works? Was broken when I got here ;-P
             for node_edge in self.edges.values():
                 if hasattr(node_edge, attribute):
                     if getattr(node_edge, attribute) == value:
@@ -314,14 +314,14 @@ class Graph(object):
         """
 
         down_graph = Graph()
-        from_node  = self.find_node("id", from_node_id)
+        from_node = self.find_node("id", from_node_id)
 
         if not from_node:
             print "unable to resolve node %08x" % from_node_id
             raise Exception
 
         levels_to_process = []
-        current_depth     = 1
+        current_depth = 1
 
         levels_to_process.append([from_node])
 
@@ -423,11 +423,11 @@ class Graph(object):
         @return: Up graph to the specified node.
         """
 
-        up_graph  = Graph()
+        up_graph = Graph()
         from_node = self.find_node("id", from_node_id)
 
         levels_to_process = []
-        current_depth     = 1
+        current_depth = 1
 
         levels_to_process.append([from_node])
 
@@ -465,7 +465,7 @@ class Graph(object):
         @return: GML graph description.
         """
 
-        gml  = 'Creator "pGRAPH - Pedram Amini <pedram.amini@gmail.com>"\n'
+        gml = 'Creator "pGRAPH - Pedram Amini <pedram.amini@gmail.com>"\n'
         gml += 'directed 1\n'
 
         # open the graph tag.
@@ -576,7 +576,7 @@ class Graph(object):
         @param new_id:     New ID to update to.
         """
 
-        if not current_id in self.nodes:
+        if current_id not in self.nodes:
             return
 
         # update the node.

@@ -181,6 +181,14 @@ class Request(object):
             length += len(item)
         return length
 
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
+
 
 class Block(object):
     def __init__(self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None,
@@ -436,6 +444,14 @@ class Block(object):
             length += len(item)
         return length
 
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
+
 
 class Checksum:
     checksum_lengths = {
@@ -570,6 +586,14 @@ class Checksum:
 
     def __len__(self):
         return self.length
+
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
 
 
 class Repeat:
@@ -729,6 +753,14 @@ class Repeat:
     def __len__(self):
         return self.current_reps * len(self.request.names[self.block_name])
 
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
+
 
 class Size:
     """
@@ -871,3 +903,11 @@ class Size:
 
     def __len__(self):
         return self.length
+
+    def __nonzero__(self):
+        """
+        Make sure instances evaluate to True even if __len__ is zero.
+
+        :return: True
+        """
+        return True
