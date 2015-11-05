@@ -294,8 +294,6 @@ class Session(pgraph.Graph):
 
         self.add_node(self.root)
 
-        self.server_init()
-
     def add_node(self, node):
         """
         Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
@@ -367,7 +365,7 @@ class Session(pgraph.Graph):
         """
 
         # if only a source was provided, then make it the destination and set the source to the root node.
-        if not dst:
+        if dst is None:
             dst = src
             src = self.root
 
@@ -382,7 +380,7 @@ class Session(pgraph.Graph):
         if src != self.root and not self.find_node("name", src.name):
             self.add_node(src)
 
-        if not self.find_node("name", dst.name):
+        if self.find_node("name", dst.name) is None:
             self.add_node(dst)
 
         # create an edge between the two nodes and add it to the graph.
@@ -433,6 +431,8 @@ class Session(pgraph.Graph):
 
         :return: None
         """
+        self.server_init()
+
         num_cases_actually_fuzzed = 0
         for fuzz_args in self._fuzz_case_iterator():
             # skip until we pass self.skip
@@ -513,7 +513,7 @@ class Session(pgraph.Graph):
         @return: Total number of mutations in this session.
         """
 
-        if not this_node:
+        if this_node is None:
             this_node = self.root
             self.total_num_mutations = 0
 
@@ -719,26 +719,27 @@ class Session(pgraph.Graph):
         """
         Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
         """
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations()
+        if not self.web_interface_thread.isAlive():
+            self.total_mutant_index = 0
+            self.total_num_mutations = self.num_mutations()
 
-        # web interface thread doesn't catch KeyboardInterrupt
-        # add a signal handler, and exit on SIGINT
-        # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            # web interface thread doesn't catch KeyboardInterrupt
+            # add a signal handler, and exit on SIGINT
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
 
-        # noinspection PyUnusedLocal
-        def exit_abruptly(signal_recv, frame_recv):
-            """
-            Save current settings (just in case) and exit
-            """
-            self.export_file()
-            self.logger.critical("SIGINT received ... exiting")
-            sys.exit(0)
+            # noinspection PyUnusedLocal
+            def exit_abruptly(signal_recv, frame_recv):
+                """
+                Save current settings (just in case) and exit
+                """
+                self.export_file()
+                self.logger.critical("SIGINT received ... exiting")
+                sys.exit(0)
 
-        signal.signal(signal.SIGINT, exit_abruptly)
+            signal.signal(signal.SIGINT, exit_abruptly)
 
-        # spawn the web interface.
-        self.web_interface_thread.start()
+            # spawn the web interface.
+            self.web_interface_thread.start()
 
     def transmit(self, sock, node, edge):
         """
@@ -814,7 +815,7 @@ class Session(pgraph.Graph):
         :raise sex.SullyRuntimeError:
         """
         # if no node is specified, then we start from the root node..
-        if not this_node:
+        if this_node is None:
             # we can't fuzz if we don't have at least one target and one request.
             if not self.targets:
                 raise sex.SullyRuntimeError("No targets specified in session")
@@ -851,6 +852,7 @@ class Session(pgraph.Graph):
                 self.total_mutant_index += 1
                 yield (edge, path)
             self.logger.error("all possible mutations for current fuzz node exhausted")
+            self.fuzz_node.reset()
 
             # recursively fuzz the remainder of the nodes in the session graph.
             for x in self._fuzz_case_iterator(self.fuzz_node, path):
