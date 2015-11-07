@@ -6,6 +6,7 @@ import signal
 import cPickle
 import threading
 import logging
+from sulley import helpers
 import blocks
 import pgraph
 import sex
@@ -153,9 +154,17 @@ class Target(object):
 
         :return: None
         """
+        if self._logger is not None:
+            self._logger.debug(
+                "Attempting to send {0} bytes: {1}".format(len(data), helpers.hex_str(data)))
+
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_send(data)
-        self._target_connection.send(data=data)
+
+        num_sent = self._target_connection.send(data=data)
+
+        if self._logger is not None:
+            self._logger.debug("{0} bytes sent".format(num_sent))
 
     def set_logger(self, logger):
         """

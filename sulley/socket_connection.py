@@ -148,13 +148,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         :param data: Data to send.
 
-        :return: None
+        :rtype int
+        :return: Number of bytes actually sent.
         """
-        self.logger.debug(
-            "Attempting to send {0} bytes: {1}".format(len(data), helpers.hex_str(data)))
-
         if self.proto in ["tcp", "ssl"]:
-            self._sock.send(data)
+            num_sent = self._sock.send(data)
         elif self.proto == "udp":
             # TODO: this logic does not prevent duplicate test cases, need to address this in the future.
             # If our data is over the max UDP size for this platform, truncate before sending
@@ -162,9 +160,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 self.logger.debug("Too much data for UDP, truncating to %d bytes" % self.max_udp)
                 data = data[:self.max_udp]
 
-            self._sock.sendto(data, (self.host, self.port))
+            num_sent = self._sock.sendto(data, (self.host, self.port))
         elif self.proto == "raw-l2":
-            self._sock.sendto(data, (self.host, 0))
+            num_sent = self._sock.sendto(data, (self.host, 0))
         elif self.proto == "raw-l3":
             # Address tuple: (interface string,
             #                 Ethernet protocol number,
@@ -172,11 +170,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
             #                 hatype (recv only),
             #                 Ethernet address)
             # See man 7 packet for more details.
-            self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
+            num_sent = self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
         else:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
-        self.logger.debug("{0} bytes sent".format(len(data)))
+        return num_sent
 
     def set_logger(self, logger):
         """
