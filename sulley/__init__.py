@@ -149,28 +149,45 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, name=None):
+def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fuzzable=True, name=None,
+               ipv4_src_block_name=None,
+               ipv4_dst_block_name=None):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
     currently open blocks.
 
     @type  block_name: str
     @param block_name: Name of block to apply sizer to
+
     @type  algorithm:  str
-    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
+    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+
     @type  length:     int
     @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
+
     @type  endian:     Character
     @param endian:     (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+
+    @type  fuzzable:   bool
+    @param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
+
     @type  name:       str
     @param name:       Name of this checksum field
+
+    @type ipv4_src_block_name: str
+    @param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address.
+
+    @type ipv4_dst_block_name: str
+    @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
     """
 
     # you can't add a checksum for a block currently in the stack.
     if block_name in blocks.CURRENT.block_stack:
         raise sex.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
-    checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, name)
+    checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
+                               ipv4_src_block_name=ipv4_src_block_name,
+                               ipv4_dst_block_name=ipv4_dst_block_name)
     blocks.CURRENT.push(checksum)
 
 

@@ -33,7 +33,11 @@ The IPv4 fields are:
  * Protocol (should always be UDP)
  * Length of UDP header+payload
 
-Original design considered:
+Note that these fields do not themselves need to be individually fuzzed, since
+fuzzing any of them would result in a bad checksum -- and a bad checksum can be
+checked by fuzzing the checksum field itself.
+
+Designs considered:
 
  1. Passing a reference to the IPv4 Sulley Block and navigating to its children.
  2. Passing source and destination addresses directly to the Checksum

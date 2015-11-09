@@ -8,6 +8,7 @@ import struct
 import re
 import signal
 import time
+import ip_constants
 
 
 def get_max_udp_size():
@@ -124,6 +125,22 @@ def _ones_complement_sum_carry_16(a, b):
     return (pre_sum & 0xffff) + (pre_sum >> 16)
 
 
+def _collate_bytes(msb, lsb):
+    """
+    Helper function for our helper functions.
+    Collates msb and lsb into one 16-bit value.
+
+    :type msb: str
+    :param msb: Single byte (most significant).
+
+    :type lsb: str
+    :param lsb: Single byte (least significant).
+
+    :return: msb and lsb all together in one 16 bit value.
+    """
+    return (ord(msb) << 8) + ord(lsb)
+
+
 def ipv4_checksum(msg):
     """
     Return IPv4 checksum of msg.
@@ -137,10 +154,28 @@ def ipv4_checksum(msg):
     if len(msg) % 2 == 1:
         msg += "\x00"
 
-    def collate_bytes(msb, lsb):
-        return (ord(msb) << 8) + ord(lsb)
+    msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
+    total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
+    return ~total & 0xffff
 
-    msg_words = map(collate_bytes, msg[0::2], msg[1::2])
+
+def udp_checksum(msg, src_addr, dst_addr):
+    """
+    Return IPv4 checksum of msg.
+    :param msg: Message to compute checksum over.
+    :type msg: str
+
+    :return: IPv4 checksum of msg.
+    :rtype: int
+    """
+    # Construct pseudo header:
+    data = src_addr + dst_addr + "\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", len(msg)) + msg
+
+    # Pad with 0 byte if needed
+    if len(data) % 2 == 1:
+        data += "\x00"
+
+    msg_words = map(_collate_bytes, data[0::2], data[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
     return ~total & 0xffff
 
