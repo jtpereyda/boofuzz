@@ -633,8 +633,6 @@ class TestSocketConnection(unittest.TestCase):
         SocketConnection(host='127.0.0.1', proto='raw-l2')
         SocketConnection(host='127.0.0.1', proto='raw-l3')
 
-    # This method tests missing arguments; ignore warning.
-    # noinspection PyArgumentList
     def test_required_args_host(self):
         """
         Given: No preconditions.

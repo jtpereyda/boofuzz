@@ -772,9 +772,7 @@ class Session(pgraph.Graph):
 
         # if no data was returned by the callback, render the node here.
         if not data:
-            self.logger.info("Rendering: {0}".format(node.name))
             data = node.render()
-            self.logger.info("RenderED: {0}".format(node.name))
 
         # Try to send payload down-range
         try:

@@ -160,7 +160,7 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
     @param block_name: Name of block to apply sizer to
 
     @type  algorithm:  str
-    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
+    @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
 
     @type  length:     int
     @param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
@@ -175,10 +175,10 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
     @param name:       Name of this checksum field
 
     @type ipv4_src_block_name: str
-    @param ipv4_src_block_name: Name of block rendering IPv4 source address.
+    @param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address.
 
     @type ipv4_dst_block_name: str
-    @param ipv4_dst_block_name: Name of block rendering IPv4 destination address.
+    @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
     """
 
     # you can't add a checksum for a block currently in the stack.

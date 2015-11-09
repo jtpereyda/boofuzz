@@ -478,7 +478,7 @@ class Checksum(primitives.BasePrimitive):
         @param request:    Request this block belongs to
 
         @type  algorithm:  str or def
-        @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4)
+        @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
 
         @type  length:     int
         @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate.
@@ -493,12 +493,13 @@ class Checksum(primitives.BasePrimitive):
         @param name:       Name of this checksum field
 
         @type ipv4_src_block_name: str
-        @param ipv4_src_block_name: Name of block rendering IPv4 source address.
+        @param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address.
 
         @type ipv4_dst_block_name: str
-        @param ipv4_dst_block_name: Name of block rendering IPv4 destination address.
+        @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
         """
         super(Checksum, self).__init__()
+        self.s_type = "checksum"
 
         self.block_name = block_name
         self.request = request
@@ -601,6 +602,12 @@ class Checksum(primitives.BasePrimitive):
 
         :return None
         """
+        # Algorithm for each dependency:
+        # 1. Set the recursion flag (avoids recursion loop in step b if target
+        #    block contains self).
+        # 2. Render the target block.
+        # 3. Clear recursion flag.
+
         if self.block_name:
             self._recursion_flag = True
             self.request.names[self.block_name].render()
@@ -621,21 +628,16 @@ class Checksum(primitives.BasePrimitive):
         # Algorithm summary:
         # 1. If fuzzable, use fuzz library.
         # 2. Else-if the recursion flag is set, just render a dummy value.
-        # 3. Else (if the recursion flag is not set), we calculate
-        #     a. Set the recursion flag (avoids recursion loop in step b if
-        #        target block contains self)
-        #     b. Render the target block.
-        #     c. Clear recursion flag.
-        #     d. Calculate the checksum and render.
+        # 3. Else (if the recursion flag is not set), calculate checksum:
+        #     a. Render dependencies.
+        #     b. Calculate checksum.
 
         if self.fuzzable and self.mutant_index and not self.fuzz_complete:
-            self.rendered = self.fuzz_library[self.mutant_index]
+            self.rendered = self.value
         elif self._recursion_flag:
             self.rendered = self._get_dummy_value()
         else:
-            # render target (excluding self via self._recursion_flag)
             self._render_dependencies()
-
             self.rendered = self._checksum()
 
         return self.rendered
