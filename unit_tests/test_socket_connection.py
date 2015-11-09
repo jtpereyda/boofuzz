@@ -18,6 +18,9 @@ IP_HEADER_LEN = 20
 
 ETHER_TYPE_IPV4 = "\x08\x00"  # Ethernet frame EtherType for IPv4
 
+RAW_L2_MAX_PAYLOAD = 1514
+RAW_L3_MAX_PAYLOAD = 1500
+
 
 def udp_packet(payload, src_port, dst_port):
     """
@@ -204,6 +207,11 @@ class MiniTestServer(object):
 
 
 class TestSocketConnection(unittest.TestCase):
+    """
+    Tests only use loopback interface 'lo', since other interfaces would be
+    hardware or network dependent.
+    """
+
     def setUp(self):
         self.local_ip = get_packed_ip_address('eth0')
 
@@ -211,7 +219,8 @@ class TestSocketConnection(unittest.TestCase):
         """
         Given: A SocketConnection 'tcp' object and a TCP server.
         When: Calling SocketConnection.open(), .send(), .recv(), and .close()
-        Then: Sent and received data is as expected.
+        Then: send() returns RAW_L3_MAX_PAYLOAD.
+         and: Sent and received data is as expected.
         """
         data_to_send = bytes('uuddlrlrba')
 
@@ -228,7 +237,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        uut.send(data=data_to_send)
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -237,6 +246,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
+        self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
@@ -244,7 +254,8 @@ class TestSocketConnection(unittest.TestCase):
         """
         Given: A SocketConnection 'tcp' object and a TCP server, set not to respond.
         When: Calling SocketConnection.open(), .send(), .recv(), and .close()
-        Then: Sent works as expected, and recv() returns bytes('') after timing out.
+        Then: send() returns length of payload.
+         and: Sent works as expected, and recv() returns bytes('') after timing out.
         """
         data_to_send = bytes('uuddlrlrba')
 
@@ -261,7 +272,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        uut.send(data=data_to_send)
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -270,6 +281,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
+        self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, bytes(''))
 
@@ -277,7 +289,8 @@ class TestSocketConnection(unittest.TestCase):
         """
         Given: A SocketConnection 'udp' object and a UDP server.
         When: Calling SocketConnection.open(), .send(), .recv(), and .close()
-        Then: Sent and received data is as expected.
+        Then: send() returns length of payload.
+         and: Sent and received data is as expected.
         """
         data_to_send = bytes('"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
                              ' why, tidiness is a toil for giants."')
@@ -296,7 +309,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        uut.send(data=data_to_send)
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -305,117 +318,21 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
+        self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
     def test_raw_l2(self):
         """
-        Given: A SocketConnection 'raw-l2' object.
-          and: A raw UDP/IP/Ethernet packet.
-          and: A UDP server, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives data from send().
-         And: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             ' but creative artists very seldom. "')
-
-        # Given
-        server = MiniTestServer(proto='udp')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="eth0", port=0, proto='raw-l2')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        # Assemble packet...
-        raw_packet = ethernet_frame(
-            payload=ip_packet(
-                payload=udp_packet(
-                    payload=data_to_send,
-                    src_port=server.active_port + 1,
-                    dst_port=server.active_port),
-                src_ip=self.local_ip[0:3] + "\x00",
-                dst_ip=self.local_ip),
-            src_mac="\x00" * 6,
-            dst_mac="\xff" * 6)
-
-        # When
-        uut.open()
-        uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
-
-    def test_raw_l3(self):
-        """
-        Given: A SocketConnection 'raw-l3' object.
-          and: A raw UDP/IP packet.
-          and: A UDP server, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives data from send().
-         And: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
-                             ' prudent marriages?""')
-
-        # Given
-        server = MiniTestServer(proto='udp')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="eth0", port=socket_connection.ETH_P_IP, proto='raw-l3')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        raw_packet = ip_packet(
-            payload=udp_packet(
-                payload=data_to_send,
-                src_port=server.active_port + 1,
-                dst_port=server.active_port),
-            src_ip=self.local_ip[0:3] + "\x00",
-            dst_ip=self.local_ip)
-
-        # When
-        uut.open()
-        uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
-
-    def test_raw_l2_loopback(self):
-        """
         Test 'raw' protocol with the loopback interface 'lo'.
-        So far this has only worked if the server is also using a raw socket.
 
         Given: A SocketConnection 'raw-l2' object.
           and: A raw UDP/IP/Ethernet packet.
           and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
         When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives the raw packet data from send().
-         And: SocketConnection.recv() returns bytes('').
+        Then: send() returns length of payload.
+         and: The server receives the raw packet data from send().
+         and: SocketConnection.recv() returns bytes('').
         """
         data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
                              ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
@@ -447,7 +364,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        uut.send(data=raw_packet)
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -456,21 +373,198 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
+        self.assertEqual(send_result, len(raw_packet))
         self.assertEqual(raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
-    def test_raw_l3_loopback(self):
+    def test_raw_l2_max_size(self):
+        """
+        Test 'raw-l2' max packet size.
+
+        Given: A SocketConnection 'raw-l2' object.
+          and: A raw UDP/IP/Ethernet packet of RAW_L2_MAX_PAYLOAD bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L2_MAX_PAYLOAD.
+         and: The server receives the raw packet data from send().
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('1' * RAW_L2_MAX_PAYLOAD)
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(raw_packet, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3_max_size(self):
+        """
+        Test 'raw-l3' max packet size.
+
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L3_MAX_PAYLOAD bytes.
+         and: The server receives the raw packet data from send(), with an Ethernet header appended.
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('0' * RAW_L3_MAX_PAYLOAD)
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l2_oversized(self):
+        """
+        Test 'raw-l2' oversized packet handling.
+
+        Given: A SocketConnection 'raw-l2' object.
+          and: A raw UDP/IP/Ethernet packet of RAW_L2_MAX_PAYLOAD + 1 bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L2_MAX_PAYLOAD.
+         and: The server receives the first RAW_L2_MAX_PAYLOAD bytes of raw packet data from send().
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('F' * (RAW_L2_MAX_PAYLOAD + 1))
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(raw_packet[:RAW_L2_MAX_PAYLOAD], server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3_oversized(self):
+        """
+        Test 'raw-l3' max packet size.
+
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD + 1 bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L3_MAX_PAYLOAD.
+         and: The server receives the raw packet data from send(), with an Ethernet header appended.
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('D' * (RAW_L3_MAX_PAYLOAD + 1))
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[:RAW_L3_MAX_PAYLOAD],
+                         server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
-        So far this has only worked if the server is also using a raw socket. This is a notable shortcoming, either
-        of the loopback interface or of SocketConnection's implementation.
 
         Given: A SocketConnection 'raw-l3' object.
           and: A raw UDP/IP packet.
           and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
         When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: The server receives the raw packet data from send(), with an Ethernet header appended.
-         And: SocketConnection.recv() returns bytes('').
+        Then: send() returns length of payload.
+         and: The server receives the raw packet data from send(), with an Ethernet header appended.
+         and: SocketConnection.recv() returns bytes('').
         """
         data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
                              ' prudent marriages?""')
@@ -498,7 +592,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        uut.send(data=raw_packet)
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -507,6 +601,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
+        self.assertEqual(send_result, len(raw_packet))
         self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
@@ -538,6 +633,8 @@ class TestSocketConnection(unittest.TestCase):
         SocketConnection(host='127.0.0.1', proto='raw-l2')
         SocketConnection(host='127.0.0.1', proto='raw-l3')
 
+    # This method tests missing arguments; ignore warning.
+    # noinspection PyArgumentList
     def test_required_args_host(self):
         """
         Given: No preconditions.
