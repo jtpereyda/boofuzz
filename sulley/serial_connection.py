@@ -119,7 +119,8 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
         :param data: Data to send.
 
-        :return: None
+        :rtype int
+        :return: Number of bytes actually sent.
         """
         bytes_sent = 0
         while bytes_sent < len(data):

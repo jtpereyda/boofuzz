@@ -46,6 +46,7 @@ class ITargetConnection(object):
 
         :param data: Data to send.
 
-        :return: None
+        :rtype int
+        :return: Number of bytes actually sent.
         """
         raise NotImplementedError
