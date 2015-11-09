@@ -16,10 +16,10 @@ ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs
 UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
-ETHER_TYPE_IPV4 = "\x08\x00"  # Ethernet frame EtherType for IPv4
+ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet frame EtherType for IPv4
 
-RAW_L2_MAX_PAYLOAD = 1514
-RAW_L3_MAX_PAYLOAD = 1500
+RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l2']
+RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l3']
 
 
 def udp_packet(payload, src_port, dst_port):
@@ -421,50 +421,6 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
-    def test_raw_l3_max_size(self):
-        """
-        Test 'raw-l3' max packet size.
-
-        Given: A SocketConnection 'raw-l3' object.
-          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD bytes.
-          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: send() returns RAW_L3_MAX_PAYLOAD bytes.
-         and: The server receives the raw packet data from send(), with an Ethernet header appended.
-         and: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('0' * RAW_L3_MAX_PAYLOAD)
-
-        # Given
-        server = MiniTestServer(proto='raw', host='lo')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        # Assemble packet...
-        raw_packet = data_to_send
-
-        # When
-        uut.open()
-        send_result = uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
-        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
-        self.assertEqual(received, bytes(''))
-
     def test_raw_l2_oversized(self):
         """
         Test 'raw-l2' oversized packet handling.
@@ -507,51 +463,6 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
         self.assertEqual(raw_packet[:RAW_L2_MAX_PAYLOAD], server.received)
-        self.assertEqual(received, bytes(''))
-
-    def test_raw_l3_oversized(self):
-        """
-        Test 'raw-l3' max packet size.
-
-        Given: A SocketConnection 'raw-l3' object.
-          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD + 1 bytes.
-          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
-        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
-        Then: send() returns RAW_L3_MAX_PAYLOAD.
-         and: The server receives the raw packet data from send(), with an Ethernet header appended.
-         and: SocketConnection.recv() returns bytes('').
-        """
-        data_to_send = bytes('D' * (RAW_L3_MAX_PAYLOAD + 1))
-
-        # Given
-        server = MiniTestServer(proto='raw', host='lo')
-        server.data_to_send = "GKC"
-        server.bind()
-
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
-        uut.logger = logging.getLogger("SulleyUTLogger")
-
-        # Assemble packet...
-        raw_packet = data_to_send
-
-        # When
-        uut.open()
-        send_result = uut.send(data=raw_packet)
-        received = uut.recv(10000)
-        uut.close()
-
-        # Wait for the other thread to terminate
-        t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
-
-        # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
-        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[:RAW_L3_MAX_PAYLOAD],
-                         server.received)
         self.assertEqual(received, bytes(''))
 
     def test_raw_l3(self):
@@ -603,6 +514,95 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(raw_packet))
         self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3_max_size(self):
+        """
+        Test 'raw-l3' max packet size.
+
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L3_MAX_PAYLOAD bytes.
+         and: The server receives the raw packet data from send(), with an Ethernet header appended.
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('0' * RAW_L3_MAX_PAYLOAD)
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
+        self.assertEqual(received, bytes(''))
+
+    def test_raw_l3_oversized(self):
+        """
+        Test 'raw-l3' max packet size.
+
+        Given: A SocketConnection 'raw-l3' object.
+          and: A raw UDP/IP packet of RAW_L3_MAX_PAYLOAD + 1 bytes.
+          and: A server socket created with AF_PACKET, SOCK_RAW, configured to respond.
+        When: Calling SocketConnection.open(), .send() with the valid UDP packet, .recv(), and .close()
+        Then: send() returns RAW_L3_MAX_PAYLOAD.
+         and: The server receives the raw packet data from send(), with an Ethernet header appended.
+         and: SocketConnection.recv() returns bytes('').
+        """
+        data_to_send = bytes('D' * (RAW_L3_MAX_PAYLOAD + 1))
+
+        # Given
+        server = MiniTestServer(proto='raw', host='lo')
+        server.data_to_send = "GKC"
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # Assemble packet...
+        raw_packet = data_to_send
+
+        # When
+        uut.open()
+        send_result = uut.send(data=raw_packet)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[:RAW_L3_MAX_PAYLOAD],
+                         server.received)
         self.assertEqual(received, bytes(''))
 
     def test_required_args_port(self):
