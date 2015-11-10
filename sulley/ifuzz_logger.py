@@ -3,7 +3,12 @@ import abc
 
 class IFuzzLogger(object):
     """
-    Abstract class for logging fuzz data. Allows for logging approaches.
+    Abstract class for logging fuzz data.
+
+    Usage while testing:
+     1. Open test case.
+     2. Open test step.
+     3. Use other log methods.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -13,6 +18,17 @@ class IFuzzLogger(object):
         Open a test case - i.e., a fuzzing mutation.
 
         :param test_case_id: Test case name/number. Should be unique.
+
+        :return: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def open_test_step(self, description):
+        """
+        Open a test step - e.g., "Fuzzing", "Pre-fuzz", "Response Check."
+
+        :param description: Description of fuzzing step.
 
         :return: None
         """
@@ -38,6 +54,59 @@ class IFuzzLogger(object):
 
         :param data: Received data.
         :type data: buffer
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_check(self, description):
+        """
+        Records a check on the system under test. AKA "instrumentation check."
+
+        :param description: Received data.
+        :type description: str
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_pass(self, description=""):
+        """
+        Records a check that passed.
+
+        :param description: Optional supplementary data..
+        :type description: str
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_fail(self, description=""):
+        """
+        Records a check that failed. This will flag a fuzzing case as a
+        potential bug or anomaly.
+
+        :param description: Optional supplementary data..
+        :type description: str
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_info(self, description):
+        """
+        Catch-all method for logging test information
+
+        :param description: Information.
+        :type description: str
 
         :return: None
         :rtype: None
