@@ -3,12 +3,29 @@ import os
 import errno
 
 
-class FuzzLogger(ifuzz_logger.IFuzzLogger):
+class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
     """
+    Deprecated: Use FuzzLogger with FuzzLoggerText for typical fuzz logging.
+
     IFuzzLogger that saves sent and received data to files within a directory.
 
     File format is: <mutation nubmer>-(rx|tx)-<sequence number>.txt
     """
+
+    def open_test_step(self, description):
+        raise Exception("FuzzLoggerFile does not support open_test_step()!")
+
+    def log_fail(self, description=""):
+        raise Exception("FuzzLoggerFile does not support log_fail()!")
+
+    def log_info(self, description):
+        raise Exception("FuzzLoggerFile does not support log_info()!")
+
+    def log_pass(self, description=""):
+        raise Exception("FuzzLoggerFile does not support log_pass()!")
+
+    def log_check(self, description):
+        raise Exception("FuzzLoggerFile does not support log_check()!")
 
     def __init__(self, path):
         """
@@ -45,7 +62,7 @@ class FuzzLogger(ifuzz_logger.IFuzzLogger):
         Records data as about to be sent to the target.
 
         :param data: Transmitted data
-        :type data: buffer
+        :type data: bytes
 
         :return: None
         :rtype: None
@@ -64,7 +81,7 @@ class FuzzLogger(ifuzz_logger.IFuzzLogger):
         Records data as having been received from the target.
 
         :param data: Received data.
-        :type data: buffer
+        :type data: bytes
 
         :return: None
         :rtype: None

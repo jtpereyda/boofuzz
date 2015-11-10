@@ -40,7 +40,7 @@ class IFuzzLogger(object):
         Records data as about to be sent to the target.
 
         :param data: Transmitted data
-        :type data: buffer
+        :type data: bytes
 
         :return: None
         :rtype: None
@@ -53,7 +53,7 @@ class IFuzzLogger(object):
         Records data as having been received from the target.
 
         :param data: Received data.
-        :type data: buffer
+        :type data: bytes
 
         :return: None
         :rtype: None
