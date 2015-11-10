@@ -92,7 +92,7 @@ class IFuzzLogger(object):
         Records a check that failed. This will flag a fuzzing case as a
         potential bug or anomaly.
 
-        :param description: Optional supplementary data..
+        :param description: Optional supplementary data.
         :type description: str
 
         :return: None
