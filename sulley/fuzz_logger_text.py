@@ -1,6 +1,6 @@
 from __future__ import print_function
 import time
-from sulley import ifuzz_logger
+from sulley import ifuzz_logger_backend
 from sulley import helpers
 import sys
 
@@ -14,7 +14,7 @@ def get_time_stamp():
     return s
 
 
-class FuzzLoggerText(ifuzz_logger.IFuzzLogger):
+class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     TEST_CASE_FORMAT = "Test Case: {0}"
     TEST_STEP_FORMAT = "Test Step: {0}"
     LOG_CHECK_FORMAT = "Check: {0}"
