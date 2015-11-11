@@ -8,26 +8,33 @@ class FuzzLogger(ifuzz_logger.IFuzzLogger):
         self._fuzz_loggers = fuzz_loggers
 
     def open_test_step(self, description):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.open_test_step(description=description)
 
     def log_fail(self, description=""):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_fail(description=description)
 
     def log_info(self, description):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_info(description=description)
 
     def log_recv(self, data):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_recv(data=data)
 
     def log_pass(self, description=""):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_pass(description=description)
 
     def log_check(self, description):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_check(description=description)
 
     def open_test_case(self, test_case_id):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.open_test_case(test_case_id=test_case_id)
 
     def log_send(self, data):
-        pass
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_send(data=data)
