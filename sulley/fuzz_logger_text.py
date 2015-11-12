@@ -30,46 +30,30 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
         :param file_handle: Open file handle for logging. Defaults to sys.stdout.
         """
         self._file_handle = file_handle
-        self._test_case_open = False
         self._format_raw_bytes = bytes_to_str
 
     def open_test_step(self, description):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.TEST_STEP_FORMAT.format(description))
 
     def log_check(self, description):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_CHECK_FORMAT.format(description))
 
     def log_recv(self, data):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)))
 
     def log_send(self, data):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_SEND_FORMAT.format(self._format_raw_bytes(data)))
 
     def log_info(self, description):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_INFO_FORMAT.format(description))
 
     def open_test_case(self, test_case_id):
         self._print_log_msg(self.TEST_CASE_FORMAT.format(test_case_id))
-        self._test_case_open = True
 
     def log_fail(self, description=""):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_FAIL_FORMAT.format(description))
 
     def log_pass(self, description=""):
-        if not self._test_case_open:
-            self.open_test_case(self.DEFAULT_TEST_CASE_ID)
         self._print_log_msg(self.LOG_PASS_FORMAT.format(description))
 
     def _print_log_msg(self, msg):

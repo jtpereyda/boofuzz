@@ -16,8 +16,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_open_test_step(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling open_test_step().
-        Then: open_test_step() is called on each IFuzzLoggerBackend.
+        When: Calling open_test_step() with some text.
+        Then: open_test_step() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.open_test_step(description=self.some_text)
 
@@ -27,8 +28,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_fail(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling open_test_step().
-        Then: open_test_step() is called on each IFuzzLoggerBackend.
+        When: Calling log_fail() with some text.
+        Then: log_fail() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_fail(description=self.some_text)
 
@@ -38,8 +40,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_info(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_log_info().
-        Then: test_log_info() is called on each IFuzzLoggerBackend.
+        When: Calling log_info() with some text.
+        Then: log_info() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_info(description=self.some_text)
 
@@ -49,8 +52,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_recv(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_log_recv().
-        Then: test_log_recv() is called on each IFuzzLoggerBackend.
+        When: Calling log_recv() with some data.
+        Then: log_recv() is called with that same data on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_recv(data=self.some_data)
 
@@ -60,8 +64,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_pass(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_log_pass().
-        Then: test_log_pass() is called on each IFuzzLoggerBackend.
+        When: Calling test_log_pass() with some text.
+        Then: test_log_pass() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_pass(description=self.some_text)
 
@@ -71,8 +76,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_check(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_log_check().
-        Then: test_log_check() is called on each IFuzzLoggerBackend.
+        When: Calling log_check() with some text.
+        Then: log_check() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_check(description=self.some_text)
 
@@ -82,8 +88,9 @@ class TestFuzzLogger(unittest.TestCase):
     def test_open_test_case(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_open_test_case().
-        Then: test_open_test_case() is called on each IFuzzLoggerBackend.
+        When: Calling open_test_case() with some text.
+        Then: open_test_case() is called with that same text on each
+              IFuzzLoggerBackend.
         """
         self.logger.open_test_case(test_case_id=self.some_text)
 
@@ -93,13 +100,15 @@ class TestFuzzLogger(unittest.TestCase):
     def test_log_send(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.
-        When: Calling test_log_send().
-        Then: test_log_send() is called on each IFuzzLoggerBackend.
+        When: Calling log_send() with some data.
+        Then: log_send() is called with that same data on each
+              IFuzzLoggerBackend.
         """
         self.logger.log_send(data=self.some_data)
 
         self.mock_logger_1.log_send.assert_called_once_with(data=self.some_data)
         self.mock_logger_2.log_send.assert_called_once_with(data=self.some_data)
+
 
 if __name__ == '__main__':
     unittest.main()
