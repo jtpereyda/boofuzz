@@ -545,12 +545,14 @@ class Session(pgraph.Graph):
         # kill the pcap thread and see how many bytes the sniffer recorded.
         if target.netmon:
             captured_bytes = target.netmon.post_send()
-            self.logger.info("netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index))
+            self._fuzz_data_logger.log_info(
+                "netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index))
             self.netmon_results[self.total_mutant_index] = captured_bytes
 
         # check if our fuzz crashed the target. procmon.post_send() returns False if the target access violated.
         if target.procmon and not target.procmon.post_send():
-            self.logger.info("procmon detected access violation on test case #%d" % self.total_mutant_index)
+            self._fuzz_data_logger.log_info(
+                "procmon detected access violation on test case #%d" % self.total_mutant_index)
             self.log_fail(target.procmon.get_crash_synopsis())
 
     def log_fail(self, synopsis):
@@ -580,7 +582,7 @@ class Session(pgraph.Graph):
         @return: None
         """
         if len(self._crash_synopses) > 0:
-            self.logger.info("Failure detected on test case #%d" % self.total_mutant_index)
+            self._fuzz_data_logger.log_info("Failure detected on test case #%d" % self.total_mutant_index)
 
             # retrieve the primitive that caused the crash and increment it's individual crash count.
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
@@ -592,7 +594,7 @@ class Session(pgraph.Graph):
                 msg = "primitive lacks a name, "
 
             msg += "type: %s, default value: %s" % (self.fuzz_node.mutant.s_type, self.fuzz_node.mutant.original_value)
-            self.logger.info(msg)
+            self._fuzz_data_logger.log_info(msg)
 
             # print crash synopsis
             if len(self._crash_synopses) > 1:
@@ -601,7 +603,7 @@ class Session(pgraph.Graph):
             else:
                 synopsis = "\n".join(self._crash_synopses)
             self.procmon_results[self.total_mutant_index] = synopsis
-            self.logger.info(self.procmon_results[self.total_mutant_index].split("\n")[0])
+            self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
             if self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
@@ -609,7 +611,7 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group):
                     if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
                         skipped = self.fuzz_node.mutant.exhaust()
-                        self.logger.warning(
+                        self._fuzz_data_logger.open_test_step(
                             "Crash threshold reached for this primitive, exhausting %d mutants." % skipped
                         )
                         self.total_mutant_index += skipped
@@ -755,26 +757,23 @@ class Session(pgraph.Graph):
             data = node.render()
 
         # Try to send payload down-range
-        try:
-            self.targets[0].send(data)
-            self.last_send = data
-        except socket.error, inst:
-            self.logger.error("Socket error on send: %s" % inst)
+        self.targets[0].send(data)
+        self.last_send = data
 
-        try:
-            # Receive data
-            # TODO: Remove magic number (10000)
-            self.last_recv = self.targets[0].recv(10000)
-        except socket.error, inst:
-            self.logger.error("Socket error on receive: %s" % inst)
+        # Receive data
+        # TODO: Remove magic number (10000)
+        self.last_recv = self.targets[0].recv(10000)
 
+        self._fuzz_data_logger.log_check("Verify some data was received from the target.")
         if not self.last_recv:
             # Assume a crash?
-            self.logger.warning("Nothing received from target.")
+            self._fuzz_data_logger.log_fail("Nothing received from target.")
             # Increment individual crash count
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
             # Note crash information
             self.protmon_results[self.total_mutant_index] = data
+        else:
+            self._fuzz_data_logger.log_pass("Some data received from target.")
 
     def build_webapp_thread(self, port=26000):
         app.session = self
@@ -829,15 +828,13 @@ class Session(pgraph.Graph):
             current_path = " -> ".join([self.nodes[e.src].name for e in path[1:]])
             current_path += " -> %s" % self.fuzz_node.name
 
-            self.logger.info("current fuzz path: %s" % current_path)
-            self.logger.info("fuzzed %d of %d total cases" % (self.total_mutant_index, self.total_num_mutations))
+            self._fuzz_data_logger.log_info("current fuzz path: %s" % current_path)
 
             # Loop through and yield all possible mutations of the fuzz node.
             # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
             while self.fuzz_node.mutate():
                 self.total_mutant_index += 1
                 yield (edge, path)
-            self.logger.error("all possible mutations for current fuzz node exhausted")
             self.fuzz_node.reset()
 
             # recursively fuzz the remainder of the nodes in the session graph.
@@ -875,8 +872,11 @@ class Session(pgraph.Graph):
 
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.open_test_case(self.total_mutant_index)
-            self._fuzz_data_logger.log_info("Test case %d of %d" % (self.fuzz_node.mutant_index,
-                                                                  self.fuzz_node.num_mutations()))
+            self._fuzz_data_logger.log_info(
+                "Test case %d of %d for this node. %d of %d overall." % (self.fuzz_node.mutant_index,
+                                                                         self.fuzz_node.num_mutations(),
+                                                                         self.total_mutant_index,
+                                                                         self.total_num_mutations))
 
         # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
         # occurs, restart the target.
