@@ -30,7 +30,6 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
 
 
 class TestFuzzLoggerText(unittest.TestCase):
-
     def setUp(self):
         self.virtual_file = StringIO.StringIO()
         self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file)
@@ -131,7 +130,8 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  TEST_CASE_FORMAT.format(self.some_test_case_id))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format('31 32 33'))
+                                 LOG_SEND_FORMAT.format(len(self.some_send_data),
+                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data)))
 
     def test_log_info(self):
         """
@@ -190,7 +190,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOG_PASS_FORMAT.format(self.some_log_pass_msg))
 
-    def test_open_test_case_empty(self,):
+    def test_open_test_case_empty(self):
         """
         Given: FuzzLoggerText with a virtual file handle.
         When: Calling open_test_case with an empty string.
@@ -256,7 +256,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  TEST_CASE_FORMAT.format(self.some_test_case_id))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_RECV_FORMAT.format(''))
+                                 LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes(''))))
 
     def test_log_send_empty(self):
         """
@@ -274,7 +274,8 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  TEST_CASE_FORMAT.format(self.some_test_case_id))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format(''))
+                                 LOG_SEND_FORMAT.format(len(bytes('')),
+                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes(''))))
 
     def test_log_info_empty(self):
         """
@@ -366,7 +367,8 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_recv_data)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data)))
+                                 LOG_SEND_FORMAT.format(len(self.some_send_data),
+                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data)))
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOG_INFO_FORMAT.format(self.some_log_info_msg))
         self.assertRegexpMatches(self.virtual_file.readline(),

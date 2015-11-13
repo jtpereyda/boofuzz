@@ -67,7 +67,6 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.ethernet_proto = ethernet_proto
         self.l2_dst = l2_dst
 
-        self.logger = None
         self._sock = None
 
         if self.proto not in self._PROTOCOLS:
@@ -178,14 +177,3 @@ class SocketConnection(itarget_connection.ITargetConnection):
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         return num_sent
-
-    def set_logger(self, logger):
-        """
-        Set this object's (and it's aggregated classes') logger.
-
-        :param logger: Logger to use.
-        :type logger: logging.Logger
-
-        :return: None
-        """
-        self.logger = logger

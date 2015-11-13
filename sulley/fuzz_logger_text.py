@@ -4,7 +4,20 @@ from sulley import ifuzz_logger_backend
 from sulley import helpers
 import sys
 
-DEFAULT_HEX_TO_STR = helpers.hex_str
+
+def hex_to_hexstr(input_bytes):
+    """
+    Render input_bytes as ASCII-encoded hex bytes, followed by a best effort
+    utf-8 rendering.
+
+    :param input_bytes: Arbitrary bytes.
+
+    :return: Printable string.
+    """
+    return helpers.hex_str(input_bytes) + " '" + bytes(input_bytes) + "'"
+
+
+DEFAULT_HEX_TO_STR = hex_to_hexstr
 
 
 def get_time_stamp():
@@ -16,13 +29,13 @@ def get_time_stamp():
 
 class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     TEST_CASE_FORMAT = "Test Case: {0}"
-    TEST_STEP_FORMAT = "Test Step: {0}"
-    LOG_CHECK_FORMAT = "Check: {0}"
-    LOG_INFO_FORMAT = "Info: {0}"
-    LOG_PASS_FORMAT = "Check OK {0}"
-    LOG_FAIL_FORMAT = "Check Failed {0}"
-    LOG_RECV_FORMAT = "Transmitting: {0}"
-    LOG_SEND_FORMAT = "Received: {0}"
+    TEST_STEP_FORMAT = "    Test Step: {0}"
+    LOG_CHECK_FORMAT = "        Check: {0}"
+    LOG_INFO_FORMAT = "        Info: {0}"
+    LOG_PASS_FORMAT = "        Check OK {0}"
+    LOG_FAIL_FORMAT = "        Check Failed {0}"
+    LOG_RECV_FORMAT = "        Received: {0}"
+    LOG_SEND_FORMAT = "        Transmitting {0} bytes: {1}"
     DEFAULT_TEST_CASE_ID = "DefaultTestCase"
 
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
@@ -42,7 +55,8 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)))
 
     def log_send(self, data):
-        self._print_log_msg(self.LOG_SEND_FORMAT.format(self._format_raw_bytes(data)))
+        self._print_log_msg(
+            self.LOG_SEND_FORMAT.format(len(data), self._format_raw_bytes(data)))
 
     def log_info(self, description):
         self._print_log_msg(self.LOG_INFO_FORMAT.format(description))
