@@ -243,24 +243,6 @@ class Session(pgraph.Graph):
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
-        # Initialize logger
-        self.logger = logging.getLogger("Sulley_logger")
-        self.logger.setLevel(log_level)
-        self.logger.propagate = False  # Propagating messages to the root logger can result in duplicate logs.
-        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] -> %(message)s')
-
-        if logfile:
-            filehandler = logging.FileHandler(logfile)
-            filehandler.setLevel(logfile_level)
-            filehandler.setFormatter(formatter)
-            self.logger.addHandler(filehandler)
-
-        consolehandler = logging.StreamHandler()
-        consolehandler.setFormatter(formatter)
-        consolehandler.setLevel(log_level)
-
-        self.logger.addHandler(consolehandler)
-
         self.total_num_mutations = 0
         self.total_mutant_index = 0
         self.fuzz_node = None
@@ -628,19 +610,24 @@ class Session(pgraph.Graph):
                 sys.exit(0)
 
     # noinspection PyMethodMayBeStatic
-    def post_send(self, sock):
+    def post_send(self, sock, fuzz_data_logger, *args, **kwargs):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
 
             pre_send() - req - callback ... req - callback - post_send()
 
-        When fuzzing RPC for example, register this method to tear down the RPC request.
+        Potential uses:
+         * Closing down a connection.
+         * Checking for expected responses.
 
         @see: pre_send()
 
         @type  sock: socket.socket
         @param sock: Connected socket to target
+
+        @type  fuzz_data_logger: ifuzz_logger.IFuzzLogger
+        @param fuzz_data_logger: Allows logging of test checks and passes/failures.
         """
 
         # default to doing nothing.
@@ -934,7 +921,7 @@ class Session(pgraph.Graph):
         # We do this outside the try/except loop because if our fuzz causes a crash then the post_send()
         # will likely fail and we don't want to sit in an endless loop.
         try:
-            self.post_send(target)
+            self.post_send(target, fuzz_data_logger=self._fuzz_data_logger)
         except Exception, e:
             error_handler(e, "post_send() failed", target, target)
             raise
