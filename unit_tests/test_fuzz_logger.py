@@ -25,6 +25,18 @@ class TestFuzzLogger(unittest.TestCase):
         self.mock_logger_1.open_test_step.assert_called_once_with(description=self.some_text)
         self.mock_logger_2.open_test_step.assert_called_once_with(description=self.some_text)
 
+    def test_log_error(self):
+        """
+        Given: A FuzzLogger with multiple IFuzzLoggerBackends.
+        When: Calling log_error() with some text.
+        Then: log_error() is called with that same text on each
+              IFuzzLoggerBackend.
+        """
+        self.logger.log_error(description=self.some_text)
+
+        self.mock_logger_1.log_error.assert_called_once_with(description=self.some_text)
+        self.mock_logger_2.log_error.assert_called_once_with(description=self.some_text)
+
     def test_log_fail(self):
         """
         Given: A FuzzLogger with multiple IFuzzLoggerBackends.

@@ -11,6 +11,10 @@ class FuzzLogger(ifuzz_logger.IFuzzLogger):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.open_test_step(description=description)
 
+    def log_error(self, description):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_error(description=description)
+
     def log_fail(self, description=""):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_fail(description=description)

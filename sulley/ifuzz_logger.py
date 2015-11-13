@@ -112,3 +112,17 @@ class IFuzzLogger(object):
         :rtype: None
         """
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_error(self, description):
+        """
+        Records an internal error. This informs the operaor that the test was
+        not completed successfully.
+
+        :param description: Received data.
+        :type description: str
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError

@@ -30,6 +30,7 @@ def get_time_stamp():
 class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     TEST_CASE_FORMAT = "Test Case: {0}"
     TEST_STEP_FORMAT = "    Test Step: {0}"
+    LOG_ERROR_FORMAT = "        Error!!!! {0}"
     LOG_CHECK_FORMAT = "        Check: {0}"
     LOG_INFO_FORMAT = "        Info: {0}"
     LOG_PASS_FORMAT = "        Check OK {0}"
@@ -50,6 +51,9 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def log_check(self, description):
         self._print_log_msg(self.LOG_CHECK_FORMAT.format(description))
+
+    def log_error(self, description):
+        self._print_log_msg(self.LOG_ERROR_FORMAT.format(description))
 
     def log_recv(self, data):
         self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)))

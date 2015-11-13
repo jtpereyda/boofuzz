@@ -623,7 +623,7 @@ class Session(pgraph.Graph):
             # start the target back up.
             # If it returns False, stop the test
             if not self.restart_target(target, stop_first=False):
-                self.logger.critical("Restarting the target failed, exiting.")
+                self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
                 self.export_file()
                 sys.exit(0)
 
@@ -726,7 +726,7 @@ class Session(pgraph.Graph):
                 Save current settings (just in case) and exit
                 """
                 self.export_file()
-                self.logger.critical("SIGINT received ... exiting")
+                self._fuzz_data_logger.log_error("SIGINT received ... exiting")
                 sys.exit(0)
 
             signal.signal(signal.SIGINT, exit_abruptly)
@@ -867,7 +867,7 @@ class Session(pgraph.Graph):
             msg += "\nException caught: %s" % repr(error)
             msg += "\nRestarting target and trying again"
 
-            self.logger.critical(msg)
+            self._fuzz_data_logger.log_error(msg)
             self.restart_target(error_target)
 
         if self._fuzz_data_logger is not None:
