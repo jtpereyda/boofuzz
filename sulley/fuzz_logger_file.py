@@ -12,6 +12,9 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
     File format is: <mutation nubmer>-(rx|tx)-<sequence number>.txt
     """
 
+    def log_error(self, description):
+        raise Exception("FuzzLoggerFile does not support log_error()!")
+
     def open_test_step(self, description):
         raise Exception("FuzzLoggerFile does not support open_test_step()!")
 

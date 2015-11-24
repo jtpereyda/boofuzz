@@ -1,8 +1,12 @@
 import collections
-from sulley import ifuzz_logger
+import ifuzz_logger
 
 
 class FuzzLogger(ifuzz_logger.IFuzzLogger):
+    """
+    Implementation for IFuzzLogger.
+    Also maintains failure and error statistics.
+    """
     def __init__(self, fuzz_loggers=None):
         if fuzz_loggers is None:
             fuzz_loggers = []

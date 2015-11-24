@@ -201,9 +201,9 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, log_level=logging.INFO, logfile=None,
-                 logfile_level=logging.DEBUG, restart_interval=0, web_port=26000, crash_threshold=3,
-                 restart_sleep_time=300, fuzz_data_logger=None):
+    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
+                 crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
+                 log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -213,12 +213,6 @@ class Session(pgraph.Graph):
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
-        @type  log_level:          int
-        @kwarg log_level:          (Optional, def=logger.INFO) Set the log level
-        @type  logfile:            str
-        @kwarg logfile:            (Optional, def=None) Name of log file
-        @type  logfile_level:      int
-        @kwarg logfile_level:      (Optional, def=logger.INFO) Set the log level for the logfile
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
@@ -229,7 +223,20 @@ class Session(pgraph.Graph):
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
         @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+
+        @type  log_level:          int
+        @kwarg log_level:          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=logger.INFO) Was once used to set the log level.
+        @type  logfile:            str
+        @kwarg logfile:            DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=None) Was once the name of the log file.
+        @type  logfile_level:      int
+        @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
         """
+        _ = log_level
+        _ = logfile
+        _ = logfile_level
 
         super(Session, self).__init__()
 
@@ -588,8 +595,8 @@ class Session(pgraph.Graph):
                 self.export_file()
                 sys.exit(0)
 
-    # noinspection PyMethodMayBeStatic
-    def post_send(self, sock, fuzz_data_logger, *args, **kwargs):
+    # noinspection PyUnusedLocal
+    def post_send(self, target, fuzz_data_logger, sock, *args, **kwargs):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
@@ -602,11 +609,17 @@ class Session(pgraph.Graph):
 
         @see: pre_send()
 
-        @type  sock: socket.socket
-        @param sock: Connected socket to target
+        @type  target: Target
+        @param target: Target with sock-like interface.
 
         @type  fuzz_data_logger: ifuzz_logger.IFuzzLogger
         @param fuzz_data_logger: Allows logging of test checks and passes/failures.
+                                 Provided with a test case and test step already opened.
+
+        @param sock: DEPRECATED Included for backward-compatibility. Same as target.
+
+        @param args: Implementations should include *args and **kwargs for forward-compatibility.
+        @param kwargs: Implementations should include *args and **kwargs for forward-compatibility.
         """
 
         # default to doing nothing.
@@ -664,7 +677,7 @@ class Session(pgraph.Graph):
         # otherwise all we can do is wait a while for the target to recover on its own.
         else:
             self._fuzz_data_logger.log_info(
-                "no vmcontrol or procmon channel available... sleeping for %d seconds" % self.restart_sleep_time
+                "no reset handler available... sleeping for %d seconds" % self.restart_sleep_time
             )
             time.sleep(self.restart_sleep_time)
             return True
@@ -826,14 +839,14 @@ class Session(pgraph.Graph):
         self.pause()
 
         # exception error handling routine, print log message and restart target.
-        def error_handler(error, msg, error_target, error_sock=None):
+        def error_handler(error, message, error_target, error_sock=None):
             if error_sock:
                 error_sock.close()
 
-            msg += "\nException caught: %s" % repr(error)
-            msg += "\nRestarting target and trying again"
+            message += "\nException caught: %s" % repr(error)
+            message += "\nRestarting target and trying again"
 
-            self._fuzz_data_logger.log_error(msg)
+            self._fuzz_data_logger.log_error(message)
             self.restart_target(error_target)
 
         # Open test case and log test case info
@@ -908,7 +921,7 @@ class Session(pgraph.Graph):
         # will likely fail and we don't want to sit in an endless loop.
         try:
             self._fuzz_data_logger.open_test_step("Calling post_send function:")
-            self.post_send(target, fuzz_data_logger=self._fuzz_data_logger)
+            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, sock=target)
         except Exception, e:
             error_handler(e, "post_send() failed", target, target)
             raise
