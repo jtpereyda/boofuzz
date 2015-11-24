@@ -6,13 +6,13 @@ import signal
 import cPickle
 import threading
 import logging
-from sulley import helpers
 import blocks
 import pgraph
 import sex
 import primitives
 import socket_connection
 import ifuzz_logger
+import fuzz_logger
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
@@ -71,7 +71,6 @@ class Target(object):
         @kwarg l2_dst:  (Optional, def='\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast))
                         Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
         """
-        self._logger = None
         self._fuzz_data_logger = None
 
         self._target_connection = socket_connection.SocketConnection(
@@ -154,29 +153,13 @@ class Target(object):
 
         :return: None
         """
-        if self._logger is not None:
-            self._logger.debug(
-                "Attempting to send {0} bytes: {1}".format(len(data), helpers.hex_str(data)))
-
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_send(data)
 
         num_sent = self._target_connection.send(data=data)
 
-        if self._logger is not None:
-            self._logger.debug("{0} bytes sent".format(num_sent))
-
-    def set_logger(self, logger):
-        """
-        Set this object's (and it's aggregated classes') logger.
-
-        :param logger: Logger to use.
-        :type logger: logging.Logger
-
-        :return: None
-        """
-        self._logger = logger
-        self._target_connection.set_logger(logger=logger)
+        if self._fuzz_data_logger is not None:
+            self._fuzz_data_logger.log_info("{0} bytes sent".format(num_sent))
 
     def set_fuzz_data_logger(self, fuzz_data_logger):
         """
@@ -218,9 +201,9 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, log_level=logging.INFO, logfile=None,
-                 logfile_level=logging.DEBUG, restart_interval=0, web_port=26000, crash_threshold=3,
-                 restart_sleep_time=300, fuzz_data_logger=None):
+    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
+                 crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
+                 log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -230,12 +213,6 @@ class Session(pgraph.Graph):
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         float
         @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
-        @type  log_level:          int
-        @kwarg log_level:          (Optional, def=logger.INFO) Set the log level
-        @type  logfile:            str
-        @kwarg logfile:            (Optional, def=None) Name of log file
-        @type  logfile_level:      int
-        @kwarg logfile_level:      (Optional, def=logger.INFO) Set the log level for the logfile
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
@@ -244,9 +221,22 @@ class Session(pgraph.Graph):
         @kwarg restart_sleep_time: (Optional, def=300) Time in seconds to sleep when target can't be restarted
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
-        @type fuzz_data_logger:    ifuzz_logger.IFuzzLogger
-        @kwarg fuzz_data_logger:   (Optional, def=None) For saving data sent to and from the target.
+        @type fuzz_data_logger:    fuzz_logger.FuzzLogger
+        @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+
+        @type  log_level:          int
+        @kwarg log_level:          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=logger.INFO) Was once used to set the log level.
+        @type  logfile:            str
+        @kwarg logfile:            DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=None) Was once the name of the log file.
+        @type  logfile_level:      int
+        @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                   (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
         """
+        _ = log_level
+        _ = logfile
+        _ = logfile_level
 
         super(Session, self).__init__()
 
@@ -261,24 +251,6 @@ class Session(pgraph.Graph):
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
-        # Initialize logger
-        self.logger = logging.getLogger("Sulley_logger")
-        self.logger.setLevel(log_level)
-        self.logger.propagate = False  # Propagating messages to the root logger can result in duplicate logs.
-        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] -> %(message)s')
-
-        if logfile:
-            filehandler = logging.FileHandler(logfile)
-            filehandler.setLevel(logfile_level)
-            filehandler.setFormatter(formatter)
-            self.logger.addHandler(filehandler)
-
-        consolehandler = logging.StreamHandler()
-        consolehandler.setFormatter(formatter)
-        consolehandler.setLevel(log_level)
-
-        self.logger.addHandler(consolehandler)
-
         self.total_num_mutations = 0
         self.total_mutant_index = 0
         self.fuzz_node = None
@@ -288,7 +260,6 @@ class Session(pgraph.Graph):
         self.protmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
-        self._crash_synopses = []  # List of crash reports for the current test case
 
         # import settings if they exist.
         self.import_file()
@@ -330,7 +301,6 @@ class Session(pgraph.Graph):
 
         # pass specified target parameters to the PED-RPC server.
         target.pedrpc_connect()
-        target.set_logger(logger=self.logger)
         target.set_fuzz_data_logger(fuzz_data_logger=self._fuzz_data_logger)
 
         # add target to internal list.
@@ -450,9 +420,9 @@ class Session(pgraph.Graph):
 
             # Check restart interval
             if num_cases_actually_fuzzed \
-                    and self.restart_interval\
+                    and self.restart_interval \
                     and num_cases_actually_fuzzed % self.restart_interval == 0:
-                self.logger.error("restart interval of %d reached" % self.restart_interval)
+                self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                 self.restart_target(self.targets[0])
 
             self._fuzz_current_case(*fuzz_args)
@@ -564,32 +534,24 @@ class Session(pgraph.Graph):
         # kill the pcap thread and see how many bytes the sniffer recorded.
         if target.netmon:
             captured_bytes = target.netmon.post_send()
-            self.logger.info("netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index))
+            self._fuzz_data_logger.log_info(
+                "netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index))
             self.netmon_results[self.total_mutant_index] = captured_bytes
 
-        # check if our fuzz crashed the target. procmon.post_send() returns False if the target access violated.
+        # check if our fuzz crashed the target. procmon.post_send() returns False if the target crashes.
         if target.procmon and not target.procmon.post_send():
-            self.logger.info("procmon detected access violation on test case #%d" % self.total_mutant_index)
-            self.log_fail(target.procmon.get_crash_synopsis())
-
-    def log_fail(self, synopsis):
-        """
-        Log a failure for the current test case.
-
-        @param synopsis: Description of failure.
-
-        @return: None
-        """
-        self._crash_synopses.append(synopsis)
+            self._fuzz_data_logger.log_info(
+                "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
+                                                                       target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
         """
         If self.crash_synopses contains any entries, perform these failure-related actions:
+         - log failure summary if needed
          - save failures to self.procmon_results (for website)
-         - log failures
+         - exhaust node if crash threshold is reached
          - target restart
          - sys.exit(0) if target restart fails
-         - clear self.crash_synopses
 
         Should be called after each fuzz test case.
 
@@ -598,29 +560,21 @@ class Session(pgraph.Graph):
 
         @return: None
         """
-        if len(self._crash_synopses) > 0:
-            self.logger.info("Failure detected on test case #%d" % self.total_mutant_index)
+        crash_synopses = self._fuzz_data_logger.failed_test_cases[self.total_mutant_index]
+        if len(crash_synopses) > 0:
+            self._fuzz_data_logger.open_test_step("Failure summary")
 
             # retrieve the primitive that caused the crash and increment it's individual crash count.
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
 
-            # notify with as much information as possible.
-            if self.fuzz_node.mutant.name:
-                msg = "primitive name: %s, " % self.fuzz_node.mutant.name
-            else:
-                msg = "primitive lacks a name, "
-
-            msg += "type: %s, default value: %s" % (self.fuzz_node.mutant.s_type, self.fuzz_node.mutant.original_value)
-            self.logger.info(msg)
-
             # print crash synopsis
-            if len(self._crash_synopses) > 1:
+            if len(crash_synopses) > 1:
                 # Prepend a header if > 1 failure report, so that they are visible from the main web page
-                synopsis = "({0} reports) {1}".format(len(self._crash_synopses), "\n".join(self._crash_synopses))
+                synopsis = "({0} reports) {1}".format(len(crash_synopses), "\n".join(crash_synopses))
             else:
-                synopsis = "\n".join(self._crash_synopses)
+                synopsis = "\n".join(crash_synopses)
             self.procmon_results[self.total_mutant_index] = synopsis
-            self.logger.info(self.procmon_results[self.total_mutant_index].split("\n")[0])
+            self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
             if self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
@@ -628,40 +582,48 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group):
                     if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
                         skipped = self.fuzz_node.mutant.exhaust()
-                        self.logger.warning(
+                        self._fuzz_data_logger.open_test_step(
                             "Crash threshold reached for this primitive, exhausting %d mutants." % skipped
                         )
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            # Clear crash data for next test case
-            self._crash_synopses = []
-
             # start the target back up.
             # If it returns False, stop the test
             if not self.restart_target(target, stop_first=False):
-                self.logger.critical("Restarting the target failed, exiting.")
+                self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
                 self.export_file()
                 sys.exit(0)
 
-    # noinspection PyMethodMayBeStatic
-    def post_send(self, sock):
+    # noinspection PyUnusedLocal
+    def post_send(self, target, fuzz_data_logger, sock, *args, **kwargs):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
 
             pre_send() - req - callback ... req - callback - post_send()
 
-        When fuzzing RPC for example, register this method to tear down the RPC request.
+        Potential uses:
+         * Closing down a connection.
+         * Checking for expected responses.
 
         @see: pre_send()
 
-        @type  sock: socket.socket
-        @param sock: Connected socket to target
+        @type  target: Target
+        @param target: Target with sock-like interface.
+
+        @type  fuzz_data_logger: ifuzz_logger.IFuzzLogger
+        @param fuzz_data_logger: Allows logging of test checks and passes/failures.
+                                 Provided with a test case and test step already opened.
+
+        @param sock: DEPRECATED Included for backward-compatibility. Same as target.
+
+        @param args: Implementations should include *args and **kwargs for forward-compatibility.
+        @param kwargs: Implementations should include *args and **kwargs for forward-compatibility.
         """
 
         # default to doing nothing.
-        pass
+        self._fuzz_data_logger.log_info("No post_send callback registered.")
 
     # noinspection PyMethodMayBeStatic
     def pre_send(self, sock):
@@ -690,18 +652,22 @@ class Session(pgraph.Graph):
         @type  target: session.target
         @param target: Target we are restarting
 
+        @type stop_first: bool
+        @param stop_first: Set to True to stop the target before starting.
+
         @rtype : bool
         @returns: False if restart failed (such that we know it failed). True otherwise.
         """
 
+        self._fuzz_data_logger.open_test_step("restarting target")
         # vm restarting is the preferred method so try that first.
         if target.vmcontrol:
-            self.logger.warning("restarting target virtual machine")
+            self._fuzz_data_logger.log_info("restarting target virtual machine")
             target.vmcontrol.restart_target()
 
         # if we have a connected process monitor, restart the target process.
         elif target.procmon:
-            self.logger.warning("restarting target process")
+            self._fuzz_data_logger.log_info("restarting target process")
             if stop_first:
                 target.procmon.stop_target()
 
@@ -713,8 +679,8 @@ class Session(pgraph.Graph):
 
         # otherwise all we can do is wait a while for the target to recover on its own.
         else:
-            self.logger.error(
-                "no vmcontrol or procmon channel available ... sleeping for %d seconds" % self.restart_sleep_time
+            self._fuzz_data_logger.log_info(
+                "no reset handler available... sleeping for %d seconds" % self.restart_sleep_time
             )
             time.sleep(self.restart_sleep_time)
             return True
@@ -739,10 +705,15 @@ class Session(pgraph.Graph):
             # noinspection PyUnusedLocal
             def exit_abruptly(signal_recv, frame_recv):
                 """
-                Save current settings (just in case) and exit
+                SIGINT signal handler.
+
+                Save current settings (just in case) and exit.
+
+                :param frame_recv: Fulfills the handler interface.
+                :param signal_recv: Fulfills the handler interface.
                 """
                 self.export_file()
-                self.logger.critical("SIGINT received ... exiting")
+                self._fuzz_data_logger.log_error("SIGINT received ... exiting")
                 sys.exit(0)
 
             signal.signal(signal.SIGINT, exit_abruptly)
@@ -768,36 +739,28 @@ class Session(pgraph.Graph):
         if edge.callback:
             data = edge.callback(self, node, edge, sock)
 
-        self.logger.info("Transmitting: [%d.%d]" % (node.id, self.total_mutant_index))
-
         # if no data was returned by the callback, render the node here.
         if not data:
             data = node.render()
 
         # Try to send payload down-range
-        try:
-            self.targets[0].send(data)
-            self.last_send = data
-        except socket.error, inst:
-            self.logger.error("Socket error on send: %s" % inst)
+        self.targets[0].send(data)
+        self.last_send = data
 
-        try:
-            # Receive data
-            # TODO: Remove magic number (10000)
-            self.last_recv = self.targets[0].recv(10000)
-        except socket.error, inst:
-            self.logger.error("Socket error on receive: %s" % inst)
+        # Receive data
+        # TODO: Remove magic number (10000)
+        self.last_recv = self.targets[0].recv(10000)
 
-        # If we have data in our recv buffer
-        if self.last_recv:
-            self.logger.debug("received: [%d] %s" % (len(self.last_recv), repr(self.last_recv)))
-        # Assume a crash?
-        else:
-            self.logger.warning("Nothing received from target.")
+        self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+        if not self.last_recv:
+            # Assume a crash?
+            self._fuzz_data_logger.log_fail("Nothing received from target.")
             # Increment individual crash count
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
             # Note crash information
             self.protmon_results[self.total_mutant_index] = data
+        else:
+            self._fuzz_data_logger.log_pass("Some data received from target.")
 
     def build_webapp_thread(self, port=26000):
         app.session = self
@@ -852,15 +815,13 @@ class Session(pgraph.Graph):
             current_path = " -> ".join([self.nodes[e.src].name for e in path[1:]])
             current_path += " -> %s" % self.fuzz_node.name
 
-            self.logger.info("current fuzz path: %s" % current_path)
-            self.logger.info("fuzzed %d of %d total cases" % (self.total_mutant_index, self.total_num_mutations))
+            self._fuzz_data_logger.log_info("current fuzz path: %s" % current_path)
 
             # Loop through and yield all possible mutations of the fuzz node.
             # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
             while self.fuzz_node.mutate():
                 self.total_mutant_index += 1
                 yield (edge, path)
-            self.logger.error("all possible mutations for current fuzz node exhausted")
             self.fuzz_node.reset()
 
             # recursively fuzz the remainder of the nodes in the session graph.
@@ -886,20 +847,30 @@ class Session(pgraph.Graph):
         self.pause()
 
         # exception error handling routine, print log message and restart target.
-        def error_handler(error, msg, error_target, error_sock=None):
+        def error_handler(error, message, error_target, error_sock=None):
             if error_sock:
                 error_sock.close()
 
-            msg += "\nException caught: %s" % repr(error)
-            msg += "\nRestarting target and trying again"
+            message += "\nException caught: %s" % repr(error)
+            message += "\nRestarting target and trying again"
 
-            self.logger.critical(msg)
+            self._fuzz_data_logger.log_error(message)
             self.restart_target(error_target)
 
-        self.logger.info("fuzzing %d of %d" % (self.fuzz_node.mutant_index,
-                                               self.fuzz_node.num_mutations()))
-        if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.open_test_case(self.total_mutant_index)
+        # Open test case and log test case info
+        self._fuzz_data_logger.open_test_case(self.total_mutant_index)
+        if self.fuzz_node.mutant.name:
+            msg = "primitive name: \"%s\", " % self.fuzz_node.mutant.name
+        else:
+            msg = "primitive name: None, "
+
+        msg += "type: %s, default value: %s" % (self.fuzz_node.mutant.s_type, self.fuzz_node.mutant.original_value)
+        self._fuzz_data_logger.log_info(msg)
+        self._fuzz_data_logger.log_info(
+            "Test case %d of %d for this node. %d of %d overall." % (self.fuzz_node.mutant_index,
+                                                                     self.fuzz_node.num_mutations(),
+                                                                     self.total_mutant_index,
+                                                                     self.total_num_mutations))
 
         # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
         # occurs, restart the target.
@@ -936,6 +907,7 @@ class Session(pgraph.Graph):
             try:
                 for e in path[:-1]:
                     node = self.nodes[e.dst]
+                    self._fuzz_data_logger.open_test_step("Prep Node %d" % node.id)
                     self.transmit(target, node, e)
             except Exception, e:
                 error_handler(e, "failed transmitting a node up the path", target, target)
@@ -943,10 +915,11 @@ class Session(pgraph.Graph):
 
             # now send the current node we are fuzzing.
             try:
+                self._fuzz_data_logger.open_test_step("Fuzzing Node %d" % self.fuzz_node.id)
                 self.transmit(target, self.fuzz_node, edge)
             except Exception, e:
                 error_handler(e, "failed transmitting fuzz node", target, target)
-                continue
+                raise
 
             # if we reach this point the send was successful for break out of the while(1).
             break
@@ -955,14 +928,17 @@ class Session(pgraph.Graph):
         # We do this outside the try/except loop because if our fuzz causes a crash then the post_send()
         # will likely fail and we don't want to sit in an endless loop.
         try:
-            self.post_send(target)
+            self._fuzz_data_logger.open_test_step("Calling post_send function:")
+            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, sock=target)
         except Exception, e:
             error_handler(e, "post_send() failed", target, target)
+            raise
 
         # done with the socket.
         target.close()
         # delay in between test cases.
-        self.logger.info("sleeping for %f seconds" % self.sleep_time)
+        self._fuzz_data_logger.open_test_step("Sleep between tests.")
+        self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
         time.sleep(self.sleep_time)
         # poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
         self.poll_pedrpc(target)

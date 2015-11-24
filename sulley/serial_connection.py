@@ -48,7 +48,6 @@ class SerialConnection(itarget_connection.ITargetConnection):
                                            If it returns 0, recv() will keep on reading.
         """
         self._connection = connection
-        self._logger = None
         self.timeout = timeout
         self.message_separator_time = message_separator_time
         self.content_checker = content_checker
@@ -128,14 +127,3 @@ class SerialConnection(itarget_connection.ITargetConnection):
             if bytes_sent_this_round is not None:
                 bytes_sent += bytes_sent_this_round
         return bytes_sent
-
-    def set_logger(self, logger):
-        """
-        Set this object's (and it's aggregated classes') logger.
-
-        :param logger: Logger to use.
-        :type logger: logging.Logger
-
-        :return: None
-        """
-        self._logger = logger

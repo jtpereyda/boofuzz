@@ -1,79 +1,61 @@
+import collections
 import ifuzz_logger
-import os
-import errno
 
 
 class FuzzLogger(ifuzz_logger.IFuzzLogger):
     """
-    IFuzzLogger that saves sent and received data to files within a directory.
+    Implementation for IFuzzLogger.
 
-    File format is: <mutation nubmer>-(rx|tx)-<sequence number>.txt
+    FuzzLogger takes logged data and directs it to the appropriate backends.
+    It aggregates an arbitrary number of logger backends, and functions like a
+    multiplexer.
+
+    FuzzLogger also maintains failure and error data.
     """
+    def __init__(self, fuzz_loggers=None):
+        if fuzz_loggers is None:
+            fuzz_loggers = []
+        self._fuzz_loggers = fuzz_loggers
 
-    def __init__(self, path):
-        """
-        :param path: Directory in which to save fuzz data.
-        """
-        self._path = path
-        self._current_id = ''
-        self._rx_count = 0
-        self._tx_count = 0
+        self._cur_test_case_id = ''
+        self.failed_test_cases = collections.defaultdict(list)
+        self.error_test_cases = collections.defaultdict(list)
 
-        # mkdir -p self._path
-        try:
-            os.makedirs(self._path)
-        except OSError as exc:
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
-                pass
-            else:
-                raise
+    def open_test_step(self, description):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.open_test_step(description=description)
 
-    def open_test_case(self, test_case_id):
-        """
-        Open a test case - i.e., a fuzzing mutation.
+    def log_error(self, description):
+        self.error_test_cases[self._cur_test_case_id].append(description)
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_error(description=description)
 
-        :param test_case_id: Test case name/number. Should be unique.
+    def log_fail(self, description=""):
+        self.failed_test_cases[self._cur_test_case_id].append(description)
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_fail(description=description)
 
-        :return: None
-        """
-        self._current_id = str(test_case_id)
-        self._rx_count = 0
-        self._tx_count = 0
-
-    def log_send(self, data):
-        """
-        Records data as about to be sent to the target.
-
-        :param data: Transmitted data
-        :type data: buffer
-
-        :return: None
-        :rtype: None
-        """
-        self._tx_count += 1
-
-        filename = "{0}-tx-{1}.txt".format(self._current_id, self._tx_count)
-        full_name = os.path.join(self._path, filename)
-
-        # Write data in binary mode to avoid newline conversion
-        with open(full_name, "wb") as file_handle:
-            file_handle.write(data)
+    def log_info(self, description):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_info(description=description)
 
     def log_recv(self, data):
-        """
-        Records data as having been received from the target.
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_recv(data=data)
 
-        :param data: Received data.
-        :type data: buffer
+    def log_pass(self, description=""):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_pass(description=description)
 
-        :return: None
-        :rtype: None
-        """
-        self._rx_count += 1
+    def log_check(self, description):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_check(description=description)
 
-        filename = "{0}-rx-{1}.txt".format(self._current_id, self._tx_count)
-        full_name = os.path.join(self._path, filename)
+    def open_test_case(self, test_case_id):
+        self._cur_test_case_id = test_case_id
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.open_test_case(test_case_id=test_case_id)
 
-        # Write data in binary mode to avoid newline conversion
-        with open(full_name, "wb") as file_handle:
-            file_handle.write(data)
+    def log_send(self, data):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.log_send(data=data)
