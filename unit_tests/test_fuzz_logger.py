@@ -121,6 +121,56 @@ class TestFuzzLogger(unittest.TestCase):
         self.mock_logger_1.log_send.assert_called_once_with(data=self.some_data)
         self.mock_logger_2.log_send.assert_called_once_with(data=self.some_data)
 
+    def test_failure_count(self):
+        """
+        Given: A FuzzLogger.
+        When: Calling open_test_case
+         and: log_fail three times
+         and: open_test_case
+         and: log_fail once.
+        Then: failed_test_cases contains no failed test case info at first.
+         and: failed_test_cases contains information from each log_fail,
+              indexed by the opened test case, as each failure is added.
+        """
+        self.assertEqual(0, len(self.logger.failed_test_cases))
+
+        self.logger.open_test_case(test_case_id='!@#$%^&*()')
+        self.logger.log_fail('FAILURE 1')
+        self.assertEqual(['FAILURE 1'], self.logger.failed_test_cases['!@#$%^&*()'])
+
+        self.logger.open_test_case(test_case_id='haiku')
+        self.logger.log_fail('010')
+        self.logger.log_fail('11001')
+        self.logger.log_fail('1110')
+        self.assertEqual(['010', '11001', '1110'], self.logger.failed_test_cases['haiku'])
+
+    def test_error_count(self):
+        """
+        Given: A FuzzLogger.
+        When: Calling open_test_case
+         and: log_error three times
+         and: open_test_case
+         and: log_error once.
+        Then: error_test_cases contains no test error info at first.
+         and: error_test_cases contains information from each log_error,
+              indexed by the opened test case, as each error is added.
+        """
+        self.assertEqual(0, len(self.logger.error_test_cases))
+
+        self.logger.open_test_case(test_case_id='a')
+        self.logger.log_error('FAILURE 1')
+        self.assertEqual(['FAILURE 1'], self.logger.error_test_cases['a'])
+
+        self.logger.open_test_case(test_case_id='iamb')
+
+        line1 = 'Sit here and rot, high, fat, all day, you boys,'
+        line2 = 'Far lengths hide pain, mother\'s sobs, children\'s bones'
+        line3 = 'New race, new hope, new day, my weed is gone.'
+        self.logger.log_error(line1)
+        self.logger.log_error(line2)
+        self.logger.log_error(line3)
+        self.assertEqual([line1, line2, line3], self.logger.error_test_cases['iamb'])
+
 
 if __name__ == '__main__':
     unittest.main()
