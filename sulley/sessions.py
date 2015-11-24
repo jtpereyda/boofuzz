@@ -596,7 +596,7 @@ class Session(pgraph.Graph):
                 sys.exit(0)
 
     # noinspection PyUnusedLocal
-    def post_send(self, target, fuzz_data_logger, sock, *args, **kwargs):
+    def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
@@ -615,6 +615,10 @@ class Session(pgraph.Graph):
         @type  fuzz_data_logger: ifuzz_logger.IFuzzLogger
         @param fuzz_data_logger: Allows logging of test checks and passes/failures.
                                  Provided with a test case and test step already opened.
+
+        @type  session: Session
+        @param session: Session object calling post_send.
+                        Useful properties include last_send and last_recv.
 
         @param sock: DEPRECATED Included for backward-compatibility. Same as target.
 
@@ -929,7 +933,7 @@ class Session(pgraph.Graph):
         # will likely fail and we don't want to sit in an endless loop.
         try:
             self._fuzz_data_logger.open_test_step("Calling post_send function:")
-            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, sock=target)
+            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
         except Exception, e:
             error_handler(e, "post_send() failed", target, target)
             raise
