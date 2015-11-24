@@ -1,8 +1,10 @@
 from __future__ import print_function
-import time
-from sulley import ifuzz_logger_backend
-from sulley import helpers
+
 import sys
+import time
+
+from sulley import helpers
+from sulley import ifuzz_logger_backend
 
 
 def hex_to_hexstr(input_bytes):
@@ -10,9 +12,9 @@ def hex_to_hexstr(input_bytes):
     Render input_bytes as ASCII-encoded hex bytes, followed by a best effort
     utf-8 rendering.
 
-    :param input_bytes: Arbitrary bytes.
+    @param input_bytes: Arbitrary bytes.
 
-    :return: Printable string.
+    @return: Printable string.
     """
     return helpers.hex_str(input_bytes) + " '" + bytes(input_bytes) + "'"
 
@@ -28,6 +30,13 @@ def get_time_stamp():
 
 
 class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
+    """
+    This class formats FuzzLogger data for text presentation. It can be
+    configured to output to STDOUT, or to a named file.
+
+    Using two FuzzLoggerTexts, a FuzzLogger instance can be configured to output to
+    both console and file.
+    """
     TEST_CASE_FORMAT = "Test Case: {0}"
     TEST_STEP_FORMAT = "Test Step: {0}"
     LOG_ERROR_FORMAT = "Error!!!! {0}"
@@ -42,7 +51,11 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
-        :param file_handle: Open file handle for logging. Defaults to sys.stdout.
+        @type file_handle: io.FileIO
+        @param file_handle: Open file handle for logging. Defaults to sys.stdout.
+
+        @type bytes_to_str: function
+        @param bytes_to_str: Function that converts sent/received bytes data to string for logging.
         """
         self._file_handle = file_handle
         self._format_raw_bytes = bytes_to_str

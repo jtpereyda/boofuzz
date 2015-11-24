@@ -652,6 +652,9 @@ class Session(pgraph.Graph):
         @type  target: session.target
         @param target: Target we are restarting
 
+        @type stop_first: bool
+        @param stop_first: Set to True to stop the target before starting.
+
         @rtype : bool
         @returns: False if restart failed (such that we know it failed). True otherwise.
         """
@@ -702,7 +705,12 @@ class Session(pgraph.Graph):
             # noinspection PyUnusedLocal
             def exit_abruptly(signal_recv, frame_recv):
                 """
-                Save current settings (just in case) and exit
+                SIGINT signal handler.
+
+                Save current settings (just in case) and exit.
+
+                :param frame_recv: Fulfills the handler interface.
+                :param signal_recv: Fulfills the handler interface.
                 """
                 self.export_file()
                 self._fuzz_data_logger.log_error("SIGINT received ... exiting")

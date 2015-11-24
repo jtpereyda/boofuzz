@@ -5,7 +5,12 @@ import ifuzz_logger
 class FuzzLogger(ifuzz_logger.IFuzzLogger):
     """
     Implementation for IFuzzLogger.
-    Also maintains failure and error statistics.
+
+    FuzzLogger takes logged data and directs it to the appropriate backends.
+    It aggregates an arbitrary number of logger backends, and functions like a
+    multiplexer.
+
+    FuzzLogger also maintains failure and error data.
     """
     def __init__(self, fuzz_loggers=None):
         if fuzz_loggers is None:
