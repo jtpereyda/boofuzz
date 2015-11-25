@@ -131,6 +131,8 @@ class TestFuzzLogger(unittest.TestCase):
         Then: failed_test_cases contains no failed test case info at first.
          and: failed_test_cases contains information from each log_fail,
               indexed by the opened test case, as each failure is added.
+         and: len(passed_test_cases) == 0
+         and: len(error_test_cases) == 0
         """
         self.assertEqual(0, len(self.logger.failed_test_cases))
 
@@ -144,6 +146,9 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_fail('1110')
         self.assertEqual(['010', '11001', '1110'], self.logger.failed_test_cases['haiku'])
 
+        self.assertEqual(0, len(self.logger.passed_test_cases))
+        self.assertEqual(0, len(self.logger.error_test_cases))
+
     def test_error_count(self):
         """
         Given: A FuzzLogger.
@@ -154,6 +159,8 @@ class TestFuzzLogger(unittest.TestCase):
         Then: error_test_cases contains no test error info at first.
          and: error_test_cases contains information from each log_error,
               indexed by the opened test case, as each error is added.
+         and: len(passed_test_cases) == 0
+         and: len(failed_test_cases) == 0
         """
         self.assertEqual(0, len(self.logger.error_test_cases))
 
@@ -161,7 +168,8 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_error('FAILURE 1')
         self.assertEqual(['FAILURE 1'], self.logger.error_test_cases['a'])
 
-        self.logger.open_test_case(test_case_id='iamb')
+        # Use a number to verify that non-string keys can work
+        self.logger.open_test_case(test_case_id=5)
 
         line1 = 'Sit here and rot, high, fat, all day, you boys,'
         line2 = 'Far lengths hide pain, mother\'s sobs, children\'s bones'
@@ -169,7 +177,72 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_error(line1)
         self.logger.log_error(line2)
         self.logger.log_error(line3)
-        self.assertEqual([line1, line2, line3], self.logger.error_test_cases['iamb'])
+        self.assertEqual([line1, line2, line3], self.logger.error_test_cases[5])
+
+        self.assertEqual(0, len(self.logger.passed_test_cases))
+        self.assertEqual(0, len(self.logger.failed_test_cases))
+
+    def test_pass_count(self):
+        """
+        Given: A FuzzLogger.
+        When: Calling open_test_case
+         and: log_pass three times
+         and: open_test_case
+         and: log_pass once.
+        Then: passed_test_cases contains no test cases at first.
+         and: passed_test_cases contains information from each log_pass,
+              indexed by the opened test case, as each pass is added.
+         and: len(failed_test_cases) == 0
+         and: len(error_test_cases) == 0
+        """
+        self.assertEqual(0, len(self.logger.passed_test_cases))
+
+        self.logger.open_test_case(test_case_id='a')
+        self.logger.log_pass('Good to go')
+        self.assertEqual(['Good to go'], self.logger.passed_test_cases['a'])
+
+        self.logger.open_test_case(test_case_id=-1)
+
+        line1 = 'Yes'
+        line2 = 'Yes'
+        line3 = 'I mean it!'
+        self.logger.log_pass(line1)
+        self.logger.log_pass(line2)
+        self.logger.log_pass(line3)
+        self.assertEqual([line1, line2, line3], self.logger.passed_test_cases[-1])
+
+        self.assertEqual(0, len(self.logger.failed_test_cases))
+        self.assertEqual(0, len(self.logger.error_test_cases))
+
+    def test_all_test_cases_array(self):
+        """
+        Given: A FuzzLogger.
+        When: Calling open_test_case
+         and: open_test_case again
+         and: log_pass
+         and: open_test_case
+         and: log_fail
+         and: open_test_case
+         and: log_error
+        Then: all_test_cases contains no test cases at first.
+         and: all_test_cases contains each opened test case, as each is added.
+        """
+        self.assertEqual([], self.logger.all_test_cases)
+
+        self.logger.open_test_case(test_case_id='a')
+        self.assertEqual(['a'], self.logger.all_test_cases)
+
+        self.logger.open_test_case(test_case_id='b')
+        self.logger.log_pass()
+        self.assertEqual(['a', 'b'], self.logger.all_test_cases)
+
+        self.logger.open_test_case(test_case_id='c')
+        self.logger.log_fail()
+        self.assertEqual(['a', 'b', 'c'], self.logger.all_test_cases)
+
+        self.logger.open_test_case(test_case_id='d')
+        self.logger.log_error(description='uh oh!')
+        self.assertEqual(['a', 'b', 'c', 'd'], self.logger.all_test_cases)
 
 
 if __name__ == '__main__':
