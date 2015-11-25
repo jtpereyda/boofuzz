@@ -911,7 +911,7 @@ class Session(pgraph.Graph):
             try:
                 for e in path[:-1]:
                     node = self.nodes[e.dst]
-                    self._fuzz_data_logger.open_test_step("Prep Node %d" % node.id)
+                    self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
                     self.transmit(target, node, e)
             except Exception, e:
                 error_handler(e, "failed transmitting a node up the path", target, target)
@@ -919,7 +919,7 @@ class Session(pgraph.Graph):
 
             # now send the current node we are fuzzing.
             try:
-                self._fuzz_data_logger.open_test_step("Fuzzing Node %d" % self.fuzz_node.id)
+                self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
                 self.transmit(target, self.fuzz_node, edge)
             except Exception, e:
                 error_handler(e, "failed transmitting fuzz node", target, target)
