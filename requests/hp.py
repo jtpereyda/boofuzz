@@ -3,7 +3,6 @@ from sulley import *
 from struct import *
 
 
-########################################################################################################################
 def unicode_ftw(val):
     """
     Simple unicode slicer
@@ -20,12 +19,11 @@ def unicode_ftw(val):
 
     return ret
 
-########################################################################################################################
+
 s_initialize("omni")
 """
     Hewlett Packard OpenView Data Protector OmniInet.exe
 """
-
 
 if s_block_start("packet_1"):
     s_size("packet_2", endian=">", length=4)
@@ -38,7 +36,7 @@ if s_block_start("packet_2"):
 
     # unicode magic
     if s_block_start("unicode_magic", encoder=unicode_ftw):
-        s_int(267, format="ascii")
+        s_int(267, output_format="ascii")
     s_block_end()
     s_static("\x00\x00")
 
@@ -47,7 +45,7 @@ if s_block_start("packet_2"):
 
     # unicode value to pass calls to wtoi()
     if s_block_start("unicode_100_1", encoder=unicode_ftw):
-        s_int(100, format="ascii")
+        s_int(100, output_format="ascii")
     s_block_end()
     s_static("\x00\x00")
 
@@ -56,7 +54,7 @@ if s_block_start("packet_2"):
 
     # unicode value to pass calls to wtoi()
     if s_block_start("unicode_100_2", encoder=unicode_ftw):
-        s_int(100, format="ascii")
+        s_int(100, output_format="ascii")
     s_block_end()
     s_static("\x00\x00")
 
@@ -65,12 +63,12 @@ if s_block_start("packet_2"):
 
     # unicode value to pass calls to wtoi()
     if s_block_start("unicode_100_3", encoder=unicode_ftw):
-        s_int(100, format="ascii")
+        s_int(100, output_format="ascii")
     s_block_end()
     s_static("\x00\x00")
 
     # random buffer
-    s_string("D"*32, size=32)
+    s_string("D" * 32, size=32)
 
     # barhost cookie
     s_dword(0x7cde7bab, endian="<", fuzzable=False)

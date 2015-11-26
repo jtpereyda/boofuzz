@@ -53,7 +53,7 @@ The NDMP spec defines a number of message types enumerated at the top of request
 <h2>20901</h2>
 This fuzz request targets Trend Micro Control Manager (DcsProcessor.exe) TCP port 20901. For more information about the audit target see:
 
-    <ul><li><a href="http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager">http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager</a></p></ul>
+    <ul><li><a href="http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager">http://bakemono/mediawiki/index.php/Trend_Micro:Control_Manager</a></li></ul>
 
 The CRC field in this protocol is calculated in some non-standard fashion so the check must be NOP-ed out in the target binary. The protocol is also obfuscated using a basic XOR routine. I wrote an appropriate block encoder named <i>trend_xor_encode()</i>, a decoder is defined as well. This fuzz found nothing so far! I need to uncover more protocol details. See also: Pedram's pwned notebook page 3, 4.
 

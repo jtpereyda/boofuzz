@@ -4,9 +4,9 @@ import time
 import socket
 import cPickle
 
-########################################################################################################################
-class client:
-    def __init__ (self, host, port):
+
+class Client:
+    def __init__(self, host, port):
         self.__host           = host
         self.__port           = port
         self.__dbg_flag       = False
@@ -14,30 +14,26 @@ class client:
         self.__retry          = 0
         self.NOLINGER         = struct.pack('ii', 1, 0)
 
-
-    ####################################################################################################################
-    def __getattr__ (self, method_name):
-        '''
+    def __getattr__(self, method_name):
+        """
         This routine is called by default when a requested attribute (or method) is accessed that has no definition.
         Unfortunately __getattr__ only passes the requested method name and not the arguments. So we extend the
         functionality with a little lambda magic to the routine method_missing(). Which is actually how Ruby handles
         missing methods by default ... with arguments. Now we are just as cool as Ruby.
 
-        @type  method_name: String
+        @type  method_name: str
         @param method_name: The name of the requested and undefined attribute (or method in our case).
 
-        @rtype:  Lambda
+        @rtype:  lambda
         @return: Lambda magic passing control (and in turn the arguments we want) to self.method_missing().
-        '''
+        """
 
         return lambda *args, **kwargs: self.__method_missing(method_name, *args, **kwargs)
 
-
-    ####################################################################################################################
-    def __connect (self):
-        '''
+    def __connect(self):
+        """
         Connect to the PED-RPC server.
-        '''
+        """
 
         # if we have a pre-existing server socket, ensure it's closed.
         self.__disconnect()
@@ -59,41 +55,35 @@ class client:
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
 
-
-    ####################################################################################################################
-    def __disconnect (self):
-        '''
+    def __disconnect(self):
+        """
         Ensure the socket is torn down.
-        '''
+        """
 
-        if self.__server_sock != None:
+        if self.__server_sock is not None:
             self.__debug("closing server socket")
             self.__server_sock.close()
             self.__server_sock = None
 
-
-    ####################################################################################################################
-    def __debug (self, msg):
+    def __debug(self, msg):
         if self.__dbg_flag:
             print "PED-RPC> %s" % msg
 
-
-    ####################################################################################################################
-    def __method_missing (self, method_name, *args, **kwargs):
-        '''
+    def __method_missing(self, method_name, *args, **kwargs):
+        """
         See the notes for __getattr__ for related notes. This method is called, in the Ruby fashion, with the method
         name and arguments for any requested but undefined class method.
 
-        @type  method_name: String
+        @type  method_name: str
         @param method_name: The name of the requested and undefined attribute (or method in our case).
-        @type  *args:       Tuple
+        @type  *args:       tuple
         @param *args:       Tuple of arguments.
-        @type  **kwargs     Dictionary
+        @type  **kwargs     dict
         @param **kwargs:    Dictioanry of arguments.
 
         @rtype:  Mixed
         @return: Return value of the mirrored method.
-        '''
+        """
 
         # return a value so lines of code like the following work:
         #     x = pedrpc.client(host, port)
@@ -125,10 +115,8 @@ class client:
         self.__disconnect()
         return ret
 
-
-    ####################################################################################################################
-    def __pickle_recv (self):
-        '''
+    def __pickle_recv(self):
+        """
         This routine is used for marshaling arbitrary data from the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
         length-value protocol where each datagram is prefixed by a 4-byte length of the data to be received.
@@ -136,7 +124,7 @@ class client:
         @raise pdx: An exception is raised if the connection was severed.
         @rtype:     Mixed
         @return:    Whatever is received over the socket.
-        '''
+        """
 
         try:
             # TODO: this should NEVER fail, but alas, it does and for the time being i can't figure out why.
@@ -159,10 +147,8 @@ class client:
 
         return cPickle.loads(received)
 
-
-    ####################################################################################################################
-    def __pickle_send (self, data):
-        '''
+    def __pickle_send(self, data):
+        """
         This routine is used for marshaling arbitrary data to the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
         length-value protocol where each datagram is prefixed by a 4-byte length of the data to be received.
@@ -171,7 +157,7 @@ class client:
         @param data: Data to marshal and transmit. Data can *pretty much* contain anything you throw at it.
 
         @raise pdx: An exception is raised if the connection was severed.
-        '''
+        """
 
         data = cPickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
@@ -184,9 +170,8 @@ class client:
             raise Exception
 
 
-########################################################################################################################
-class server:
-    def __init__ (self, host, port):
+class Server:
+    def __init__(self, host, port):
         self.__host           = host
         self.__port           = port
         self.__dbg_flag       = False
@@ -203,28 +188,22 @@ class server:
             sys.stderr.write("unable to bind to %s:%d\n" % (host, port))
             sys.exit(1)
 
-
-    ####################################################################################################################
-    def __disconnect (self):
-        '''
+    def __disconnect(self):
+        """
         Ensure the socket is torn down.
-        '''
+        """
 
-        if self.__client_sock != None:
+        if self.__client_sock is not None:
             self.__debug("closing client socket")
             self.__client_sock.close()
             self.__client_sock = None
 
-
-    ####################################################################################################################
-    def __debug (self, msg):
+    def __debug(self, msg):
         if self.__dbg_flag:
             print "PED-RPC> %s" % msg
 
-
-    ####################################################################################################################
-    def __pickle_recv (self):
-        '''
+    def __pickle_recv(self):
+        """
         This routine is used for marshaling arbitrary data from the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
         length-value protocol where each datagram is prefixed by a 4-byte length of the data to be received.
@@ -232,7 +211,7 @@ class server:
         @raise pdx: An exception is raised if the connection was severed.
         @rtype:     Mixed
         @return:    Whatever is received over the socket.
-        '''
+        """
 
         try:
             length   = struct.unpack("<L", self.__client_sock.recv(4))[0]
@@ -248,10 +227,8 @@ class server:
 
         return cPickle.loads(received)
 
-
-    ####################################################################################################################
-    def __pickle_send (self, data):
-        '''
+    def __pickle_send(self, data):
+        """
         This routine is used for marshaling arbitrary data to the PyDbg server. We can send pretty much anything here.
         For example a tuple containing integers, strings, arbitrary objects and structures. Our "protocol" is a simple
         length-value protocol where each datagram is prefixed by a 4-byte length of the data to be received.
@@ -260,7 +237,7 @@ class server:
         @param data: Data to marshal and transmit. Data can *pretty much* contain anything you throw at it.
 
         @raise pdx: An exception is raised if the connection was severed.
-        '''
+        """
 
         data = cPickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
@@ -272,9 +249,7 @@ class server:
             sys.stderr.write("PED-RPC> connection to client severed during send()\n")
             raise Exception
 
-
-    ####################################################################################################################
-    def serve_forever (self):
+    def serve_forever(self):
         self.__debug("serving up a storm")
 
         while 1:
@@ -295,7 +270,9 @@ class server:
 
             try:
                 # resolve a pointer to the requested method and call it.
+                # Wat.
                 exec("method_pointer = self.%s" % method_name)
+                # noinspection PyUnresolvedReferences
                 ret = method_pointer(*args, **kwargs)
             except AttributeError:
                 # if the method can't be found notify the user and raise an error

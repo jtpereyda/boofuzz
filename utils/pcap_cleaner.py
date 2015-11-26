@@ -18,14 +18,14 @@ if len(sys.argv) != 3:
 #
 
 try:
-    crashbin = utils.crash_binning.crash_binning()
+    crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
 except:
     print "unable to open crashbin: '%s'." % sys.argv[1]
     sys.exit(1)
 
 test_cases = []
-for bin, crashes in crashbin.bins.iteritems():
+for _, crashes in crashbin.bins.iteritems():
     for crash in crashes:
         test_cases.append("%d.pcap" % crash.extra)
 

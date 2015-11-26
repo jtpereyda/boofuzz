@@ -1,0 +1,46 @@
+a:link    {color: #FF8200; text-decoration: none;}
+a:visited {color: #FF8200; text-decoration: none;}
+a:hover   {color: #C5C5C5; text-decoration: none;}
+
+body {
+    background-color: #000000;
+    font-family:      Arial, Helvetica, sans-serif;
+    font-size:        12px;
+    color:            #FFFFFF;
+}
+
+td {
+    font-family:      Arial, Helvetica, sans-serif;
+    font-size:        12px;
+    color:            #A0B0B0;
+}
+
+.fixed {
+    font-family:      Courier New, sans-serif;
+    font-size:        12px;
+    color:            #A0B0B0;
+}
+
+.input {
+    font-family:      Arial, Helvetica, sans-serif;
+    font-size:        11px;
+    color:            #FFFFFF;
+    background-color: #333333;
+    border:           thin none;
+    height:           20px;
+}
+
+.running {
+    color: green;
+}
+
+.paused {
+    color: red;
+}
+
+.main-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 750px;
+}

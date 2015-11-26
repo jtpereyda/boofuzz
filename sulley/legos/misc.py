@@ -1,11 +1,16 @@
-import struct
+
+### Misc Types
+
+
 from sulley import blocks, primitives, sex
 
 
-########################################################################################################################
-class dns_hostname (blocks.block):
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+class DNSHostname (blocks.Block):
+    def __init__(self, name, request, value, options=None):
+        if not options:
+            options = {}
+
+        super(DNSHostname).__init__(name, request)
 
         self.value   = value
         self.options = options
@@ -13,16 +18,15 @@ class dns_hostname (blocks.block):
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.string(self.value))
+        self.push(primitives.String(self.value))
 
-
-    def render (self):
-        '''
+    def render(self):
+        """
         We overload and extend the render routine in order to properly insert substring lengths.
-        '''
+        """
 
         # let the parent do the initial render.
-        blocks.block.render(self)
+        blocks.Block.render(self)
 
         new_str = ""
 
@@ -36,10 +40,12 @@ class dns_hostname (blocks.block):
         return self.rendered
 
 
-########################################################################################################################
-class tag (blocks.block):
-    def __init__ (self, name, request, value, options={}):
-        blocks.block.__init__(self, name, request, None, None, None, None)
+class Tag(blocks.Block):
+    def __init__(self, name, request, value, options=None):
+        if not options:
+            options = {}
+
+        super(Tag).__init__(name, request)
 
         self.value   = value
         self.options = options
@@ -50,6 +56,6 @@ class tag (blocks.block):
         # <example>
         # [delim][string][delim]
 
-        self.push(primitives.delim("<"))
-        self.push(primitives.string(self.value))
-        self.push(primitives.delim(">"))
+        self.push(primitives.Delim("<"))
+        self.push(primitives.String(self.value))
+        self.push(primitives.Delim(">"))

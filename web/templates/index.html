@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block body %}
+<!--suppress HtmlUnknownTarget -->
+<div class="main-wrapper">
+  <table border=0 cellpadding=5 cellspacing=0 width=750>
+    <tr>
+      <td>
+        <table border=0 cellpadding=5 cellspacing=0 width="100%">
+          <tr bgcolor="#333333">
+            <td>
+              <div style="font-size: 20px;">Sulley Fuzz Control</div>
+            </td>
+            <td align=right>
+              {% if state.session.is_paused %}
+                <div class="paused" style="font-weight: bold; font-size: 20px;">PAUSED</div>
+              {% else %}
+                <div class="running"  style="font-weight: bold; font-size: 20px;">RUNNING</div>
+              {% endif %}
+            </td>
+          </tr>
+          <tr bgcolor="#111111">
+            <td colspan=2 align="center">
+              <table border=0 cellpadding=0 cellspacing=5>
+                <tr bgcolor="#111111">
+                  <td>
+                    <b>Total:</b>
+                  </td>
+                  <td>
+                    {{ state.total_mutant_index }}
+                  </td>
+                  <td>
+                    of
+                  </td>
+                  <td>
+                    {{ state.total_num_mutations }}
+                  </td>
+                  <td class="fixed">
+                    {{ state.progress_total_bar | safe }}
+                  </td>
+                  <td>
+                    {{ state.progress_total }}
+                  </td>
+                </tr>
+                <tr bgcolor="#111111">
+                  <td>
+                    <b>
+                      {{ state.current_name }}:
+                    </b>
+                  </td>
+                  <td>
+                    {{ state.current_mutant_index }}
+                  </td>
+                  <td>
+                    of
+                  </td>
+                  <td>
+                    {{ state.current_num_mutations }}
+                  </td>
+                  <td class="fixed">
+                    {{ state.progress_current_bar | safe }}
+                  </td>
+                  <td>
+                    {{ state.progress_current }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <form method=get action="/togglepause">
+                <input class="input" type="submit" value="Pause">
+              </form>
+            </td>
+          </tr>
+        </table>
+
+        <table border=0 cellpadding=5 cellspacing=0 width="100%%">
+          <tr bgcolor="#333333">
+            <td nowrap>Test Case #</td>
+            <td>Crash Synopsis</td>
+            <td nowrap>Captured Bytes</td>
+          </tr>
+          {% for crash in crashes %}
+            <tr>
+              <td class="fixed">
+                <a href="/view_crash/{{crash.key}}">
+                  {{crash.key}}
+                </a>
+              </td>
+              <td>
+                {{crash.value}}
+              </td>
+              <td align=right>
+                {{crash.status_bytes}}
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock %}

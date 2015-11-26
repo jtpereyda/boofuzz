@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="main-wrapper">
+  <table border=0 cellpadding=5 cellspacing=0 width=750>
+    <tr>
+      <td>
+        <table border=0 cellpadding=5 cellspacing=0 width="100%">
+          <tr bgcolor="#333333">
+            <td>
+              <div style="font-size: 20px;">Crash Viewer</div>
+            </td>
+          </tr>
+          <tr bgcolor="#111111">
+            <td colspan=2 align="center">
+              <pre>{{ crashinfo.decode('utf-8', errors='replace') }}</pre>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock %}

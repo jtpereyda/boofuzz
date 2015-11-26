@@ -1,6 +1,7 @@
 from sulley import *
 
-def run ():
+
+def run():
     groups_and_num_test_cases()
     dependencies()
     repeaters()
@@ -9,11 +10,10 @@ def run ():
 
     # clear out the requests.
     blocks.REQUESTS = {}
-    blocks.CURRENT  = None
+    blocks.CURRENT = None
 
 
-########################################################################################################################
-def groups_and_num_test_cases ():
+def groups_and_num_test_cases():
     s_initialize("UNIT TEST 1")
     s_size("BLOCK", length=4, name="sizer")
     s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
@@ -27,32 +27,42 @@ def groups_and_num_test_cases ():
         s_random(0, 5, 10, 100, name="random")
         s_block_end()
 
-
     # count how many mutations we get per primitive type.
     req1 = s_get("UNIT TEST 1")
     print "PRIMITIVE MUTATION COUNTS (SIZES):"
-    print "\tdelim:  %d\t(%s)" % (req1.names["delim"].num_mutations(),  sum(map(len, req1.names["delim"].fuzz_library)))
-    print "\tstring: %d\t(%s)" % (req1.names["string"].num_mutations(), sum(map(len, req1.names["string"].fuzz_library)))
-    print "\tbyte:   %d"      %  req1.names["byte"].num_mutations()
-    print "\tword:   %d"      %  req1.names["word"].num_mutations()
-    print "\tdword:  %d"      %  req1.names["dword"].num_mutations()
-    print "\tqword:  %d"      %  req1.names["qword"].num_mutations()
-    print "\tsizer:  %d"      %  req1.names["sizer"].num_mutations()
+
+    print "\tdelim:  %d\t(%s)" % (
+        req1.names["delim"].num_mutations(),
+        sum(map(len, req1.names["delim"].fuzz_library))
+    )
+
+    print "\tstring: %d\t(%s)" % (
+        req1.names["string"].num_mutations(),
+        sum(map(len, req1.names["string"].fuzz_library))
+    )
+
+    print "\tbyte:   %d" % req1.names["byte"].num_mutations()
+    print "\tword:   %d" % req1.names["word"].num_mutations()
+    print "\tdword:  %d" % req1.names["dword"].num_mutations()
+    print "\tqword:  %d" % req1.names["qword"].num_mutations()
+    print "\tsizer:  %d" % req1.names["sizer"].num_mutations()
 
     # we specify the number of mutations in a random field, so ensure that matches.
-    assert(req1.names["random"].num_mutations() == 100)
+    assert (req1.names["random"].num_mutations() == 100)
 
     # we specify the number of values in a group field, so ensure that matches.
-    assert(req1.names["group"].num_mutations() == 4)
+    assert (req1.names["group"].num_mutations() == 4)
 
     # assert that the number of block mutations equals the sum of the number of mutations of its components.
-    assert(req1.names["BLOCK"].num_mutations() == req1.names["delim"].num_mutations()  + \
-                                                  req1.names["string"].num_mutations() + \
-                                                  req1.names["byte"].num_mutations()   + \
-                                                  req1.names["word"].num_mutations()   + \
-                                                  req1.names["dword"].num_mutations()  + \
-                                                  req1.names["qword"].num_mutations()  + \
-                                                  req1.names["random"].num_mutations())
+    assert (req1.names["BLOCK"].num_mutations() == (
+        req1.names["delim"].num_mutations() +
+        req1.names["string"].num_mutations() +
+        req1.names["byte"].num_mutations() +
+        req1.names["word"].num_mutations() +
+        req1.names["dword"].num_mutations() +
+        req1.names["qword"].num_mutations() +
+        req1.names["random"].num_mutations()
+    ))
 
     s_initialize("UNIT TEST 2")
     s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
@@ -68,11 +78,10 @@ def groups_and_num_test_cases ():
 
     # assert that the number of block mutations in request 2 is len(group.values) (4) times that of request 1.
     req2 = s_get("UNIT TEST 2")
-    assert(req2.names["BLOCK"].num_mutations() == req1.names["BLOCK"].num_mutations() * 4)
+    assert (req2.names["BLOCK"].num_mutations() == req1.names["BLOCK"].num_mutations() * 4)
 
 
-########################################################################################################################
-def dependencies ():
+def dependencies():
     s_initialize("DEP TEST 1")
     s_group("group", values=["1", "2"])
 
@@ -86,14 +95,13 @@ def dependencies ():
 
     assert(s_num_mutations() == 2)
     assert(s_mutate() == True)
-    assert(s_render().find("TWO") == -1)
+    assert (s_render().find("TWO") == -1)
     assert(s_mutate() == True)
-    assert(s_render().find("ONE") == -1)
+    assert (s_render().find("ONE") == -1)
     assert(s_mutate() == False)
 
 
-########################################################################################################################
-def repeaters ():
+def repeaters():
     s_initialize("REP TEST 1")
     if s_block_start("BLOCK"):
         s_delim(">", name="delim", fuzzable=False)
@@ -106,28 +114,27 @@ def repeaters ():
         s_block_end()
     s_repeat("BLOCK", min_reps=5, max_reps=15, step=5)
 
-    data   = s_render()
+    data = s_render()
     length = len(data)
 
     s_mutate()
     data = s_render()
-    assert(len(data) == length + length * 5)
+    assert (len(data) == length + length * 5)
 
     s_mutate()
     data = s_render()
-    assert(len(data) == length + length * 10)
+    assert (len(data) == length + length * 10)
 
     s_mutate()
     data = s_render()
-    assert(len(data) == length + length * 15)
+    assert (len(data) == length + length * 15)
 
     s_mutate()
     data = s_render()
-    assert(len(data) == length)
+    assert (len(data) == length)
 
 
-########################################################################################################################
-def return_current_mutant ():
+def return_current_mutant():
     s_initialize("RETURN CURRENT MUTANT TEST 1")
 
     s_dword(0xdeadbeef, name="boss hog")
@@ -153,46 +160,43 @@ def return_current_mutant ():
     for i in xrange(1, num_str_mutations + num_int_mutations - 10 + 1):
         req1.mutate()
 
-    assert(req1.mutant.name == "vagina")
+    assert (req1.mutant.name == "vagina")
     req1.reset()
 
     for i in xrange(1, num_int_mutations + num_str_mutations + 1 + 1):
         req1.mutate()
-    assert(req1.mutant.name == "foo")
+    assert (req1.mutant.name == "foo")
     req1.reset()
 
     for i in xrange(num_str_mutations * 2 + num_int_mutations + 1):
         req1.mutate()
-    assert(req1.mutant.name == "bar")
+    assert (req1.mutant.name == "bar")
     req1.reset()
 
     for i in xrange(num_str_mutations * 3 + num_int_mutations * 4 + 1):
         req1.mutate()
-    assert(req1.mutant.name == "uhntiss")
+    assert (req1.mutant.name == "uhntiss")
     req1.reset()
 
 
-########################################################################################################################
-def exhaustion ():
-
+def exhaustion():
     s_initialize("EXHAUSTION 1")
 
     s_string("just wont eat", name="VIP")
     s_dword(0x4141, name="eggos_rule")
     s_dword(0x4242, name="danny_glover_is_the_man")
 
-
     req1 = s_get("EXHAUSTION 1")
 
     num_str_mutations = req1.names["VIP"].num_mutations()
 
     # if we mutate string halfway, then exhaust, then mutate one time, we should be in the 2nd primitive
-    for i in xrange(num_str_mutations/2):
+    for i in xrange(num_str_mutations / 2):
         req1.mutate()
     req1.mutant.exhaust()
 
     req1.mutate()
-    assert(req1.mutant.name == "eggos_rule")
+    assert (req1.mutant.name == "eggos_rule")
     req1.reset()
 
     # if we mutate through the first primitive, then exhaust the 2nd, we should be in the 3rd
@@ -201,11 +205,11 @@ def exhaustion ():
     req1.mutant.exhaust()
 
     req1.mutate()
-    assert(req1.mutant.name == "danny_glover_is_the_man")
+    assert (req1.mutant.name == "danny_glover_is_the_man")
     req1.reset()
 
     # if we exhaust the first two primitives, we should be in the third
     req1.mutant.exhaust()
     req1.mutant.exhaust()
-    assert(req1.mutant.name == "danny_glover_is_the_man")
+    assert (req1.mutant.name == "danny_glover_is_the_man")
 

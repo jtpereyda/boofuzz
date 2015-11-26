@@ -27,11 +27,13 @@ except:
 test_number = graph_name = graph = None
 
 for opt, arg in opts:
-    if opt in ("-t", "--test"):  test_number = int(arg)
-    if opt in ("-g", "--graph"): graph_name  = arg
+    if opt in ("-t", "--test"):
+        test_number = int(arg)
+    if opt in ("-g", "--graph"):
+        graph_name  = arg
 
 try:
-    crashbin = utils.crash_binning.crash_binning()
+    crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
 except:
     print "unable to open crashbin: '%s'." % sys.argv[1]
@@ -42,7 +44,7 @@ except:
 #
 
 if test_number:
-    for bin, crashes in crashbin.bins.iteritems():
+    for _, crashes in crashbin.bins.iteritems():
         for crash in crashes:
             if test_number == crash.extra:
                 print crashbin.crash_synopsis(crash)
@@ -53,29 +55,27 @@ if test_number:
 #
 
 if graph_name:
-    graph = pgraph.graph()
+    graph = pgraph.Graph()
 
-for bin, crashes in crashbin.bins.iteritems():
+# noinspection PyRedeclaration
+for _, crashes in crashbin.bins.iteritems():
     synopsis = crashbin.crash_synopsis(crashes[0]).split("\n")[0]
-
-    if graph:
-        crash_node       = pgraph.node(crashes[0].exception_address)
-        crash_node.count = len(crashes)
-        crash_node.label = "[%d] %s.%08x" % (crash_node.count, crashes[0].exception_module, crash_node.id)
-        graph.add_node(crash_node)
-
-    print "[%d] %s" % (len(crashes), synopsis)
-    print "\t",
 
     for crash in crashes:
         if graph:
+            crash_node       = pgraph.Node(crashes[0].exception_address)
+            crash_node.count = len(crashes)
+            crash_node.label = "[%d] %s.%08x" % (crash_node.count, crashes[0].exception_module, crash_node.id)
+            graph.add_node(crash_node)
+            print "[%d] %s" % (len(crashes), synopsis)
+            print "\t",
             last = crash_node.id
             for entry in crash.stack_unwind:
                 address = long(entry.split(":")[1], 16)
                 n = graph.find_node("id", address)
 
                 if not n:
-                    n       = pgraph.node(address)
+                    n       = pgraph.Node(address)
                     n.count = 1
                     n.label = "[%d] %s" % (n.count, entry)
                     graph.add_node(n)
@@ -83,7 +83,7 @@ for bin, crashes in crashbin.bins.iteritems():
                     n.count += 1
                     n.label = "[%d] %s" % (n.count, entry)
 
-                edge = pgraph.edge(n.id, last)
+                edge = pgraph.Edge(n.id, last)
                 graph.add_edge(edge)
                 last = n.id
         print "%d," % crash.extra,
