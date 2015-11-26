@@ -1,30 +1,49 @@
-# What?
-Sulley is an actively developed fuzzing engine and fuzz testing framework consisting of multiple extensible components.
-Sulley (IMHO) exceeds the capabilities of most previously published fuzzing technologies, commercial and public domain.
-The goal of the framework is to simplify not only data representation but to simplify data transmission and 
-instrumentation. Sulley is affectionately named after the creature from Monsters Inc., because, well, he is fuzzy.
+boofuzz
+=======
+boofuzz is a fork of and the successor to the [Sulley](https://github.com/OpenRCE/sulley) fuzzing framework.
+Besides numerous bug fixes, boofuzz aims for extensibility, with the eventual goal of being able to fuzz literally anything.
 
-![He's also fearless](http://i.imgur.com/AHuBu.jpg)
+Why?
+----
+Sulley has been the preeminent open source fuzzer for sometime, but has fallen out of maintenance.
 
-Clearly he's also fearless. 
+Features
+--------
+Like Sulley, boofuzz seeks to incorporate all the critical elements of a fuzzer:
+ - easy and quick data generation
+ - instrumentation, AKA failure detection
+ - target reset after failure
+ - recording of test data
 
-# Why?
-Modern day fuzzers are, for the most part, solely focus on data generation. Sulley not only has impressive data
-generation but has taken this a step further and includes many other important aspects a modern fuzzer should provide.
-Sulley watches the network and methodically maintains records. Sulley instruments and monitors the health of the target,
-capable of reverting to a known good state using multiple methods. Sulley detects, tracks and categorizes detected
-faults. Sulley can fuzz in parallel, significantly increasing test speed. Sulley can automatically determine what unique
-sequence of test cases trigger faults. Sulley does all this, and more, automatically and without attendance. It's not
-usual for a fuzz to run seamlessly for days at a time, that way you (as the vulnerability researcher) can focus on
-other areas of exploitation, and come back to Sulley's results when they're convenient for you.
+Unlike Sulley, boofuzz also features:
+ - support for arbitrary communications mediums
+ - _extensible_ instrumentation/failure detection
+ - better recording of test data
+ 
+Sulley is affectionately named after the creature from Monsters Inc., because of his fuzziness.
+Boofuzz is likewise named after the only creature known to have given Sulley himself a fright, boo!
 
-# Awesome! Where do I start?
-Well a good place to start if you're on windows is the [wiki article on Windows setup](https://github.com/OpenRCE/sulley/wiki/Windows-Installation), and if you're feeling ballsy check out the [unstable branch of Sulley](https://github.com/OpenRCE/sulley/tree/Sulley1.1) If you're on *nix, sit tight, the docs are coming for the installation procedure for
-that, but if you use *nix, chances are you can probably figure it out on your own.
+![Boo from Monsters Inc](http://s21.postimg.org/rssnxdho7/boo_happy.png)
 
-# Some notes
-This master branch is considered the 'stable' branch of Sulley 1.0, all the changes that I make are going into Sulley 
-1.1, which can be found at https://github.com/OpenRCE/sulley/tree/Sulley1.1. 
+Installation
+------------
+boofuzz has inherited Sulley's glories... and blemishes. The install process might be a bear, but if you come out the other side, you will have the world's foremost fuzzing framework finally at your fingertips!
 
-If you have any other questions/improvements/features you'd like to see feel free to [email me](https://github.com/Fitblip)!
+See [Sulley's Windows installation guide](https://github.com/OpenRCE/sulley/wiki/Windows-Installation).
+Unix users can also use the article as a guideline.
 
+Getting Started
+---------------
+No quickstart guide is available yet, but in the mean time you can use this [Sulley FTP example](https://www.securepla.net/fuzzing-101-with-sulley/) as a baseline.
+
+Contributions
+-------------
+Pull requests are welcome, as boofuz is actively maintained (at the time of this writing ;)).
+
+Support
+-------
+If your question takes the form of "How do I... with boofuzz?" or "I got this error with boofuzz, why?", consider posting your question on Stack Overflow. Make sure to use the `fuzzing` tag.
+
+If you've found a bug, or have an idea/suggestion/request, file an issue here on GitHub.
+
+For other questions, feel free to [email me](https://github.com/jtpereyda).
