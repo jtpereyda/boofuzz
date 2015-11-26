@@ -203,7 +203,9 @@ class Connection(pgraph.Edge):
 class Session(pgraph.Graph):
     def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
-                 log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG):
+                 check_data_received_each_request=True,
+                 log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
+                 ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -223,6 +225,9 @@ class Session(pgraph.Graph):
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
         @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+        @type check_data_received_each_request:  bool
+        @kwarg check_data_received_each_request: (Optional, def=True) If True, Session will verify that some data has
+                                                 been received after transmitting each node. If False, it will not.
 
         @type  log_level:          int
         @kwarg log_level:          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
@@ -248,6 +253,7 @@ class Session(pgraph.Graph):
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
         self._fuzz_data_logger = fuzz_data_logger
+        self._check_data_received_each_request = check_data_received_each_request
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -257,7 +263,6 @@ class Session(pgraph.Graph):
         self.targets = []
         self.netmon_results = {}
         self.procmon_results = {}
-        self.protmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
 
@@ -390,7 +395,6 @@ class Session(pgraph.Graph):
             "total_mutant_index": self.total_mutant_index,
             "netmon_results": self.netmon_results,
             "procmon_results": self.procmon_results,
-            "protmon_results": self.protmon_results,
             "is_paused": self.is_paused
         }
 
@@ -471,7 +475,6 @@ class Session(pgraph.Graph):
         self.total_mutant_index = data["total_mutant_index"]
         self.netmon_results = data["netmon_results"]
         self.procmon_results = data["procmon_results"]
-        self.protmon_results = data["protmon_results"]
         self.is_paused = data["is_paused"]
 
     # noinspection PyMethodMayBeStatic
@@ -755,16 +758,13 @@ class Session(pgraph.Graph):
         # TODO: Remove magic number (10000)
         self.last_recv = self.targets[0].recv(10000)
 
-        self._fuzz_data_logger.log_check("Verify some data was received from the target.")
-        if not self.last_recv:
-            # Assume a crash?
-            self._fuzz_data_logger.log_fail("Nothing received from target.")
-            # Increment individual crash count
-            self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
-            # Note crash information
-            self.protmon_results[self.total_mutant_index] = data
-        else:
-            self._fuzz_data_logger.log_pass("Some data received from target.")
+        if self._check_data_received_each_request:
+            self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+            if not self.last_recv:
+                # Assume a crash?
+                self._fuzz_data_logger.log_fail("Nothing received from target.")
+            else:
+                self._fuzz_data_logger.log_pass("Some data received from target.")
 
     def build_webapp_thread(self, port=26000):
         app.session = self
