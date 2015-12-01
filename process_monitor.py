@@ -10,7 +10,7 @@ import pydbg
 import pydbg.defines
 import utils
 
-from sulley import pedrpc
+from boofuzz import pedrpc
 
 PORT = 26002
 ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)

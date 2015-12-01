@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, '../')
 
-from sulley.primitives import String, Static, Delim
+from boofuzz.primitives import String, Static, Delim
 
 
 class Group(object):

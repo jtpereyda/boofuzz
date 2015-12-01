@@ -8,8 +8,8 @@ import os
 import pcapy
 import impacket
 import impacket.ImpactDecoder
-from sulley import pedrpc
-from sulley import helpers
+from boofuzz import pedrpc
+from boofuzz import helpers
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 

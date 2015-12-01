@@ -2,7 +2,7 @@
 mediaconnect port 2869
 """
 
-from sulley import *
+from boofuzz import *
 
 
 s_initialize("mediaconnect: get album list")

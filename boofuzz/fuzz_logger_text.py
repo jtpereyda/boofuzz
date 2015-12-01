@@ -3,8 +3,8 @@ from __future__ import print_function
 import sys
 import time
 
-from sulley import helpers
-from sulley import ifuzz_logger_backend
+from boofuzz import helpers
+from boofuzz import ifuzz_logger_backend
 
 
 def hex_to_hexstr(input_bytes):

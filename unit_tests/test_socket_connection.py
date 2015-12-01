@@ -4,10 +4,10 @@ import unittest
 import logging
 import struct
 import zlib
-from sulley.socket_connection import SocketConnection
-from sulley import socket_connection
-from sulley import ip_constants
-from sulley import helpers
+from boofuzz.socket_connection import SocketConnection
+from boofuzz import socket_connection
+from boofuzz import ip_constants
+from boofuzz import helpers
 import socket
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.

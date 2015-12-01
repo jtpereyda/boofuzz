@@ -1,4 +1,4 @@
-from sulley import *
+from boofuzz import *
 
 
 s_initialize("trillian 1")

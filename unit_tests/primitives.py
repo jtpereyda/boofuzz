@@ -1,4 +1,4 @@
-from sulley import *
+from boofuzz import *
 
 
 def run():

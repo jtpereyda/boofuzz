@@ -1,7 +1,7 @@
 import unittest
 import mock
-from sulley import fuzz_logger
-from sulley import ifuzz_logger_backend
+from boofuzz import fuzz_logger
+from boofuzz import ifuzz_logger_backend
 
 
 class TestFuzzLogger(unittest.TestCase):

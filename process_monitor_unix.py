@@ -6,7 +6,7 @@ import time
 import threading
 import subprocess
 
-from sulley import pedrpc
+from boofuzz import pedrpc
 
 '''
 By nnp

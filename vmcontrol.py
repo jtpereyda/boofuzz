@@ -21,7 +21,7 @@ except:
         sys.exit(1)
 
 
-from sulley import pedrpc
+from boofuzz import pedrpc
 
 PORT  = 26003
 ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)

@@ -4,7 +4,7 @@ Gizmo binds this service on UDP port 5004 / 5005
 http://www.vovida.org/
 """
 
-from sulley import *
+from boofuzz import *
 
 
 s_initialize("binding request")

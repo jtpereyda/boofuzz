@@ -1,6 +1,6 @@
 import math
 import struct
-from sulley import helpers
+from boofuzz import helpers
 
 
 def bind(uuid, version):

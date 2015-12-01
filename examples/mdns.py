@@ -3,7 +3,7 @@
 # A partial MDNS fuzzer.  Could be made to be a DNS fuzzer trivially
 # Charlie Miller <cmiller@securityevaluators.com>
 
-from sulley import s_word, \
+from boofuzz import s_word, \
     s_initialize,          \
     sessions,              \
     s_block_start,         \

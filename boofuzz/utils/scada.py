@@ -1,6 +1,6 @@
 import math
 import struct
-from sulley.helpers import crc16
+from boofuzz.helpers import crc16
 
 
 def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):

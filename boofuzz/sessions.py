@@ -409,7 +409,7 @@ class Session(pgraph.Graph):
         self.skip and restarting based on self.restart_interval.
 
         If you want the web server to be available, your program must persist
-        after calling this method. sulley.helpers.pause_for_signal is
+        after calling this method. boofuzz.helpers.pause_for_signal is
         available to this end.
 
         :return: None

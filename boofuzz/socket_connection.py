@@ -1,4 +1,4 @@
-from sulley import helpers
+from boofuzz import helpers
 import itarget_connection
 import socket
 import ssl

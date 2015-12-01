@@ -1,5 +1,5 @@
 import collections
-from sulley import helpers
+from boofuzz import helpers
 import primitives
 import sex
 import zlib

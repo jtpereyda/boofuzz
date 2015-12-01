@@ -1,4 +1,4 @@
-from sulley import *
+from boofuzz import *
 
 # List of all HTTP Headers I could find
 

@@ -7,15 +7,16 @@ except ImportError:
 
 
 setup(
-    name='Sulley',
-    download_url='https://github.com/OpenRCE/sulley',
-    packages=['requests', 'sulley', 'sulley.legos', 'sulley.pgraph', 'sulley.utils',
+    name='boofuzz',
+    download_url='https://github.com/jtpereyda/boofuzz',
+    license='GPL',
+    packages=['requests', 'boofuzz', 'boofuzz.legos', 'boofuzz.pgraph', 'boofuzz.utils',
               'unit_tests', 'utils', 'web'],
     package_dir={'requests': './requests',
-                 'sulley': './sulley',
-                 'sulley.legos': './sulley/legos',
-                 'sulley.pgraph': './sulley/pgraph',
-                 'sulley.utils': './sulley/utils',
+                 'boofuzz': './boofuzz',
+                 'boofuzz.legos': './boofuzz/legos',
+                 'boofuzz.pgraph': './boofuzz/pgraph',
+                 'boofuzz.utils': './boofuzz/utils',
                  'unit_tests': './unit_tests',
                  'utils': './utils',
                  'web': './web'

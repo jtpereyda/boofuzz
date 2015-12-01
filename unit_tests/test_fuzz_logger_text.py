@@ -1,7 +1,7 @@
 import unittest
 import StringIO
 import os
-from sulley import fuzz_logger_text
+from boofuzz import fuzz_logger_text
 
 LOGGER_PREAMBLE = ".*"
 TEST_CASE_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_CASE_FORMAT + os.linesep

@@ -1,4 +1,4 @@
-from sulley import *
+from boofuzz import *
 
 # Old http.py request primitives, http_* does all of these and many more (AFAIK)
 

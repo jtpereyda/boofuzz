@@ -2,7 +2,7 @@
 ### Misc Types
 
 
-from sulley import blocks, primitives, sex
+from boofuzz import blocks, primitives, sex
 
 
 class DNSHostname (blocks.Block):

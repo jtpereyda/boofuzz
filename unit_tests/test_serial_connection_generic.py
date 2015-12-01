@@ -1,6 +1,6 @@
 import unittest
-from sulley import iserial_like
-from sulley.serial_connection import SerialConnection
+from boofuzz import iserial_like
+from boofuzz.serial_connection import SerialConnection
 import time
 
 

@@ -2,8 +2,8 @@
 
 
 import struct
-from sulley import blocks, primitives, sex
-from sulley.helpers import calculate_four_byte_padding
+from boofuzz import blocks, primitives, sex
+from boofuzz.helpers import calculate_four_byte_padding
 
 
 class NdrConformantArray(blocks.Block):

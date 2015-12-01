@@ -2,8 +2,8 @@
 ### ASN.1 / BER TYPES (http://luca.ntop.org/Teaching/Appunti/asn1.html)
 
 
-from sulley import blocks, primitives, sex
-from sulley.constants import BIG_ENDIAN
+from boofuzz import blocks, primitives, sex
+from boofuzz.constants import BIG_ENDIAN
 
 
 class String(blocks.Block):

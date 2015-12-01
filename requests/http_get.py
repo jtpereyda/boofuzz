@@ -1,4 +1,4 @@
-from sulley import *
+from boofuzz import *
 
 # All HTTP requests that I could think of/find
 

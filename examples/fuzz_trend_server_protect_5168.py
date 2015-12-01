@@ -4,14 +4,14 @@
 # pedram amini <pamini@tippingpoint.com>
 #
 # on vmware:
-#     cd shared\sulley\branches\pedram
+#     cd shared\boofuzz\branches\pedram
 #     process_monitor.py -c audits\trend_server_protect_5168.crashbin -p SpntSvc.exe
 #     network_monitor.py -d 1 -f "src or dst port 5168" -p audits\trend_server_protect_5168
 #
 # on localhost:
 #     vmcontrol.py -r "c:\Progra~1\VMware\VMware~1\vmrun.exe" \
 #                  -x "v:\vmfarm\images\windows\2000\win_2000_pro-clones\TrendM~1\win_2000_pro.vmx" \
-#                  --snapshot "sulley ready and waiting"
+#                  --snapshot "boofuzz ready and waiting"
 #
 # this key gets written which fucks trend service even on reboot.
 # HKEY_LOCAL_MACHINE\SOFTWARE\TrendMicro\ServerProtect\CurrentVersion\Engine
@@ -19,7 +19,7 @@
 # uncomment the req/num to do a single test case.
 #
 
-from sulley import utils, s_get, s_mutate, s_render, sessions, pedrpc
+from boofuzz import utils, s_get, s_mutate, s_render, sessions, pedrpc
 # noinspection PyUnresolvedReferences
 from requests import trend
 
