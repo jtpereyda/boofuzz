@@ -8,7 +8,10 @@ except ImportError:
 
 setup(
     name='boofuzz',
-    download_url='https://github.com/jtpereyda/boofuzz',
+    version='0.0.1',
+    maintainer='Joshua Pereyda',
+    maintainer_email='joshua.t.pereyda@gmail.com',
+    url='https://github.com/jtpereyda/boofuzz',
     license='GPL',
     packages=['requests', 'boofuzz', 'boofuzz.legos', 'boofuzz.pgraph', 'boofuzz.utils',
               'unit_tests', 'utils', 'web'],
