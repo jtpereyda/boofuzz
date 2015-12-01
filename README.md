@@ -29,8 +29,20 @@ Installation
 ------------
 boofuzz has inherited Sulley's glories... and blemishes. The install process might be a bear, but if you come out the other side, you will have the world's foremost fuzzing framework finally at your fingertips!
 
+### Linux/Unix
+1. Make sure you have Python 2.7 installed, with pip.
+    * Python 2.7 is included on recent Ubuntu installs.
+    * `pip` on Ubuntu: `sudo apt-get install python-pip`
+2. Install python-dev and pcap libraries.
+    * On Ubuntu: `sudo apt-get install python-dev libpcap-dev`
+3. Download source code: `git clone https://github.com/jtpereyda/boofuzz.git`
+4. Finally, use `pip` to install.
+    * Regular: `sudo pip install boofuzz`
+    * Developer mode (allows changes to be seen automatically without reinstalling): `sudo pip -e install boofuzz`
+    * Behind proxy: `sudo -E pip -e install boofuzz`
+
+### Windows
 See [Sulley's Windows installation guide](https://github.com/OpenRCE/sulley/wiki/Windows-Installation).
-Unix users can also use the article as a guideline.
 
 Getting Started
 ---------------
