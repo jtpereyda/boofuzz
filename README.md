@@ -10,15 +10,18 @@ Sulley has been the preeminent open source fuzzer for sometime, but has fallen o
 Features
 --------
 Like Sulley, boofuzz seeks to incorporate all the critical elements of a fuzzer:
- - easy and quick data generation
- - instrumentation, AKA failure detection
- - target reset after failure
- - recording of test data
+
+ - Easy and quick data generation.
+ - Instrumentation, AKA failure detection.
+ - Target reset after failure.
+ - Recording of test data.
 
 Unlike Sulley, boofuzz also features:
- - support for arbitrary communications mediums
- - _extensible_ instrumentation/failure detection
- - better recording of test data
+
+ - Easier install experience!
+ - Support for arbitrary communications mediums.
+ - _Extensible_ instrumentation/failure detection.
+ - Better recording of test data.
  
 Sulley is affectionately named after the creature from Monsters Inc., because of his fuzziness.
 Boofuzz is likewise named after the only creature known to have given Sulley himself a fright, boo!
@@ -27,14 +30,12 @@ Boofuzz is likewise named after the only creature known to have given Sulley him
 
 Installation
 ------------
-boofuzz has inherited Sulley's glories... and blemishes. The install process might be a bear, but if you come out the other side, you will have the world's foremost fuzzing framework finally at your fingertips!
 
 ### Linux/Unix
-1. Make sure you have Python 2.7 installed, with pip.
-    * Python 2.7 is included on recent Ubuntu installs.
+1. Make sure you have Python 2.7 installed, with `pip`.
     * `pip` on Ubuntu: `sudo apt-get install python-pip`
 2. Install python-dev and pcap libraries.
-    * On Ubuntu: `sudo apt-get install python-dev libpcap-dev`
+    * Ubuntu: `sudo apt-get install python-dev libpcap-dev`
 3. Download source code: `git clone https://github.com/jtpereyda/boofuzz.git`
 4. Finally, use `pip` to install.
     * Regular: `sudo pip install boofuzz`
@@ -42,7 +43,26 @@ boofuzz has inherited Sulley's glories... and blemishes. The install process mig
     * Behind proxy: `sudo -E pip -e install boofuzz`
 
 ### Windows
-See [Sulley's Windows installation guide](https://github.com/OpenRCE/sulley/wiki/Windows-Installation).
+
+#### From Source
+
+1. [Download and install](http://www.howtogeek.com/197947/how-to-install-python-on-windows/) Python for Windows (use 2.7.x instead of 3.x). `pip` should be included.
+2. Get the Visual C++ Compiler for Python 2.7 [here](http://aka.ms/vcpython27).
+3. Download and extract the latest [WinPcap developer pack](https://www.winpcap.org/devel.htm).
+4. Download and extract [boofuzz](https://github.com/jtpereyda/boofuzz).
+5. Use `pip` to install; use `pip` options to include the WinPcap Lib and Include folders
+
+        C:\Users\IEUser\Downloads\boofuzz-master>pip install ./boofuzz-master --global-option=build_ext --global-option="-LC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Lib" --global-option="-IC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Include"
+
+##### process_monitor.py (Windows only)
+If you want to use process_monitor.py, follow these additional steps:
+
+1. Download and install pydbg.
+    - The OpenRCE repository doesn't have a setup.py. Use Fitblip's fork: https://github.com/Fitblip/pydbg/archive/master.zip
+    - `C:\Users\IEUser\Downloads\pydbg-master>pip install ./pydbg-master`
+2. Download and install [pydasm](https://github.com/jtpereyda/libdasm).
+ - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py build_ext`
+ - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py install`
 
 Getting Started
 ---------------
