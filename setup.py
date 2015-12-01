@@ -8,7 +8,7 @@ except ImportError:
 
 setup(
     name='boofuzz',
-    version='0.0.1',
+    version='0.0.1.dev1',
     maintainer='Joshua Pereyda',
     maintainer_email='joshua.t.pereyda@gmail.com',
     url='https://github.com/jtpereyda/boofuzz',
