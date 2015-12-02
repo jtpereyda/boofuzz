@@ -49,20 +49,40 @@ Installation
 1. [Download and install](http://www.howtogeek.com/197947/how-to-install-python-on-windows/) Python for Windows (use 2.7.x instead of 3.x). `pip` should be included.
 2. Get the Visual C++ Compiler for Python 2.7 [here](http://aka.ms/vcpython27).
 3. Download and extract the latest [WinPcap developer pack](https://www.winpcap.org/devel.htm).
-4. Download and extract [boofuzz](https://github.com/jtpereyda/boofuzz).
-5. Use `pip` to install; use `pip` options to include the WinPcap Lib and Include folders
+4. Download [boofuzz](https://github.com/jtpereyda/boofuzz) source code.
+5. Use `pip` to install; use `pip` options to include the WinPcap Lib and Include folders.
 
-        C:\Users\IEUser\Downloads\boofuzz-master>pip install ./boofuzz-master --global-option=build_ext --global-option="-LC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Lib" --global-option="-IC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Include"
+        C:\Users\IEUser\Downloads\boofuzz-master\boofuzz-master>pip install . --global-option=build_ext --global-option="-LC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Lib" --global-option="-IC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Include"
+
+    Use `-e` for developer/editable mode:
+
+        C:\Users\IEUser\Downloads\boofuzz-master\boofuzz-master>pip install -e . --global-option=build_ext --global-option="-LC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Lib" --global-option="-IC:\Users\IEUser\Downloads\WpdPack_4_1_2\WpdPack\Include"
+
+    If behind a proxy, set `HTTPS_PROXY` first:
+
+        C:\Users\IEUser\Downloads\boofuzz-master\boofuzz-master>set HTTPS_PROXY=http://your.proxy.com:port
 
 ##### process_monitor.py (Windows only)
 If you want to use process_monitor.py, follow these additional steps:
 
 1. Download and install pydbg.
-    - The OpenRCE repository doesn't have a setup.py. Use Fitblip's fork: https://github.com/Fitblip/pydbg/archive/master.zip
+    - The OpenRCE repository doesn't have a setup.py. Use Fitblip's [fork](https://github.com/Fitblip/pydbg).
     - `C:\Users\IEUser\Downloads\pydbg-master>pip install ./pydbg-master`
 2. Download and install [pydasm](https://github.com/jtpereyda/libdasm).
- - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py build_ext`
- - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py install`
+    - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py build_ext`
+    - `C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py install`
+3. Verify that process_monitor.py runs:
+
+        C:\Users\IEUser\Downloads\boofuzz>python process_monitor.py
+        ERR> USAGE: process_monitor.py
+            <-c|--crash_bin FILENAME> filename to serialize crash bin class to
+            [-p|--proc_name NAME]     process name to search for and attach to
+            [-i|--ignore_pid PID]     ignore this PID when searching for the target process
+            [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity
+            [--port PORT]             TCP port to bind this agent to
+
+
+        C:\Users\IEUser\Downloads\boofuzz>
 
 Getting Started
 ---------------

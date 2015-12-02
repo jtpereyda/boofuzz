@@ -15,10 +15,10 @@ from boofuzz import pedrpc
 PORT = 26002
 ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 USAGE = """USAGE: process_monitor.py
-    <-c|--crash_bin FILENAME> filename to serialize crash bin class to
+    [-c|--crash_bin FILENAME] filename to serialize crash bin class to
     [-p|--proc_name NAME]     process name to search for and attach to
-    [-i|--ignore_pid PID]     ignore this PID when searching for the target process
-    [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity
+    [-i|--ignore_pid PID]     PID to ignore when searching for target process
+    [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
     [--port PORT]             TCP port to bind this agent to
     """
 
