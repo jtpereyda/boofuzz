@@ -25,5 +25,5 @@ setup(
                  'web': './web'
                  },
     package_data={'web': ['templates/*', 'static/css/*']},
-    install_requires=['pyserial', 'pydot2==1.0.33', 'tornado==4.0.2', 'Flask==0.10.1', 'pcapy', 'impacket']
+    install_requires=['pyserial', 'pydot2==1.0.33', 'tornado==4.0.2', 'Flask==0.10.1', 'impacket']
 )
