@@ -10,15 +10,14 @@ Ubuntu: `sudo apt-get install python-pip`
 Windows: See this [help site](http://www.howtogeek.com/197947/how-to-install-python-on-windows/)
 but make sure to get Python 2.x instead of 3.x (pip is included).
 
-Installation
-------------
-
-### Binary Install - Windows Only
+Binary Install - Windows Only
+-----------------------------
 
 1. Download the latest wheel (.whl) file from the [releases page](https://github.com/jtpereyda/boofuzz/releases).
 2. `pip install boofuzz-latest-version.whl`
 
-### From Source
+From Source
+-----------
 
 1. Download source code: [https://github.com/jtpereyda/boofuzz]()
 2. Install. Run `pip` from within the boofuzz directory:
