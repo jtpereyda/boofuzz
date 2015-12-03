@@ -41,6 +41,13 @@ but make sure to get Python 2.x instead of 3.x (pip is included).
 Installation
 ------------
 
+### Binary Install - Windows Only
+
+1. Download the latest wheel (.whl) file from the [releases page](https://github.com/jtpereyda/boofuzz/releases).
+2. `pip install boofuzz-latest-version.whl`
+
+### From Source
+
 1. Download source code: [https://github.com/jtpereyda/boofuzz]()
 2. Install. Run `pip` from within the boofuzz directory:
     * Ubuntu: `sudo pip install .`
@@ -53,7 +60,7 @@ Tips:
 
         `sudo pip -e install boofuzz`
 
-* Behind proxy:
+* If you're behind a proxy:
 
         `set HTTPS_PROXY=http://your.proxy.com:port`
     * On Linux, also use `sudo`'s `-E` option:
