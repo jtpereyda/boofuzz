@@ -32,7 +32,7 @@ Boofuzz is likewise named after the only creature known to have scared Sulley hi
 Installation
 ------------
 Boofuzz installs as a Python library used to build fuzzer scripts.
-See [INSTALL.md]() for step-by-step instructions.
+See [INSTALL.md](INSTALL.md) for step-by-step instructions.
 
 Getting Started
 ---------------
