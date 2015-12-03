@@ -46,10 +46,10 @@ def create_usage(ifs):
     :return: Usage text.
     """
     message = """USAGE: network_monitor.py
-    <-d|--device DEVICE #>    device to sniff on (see list below)
+    [-d|--device DEVICE #]    device to sniff on (see list below)
     [-f|--filter PCAP FILTER] BPF filter string
     [-P|--log_path PATH]      log directory to store pcaps to
-    [-l|--log_level LEVEL]    log level (default 1), increase for more verbosity
+    [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
     [--port PORT]             TCP port to bind this agent to
 
 Network Device List:
