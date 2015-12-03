@@ -9,7 +9,7 @@ Sulley has been the preeminent open source fuzzer for sometime, but has fallen o
 
 Features
 --------
-Like Sulley, boofuzz seeks to incorporate all the critical elements of a fuzzer:
+Like Sulley, boofuzz incorporates all the critical elements of a fuzzer:
 
  - Easy and quick data generation.
  - Instrumentation, AKA failure detection.
@@ -18,13 +18,14 @@ Like Sulley, boofuzz seeks to incorporate all the critical elements of a fuzzer:
 
 Unlike Sulley, boofuzz also features:
 
- - Easier install experience!
+ - Much easier install experience!
  - Support for arbitrary communications mediums.
  - _Extensible_ instrumentation/failure detection.
  - Better recording of test data.
+ - Far fewer bugs.
  
 Sulley is affectionately named after the creature from Monsters Inc., because of his fuzziness.
-Boofuzz is likewise named after the only creature known to have given Sulley himself a fright, boo!
+Boofuzz is likewise named after the only creature known to have scared Sulley himself, boo!
 
 ![Boo from Monsters Inc](http://s21.postimg.org/rssnxdho7/boo_happy.png)
 
