@@ -1,8 +1,6 @@
 from __future__ import print_function
-
 import sys
 import time
-
 from boofuzz import helpers
 from boofuzz import ifuzz_logger_backend
 
@@ -59,56 +57,55 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
         """
         self._file_handle = file_handle
         self._format_raw_bytes = bytes_to_str
-        self._indent_level = 0
 
     def open_test_step(self, description):
-        self._indent_level = self.INDENT_SIZE
-        self._print_log_msg(self.TEST_STEP_FORMAT.format(description))
+        self._print_log_msg(self.TEST_STEP_FORMAT.format(description),
+                            indent_level=1)
 
     def log_check(self, description):
-        self._indent_level = 2 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_CHECK_FORMAT.format(description))
+        self._print_log_msg(self.LOG_CHECK_FORMAT.format(description),
+                            indent_level=2)
 
     def log_error(self, description):
-        self._indent_level = 2 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_ERROR_FORMAT.format(description))
+        self._print_log_msg(self.LOG_ERROR_FORMAT.format(description),
+                            indent_level=2)
 
     def log_recv(self, data):
-        self._indent_level = 2 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)))
+        self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)),
+                            indent_level=2)
 
     def log_send(self, data):
-        self._indent_level = 2 * self.INDENT_SIZE
         self._print_log_msg(
-            self.LOG_SEND_FORMAT.format(len(data), self._format_raw_bytes(data)))
+            self.LOG_SEND_FORMAT.format(len(data), self._format_raw_bytes(data)),
+            indent_level=2)
 
     def log_info(self, description):
-        self._indent_level = 2 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_INFO_FORMAT.format(description))
+        self._print_log_msg(self.LOG_INFO_FORMAT.format(description),
+                            indent_level=2)
 
     def open_test_case(self, test_case_id):
-        self._indent_level = 0
-        self._print_log_msg(self.TEST_CASE_FORMAT.format(test_case_id))
+        self._print_log_msg(self.TEST_CASE_FORMAT.format(test_case_id),
+                            indent_level=0)
 
     def log_fail(self, description=""):
-        self._indent_level = 3 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_FAIL_FORMAT.format(description))
+        self._print_log_msg(self.LOG_FAIL_FORMAT.format(description),
+                            indent_level=3)
 
     def log_pass(self, description=""):
-        self._indent_level = 3 * self.INDENT_SIZE
-        self._print_log_msg(self.LOG_PASS_FORMAT.format(description))
+        self._print_log_msg(self.LOG_PASS_FORMAT.format(description),
+                            indent_level=3)
 
-    def _print_log_msg(self, msg):
-        msg = _indent_all_lines(msg, self._indent_level)
+    def _print_log_msg(self, msg, indent_level=0):
+        msg = _indent_all_lines(msg, indent_level * self.INDENT_SIZE)
         time_stamp = get_time_stamp()
         print(time_stamp + ' ' + _indent_after_first_line(msg, len(time_stamp) + 1), file=self._file_handle)
 
 
 def _indent_all_lines(lines, amount, ch=' '):
     padding = amount * ch
-    return padding + ('\n'+padding).join(lines.split('\n'))
+    return padding + ('\n' + padding).join(lines.split('\n'))
 
 
 def _indent_after_first_line(lines, amount, ch=' '):
     padding = amount * ch
-    return ('\n'+padding).join(lines.split('\n'))
+    return ('\n' + padding).join(lines.split('\n'))
