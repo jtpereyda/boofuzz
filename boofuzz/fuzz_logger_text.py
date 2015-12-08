@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import bytes
 import sys
 import time
 from boofuzz import helpers
@@ -14,7 +15,7 @@ def hex_to_hexstr(input_bytes):
 
     @return: Printable string.
     """
-    return helpers.hex_str(input_bytes) + " '" + bytes(input_bytes) + "'"
+    return helpers.hex_str(input_bytes) + " " + repr(bytes(input_bytes))
 
 
 DEFAULT_HEX_TO_STR = hex_to_hexstr
