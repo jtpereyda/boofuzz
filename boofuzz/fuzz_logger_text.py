@@ -99,16 +99,16 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(self.LOG_PASS_FORMAT.format(description))
 
     def _print_log_msg(self, msg):
-        msg = indent_all_lines(msg, self._indent_level)
+        msg = _indent_all_lines(msg, self._indent_level)
         time_stamp = get_time_stamp()
-        print(time_stamp + ' ' + indent_after_first_line(msg, len(time_stamp) + 1), file=self._file_handle)
+        print(time_stamp + ' ' + _indent_after_first_line(msg, len(time_stamp) + 1), file=self._file_handle)
 
 
-def indent_all_lines(lines, amount, ch=' '):
+def _indent_all_lines(lines, amount, ch=' '):
     padding = amount * ch
     return padding + ('\n'+padding).join(lines.split('\n'))
 
 
-def indent_after_first_line(lines, amount, ch=' '):
+def _indent_after_first_line(lines, amount, ch=' '):
     padding = amount * ch
     return ('\n'+padding).join(lines.split('\n'))
