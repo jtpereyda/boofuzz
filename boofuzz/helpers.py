@@ -161,13 +161,25 @@ def ipv4_checksum(msg):
 
 def udp_checksum(msg, src_addr, dst_addr):
     """
-    Return IPv4 checksum of msg.
+    Return UDP checksum of msg.
+
+    If msg is too big, the checksum is undefined, and this method will
+    truncate it for the sake of checksum calculation. Note that this means the
+    checksum will be invalid. This loosey goosey error checking is done to
+    support fuzz tests which at times generate huge, invalid packets.
+
+
     :param msg: Message to compute checksum over.
     :type msg: str
 
-    :return: IPv4 checksum of msg.
+    :return: UDP checksum of msg.
     :rtype: int
     """
+    # If the packet is too big, the checksum is undefined since len(msg)
+    # won't fit into two bytes. So we just pick our best definition.
+    # "Truncate" the message as it appears in the checksum.
+    msg = msg[0:ip_constants.UDP_MAX_LENGTH]
+
     # Construct pseudo header:
     data = src_addr + dst_addr + "\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", len(msg)) + msg
 
