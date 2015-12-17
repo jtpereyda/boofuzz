@@ -265,6 +265,7 @@ class Session(pgraph.Graph):
         self.procmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
+        self.post_fail = []
 
         # import settings if they exist.
         self.import_file()
@@ -667,8 +668,11 @@ class Session(pgraph.Graph):
         """
 
         self._fuzz_data_logger.open_test_step("restarting target")
-        # vm restarting is the preferred method so try that first.
-        if target.vmcontrol:
+        if len(self.post_fail) > 0:
+            for f in self.post_fail:
+                f()
+        # vm restarting is the preferred method so try that before procmon.
+        elif target.vmcontrol:
             self._fuzz_data_logger.log_info("restarting target virtual machine")
             target.vmcontrol.restart_target()
 
