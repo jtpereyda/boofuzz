@@ -28,7 +28,7 @@ class EzOutletReset:
         self._timeout = timeout
         self._reset_delay = reset_delay
 
-    def post_fail(self):
+    def post_fail(self, *args, **kwargs):
         """
         Tries to reset device over HTTP and wait based on self.reset_delay
         + self._dut_reset_time seconds.
@@ -37,6 +37,8 @@ class EzOutletReset:
 
         @:raises: sex.SullyRuntimeError if the reset fails.
         """
+        _ = args  # only for forward-compatibility
+        _ = kwargs  # only for forward-compatibility
         # TODO log sent/received for debugging.
         try:
             urllib2.urlopen("http://172.16.3.174/reset.cgi", timeout=self._timeout)

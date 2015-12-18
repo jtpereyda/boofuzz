@@ -13,6 +13,7 @@ import primitives
 import socket_connection
 import ifuzz_logger
 import fuzz_logger
+import event_hook
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
@@ -265,7 +266,7 @@ class Session(pgraph.Graph):
         self.procmon_results = {}
         self.is_paused = False
         self.crashing_primitives = {}
-        self.post_fail = []
+        self.on_failure = event_hook.EventHook()
 
         # import settings if they exist.
         self.import_file()
@@ -668,8 +669,9 @@ class Session(pgraph.Graph):
         """
 
         self._fuzz_data_logger.open_test_step("restarting target")
-        if len(self.post_fail) > 0:
-            for f in self.post_fail:
+        if len(self.on_failure) > 0:
+            for f in self.on_failure:
+                self._fuzz_data_logger.open_test_step("calling registered on_failure method")
                 f()
         # vm restarting is the preferred method so try that before procmon.
         elif target.vmcontrol:
