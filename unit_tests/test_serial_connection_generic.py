@@ -374,24 +374,24 @@ class TestSerialConnection(unittest.TestCase):
           and: timeout set to 60ms.
           and: message_separator_time set 20ms
 
-        When: User calls SerialConnection.recv(60).
+        When: User calls SerialConnection.recv(max_bytes=60).
          and: MockSerial.recv set to return increasing bytes.
-         and: MockSerial.recv set to delay 1ms on each call.
+         and: MockSerial.recv set to delay very briefly on each call (0.001ms (1 microsecond)).
 
-        Then: SerialConnection.recv calls MockSerial.recv more than 20 times.
-         and: SerialConnection.recv returns data with more than 20 bytes.
+        Then: SerialConnection.recv calls MockSerial.recv multiple times (more than 2).
+         and: SerialConnection.recv returns data with multiple bytes (more than 2).
         """
         # Given
         uut = SerialConnection(connection=self.mock, timeout=.060, message_separator_time=.020)
 
         # When
         self.mock.recv_return_queue = [b'1'] * 60
-        self.mock.recv_wait_times = [.001] * 60
+        self.mock.recv_wait_times = [0.000001] * 60
         data = uut.recv(max_bytes=60)
 
         # Then
-        self.assertGreater(len(self.mock.recv_max_bytes_lengths), 20)
-        self.assertGreater(len(data), 20)
+        self.assertGreater(len(self.mock.recv_max_bytes_lengths), 2)
+        self.assertGreater(len(data), 2)
 
     def test_recv_message_separator_time_2(self):
         """
