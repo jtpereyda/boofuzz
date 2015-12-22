@@ -1,4 +1,3 @@
-import fcntl
 import threading
 import unittest
 import logging
@@ -121,24 +120,6 @@ def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
     return raw_packet
 
 
-def get_packed_ip_address(ifname):
-    """
-    Returns IP address of the ifname interface as 4-byte string.
-
-    :type ifname: str
-    :param ifname: Interface whose IP address should be returned.
-
-    :rtype: str
-    :return: IP address of ifname.
-    """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    return fcntl.ioctl(
-        s.fileno(),
-        0x8915,  # SIOCGIFADDR
-        struct.pack('256s', ifname[:15])
-    )[20:24]
-
-
 class MiniTestServer(object):
     """
     Small server class for testing SocketConnection.
@@ -211,9 +192,6 @@ class TestSocketConnection(unittest.TestCase):
     Tests only use loopback interface 'lo', since other interfaces would be
     hardware or network dependent.
     """
-
-    def setUp(self):
-        self.local_ip = get_packed_ip_address('eth0')
 
     def test_tcp_client(self):
         """
