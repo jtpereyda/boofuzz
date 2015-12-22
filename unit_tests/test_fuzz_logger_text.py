@@ -1,18 +1,17 @@
 import unittest
 import StringIO
-import os
 from boofuzz import fuzz_logger_text
 
 LOGGER_PREAMBLE = ".*"
-TEST_CASE_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_CASE_FORMAT + os.linesep
-TEST_STEP_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_STEP_FORMAT + os.linesep
-LOG_CHECK_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_CHECK_FORMAT + os.linesep
-LOG_INFO_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_INFO_FORMAT + os.linesep
-LOG_PASS_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_PASS_FORMAT + os.linesep
-LOG_FAIL_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_FAIL_FORMAT + os.linesep
-LOG_RECV_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_RECV_FORMAT + os.linesep
-LOG_SEND_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_SEND_FORMAT + os.linesep
-LOG_ERROR_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_ERROR_FORMAT + os.linesep
+TEST_CASE_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_CASE_FORMAT + '\n'
+TEST_STEP_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_STEP_FORMAT + '\n'
+LOG_CHECK_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_CHECK_FORMAT + '\n'
+LOG_INFO_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_INFO_FORMAT + '\n'
+LOG_PASS_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_PASS_FORMAT + '\n'
+LOG_FAIL_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_FAIL_FORMAT + '\n'
+LOG_RECV_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_RECV_FORMAT + '\n'
+LOG_SEND_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_SEND_FORMAT + '\n'
+LOG_ERROR_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_ERROR_FORMAT + '\n'
 DEFAULT_TEST_CASE_ID = fuzz_logger_text.FuzzLoggerText.DEFAULT_TEST_CASE_ID
 
 
