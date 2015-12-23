@@ -22,6 +22,7 @@ class EzOutletReset:
     """
     DEFAULT_RESET_DELAY = 3.05
     RESET_URL_PATH = '/reset.cgi'
+    NO_RESPONSE_MSG = "No response from EzOutlet. timeout value: {0}"
 
     def __init__(self, hostname, dut_reset_time=0, timeout=30, reset_delay=DEFAULT_RESET_DELAY):
         """
@@ -52,7 +53,7 @@ class EzOutletReset:
             urllib2.urlopen(_build_url(self._hostname, self.RESET_URL_PATH),
                             timeout=self._timeout)
         except urllib2.URLError:
-            raise sex.SullyRuntimeError("No response from EzOutlet. timeout value: {0}".format(self._timeout)), \
+            raise sex.SullyRuntimeError(self.NO_RESPONSE_MSG.format(self._timeout)), \
                 None, \
                 sys.exc_info()[2]
         time.sleep(self._reset_delay + self._dut_reset_time)
