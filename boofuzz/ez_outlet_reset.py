@@ -1,8 +1,13 @@
 import sys
 import time
 import urllib2
+import urlparse
 
 import sex
+
+
+def _build_url(hostname, path):
+    return urlparse.urlunparse(('http', hostname, path, '', '', ''))
 
 
 class EzOutletReset:
@@ -16,14 +21,17 @@ class EzOutletReset:
     It uses undocumented yet simple CGI scripts.
     """
     DEFAULT_RESET_DELAY = 3.05
+    RESET_URL_PATH = '/reset.cgi'
 
-    def __init__(self, dut_reset_time=0, timeout=30, reset_delay=DEFAULT_RESET_DELAY):
+    def __init__(self, hostname, dut_reset_time=0, timeout=30, reset_delay=DEFAULT_RESET_DELAY):
         """
+        @param hostname: Hostname or IP address of device.
         @param dut_reset_time: Time in seconds to allow the device under test
                                to reboot.
         @param timeout: Time in seconds to wait for the EzOutlet to respond.
         @param reset_delay: Time the EzOutlet waits before switching back on.
         """
+        self._hostname = hostname
         self._dut_reset_time = dut_reset_time
         self._timeout = timeout
         self._reset_delay = reset_delay
@@ -41,9 +49,10 @@ class EzOutletReset:
         _ = kwargs  # only for forward-compatibility
         # TODO log sent/received for debugging.
         try:
-            urllib2.urlopen("http://172.16.3.174/reset.cgi", timeout=self._timeout)
+            urllib2.urlopen(_build_url(self._hostname, self.RESET_URL_PATH),
+                            timeout=self._timeout)
         except urllib2.URLError:
-            raise sex.SullyRuntimeError("EzOutlet did not respond in time. timeout value: {0}".format(self._timeout)), \
-                   None, \
-                   sys.exc_info()[2]
+            raise sex.SullyRuntimeError("No response from EzOutlet. timeout value: {0}".format(self._timeout)), \
+                None, \
+                sys.exc_info()[2]
         time.sleep(self._reset_delay + self._dut_reset_time)
