@@ -672,7 +672,7 @@ class Session(pgraph.Graph):
         if len(self.on_failure) > 0:
             for f in self.on_failure:
                 self._fuzz_data_logger.open_test_step("calling registered on_failure method")
-                f()
+                f(logger=self._fuzz_data_logger)
         # vm restarting is the preferred method so try that before procmon.
         elif target.vmcontrol:
             self._fuzz_data_logger.log_info("restarting target virtual machine")
