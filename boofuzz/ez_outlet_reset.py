@@ -2,6 +2,7 @@ import sys
 import time
 import urllib2
 import urlparse
+import ifuzz_logger
 
 import sex
 
@@ -38,25 +39,34 @@ class EzOutletReset:
         self._timeout = timeout
         self._reset_delay = reset_delay
 
-    def post_fail(self, *args, **kwargs):
-        """
-        Tries to reset device over HTTP and wait based on self.reset_delay
-        + self._dut_reset_time seconds.
+    def post_fail(self, logger, *args, **kwargs):
+        """Tries to reset device over HTTP and wait before returning.
 
-        If the outlet does not respond, this method will raise an exception.
+        After sending HTTP request and receiving response, wait
+        self.reset_delay + self._dut_reset_time seconds.
 
-        @:raises: sex.SullyRuntimeError if the reset fails.
+        If the outlet does not respond (after self.timeout seconds), this
+        method will raise an exception.
+
+        This method will log actions associated with HTTP communication. It
+        assumes that a test step is already opened.
+
+        Args:
+            logger (ifuzz_logger.IFuzzLogger):
+                For logging communications with outlet device.
+            *args: Kept for forward-compatibility.
+            **kwargs: Kept for forward-compatibility.
+
+        Raises:
+            sex.SulleyRuntimeError: If the reset fails.
         """
         _ = args  # only for forward-compatibility
-        try:
-            logger = kwargs['logger']
-        except KeyError:
-            logger = None
+        _ = kwargs  # only for forward-compatibility
+        logger = logger
 
         url = _build_url(self._hostname, self.RESET_URL_PATH)
 
-        if logger is not None:
-            logger.log_info(self.LOG_REQUEST_MSG.format(url))
+        logger.log_info(self.LOG_REQUEST_MSG.format(url))
 
         try:
             opened_rul = urllib2.urlopen(url, timeout=self._timeout)
@@ -67,7 +77,6 @@ class EzOutletReset:
                 None, \
                 sys.exc_info()[2]
 
-        if logger is not None:
-            logger.log_recv(opened_rul.read())
+        logger.log_recv(opened_rul.read())
 
         time.sleep(self._reset_delay + self._dut_reset_time)
