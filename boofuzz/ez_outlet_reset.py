@@ -12,9 +12,10 @@ def _build_url(hostname, path):
 
 
 class EzOutletReset:
-    """
-    This module uses the ezOutlet EZ-11b Internet IP-Enabled Remote Power
-    Reboot Switch to reset a device under test (DUT).
+    """Uses ezOutlet EZ-11b to reset a device.
+
+    Uses the ezOutlet EZ-11b Internet IP-Enabled Remote Power Reboot Switch to
+    reset a device under test (DUT).
 
     It provides a post_fail method, meant to be given as a callback to a
     Session object.
@@ -28,11 +29,12 @@ class EzOutletReset:
 
     def __init__(self, hostname, dut_reset_time=0, timeout=30, reset_delay=DEFAULT_RESET_DELAY):
         """
-        @param hostname: Hostname or IP address of device.
-        @param dut_reset_time: Time in seconds to allow the device under test
-                               to reboot.
-        @param timeout: Time in seconds to wait for the EzOutlet to respond.
-        @param reset_delay: Time the EzOutlet waits before switching back on.
+        Args:
+            hostname: Hostname or IP address of device.
+            dut_reset_time: Time in seconds to allow the device under test
+                to reboot.
+            timeout: Time in seconds to wait for the EzOutlet to respond.
+            reset_delay: Time the EzOutlet waits before switching back on.
         """
         self._hostname = hostname
         self._dut_reset_time = dut_reset_time
@@ -43,9 +45,9 @@ class EzOutletReset:
         """Tries to reset device over HTTP and wait before returning.
 
         After sending HTTP request and receiving response, wait
-        self.reset_delay + self._dut_reset_time seconds.
+        self._reset_delay + self._dut_reset_time seconds.
 
-        If the outlet does not respond (after self.timeout seconds), this
+        If the outlet does not respond (after self._timeout seconds), this
         method will raise an exception.
 
         This method will log actions associated with HTTP communication. It
