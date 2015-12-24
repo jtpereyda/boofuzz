@@ -61,6 +61,8 @@ class EzOutletReset:
         try:
             opened_rul = urllib2.urlopen(url, timeout=self._timeout)
         except urllib2.URLError:
+            if logger is not None:
+                logger.log_info(self.NO_RESPONSE_MSG.format(self._timeout))
             raise sex.SullyRuntimeError(self.NO_RESPONSE_MSG.format(self._timeout)), \
                 None, \
                 sys.exc_info()[2]
