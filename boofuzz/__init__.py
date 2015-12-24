@@ -7,6 +7,7 @@ import sex
 import sessions
 import utils
 import helpers
+import ez_outlet_reset
 from constants import BIG_ENDIAN, LITTLE_ENDIAN
 
 
