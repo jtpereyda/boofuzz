@@ -21,17 +21,17 @@ from web.app import app
 
 
 class Target(object):
-    """
-    Target descriptor container.
-    Encapsulates (socket) connection logic for the target, as well as pedrpc connection logic.
+    """Target descriptor container.
+
+    Takes an ITargetConnection and wraps send/recv with appropriate
+    FuzzDataLogger calls.
+
+    Encapsulates pedrpc connection logic.
 
     Contains a logger which is configured by Session.add_target().
 
-    Examples:
-        tcp_target = Target(host='127.0.0.1', port=17971)
-        udp_target = Target(host='127.0.0.1', port=17971, proto='udp')
-        raw_target = Target(host='eth0')
-        eth_target = Target(host='eth0', l2_dst='\xFF'*6)
+    Example:
+        tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
     """
 
     def __init__(self, connection):
