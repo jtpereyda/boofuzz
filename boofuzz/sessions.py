@@ -10,7 +10,6 @@ import blocks
 import pgraph
 import sex
 import primitives
-import socket_connection
 import ifuzz_logger
 import fuzz_logger
 import event_hook
@@ -22,61 +21,27 @@ from web.app import app
 
 
 class Target(object):
-    """
-    Target descriptor container.
-    Encapsulates (socket) connection logic for the target, as well as pedrpc connection logic.
+    """Target descriptor container.
+
+    Takes an ITargetConnection and wraps send/recv with appropriate
+    FuzzDataLogger calls.
+
+    Encapsulates pedrpc connection logic.
 
     Contains a logger which is configured by Session.add_target().
 
-    Examples:
-        tcp_target = Target(host='127.0.0.1', port=17971)
-        udp_target = Target(host='127.0.0.1', port=17971, proto='udp')
-        raw_target = Target(host='eth0')
-        eth_target = Target(host='eth0', l2_dst='\xFF'*6)
+    Example:
+        tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
     """
 
-    def __init__(self,
-                 host,
-                 port=None,
-                 proto="tcp",
-                 bind=None,
-                 timeout=5.0,
-                 ethernet_proto=socket_connection.ETH_P_IP,
-                 l2_dst='\xFF' * 6):
+    def __init__(self, connection):
         """
-        @type  host:    str
-        @param host:    Hostname or IP address of target system,
-                        or network interface string if using raw-l2 or raw-l3.
-
-        @type  port:    int
-        @param port:    Port of target service. Required for proto values 'tcp', 'udp', 'ssl'.
-
-        @type  proto:   str
-        @kwarg proto:   (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl", "raw-l2", "raw-l3")
-                        raw-l2: Send packets at layer 2. Must include link layer header (e.g. Ethernet frame).
-                        raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
-
-        @type  bind:    tuple (host, port)
-        @kwarg bind:    (Optional, def=None) Socket bind address and port. Required if using recv() with 'udp' protocol.
-
-        @type  timeout: float
-        @kwarg timeout: (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
-
-        @type ethernet_proto:
-                        int
-        @kwarg ethernet_proto:
-                        (Optional, def=ETH_P_IP (0x0800)) Ethernet protocol when using 'raw-l3'. 16 bit integer.
-                        See "if_ether.h" in Linux documentation for more options.
-
-        @type l2_dst:   str
-        @kwarg l2_dst:  (Optional, def='\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast))
-                        Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
+        @type  connection: itarget_connection.ITargetConnection
+        @param connection: Connection to system under test.
         """
         self._fuzz_data_logger = None
 
-        self._target_connection = socket_connection.SocketConnection(
-            host=host, port=port, proto=proto, bind=bind, timeout=timeout,
-            ethernet_proto=ethernet_proto, l2_dst=l2_dst)
+        self._target_connection = connection
 
         # set these manually once target is instantiated.
         self.netmon = None

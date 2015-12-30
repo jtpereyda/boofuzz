@@ -11,8 +11,13 @@ ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_e
 
 
 class SocketConnection(itarget_connection.ITargetConnection):
-    """
-    ITargetConnection implementation using sockets. Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
+    """ITargetConnection implementation using sockets.
+
+    Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
+
+    Examples:
+        tcp_connection = SocketConnection(host='127.0.0.1', port=17971)
+        udp_connection = SocketConnection(host='127.0.0.1', port=17971, proto='udp')
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
