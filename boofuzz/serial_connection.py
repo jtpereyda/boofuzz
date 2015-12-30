@@ -1,6 +1,6 @@
 import time
 import itarget_connection
-import iserial_like
+import serial_connection_low_level
 
 
 class SerialConnection(itarget_connection.ITargetConnection):
@@ -30,10 +30,12 @@ class SerialConnection(itarget_connection.ITargetConnection):
     If none of these methods are used, your connection may hang forever.
     """
 
-    def __init__(self, connection, timeout=None, message_separator_time=None, content_checker=None):
+    def __init__(self, port=0, baudrate=9600, timeout=5, message_separator_time=0.300, content_checker=None):
         """
-        @type  connection:             iserial_like.ISerialLike
-        @param connection:             Low level connection, e.g., SerialConnectionLowLevel.
+        @type  port:                   int | str
+        @param port:                   Serial port name or number.
+        @type baudrate:                int
+        @param baudrate:               Baud rate for port.
         @type timeout:                 float
         @param timeout:                For recv(). After timeout seconds from receive start,
                                        recv() will return all received data, if any.
@@ -47,7 +49,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
                                            If the method returns n > 0, recv() will return n bytes.
                                            If it returns 0, recv() will keep on reading.
         """
-        self._connection = connection
+        self._connection = serial_connection_low_level.SerialConnectionLowLevel(port=port, baudrate=baudrate)
         self.timeout = timeout
         self.message_separator_time = message_separator_time
         self.content_checker = content_checker
