@@ -1,9 +1,8 @@
+# ASN.1 / BER TYPES (http://luca.ntop.org/Teaching/Appunti/asn1.html)
 
-### ASN.1 / BER TYPES (http://luca.ntop.org/Teaching/Appunti/asn1.html)
-
-
-from boofuzz import blocks, primitives, sex
-from boofuzz.constants import BIG_ENDIAN
+from __future__ import absolute_import
+from .. import blocks, primitives, sex
+from ..constants import BIG_ENDIAN
 
 
 class String(blocks.Block):
@@ -22,9 +21,9 @@ class String(blocks.Block):
 
         super(String).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
-        self.prefix  = options.get("prefix", "\x04")
+        self.prefix = options.get("prefix", "\x04")
 
         if not self.value:
             raise sex.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
@@ -61,7 +60,7 @@ class Integer(blocks.Block):
 
         super(Integer).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:

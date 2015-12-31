@@ -1,13 +1,12 @@
+# XDR TYPES (http://www.freesoft.org/CIE/RFC/1832/index.htm)
 
-### XDR TYPES (http://www.freesoft.org/CIE/RFC/1832/index.htm)
-
-
+from __future__ import absolute_import
 import struct
-from boofuzz import blocks, primitives, sex
-from boofuzz.helpers import calculate_four_byte_padding
+from .. import blocks, primitives, sex
+from ..helpers import calculate_four_byte_padding
 
 
-class String (blocks.Block):
+class String(blocks.Block):
     """
     Note: this is not for fuzzing the XDR protocol but rather just representing an XDR string for fuzzing the actual
     client.
@@ -19,7 +18,7 @@ class String (blocks.Block):
 
         super(String).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:

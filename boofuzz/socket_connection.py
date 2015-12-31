@@ -1,11 +1,12 @@
-from boofuzz import helpers
-import itarget_connection
-import socket
+from __future__ import absolute_import
 import ssl
 import httplib
-import ip_constants
+import socket
 
-import sex
+from . import helpers
+from . import itarget_connection
+from . import ip_constants
+from . import sex
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
 
