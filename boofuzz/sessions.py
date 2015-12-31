@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import zlib
 import time
@@ -6,17 +7,18 @@ import signal
 import cPickle
 import threading
 import logging
-import blocks
-import pgraph
-import sex
-import primitives
-import ifuzz_logger
-import fuzz_logger
-import event_hook
-
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+
+from . import blocks
+from . import pgraph
+from . import sex
+from . import primitives
+from . import ifuzz_logger
+from . import fuzz_logger
+from . import event_hook
+
 from web.app import app
 
 
@@ -376,7 +378,7 @@ class Session(pgraph.Graph):
         self.skip and restarting based on self.restart_interval.
 
         If you want the web server to be available, your program must persist
-        after calling this method. boofuzz.helpers.pause_for_signal is
+        after calling this method. helpers.pause_for_signal() is
         available to this end.
 
         :return: None

@@ -1,9 +1,8 @@
-# ## MSRPC NDR TYPES
-
+# MSRPC NDR TYPES
 
 import struct
-from boofuzz import blocks, primitives, sex
-from boofuzz.helpers import calculate_four_byte_padding
+from .. import blocks, primitives, sex
+from ..helpers import calculate_four_byte_padding
 
 
 class NdrConformantArray(blocks.Block):

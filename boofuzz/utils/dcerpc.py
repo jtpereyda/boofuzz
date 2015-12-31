@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import math
 import struct
-from boofuzz import helpers
+from .. import helpers
 
 
 def bind(uuid, version):

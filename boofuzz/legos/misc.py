@@ -1,18 +1,17 @@
+# Misc Types
 
-### Misc Types
+from __future__ import absolute_import
+from .. import blocks, primitives, sex
 
 
-from boofuzz import blocks, primitives, sex
-
-
-class DNSHostname (blocks.Block):
+class DNSHostname(blocks.Block):
     def __init__(self, name, request, value, options=None):
         if not options:
             options = {}
 
         super(DNSHostname).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:
@@ -47,7 +46,7 @@ class Tag(blocks.Block):
 
         super(Tag).__init__(name, request)
 
-        self.value   = value
+        self.value = value
         self.options = options
 
         if not self.value:
