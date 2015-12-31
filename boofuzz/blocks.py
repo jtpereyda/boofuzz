@@ -1,11 +1,13 @@
+from __future__ import absolute_import
 import collections
-from boofuzz import helpers
-import primitives
-import sex
 import zlib
 import hashlib
 import struct
-from constants import LITTLE_ENDIAN
+from . import helpers
+from . import primitives
+from . import sex
+from .primitives import BasePrimitive
+from .constants import LITTLE_ENDIAN
 
 REQUESTS = {}
 CURRENT = None
@@ -78,6 +80,9 @@ class Request(object):
         """
         Push an item into the block structure. If no block is open, the item goes onto the request stack. otherwise,
         the item goes onto the last open blocks stack.
+
+        @type item: BasePrimitive | Block | Request | Size | Repeat
+        @param item: Some primitive/block/request/etc.
         """
         # if the item has a name, add it to the internal dictionary of names.
         if hasattr(item, "name") and item.name:
@@ -156,6 +161,9 @@ class Request(object):
     def walk(self, stack=None):
         """
         Recursively walk through and yield every primitive and block on the request stack.
+
+        @param stack: Set to none -- used internally by recursive calls.
+                      If None, uses self.stack.
 
         @rtype:  Sulley Primitives
         @return: Sulley Primitives
@@ -343,6 +351,8 @@ class Block(object):
     def push(self, item):
         """
         Push an arbitrary item onto this blocks stack.
+        @type item: BasePrimitive | Block | Size | Repeat
+        @param item: Some primitive/block/etc.
         """
 
         self.stack.append(item)

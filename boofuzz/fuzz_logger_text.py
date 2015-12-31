@@ -2,8 +2,8 @@ from __future__ import print_function
 from builtins import bytes
 import sys
 import time
-from boofuzz import helpers
-from boofuzz import ifuzz_logger_backend
+from . import helpers
+from . import ifuzz_logger_backend
 
 
 def hex_to_hexstr(input_bytes):

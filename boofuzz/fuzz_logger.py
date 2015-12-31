@@ -1,29 +1,6 @@
 import ifuzz_logger
 
 
-def failure_summary(fl):
-    """
-    Return test summary string based on fuzz_logger's results.
-
-    :type fl: FuzzLogger
-    :param fl: Provides test results data.
-
-    :return: Test summary string, may be multi-line.
-    """
-    summary = "Test Summary: {0} tests ran.\n".format(len(fl.all_test_cases))
-    summary += "PASSED: {0} test cases.\n".format(len(fl.passed_test_cases))
-
-    if len(fl.failed_test_cases) > 0:
-        summary += "FAILED: {0} test cases:\n".format(len(fl.failed_test_cases))
-        summary += "{0}\n".format('\n'.join(map(str, fl.failed_test_cases.iterkeys())))
-
-    if len(fl.error_test_cases) > 0:
-        summary += "Errors on {0} test cases:\n".format(len(fl.error_test_cases))
-        summary += "{0}".format('\n'.join(map(str, fl.error_test_cases.iterkeys())))
-
-    return summary
-
-
 class FuzzLogger(ifuzz_logger.IFuzzLogger):
     """
     Implementation for IFuzzLogger.
@@ -92,3 +69,21 @@ class FuzzLogger(ifuzz_logger.IFuzzLogger):
     def log_send(self, data):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_send(data=data)
+
+    def failure_summary(self):
+        """Return test summary string based on fuzz logger results.
+
+        :return: Test summary string, may be multi-line.
+        """
+        summary = "Test Summary: {0} tests ran.\n".format(len(self.all_test_cases))
+        summary += "PASSED: {0} test cases.\n".format(len(self.passed_test_cases))
+
+        if len(self.failed_test_cases) > 0:
+            summary += "FAILED: {0} test cases:\n".format(len(self.failed_test_cases))
+            summary += "{0}\n".format('\n'.join(map(str, self.failed_test_cases.iterkeys())))
+
+        if len(self.error_test_cases) > 0:
+            summary += "Errors on {0} test cases:\n".format(len(self.error_test_cases))
+            summary += "{0}".format('\n'.join(map(str, self.error_test_cases.iterkeys())))
+
+        return summary

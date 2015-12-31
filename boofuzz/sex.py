@@ -8,5 +8,6 @@ class SullyRuntimeError(Exception):
 class SizerNotUtilizedError(Exception):
     pass
 
+
 class MustImplementException(Exception):
     pass
