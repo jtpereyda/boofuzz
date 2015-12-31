@@ -1,3 +1,5 @@
+import functools
+
 import blocks
 import instrumentation
 import legos
@@ -255,7 +257,7 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
         raise sex.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
 
     size = blocks.Size(
-        block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
+            block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
     )
     blocks.CURRENT.push(size)
 
@@ -349,6 +351,10 @@ def s_lego(lego_type, value=None, options=()):
 
     @type  lego_type:   str
     @param lego_type:   Function that represents a lego
+
+    @param value:       Original value
+
+    @param options:     Options to pass to lego.
     """
 
     # as legos are blocks they must have a name.
@@ -578,10 +584,24 @@ s_short = s_word
 s_long = s_int = s_dword
 s_double = s_qword
 s_repeater = s_repeat
-s_intelword = lambda x: s_long(x, endian=LITTLE_ENDIAN)
-s_intelhalfword = lambda x: s_short(x, endian=LITTLE_ENDIAN)
-s_bigword = lambda x: s_long(x, endian=BIG_ENDIAN)
-s_unistring = lambda x: s_string(x, encoding="utf_16_le")
+
+
+def s_intelword(*args, **kwargs):
+    defaults = {"endian": "LITTLE_ENDIAN"}
+    defaults.update(kwargs)
+    return s_long(*args, **defaults)
+
+
+def s_intelhalfword(*args, **kwargs):
+    defaults = {"endian": "LITTLE_ENDIAN"}
+    defaults.update(kwargs)
+    return s_short(*args, **defaults)
+
+
+def s_bigword(*args, **kwargs):
+    defaults = {"endian": "BIG_ENDIAN"}
+    defaults.update(kwargs)
+    return s_long(*args, **defaults)
 
 
 def s_cstring(x):
@@ -590,50 +610,51 @@ def s_cstring(x):
 
 
 # Not implemented aliases yet
-def not_impl(alias, args):
-    raise NotImplementedError("%s isn't implemented yet. Args -> %s" % (alias, args))
+def not_impl(alias, *args, **kwargs):
+    raise NotImplementedError("%s isn't implemented yet. Args -> %s. Kwargs -> %s" % (alias, args, kwargs))
 
 
-s_string_lf = lambda args: not_impl("s_string_lf", args)
-s_string_or_env = lambda args: not_impl("s_string_or_env", args)
-s_string_repeat = lambda args: not_impl("s_string_repeat", args)
-s_string_variable = lambda args: not_impl("s_string_variable", args)
-s_string_variables = lambda args: not_impl("s_string_variables", args)
-s_binary_repeat = lambda args: not_impl("s_binary_repeat", args)
-s_unistring_variable = lambda args: not_impl("s_unistring_variable", args)
-s_xdr_string = lambda args: not_impl("s_xdr_string", args)
+s_string_lf = functools.partial(not_impl, "s_string_lf")
+s_string_or_env = functools.partial(not_impl, "s_string_or_env")
+s_string_repeat = functools.partial(not_impl, "s_string_repeat")
+s_string_variable = functools.partial(not_impl, "s_string_variable")
+s_string_variables = functools.partial(not_impl, "s_string_variables")
+s_binary_repeat = functools.partial(not_impl, "s_binary_repeat")
+s_unistring_variable = functools.partial(not_impl, "s_unistring_variable")
+s_xdr_string = functools.partial(not_impl, "s_xdr_string")
 
 
-def no_sizer(args):
+def no_sizer(*args, **kwargs):
+    _ = kwargs  # just making the function univesral
     raise sex.SizerNotUtilizedError("Use the s_size primitive for including sizes. Args -> %s" % args)
 
 
 # A bunch of un-defined primitives from SPIKE
-s_binary_block_size_intel_halfword_plus_variable = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian_variable = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_plussome = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_variable = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian_mult = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_variable = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_mult = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword_plus = lambda args: no_sizer(args)
-s_binary_block_size_halfword_bigendian = lambda args: no_sizer(args)
-s_binary_block_size_word_intel_mult_plus = lambda args: no_sizer(args)
-s_binary_block_size_intel_word_variable = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian_mult = lambda args: no_sizer(args)
-s_blocksize_unsigned_string_variable = lambda args: no_sizer(args)
-s_binary_block_size_intel_word_plus = lambda args: no_sizer(args)
-s_binary_block_size_intel_halfword = lambda args: no_sizer(args)
-s_binary_block_size_word_bigendian = lambda args: no_sizer(args)
-s_blocksize_signed_string_variable = lambda args: no_sizer(args)
-s_binary_block_size_byte_variable = lambda args: no_sizer(args)
-s_binary_block_size_intel_word = lambda args: no_sizer(args)
-s_binary_block_size_byte_plus = lambda args: no_sizer(args)
-s_binary_block_size_byte_mult = lambda args: no_sizer(args)
-s_blocksize_asciihex_variable = lambda args: no_sizer(args)
-s_binary_block_size_byte = lambda args: no_sizer(args)
-s_blocksize_asciihex = lambda args: no_sizer(args)
-s_blocksize_string = lambda args: no_sizer(args)
+s_binary_block_size_intel_halfword_plus_variable = no_sizer
+s_binary_block_size_halfword_bigendian_variable = no_sizer
+s_binary_block_size_word_bigendian_plussome = no_sizer
+s_binary_block_size_word_bigendian_variable = no_sizer
+s_binary_block_size_halfword_bigendian_mult = no_sizer
+s_binary_block_size_intel_halfword_variable = no_sizer
+s_binary_block_size_intel_halfword_mult = no_sizer
+s_binary_block_size_intel_halfword_plus = no_sizer
+s_binary_block_size_halfword_bigendian = no_sizer
+s_binary_block_size_word_intel_mult_plus = no_sizer
+s_binary_block_size_intel_word_variable = no_sizer
+s_binary_block_size_word_bigendian_mult = no_sizer
+s_blocksize_unsigned_string_variable = no_sizer
+s_binary_block_size_intel_word_plus = no_sizer
+s_binary_block_size_intel_halfword = no_sizer
+s_binary_block_size_word_bigendian = no_sizer
+s_blocksize_signed_string_variable = no_sizer
+s_binary_block_size_byte_variable = no_sizer
+s_binary_block_size_intel_word = no_sizer
+s_binary_block_size_byte_plus = no_sizer
+s_binary_block_size_byte_mult = no_sizer
+s_blocksize_asciihex_variable = no_sizer
+s_binary_block_size_byte = no_sizer
+s_blocksize_asciihex = no_sizer
+s_blocksize_string = no_sizer
 
 
 # MISC
