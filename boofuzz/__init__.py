@@ -1,16 +1,32 @@
+from __future__ import absolute_import
 import functools
 
-import blocks
-import instrumentation
-import legos
-import pedrpc
-import primitives
-import sex
-import sessions
-import utils
-import helpers
-import ez_outlet_reset
-from constants import BIG_ENDIAN, LITTLE_ENDIAN
+from . import blocks
+from . import legos
+from . import primitives
+from . import sex
+
+from .blocks import *
+from .constants import *
+from .event_hook import *
+from .ez_outlet_reset import *
+from .fuzz_logger import *
+from .fuzz_logger_text import *
+from .helpers import *
+from .ifuzz_logger import *
+from .ifuzz_logger_backend import *
+from .instrumentation import *
+from .ip_constants import *
+from .iserial_like import *
+from .itarget_connection import *
+from .legos import *
+from .pedrpc import *
+from .primitives import *
+from .serial_connection import *
+from .sessions import *
+from .sex import *
+from .socket_connection import *
+from .utils import *
 
 
 # REQUEST MANAGEMENT
@@ -391,8 +407,8 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    random = primitives.RandomData(value, min_length, max_length, num_mutations, fuzzable, step, name)
-    blocks.CURRENT.push(random)
+    random_data = primitives.RandomData(value, min_length, max_length, num_mutations, fuzzable, step, name)
+    blocks.CURRENT.push(random_data)
 
 
 def s_static(value, name=None):
