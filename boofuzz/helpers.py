@@ -1,6 +1,6 @@
 import socket
 import platform
-import ctypes as c
+import ctypes
 import zlib
 
 # noinspection PyPep8Naming
@@ -24,24 +24,24 @@ def get_max_udp_size():
     lib = None
 
     if windows:
-        sol_socket = c.c_int(0xffff)
+        sol_socket = ctypes.c_int(0xffff)
         sol_max_msg_size = 0x2003
-        lib = c.WinDLL('Ws2_32.dll')
-        opt = c.c_int(sol_max_msg_size)
+        lib = ctypes.WinDLL('Ws2_32.dll')
+        opt = ctypes.c_int(sol_max_msg_size)
     elif linux or mac:
         if mac:
-            lib = c.cdll.LoadLibrary('libc.dylib')
+            lib = ctypes.cdll.LoadLibrary('libc.dylib')
         elif linux:
-            lib = c.cdll.LoadLibrary('libc.so.6')
-        sol_socket = c.c_int(socket.SOL_SOCKET)
-        opt = c.c_int(socket.SO_SNDBUF)
+            lib = ctypes.cdll.LoadLibrary('libc.so.6')
+        sol_socket = ctypes.c_int(socket.SOL_SOCKET)
+        opt = ctypes.c_int(socket.SO_SNDBUF)
 
     else:
         raise Exception("Unknown platform!")
 
-    ulong_size = c.sizeof(c.c_ulong)
-    buf = c.create_string_buffer(ulong_size)
-    bufsize = c.c_int(ulong_size)
+    ulong_size = ctypes.sizeof(ctypes.c_ulong)
+    buf = ctypes.create_string_buffer(ulong_size)
+    bufsize = ctypes.c_int(ulong_size)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -50,10 +50,10 @@ def get_max_udp_size():
         sol_socket,
         opt,
         buf,
-        c.pointer(bufsize)
+        ctypes.pointer(bufsize)
     )
 
-    return c.c_ulong.from_buffer(buf).value
+    return ctypes.c_ulong.from_buffer(buf).value
 
 
 def calculate_four_byte_padding(string, character="\x00"):
@@ -61,8 +61,10 @@ def calculate_four_byte_padding(string, character="\x00"):
 
 
 def crc16(string, value=0):
-    """
-    CRC-16 poly: p(x) = x**16 + x**15 + x**2 + 1
+    """CRC-16 poly: p(x) = x**16 + x**15 + x**2 + 1
+
+    @param string: Data over which to calculate crc.
+    @param value: Initial CRC value.
     """
     crc16_table = []
     for byte in range(256):
@@ -89,8 +91,9 @@ def crc32(string):
 
 
 def uuid_bin_to_str(uuid):
-    """
-    Convert a binary UUID to human readable string.
+    """Convert a binary UUID to human readable string.
+
+    @param uuid: bytes representing UUID.
     """
     (block1, block2, block3) = struct.unpack("<LHH", uuid[:8])
     (block4, block5, block6) = struct.unpack(">HHL", uuid[8:16])
@@ -99,8 +102,13 @@ def uuid_bin_to_str(uuid):
 
 
 def uuid_str_to_bin(uuid):
-    """
-    Ripped from Core Impacket. Converts a UUID string to binary form.
+    """Converts a UUID string to binary form.
+
+    Expected string input format is same as uuid_bin_to_str()'s output format.
+
+    Ripped from Core Impacket.
+
+    @param uuid: UUID string to convert to bytes.
     """
     uuid_re = r'([\dA-Fa-f]{8})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})([\dA-Fa-f]{8})'
 
@@ -160,8 +168,11 @@ def ipv4_checksum(msg):
 
 
 def udp_checksum(msg, src_addr, dst_addr):
-    """
-    Return UDP checksum of msg.
+    """Return UDP checksum of msg.
+
+    Recall that the UDP checksum involves creating a sort of pseudo IP header.
+    This header requires the source and destination IP addresses, which this
+    function takes as parameters.
 
     If msg is too big, the checksum is undefined, and this method will
     truncate it for the sake of checksum calculation. Note that this means the
@@ -171,6 +182,11 @@ def udp_checksum(msg, src_addr, dst_addr):
 
     :param msg: Message to compute checksum over.
     :type msg: str
+
+    :type src_addr: str
+    :param src_addr: Source IP address.
+    :type dst_addr: str
+    :param dst_addr: Destination IP address.
 
     :return: UDP checksum of msg.
     :rtype: int
