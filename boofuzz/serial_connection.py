@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import time
-import itarget_connection
-import serial_connection_low_level
+from . import itarget_connection
+from . import serial_connection_low_level
 
 
 class SerialConnection(itarget_connection.ITargetConnection):

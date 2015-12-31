@@ -1,2 +1,2 @@
-BIG_ENDIAN      = ">"
-LITTLE_ENDIAN   = "<"
+BIG_ENDIAN = ">"
+LITTLE_ENDIAN = "<"

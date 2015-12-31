@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 import ssl
 import httplib
+import socket
 
 from . import helpers
 from . import itarget_connection
-from . import socket
 from . import ip_constants
 from . import sex
 
