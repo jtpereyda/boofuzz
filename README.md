@@ -5,7 +5,7 @@ Besides numerous bug fixes, boofuzz aims for extensibility, with the eventual go
 
 Why?
 ----
-Sulley has been the preeminent open source fuzzer for sometime, but has fallen out of maintenance.
+Sulley has been the preeminent open source fuzzer for some time, but has fallen out of maintenance.
 
 Features
 --------
