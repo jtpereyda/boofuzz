@@ -19,7 +19,7 @@ class String(blocks.Block):
         if not options:
             options = {}
 
-        super(String).__init__(name, request)
+        super(String, self).__init__(name, request)
 
         self.value = value
         self.options = options

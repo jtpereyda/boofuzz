@@ -55,7 +55,7 @@ class NdrString(blocks.Block):
         if not options:
             options = {}
 
-        super(NdrString).__init__(name, request)
+        super(NdrString, self).__init__(name, request)
 
         self.value = value
         self.options = options
