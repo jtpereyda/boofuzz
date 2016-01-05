@@ -19,7 +19,7 @@ from . import ifuzz_logger
 from . import fuzz_logger
 from . import event_hook
 
-from web.app import app
+from .web.app import app
 
 
 class Target(object):
