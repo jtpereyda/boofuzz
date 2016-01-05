@@ -4,7 +4,7 @@ from boofuzz import *
 def run():
     signed_tests()
     string_tests()
-    fuzz_extension_tests()
+    # fuzz_extension_tests()
 
     # clear out the requests.
     blocks.REQUESTS = {}
@@ -92,7 +92,7 @@ def fuzz_extension_tests():
 
     s_string("foo", name="string")
     s_int(200, name="int")
-    s_char("A", name="char")
+    s_char(ord("A"), name="char")
 
     req = s_get("EXTENSION TEST")
 
