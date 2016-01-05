@@ -4,7 +4,7 @@ from boofuzz import *
 def run():
     tag()
     ndr_string()
-    ber()
+    # ber()
 
     # clear out the requests.
     blocks.REQUESTS = {}

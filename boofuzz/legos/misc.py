@@ -44,7 +44,7 @@ class Tag(blocks.Block):
         if not options:
             options = {}
 
-        super(Tag).__init__(name, request)
+        super(Tag, self).__init__(name, request)
 
         self.value = value
         self.options = options
