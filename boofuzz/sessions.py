@@ -1,15 +1,15 @@
 from __future__ import absolute_import
-import sys
 import zlib
 import time
 import socket
-import signal
 import cPickle
 import threading
 import logging
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+
+import sys
 
 from . import blocks
 from . import pgraph
@@ -385,22 +385,32 @@ class Session(pgraph.Graph):
         """
         self.server_init()
 
-        num_cases_actually_fuzzed = 0
-        for fuzz_args in self._fuzz_case_iterator():
-            # skip until we pass self.skip
-            if self.total_mutant_index <= self.skip:
-                continue
+        try:
+            num_cases_actually_fuzzed = 0
+            for fuzz_args in self._fuzz_case_iterator():
+                # skip until we pass self.skip
+                if self.total_mutant_index <= self.skip:
+                    continue
 
-            # Check restart interval
-            if num_cases_actually_fuzzed \
-                    and self.restart_interval \
-                    and num_cases_actually_fuzzed % self.restart_interval == 0:
-                self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                self.restart_target(self.targets[0])
+                # Check restart interval
+                if num_cases_actually_fuzzed \
+                        and self.restart_interval \
+                        and num_cases_actually_fuzzed % self.restart_interval == 0:
+                    self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
+                    self.restart_target(self.targets[0])
 
-            self._fuzz_current_case(*fuzz_args)
+                self._fuzz_current_case(*fuzz_args)
 
-            num_cases_actually_fuzzed += 1
+                num_cases_actually_fuzzed += 1
+        except KeyboardInterrupt:
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            self.export_file()
+            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
+            raise
+        except sex.BoofuzzRestartFailedError:
+            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
+            self.export_file()
+            raise
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -517,13 +527,13 @@ class Session(pgraph.Graph):
                                                                        target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
-        """
+        """Process any failure sin self.crash_synopses.
+
         If self.crash_synopses contains any entries, perform these failure-related actions:
          - log failure summary if needed
          - save failures to self.procmon_results (for website)
          - exhaust node if crash threshold is reached
          - target restart
-         - sys.exit(0) if target restart fails
 
         Should be called after each fuzz test case.
 
@@ -560,12 +570,7 @@ class Session(pgraph.Graph):
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            # start the target back up.
-            # If it returns False, stop the test
-            if not self.restart_target(target, stop_first=False):
-                self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
-                self.export_file()
-                sys.exit(0)
+            self.restart_target(target, stop_first=False)
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
@@ -631,8 +636,7 @@ class Session(pgraph.Graph):
         @type stop_first: bool
         @param stop_first: Set to True to stop the target before starting.
 
-        @rtype : bool
-        @returns: False if restart failed (such that we know it failed). True otherwise.
+        @raise sex.BoofuzzRestartFailedError if restart fails.
         """
 
         self._fuzz_data_logger.open_test_step("restarting target")
@@ -652,7 +656,7 @@ class Session(pgraph.Graph):
                 target.procmon.stop_target()
 
             if not target.procmon.start_target():
-                return False
+                raise sex.BoofuzzRestartFailedError()
 
             # give the process a few seconds to settle in.
             time.sleep(3)
@@ -663,40 +667,16 @@ class Session(pgraph.Graph):
                 "no reset handler available... sleeping for %d seconds" % self.restart_sleep_time
             )
             time.sleep(self.restart_sleep_time)
-            return True
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.pedrpc_connect()
 
-        return True
-
     def server_init(self):
-        """
-        Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
+        """Called by fuzz() to initialize variables, web interface, etc.
         """
         if not self.web_interface_thread.isAlive():
             self.total_mutant_index = 0
             self.total_num_mutations = self.num_mutations()
-
-            # web interface thread doesn't catch KeyboardInterrupt
-            # add a signal handler, and exit on SIGINT
-            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-
-            # noinspection PyUnusedLocal
-            def exit_abruptly(signal_recv, frame_recv):
-                """
-                SIGINT signal handler.
-
-                Save current settings (just in case) and exit.
-
-                :param frame_recv: Fulfills the handler interface.
-                :param signal_recv: Fulfills the handler interface.
-                """
-                self.export_file()
-                self._fuzz_data_logger.log_error("SIGINT received ... exiting")
-                sys.exit(0)
-
-            signal.signal(signal.SIGINT, exit_abruptly)
 
             # spawn the web interface.
             self.web_interface_thread.start()
@@ -820,21 +800,8 @@ class Session(pgraph.Graph):
         """
         target = self.targets[0]
 
-        # if we need to pause, do so.
-        self.pause()
+        self.pause()  # only pauses conditionally
 
-        # exception error handling routine, print log message and restart target.
-        def error_handler(error, message, error_target, error_sock=None):
-            if error_sock:
-                error_sock.close()
-
-            message += "\nException caught: %s" % repr(error)
-            message += "\nRestarting target and trying again"
-
-            self._fuzz_data_logger.log_error(message)
-            self.restart_target(error_target)
-
-        # Open test case and log test case info
         self._fuzz_data_logger.open_test_case(self.total_mutant_index)
         if self.fuzz_node.mutant.name:
             msg = "primitive name: \"%s\", " % self.fuzz_node.mutant.name
@@ -849,79 +816,40 @@ class Session(pgraph.Graph):
                                                                      self.total_mutant_index,
                                                                      self.total_num_mutations))
 
-        # attempt to complete a fuzz transmission. keep trying until we are successful, whenever a failure
-        # occurs, restart the target.
-        while 1:
-            # instruct the debugger/sniffer that we are about to send a new fuzz.
-            if target.procmon:
-                try:
-                    target.procmon.pre_send(self.total_mutant_index)
-                except Exception, e:
-                    error_handler(e, "failed on procmon.pre_send()", target)
-                    continue
+        if target.procmon:
+            target.procmon.pre_send(self.total_mutant_index)
 
-            if target.netmon:
-                try:
-                    target.netmon.pre_send(self.total_mutant_index)
-                except Exception, e:
-                    error_handler(e, "failed on netmon.pre_send()", target)
-                    continue
+        if target.netmon:
+            target.netmon.pre_send(self.total_mutant_index)
 
-            try:
-                target.open()
-            except socket.error, e:
-                error_handler(e, "socket connection failed", target, target)
-                continue
+        target.open()
 
-            # if the user registered a pre-send function, pass it the sock and let it do the deed.
-            try:
-                self.pre_send(target)
-            except Exception, e:
-                error_handler(e, "pre_send() failed", target, target)
-                continue
+        self.pre_send(target)
 
-            # send out valid requests for each node in the current path up to the node we are fuzzing.
-            try:
-                for e in path[:-1]:
-                    node = self.nodes[e.dst]
-                    self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                    self.transmit(target, node, e)
-            except Exception, e:
-                error_handler(e, "failed transmitting a node up the path", target, target)
-                raise
+        for e in path[:-1]:
+            node = self.nodes[e.dst]
+            self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+            self.transmit(target, node, e)
 
-            # now send the current node we are fuzzing.
-            try:
-                self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-                self.transmit(target, self.fuzz_node, edge)
-            except Exception, e:
-                error_handler(e, "failed transmitting fuzz node", target, target)
-                raise
+        self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
+        self.transmit(target, self.fuzz_node, edge)
 
-            # if we reach this point the send was successful for break out of the while(1).
-            break
-
-        # if the user registered a post-send function, pass it the sock and let it do the deed.
-        # We do this outside the try/except loop because if our fuzz causes a crash then the post_send()
-        # will likely fail and we don't want to sit in an endless loop.
+        self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
-            self._fuzz_data_logger.open_test_step("Calling post_send function:")
             self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-        except Exception, e:
-            error_handler(e, "post_send() failed", target, target)
-            raise
+        except Exception as e:
+            raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
 
-        # done with the socket.
         target.close()
-        # delay in between test cases.
+
         self._fuzz_data_logger.open_test_step("Sleep between tests.")
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
         time.sleep(self.sleep_time)
-        # poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
+
         self.poll_pedrpc(target)
-        # Log failure(s), restart target, etc.
+
         self._process_failures(target=target)
-        # serialize the current session state to disk.
+
         self.export_file()
 
     def _reset_fuzz_state(self):
