@@ -4,3 +4,7 @@ python:
     - "2.7"
 
 sudo: required
+
+install: pip install -e .[testing]
+
+script: sudo python -m pytest
