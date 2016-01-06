@@ -29,14 +29,18 @@ Tips:
  * Use the `-e` option for developer mode, which allows changes to be seen
    automatically without reinstalling:
 
-        `sudo pip -e install ./boofuzz`
+        `sudo pip install -e .`
+
+ * To install unit test dependencies as well:
+
+        `sudo pip install -e .[testing]`
 
 * If you're behind a proxy:
 
         `set HTTPS_PROXY=http://your.proxy.com:port`
     * On Linux, also use `sudo`'s `-E` option:
 
-        `sudo -E pip -e install ./boofuzz`
+        `sudo -E pip install -e .`
 
 Extras
 ------
