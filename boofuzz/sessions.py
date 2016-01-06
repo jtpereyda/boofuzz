@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import sys
 import zlib
 import time
 import socket
@@ -406,6 +405,10 @@ class Session(pgraph.Graph):
             self.export_file()
             self._fuzz_data_logger.log_error("SIGINT received ... exiting")
             raise
+        except sex.BoofuzzRestartFailedError:
+            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
+            self.export_file()
+            raise
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -522,13 +525,13 @@ class Session(pgraph.Graph):
                                                                        target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
-        """
+        """Process any failure sin self.crash_synopses.
+
         If self.crash_synopses contains any entries, perform these failure-related actions:
          - log failure summary if needed
          - save failures to self.procmon_results (for website)
          - exhaust node if crash threshold is reached
          - target restart
-         - sys.exit(0) if target restart fails
 
         Should be called after each fuzz test case.
 
@@ -565,12 +568,7 @@ class Session(pgraph.Graph):
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            # start the target back up.
-            # If it returns False, stop the test
-            if not self.restart_target(target, stop_first=False):
-                self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
-                self.export_file()
-                sys.exit(0)
+            self.restart_target(target, stop_first=False)
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
@@ -636,8 +634,7 @@ class Session(pgraph.Graph):
         @type stop_first: bool
         @param stop_first: Set to True to stop the target before starting.
 
-        @rtype : bool
-        @returns: False if restart failed (such that we know it failed). True otherwise.
+        @raise sex.BoofuzzRestartFailedError if restart fails.
         """
 
         self._fuzz_data_logger.open_test_step("restarting target")
@@ -657,7 +654,7 @@ class Session(pgraph.Graph):
                 target.procmon.stop_target()
 
             if not target.procmon.start_target():
-                return False
+                raise sex.BoofuzzRestartFailedError()
 
             # give the process a few seconds to settle in.
             time.sleep(3)
@@ -668,12 +665,9 @@ class Session(pgraph.Graph):
                 "no reset handler available... sleeping for %d seconds" % self.restart_sleep_time
             )
             time.sleep(self.restart_sleep_time)
-            return True
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.pedrpc_connect()
-
-        return True
 
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc.

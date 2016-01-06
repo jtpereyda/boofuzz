@@ -1,6 +1,14 @@
 # Sulley EXception Class
 
 
+class BoofuzzError(Exception):
+    pass
+
+
+class BoofuzzRestartFailedError(Exception):
+    pass
+
+
 class SullyRuntimeError(Exception):
     pass
 
