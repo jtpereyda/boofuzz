@@ -3,7 +3,6 @@ import sys
 import zlib
 import time
 import socket
-import signal
 import cPickle
 import threading
 import logging
@@ -385,22 +384,28 @@ class Session(pgraph.Graph):
         """
         self.server_init()
 
-        num_cases_actually_fuzzed = 0
-        for fuzz_args in self._fuzz_case_iterator():
-            # skip until we pass self.skip
-            if self.total_mutant_index <= self.skip:
-                continue
+        try:
+            num_cases_actually_fuzzed = 0
+            for fuzz_args in self._fuzz_case_iterator():
+                # skip until we pass self.skip
+                if self.total_mutant_index <= self.skip:
+                    continue
 
-            # Check restart interval
-            if num_cases_actually_fuzzed \
-                    and self.restart_interval \
-                    and num_cases_actually_fuzzed % self.restart_interval == 0:
-                self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                self.restart_target(self.targets[0])
+                # Check restart interval
+                if num_cases_actually_fuzzed \
+                        and self.restart_interval \
+                        and num_cases_actually_fuzzed % self.restart_interval == 0:
+                    self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
+                    self.restart_target(self.targets[0])
 
-            self._fuzz_current_case(*fuzz_args)
+                self._fuzz_current_case(*fuzz_args)
 
-            num_cases_actually_fuzzed += 1
+                num_cases_actually_fuzzed += 1
+        except KeyboardInterrupt:
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            self.export_file()
+            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
+            raise
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -671,32 +676,11 @@ class Session(pgraph.Graph):
         return True
 
     def server_init(self):
-        """
-        Called by fuzz() on first run (not on recursive re-entry) to initialize variables, web interface, etc...
+        """Called by fuzz() to initialize variables, web interface, etc.
         """
         if not self.web_interface_thread.isAlive():
             self.total_mutant_index = 0
             self.total_num_mutations = self.num_mutations()
-
-            # web interface thread doesn't catch KeyboardInterrupt
-            # add a signal handler, and exit on SIGINT
-            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-
-            # noinspection PyUnusedLocal
-            def exit_abruptly(signal_recv, frame_recv):
-                """
-                SIGINT signal handler.
-
-                Save current settings (just in case) and exit.
-
-                :param frame_recv: Fulfills the handler interface.
-                :param signal_recv: Fulfills the handler interface.
-                """
-                self.export_file()
-                self._fuzz_data_logger.log_error("SIGINT received ... exiting")
-                sys.exit(0)
-
-            signal.signal(signal.SIGINT, exit_abruptly)
 
             # spawn the web interface.
             self.web_interface_thread.start()
