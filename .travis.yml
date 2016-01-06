@@ -7,4 +7,4 @@ sudo: required
 
 install: pip install -e .[testing]
 
-script: sudo python -m pytest
+script: sudo py.test
