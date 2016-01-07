@@ -5,6 +5,8 @@ python:
 
 sudo: required
 
+before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+
 install: pip install -e .[testing]
 
 script:
