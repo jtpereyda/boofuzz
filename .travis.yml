@@ -9,5 +9,5 @@ install: pip install -e .[testing]
 
 script:
     - which py.test
-    - sudo which py.test
-    - py.test
+    - sudo -E which py.test
+    - sudo -E py.test
