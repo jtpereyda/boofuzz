@@ -10,6 +10,4 @@ before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 install: pip install -e .[testing]
 
 script:
-    - which py.test
-    - sudo which py.test
     - sudo py.test

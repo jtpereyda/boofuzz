@@ -1,13 +1,16 @@
+import functools
 import threading
-import unittest
+import time
 import logging
+import socket
 import struct
+import unittest
 import zlib
+
 from boofuzz.socket_connection import SocketConnection
 from boofuzz import socket_connection
 from boofuzz import ip_constants
 from boofuzz import helpers
-import socket
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -124,6 +127,7 @@ class MiniTestServer(object):
     """
     Small server class for testing SocketConnection.
     """
+
     def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
@@ -132,6 +136,7 @@ class MiniTestServer(object):
         self.stay_silent = stay_silent
         self.proto = proto
         self.host = host
+        self.timeout = 5  # Timeout while waiting for the unit test packets.
 
     def bind(self):
         """
@@ -158,7 +163,7 @@ class MiniTestServer(object):
         Serve one connection and send a reply, unless stay_silent is set.
         :return:
         """
-        self.server_socket.settimeout(5)
+        self.server_socket.settimeout(self.timeout)
 
         if self.proto == 'tcp':
             (client_socket, address) = self.server_socket.accept()
@@ -179,6 +184,44 @@ class MiniTestServer(object):
             self.received = data
             if not self.stay_silent:
                 self.server_socket.sendto(self.data_to_send, addr)
+        else:
+            raise Exception("Invalid protocol type: '{0}'".format(self.proto))
+
+        self.server_socket.close()
+        self.server_socket = None
+        self.active_port = None
+
+    def receive_until(self, expected):
+        """Receive repeatedly until expected is received.
+
+        This is handy for a noisy socket (e.g., layer 2 or layer 3 sockets that
+        receive data from multiple applications).
+
+        Will send a reply to first connection, unless stay_silent is set.
+
+        Puts received data in self.received if and only if expected is
+        received.
+
+        @param expected: Expected value to look for.
+        """
+        self.server_socket.settimeout(self.timeout)
+
+        if self.proto == 'raw':
+            # Keep receiving
+            elapsed_time = 0
+            start_time = time.time()
+            while elapsed_time < self.timeout:
+                self.server_socket.settimeout(self.timeout - elapsed_time)
+                try:
+                    data, addr = self.server_socket.recvfrom(10000)
+                    if data == expected:
+                        self.received = data
+                        if not self.stay_silent:
+                            self.server_socket.sendto(self.data_to_send, addr)
+                        break
+                except socket.timeout:
+                    break
+                elapsed_time = time.time() - start_time
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
@@ -321,24 +364,25 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = ethernet_frame(
-            payload=ip_packet(
-                payload=udp_packet(
-                    payload=data_to_send,
-                    src_port=server.active_port + 1,
-                    dst_port=server.active_port),
-                src_ip="\x7F\x00\x00\x01",
-                dst_ip="\x7F\x00\x00\x01"),
-            src_mac="\x00" * 6,
-            dst_mac="\xff" * 6)
+                payload=ip_packet(
+                        payload=udp_packet(
+                                payload=data_to_send,
+                                src_port=server.active_port + 1,
+                                dst_port=server.active_port),
+                        src_ip="\x7F\x00\x00\x01",
+                        dst_ip="\x7F\x00\x00\x01"),
+                src_mac="\x00" * 6,
+                dst_mac="\xff" * 6)
+        expected_server_receive = raw_packet
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -351,7 +395,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.isAlive())
 
         # Then
-        self.assertEqual(send_result, len(raw_packet))
+        self.assertEqual(send_result, len(expected_server_receive))
         self.assertEqual(raw_packet, server.received)
         self.assertEqual(received, bytes(''))
 
@@ -374,15 +418,16 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = data_to_send
+        expected_server_receive = raw_packet
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -396,7 +441,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
-        self.assertEqual(raw_packet, server.received)
+        self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, bytes(''))
 
     def test_raw_l2_oversized(self):
@@ -418,15 +463,16 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = data_to_send
+        expected_server_receive = raw_packet[:RAW_L2_MAX_PAYLOAD]
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -440,7 +486,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
-        self.assertEqual(raw_packet[:RAW_L2_MAX_PAYLOAD], server.received)
+        self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, bytes(''))
 
     def test_raw_l3(self):
@@ -463,21 +509,22 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = ip_packet(
-            payload=udp_packet(
-                payload=data_to_send,
-                src_port=server.active_port + 1,
-                dst_port=server.active_port),
-            src_ip="\x7F\x00\x00\x01",
-            dst_ip="\x7F\x00\x00\x01")
+                payload=udp_packet(
+                        payload=data_to_send,
+                        src_port=server.active_port + 1,
+                        dst_port=server.active_port),
+                src_ip="\x7F\x00\x00\x01",
+                dst_ip="\x7F\x00\x00\x01")
+        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -491,7 +538,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Then
         self.assertEqual(send_result, len(raw_packet))
-        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
+        self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, bytes(''))
 
     def test_raw_l3_max_size(self):
@@ -513,15 +560,16 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = data_to_send
+        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -535,7 +583,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Then
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
-        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet, server.received)
+        self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, bytes(''))
 
     def test_raw_l3_oversized(self):
@@ -557,15 +605,17 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        t = threading.Thread(target=server.serve_once)
-        t.daemon = True
-        t.start()
-
         uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = data_to_send
+        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[
+                                                                                               :RAW_L3_MAX_PAYLOAD]
+
+        t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
+        t.daemon = True
+        t.start()
 
         # When
         uut.open()
@@ -579,7 +629,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Then
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
-        self.assertEqual('\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[:RAW_L3_MAX_PAYLOAD],
+        self.assertEqual(expected_server_receive,
                          server.received)
         self.assertEqual(received, bytes(''))
 
