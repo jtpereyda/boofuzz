@@ -23,6 +23,8 @@ from .sessions import Session, Target
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 
+__version__ = '0.0.1-dev1'
+
 
 # REQUEST MANAGEMENT
 def s_get(name=None):
