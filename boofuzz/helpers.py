@@ -11,6 +11,18 @@ import time
 import ip_constants
 
 
+# TODO unit test this
+def ip_str_to_bytes(ip):
+    """Convert an IP string to a four-byte bytes.
+
+    :param ip: IP address string.
+
+    :return
+    :rtype bytes
+    """
+    return socket.inet_aton(ip)
+
+
 def get_max_udp_size():
     """
     Crazy CTypes magic to do a getsockopt() which determines the max UDP payload size in a platform-agnostic way.
@@ -46,11 +58,11 @@ def get_max_udp_size():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     lib.getsockopt(
-        sock.fileno(),
-        sol_socket,
-        opt,
-        buf,
-        ctypes.pointer(bufsize)
+            sock.fileno(),
+            sol_socket,
+            opt,
+            buf,
+            ctypes.pointer(bufsize)
     )
 
     return ctypes.c_ulong.from_buffer(buf).value
@@ -123,10 +135,11 @@ def uuid_str_to_bin(uuid):
 
 
 def _ones_complement_sum_carry_16(a, b):
-    """
-    Compute ones complement and carry at 16 bits.
+    """Compute ones complement sum and carry at 16 bits.
+
     :type a: int
     :type b: int
+
     :return: Sum of a and b, ones complement, carry at 16 bits.
     """
     pre_sum = a + b
@@ -196,8 +209,11 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH]
 
-    # Construct pseudo header:
-    data = src_addr + dst_addr + "\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", len(msg)) + msg
+    pseudo_header = (ip_str_to_bytes(src_addr) +
+                     ip_str_to_bytes(dst_addr) +
+                     b"\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) +
+                     struct.pack(">H", len(msg)))
+    data = pseudo_header + msg
 
     # Pad with 0 byte if needed
     if len(data) % 2 == 1:
