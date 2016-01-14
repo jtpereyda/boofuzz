@@ -11,16 +11,20 @@ import time
 import ip_constants
 
 
-# TODO unit test this
 def ip_str_to_bytes(ip):
     """Convert an IP string to a four-byte bytes.
 
-    :param ip: IP address string.
+    :param ip: IP address string, e.g. '127.0.0.1'
 
-    :return
+    :return 4-byte representation of ip, e.g. b'\x7F\x00\x00\x01'
     :rtype bytes
+
+    :raises ValueError if ip is not a legal IP address.
     """
-    return socket.inet_aton(ip)
+    try:
+        return socket.inet_aton(ip)
+    except socket.error:
+        raise ValueError("Illegal IP address passed to socket.inet_aton: {0}".format(ip))
 
 
 def get_max_udp_size():

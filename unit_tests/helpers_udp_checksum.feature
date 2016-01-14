@@ -1,4 +1,4 @@
-Feature: udp_checksum helper
+Feature: helpers.udp_checksum()
 
     Scenario: Empty message
         Given Empty msg
