@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import ctypes
 import platform
 import re
@@ -170,14 +171,14 @@ def ipv4_checksum(msg):
     """
     Return IPv4 checksum of msg.
     :param msg: Message to compute checksum over.
-    :type msg: str
+    :type msg: bytes
 
     :return: IPv4 checksum of msg.
     :rtype: int
     """
     # Pad with 0 byte if needed
     if len(msg) % 2 == 1:
-        msg += "\x00"
+        msg += b"\x00"
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
