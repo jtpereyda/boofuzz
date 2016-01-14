@@ -236,9 +236,9 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH]
 
-    data = _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg
-
-    return ipv4_checksum(data)
+    return ipv4_checksum(
+            _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
+            msg)
 
 
 def hex_str(s):
