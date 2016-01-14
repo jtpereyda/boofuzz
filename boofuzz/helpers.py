@@ -184,6 +184,28 @@ def ipv4_checksum(msg):
     return ~total & 0xffff
 
 
+def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
+    """Return pseudo-header for UDP checksum.
+
+    :type src_addr: bytes
+    :param src_addr: Source IP address -- 4 bytes.
+
+    :type dst_addr: bytes
+    :param dst_addr: Destination IP address -- 4 bytes.
+
+    :param msg_len: Length of UDP message (not including IPv4 header).
+    :type msg_len: int
+
+    :return: UDP pseudo-header
+    :rtype: bytes
+    """
+    return (src_addr +
+            dst_addr +
+            b"\x00" +
+            chr(ip_constants.IPV4_PROTOCOL_UDP) +
+            struct.pack(">H", msg_len))
+
+
 def udp_checksum(msg, src_addr, dst_addr):
     """Return UDP checksum of msg.
 
@@ -213,11 +235,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH]
 
-    pseudo_header = (src_addr +
-                     dst_addr +
-                     b"\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) +
-                     struct.pack(">H", len(msg)))
-    data = pseudo_header + msg
+    data = _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg
 
     return ipv4_checksum(data)
 
