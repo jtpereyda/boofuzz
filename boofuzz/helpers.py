@@ -1,14 +1,14 @@
-import socket
-import platform
+from __future__ import absolute_import
 import ctypes
-import zlib
-
-# noinspection PyPep8Naming
-import struct
+import platform
 import re
 import signal
+import socket
+import struct
 import time
-import ip_constants
+import zlib
+
+from boofuzz import ip_constants
 
 
 def ip_str_to_bytes(ip):
