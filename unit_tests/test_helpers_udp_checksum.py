@@ -1,5 +1,4 @@
 from __future__ import division
-
 import ast
 import math
 # pytest is required as an extras_require:
@@ -11,21 +10,12 @@ from boofuzz import helpers
 from boofuzz import ip_constants
 
 
-@pytest.fixture
-def context():
-    class Context(object):
-        pass
-
-    return Context()
-
-
-scenarios('helpers.feature')
+scenarios('helpers_udp_checksum.feature')
 
 
 @given('Empty msg')
 def msg_empty(context):
     context.msg = b''
-    # TODO can we use return to avoid Context object?
 
 
 @given(parsers.cfparse('msg {msg}'))
