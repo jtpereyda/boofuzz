@@ -200,10 +200,10 @@ def udp_checksum(msg, src_addr, dst_addr):
     :param msg: Message to compute checksum over.
     :type msg: str
 
-    :type src_addr: str
-    :param src_addr: Source IP address.
-    :type dst_addr: str
-    :param dst_addr: Destination IP address.
+    :type src_addr: bytes
+    :param src_addr: Source IP address -- 4 bytes.
+    :type dst_addr: bytes
+    :param dst_addr: Destination IP address -- 4 bytes.
 
     :return: UDP checksum of msg.
     :rtype: int
@@ -213,8 +213,8 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH]
 
-    pseudo_header = (ip_str_to_bytes(src_addr) +
-                     ip_str_to_bytes(dst_addr) +
+    pseudo_header = (src_addr +
+                     dst_addr +
                      b"\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) +
                      struct.pack(">H", len(msg)))
     data = pseudo_header + msg

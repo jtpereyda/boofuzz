@@ -61,12 +61,12 @@ def msg_max_plus_1(context):
 
 @given(parsers.cfparse('src_addr {text}'))
 def src_addr(context, text):
-    context.src_addr = text
+    context.src_addr = helpers.ip_str_to_bytes(text)
 
 
 @given(parsers.cfparse('dst_addr {text}'))
 def dst_addr(context, text):
-    context.dst_addr = text
+    context.dst_addr = helpers.ip_str_to_bytes(text)
 
 
 @when('Calling udp_checksum')
