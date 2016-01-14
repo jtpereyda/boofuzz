@@ -1,4 +1,6 @@
 import unittest
+# pytest is required as an extras_require:
+# noinspection PyPackageRequirements
 import mock
 from boofuzz import fuzz_logger
 from boofuzz import ifuzz_logger_backend

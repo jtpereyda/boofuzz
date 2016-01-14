@@ -1,14 +1,31 @@
-import socket
-import platform
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import ctypes
-import zlib
-
-# noinspection PyPep8Naming
-import struct
+import platform
 import re
 import signal
+import socket
+import struct
 import time
-import ip_constants
+import zlib
+
+from boofuzz import ip_constants
+
+
+def ip_str_to_bytes(ip):
+    """Convert an IP string to a four-byte bytes.
+
+    :param ip: IP address string, e.g. '127.0.0.1'
+
+    :return 4-byte representation of ip, e.g. b'\x7F\x00\x00\x01'
+    :rtype bytes
+
+    :raises ValueError if ip is not a legal IP address.
+    """
+    try:
+        return socket.inet_aton(ip)
+    except socket.error:
+        raise ValueError("Illegal IP address passed to socket.inet_aton: {0}".format(ip))
 
 
 def get_max_udp_size():
@@ -46,11 +63,11 @@ def get_max_udp_size():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     lib.getsockopt(
-        sock.fileno(),
-        sol_socket,
-        opt,
-        buf,
-        ctypes.pointer(bufsize)
+            sock.fileno(),
+            sol_socket,
+            opt,
+            buf,
+            ctypes.pointer(bufsize)
     )
 
     return ctypes.c_ulong.from_buffer(buf).value
@@ -123,10 +140,11 @@ def uuid_str_to_bin(uuid):
 
 
 def _ones_complement_sum_carry_16(a, b):
-    """
-    Compute ones complement and carry at 16 bits.
+    """Compute ones complement sum and carry at 16 bits.
+
     :type a: int
     :type b: int
+
     :return: Sum of a and b, ones complement, carry at 16 bits.
     """
     pre_sum = a + b
@@ -153,18 +171,40 @@ def ipv4_checksum(msg):
     """
     Return IPv4 checksum of msg.
     :param msg: Message to compute checksum over.
-    :type msg: str
+    :type msg: bytes
 
     :return: IPv4 checksum of msg.
     :rtype: int
     """
     # Pad with 0 byte if needed
     if len(msg) % 2 == 1:
-        msg += "\x00"
+        msg += b"\x00"
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
     return ~total & 0xffff
+
+
+def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
+    """Return pseudo-header for UDP checksum.
+
+    :type src_addr: bytes
+    :param src_addr: Source IP address -- 4 bytes.
+
+    :type dst_addr: bytes
+    :param dst_addr: Destination IP address -- 4 bytes.
+
+    :param msg_len: Length of UDP message (not including IPv4 header).
+    :type msg_len: int
+
+    :return: UDP pseudo-header
+    :rtype: bytes
+    """
+    return (src_addr +
+            dst_addr +
+            b"\x00" +
+            chr(ip_constants.IPV4_PROTOCOL_UDP) +
+            struct.pack(">H", msg_len))
 
 
 def udp_checksum(msg, src_addr, dst_addr):
@@ -183,10 +223,10 @@ def udp_checksum(msg, src_addr, dst_addr):
     :param msg: Message to compute checksum over.
     :type msg: str
 
-    :type src_addr: str
-    :param src_addr: Source IP address.
-    :type dst_addr: str
-    :param dst_addr: Destination IP address.
+    :type src_addr: bytes
+    :param src_addr: Source IP address -- 4 bytes.
+    :type dst_addr: bytes
+    :param dst_addr: Destination IP address -- 4 bytes.
 
     :return: UDP checksum of msg.
     :rtype: int
@@ -196,16 +236,9 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH]
 
-    # Construct pseudo header:
-    data = src_addr + dst_addr + "\x00" + chr(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", len(msg)) + msg
-
-    # Pad with 0 byte if needed
-    if len(data) % 2 == 1:
-        data += "\x00"
-
-    msg_words = map(_collate_bytes, data[0::2], data[1::2])
-    total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
-    return ~total & 0xffff
+    return ipv4_checksum(
+            _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
+            msg)
 
 
 def hex_str(s):
