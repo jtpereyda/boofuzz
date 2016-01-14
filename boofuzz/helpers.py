@@ -219,13 +219,7 @@ def udp_checksum(msg, src_addr, dst_addr):
                      struct.pack(">H", len(msg)))
     data = pseudo_header + msg
 
-    # Pad with 0 byte if needed
-    if len(data) % 2 == 1:
-        data += "\x00"
-
-    msg_words = map(_collate_bytes, data[0::2], data[1::2])
-    total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
-    return ~total & 0xffff
+    return ipv4_checksum(data)
 
 
 def hex_str(s):
