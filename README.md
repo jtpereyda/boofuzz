@@ -1,7 +1,7 @@
 boofuzz
 =======
 Boofuzz is a fork of and the successor to the [Sulley](https://github.com/OpenRCE/sulley) fuzzing framework.
-Besides numerous bug fixes, boofuzz aims for extensibility, with the eventual goal of being able to fuzz literally anything fuzzable.
+Besides numerous bug fixes, boofuzz aims for extensibility, with the eventual goal of being able to fuzz anything fuzzable.
 
 Why?
 ----
