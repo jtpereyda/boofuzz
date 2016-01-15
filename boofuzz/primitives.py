@@ -12,7 +12,7 @@ class BasePrimitive(object):
     """
 
     def __init__(self):
-        self.fuzz_complete = False  # this flag is raised when the mutations are exhausted.
+        self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self.fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self.mutant_index = 0  # current mutation index into the fuzz library.
@@ -30,7 +30,7 @@ class BasePrimitive(object):
 
         num = self.num_mutations() - self.mutant_index
 
-        self.fuzz_complete = True
+        self._fuzz_complete = True
         self.mutant_index = self.num_mutations()
         self.value = self.original_value
 
@@ -43,13 +43,14 @@ class BasePrimitive(object):
         @rtype:  bool
         @return: True on success, False otherwise.
         """
-
+        fuzz_complete = False
         # if we've ran out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
-            self.fuzz_complete = True
+            self._fuzz_complete = True
+            fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self.fuzz_complete:
+        if not self.fuzzable or fuzz_complete:
             self.value = self.original_value
             return False
 
@@ -84,7 +85,7 @@ class BasePrimitive(object):
         Reset this primitive to the starting mutation state.
         """
 
-        self.fuzz_complete = False
+        self._fuzz_complete = False
         self.mutant_index = 0
         self.value = self.original_value
 
@@ -211,10 +212,10 @@ class Group(BasePrimitive):
         """
         # TODO: See if num_mutations() can be done away with (me thinks yes).
         if self.mutant_index == self.num_mutations():
-            self.fuzz_complete = True
+            self._fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self.fuzz_complete:
+        if not self.fuzzable or self._fuzz_complete:
             self.value = self.original_value
             return False
 
@@ -285,10 +286,10 @@ class RandomData(BasePrimitive):
 
         # if we've ran out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
-            self.fuzz_complete = True
+            self._fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self.fuzz_complete:
+        if not self.fuzzable or self._fuzz_complete:
             self.value = self.original_value
             return False
 
@@ -333,7 +334,7 @@ class Static(BasePrimitive):
 
         super(Static, self).__init__()
 
-        self.fuzz_complete = True
+        self._fuzz_complete = True
         self.fuzzable = False
         self.value = self.original_value = value
         self.name = name
@@ -540,10 +541,10 @@ class String(BasePrimitive):
         while 1:
             # if we've ran out of mutations, raise the completion flag.
             if self.mutant_index == self.num_mutations():
-                self.fuzz_complete = True
+                self._fuzz_complete = True
 
             # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-            if not self.fuzzable or self.fuzz_complete:
+            if not self.fuzzable or self._fuzz_complete:
                 self.value = self.original_value
                 return False
 

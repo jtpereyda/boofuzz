@@ -235,14 +235,14 @@ class Block(object):
         self.rendered = ""  # rendered block contents.
         self.fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
-        self.fuzz_complete = False  # whether or not we are done fuzzing this block.
+        self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self.mutant_index = 0  # current mutation index.
 
     def mutate(self):
         mutated = False
 
         # are we done with this block?
-        if self.fuzz_complete:
+        if self._fuzz_complete:
             return False
 
         #
@@ -320,7 +320,7 @@ class Block(object):
 
         # we are done mutating this block.
         if not mutated:
-            self.fuzz_complete = True
+            self._fuzz_complete = True
 
             # if we had a dependency, make sure we restore the original value.
             if self.dep:
@@ -438,7 +438,7 @@ class Block(object):
         Reset the primitives on this blocks stack to the starting mutation state.
         """
 
-        self.fuzz_complete = False
+        self._fuzz_complete = False
         self.group_idx = 0
 
         for item in self.stack:
@@ -642,7 +642,7 @@ class Checksum(primitives.BasePrimitive):
         #     a. Render dependencies.
         #     b. Calculate checksum.
 
-        if self.fuzzable and self.mutant_index and not self.fuzz_complete:
+        if self.fuzzable and self.mutant_index and not self._fuzz_complete:
             self.rendered = self.value
         elif self._recursion_flag:
             self.rendered = self._get_dummy_value()
@@ -709,7 +709,7 @@ class Repeat:
         self.value = ""
         self.original_value = ""  # default to nothing!
         self.rendered = ""  # rendered value
-        self.fuzz_complete = False  # flag if this primitive has been completely fuzzed
+        self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
         self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self.mutant_index = 0  # current mutation number
         self.current_reps = min_reps  # current number of repetitions
@@ -761,10 +761,10 @@ class Repeat:
 
         # if we've run out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():
-            self.fuzz_complete = True
+            self._fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self.fuzz_complete:
+        if not self.fuzzable or self._fuzz_complete:
             self.value = self.original_value
             self.current_reps = self.min_reps
             return False
@@ -814,7 +814,7 @@ class Repeat:
         """
         Reset the fuzz state of this primitive.
         """
-        self.fuzz_complete = False
+        self._fuzz_complete = False
         self.mutant_index = 0
         self.value = self.original_value
 
@@ -891,7 +891,7 @@ class Size:
             signed=self.signed
         )
         self.rendered = ""
-        self.fuzz_complete = self.bit_field.fuzz_complete
+        self._fuzz_complete = False
         self.fuzz_library = self.bit_field.fuzz_library
         self.mutant_index = self.bit_field.mutant_index
         self.value = self.bit_field.value
@@ -909,7 +909,7 @@ class Size:
 
         num = self.num_mutations() - self.mutant_index
 
-        self.fuzz_complete = True
+        self._fuzz_complete = True
         self.mutant_index = self.num_mutations()
         self.bit_field.mutant_index = self.num_mutations()
         self.value = self.original_value
@@ -924,12 +924,13 @@ class Size:
         @return: True on success, False otherwise.
         """
 
-        if self.mutant_index == self.num_mutations():
-            self.fuzz_complete = True
-
         self.mutant_index += 1
 
-        return self.bit_field.mutate()
+        not_finished_yet = self.bit_field.mutate()
+
+        self._fuzz_complete = not not_finished_yet  # double negatives for the win
+
+        return not_finished_yet
 
     def num_mutations(self):
         """
@@ -948,7 +949,7 @@ class Size:
         :return Rendered value.
         """
         # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
-        if self.fuzzable and self.bit_field.mutant_index and not self.bit_field.fuzz_complete:
+        if self.fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
             self.rendered = self.bit_field.render()
         else:
             length = self.offset
