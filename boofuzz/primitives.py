@@ -20,22 +20,6 @@ class BasePrimitive(object):
         self.rendered = ""  # rendered value of primitive.
         self.value = None  # current value of primitive.
 
-    def exhaust(self):
-        """
-        Exhaust the possible mutations for this primitive.
-
-        @rtype:  int
-        @return: The number of mutations to reach exhaustion
-        """
-
-        num = self.num_mutations() - self.mutant_index
-
-        self._fuzz_complete = True
-        self.mutant_index = self.num_mutations()
-        self.value = self.original_value
-
-        return num
-
     def mutate(self):
         """
         Mutate the primitive by stepping through the fuzz library, return False on completion.
