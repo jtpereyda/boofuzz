@@ -13,7 +13,7 @@ class BasePrimitive(object):
 
     def __init__(self):
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
-        self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
+        self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self.fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self.mutant_index = 0  # current mutation index into the fuzz library.
         self.original_value = None  # original value of primitive.
@@ -39,7 +39,7 @@ class BasePrimitive(object):
             return False
 
         # update the current value from the fuzz library.
-        self.value = self.fuzz_library[self.mutant_index]
+        self.value = self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -54,7 +54,7 @@ class BasePrimitive(object):
         @return: Number of mutated forms this primitive can take
         """
 
-        return len(self.fuzz_library)
+        return len(self._fuzz_library)
 
     def render(self):
         """
@@ -109,56 +109,56 @@ class Delim(BasePrimitive):
         self.s_type = "delim"  # for ease of object identification
 
         if self.value:
-            self.fuzz_library.append(self.value * 2)
-            self.fuzz_library.append(self.value * 5)
-            self.fuzz_library.append(self.value * 10)
-            self.fuzz_library.append(self.value * 25)
-            self.fuzz_library.append(self.value * 100)
-            self.fuzz_library.append(self.value * 500)
-            self.fuzz_library.append(self.value * 1000)
+            self._fuzz_library.append(self.value * 2)
+            self._fuzz_library.append(self.value * 5)
+            self._fuzz_library.append(self.value * 10)
+            self._fuzz_library.append(self.value * 25)
+            self._fuzz_library.append(self.value * 100)
+            self._fuzz_library.append(self.value * 500)
+            self._fuzz_library.append(self.value * 1000)
 
-        self.fuzz_library.append("")
+        self._fuzz_library.append("")
         if self.value == " ":
-            self.fuzz_library.append("\t")
-            self.fuzz_library.append("\t" * 2)
-            self.fuzz_library.append("\t" * 100)
+            self._fuzz_library.append("\t")
+            self._fuzz_library.append("\t" * 2)
+            self._fuzz_library.append("\t" * 100)
 
-        self.fuzz_library.append(" ")
-        self.fuzz_library.append("\t")
-        self.fuzz_library.append("\t " * 100)
-        self.fuzz_library.append("\t\r\n" * 100)
-        self.fuzz_library.append("!")
-        self.fuzz_library.append("@")
-        self.fuzz_library.append("#")
-        self.fuzz_library.append("$")
-        self.fuzz_library.append("%")
-        self.fuzz_library.append("^")
-        self.fuzz_library.append("&")
-        self.fuzz_library.append("*")
-        self.fuzz_library.append("(")
-        self.fuzz_library.append(")")
-        self.fuzz_library.append("-")
-        self.fuzz_library.append("_")
-        self.fuzz_library.append("+")
-        self.fuzz_library.append("=")
-        self.fuzz_library.append(":")
-        self.fuzz_library.append(": " * 100)
-        self.fuzz_library.append(":7" * 100)
-        self.fuzz_library.append(";")
-        self.fuzz_library.append("'")
-        self.fuzz_library.append("\"")
-        self.fuzz_library.append("/")
-        self.fuzz_library.append("\\")
-        self.fuzz_library.append("?")
-        self.fuzz_library.append("<")
-        self.fuzz_library.append(">")
-        self.fuzz_library.append(".")
-        self.fuzz_library.append(",")
-        self.fuzz_library.append("\r")
-        self.fuzz_library.append("\n")
-        self.fuzz_library.append("\r\n" * 64)
-        self.fuzz_library.append("\r\n" * 128)
-        self.fuzz_library.append("\r\n" * 512)
+        self._fuzz_library.append(" ")
+        self._fuzz_library.append("\t")
+        self._fuzz_library.append("\t " * 100)
+        self._fuzz_library.append("\t\r\n" * 100)
+        self._fuzz_library.append("!")
+        self._fuzz_library.append("@")
+        self._fuzz_library.append("#")
+        self._fuzz_library.append("$")
+        self._fuzz_library.append("%")
+        self._fuzz_library.append("^")
+        self._fuzz_library.append("&")
+        self._fuzz_library.append("*")
+        self._fuzz_library.append("(")
+        self._fuzz_library.append(")")
+        self._fuzz_library.append("-")
+        self._fuzz_library.append("_")
+        self._fuzz_library.append("+")
+        self._fuzz_library.append("=")
+        self._fuzz_library.append(":")
+        self._fuzz_library.append(": " * 100)
+        self._fuzz_library.append(":7" * 100)
+        self._fuzz_library.append(";")
+        self._fuzz_library.append("'")
+        self._fuzz_library.append("\"")
+        self._fuzz_library.append("/")
+        self._fuzz_library.append("\\")
+        self._fuzz_library.append("?")
+        self._fuzz_library.append("<")
+        self._fuzz_library.append(">")
+        self._fuzz_library.append(".")
+        self._fuzz_library.append(",")
+        self._fuzz_library.append("\r")
+        self._fuzz_library.append("\n")
+        self._fuzz_library.append("\r\n" * 64)
+        self._fuzz_library.append("\r\n" * 128)
+        self._fuzz_library.append("\r\n" * 512)
 
 
 class Group(BasePrimitive):
@@ -339,7 +339,7 @@ class Static(BasePrimitive):
 
 class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
-    fuzz_library = []
+    _fuzz_library = []
 
     def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
         """
@@ -385,8 +385,8 @@ class String(BasePrimitive):
                 self.value * 10 + "\xfe",
                 self.value * 100 + "\xfe",
             ]
-        if not self.fuzz_library:
-            self.fuzz_library = \
+        if not self._fuzz_library:
+            self._fuzz_library = \
                 [
                     "",
                     # strings ripped from spike (and some others I added)
@@ -476,7 +476,7 @@ class String(BasePrimitive):
                     # Location of random byte
                     loc = random.randint(1, len(s))
                     s = s[:loc] + "\x00" + s[loc:]
-                self.fuzz_library.append(s)
+                self._fuzz_library.append(s)
 
                 # TODO: Add easy and sane string injection from external file/s
 
@@ -487,8 +487,8 @@ class String(BasePrimitive):
                 # Pull out only the ones that aren't
                 self.this_library = list(set([s[:max_len] for s in self.this_library]))
             # Same thing here
-            if any(len(s) > max_len for s in self.fuzz_library):
-                self.fuzz_library = list(set([s[:max_len] for s in self.fuzz_library]))
+            if any(len(s) > max_len for s in self._fuzz_library):
+                self._fuzz_library = list(set([s[:max_len] for s in self._fuzz_library]))
 
     def add_long_strings(self, sequence):
         """
@@ -510,7 +510,7 @@ class String(BasePrimitive):
             strings.append(sequence * size)
 
         for string in strings:
-            self.fuzz_library.append(string)
+            self._fuzz_library.append(string)
 
     def mutate(self):
         """
@@ -533,7 +533,7 @@ class String(BasePrimitive):
                 return False
 
             # update the current value from the fuzz library.
-            self.value = (self.fuzz_library + self.this_library)[self.mutant_index]
+            self.value = (self._fuzz_library + self.this_library)[self.mutant_index]
 
             # increment the mutation count.
             self.mutant_index += 1
@@ -561,7 +561,7 @@ class String(BasePrimitive):
         @rtype:  int
         @return: Number of mutated forms this primitive can take
         """
-        return len(self.fuzz_library) + len(self.this_library)
+        return len(self._fuzz_library) + len(self.this_library)
 
     def render(self):
         """
@@ -627,12 +627,12 @@ class BitField(BasePrimitive):
         if self.full_range:
             # add all possible values.
             for i in xrange(0, self.max_num):
-                self.fuzz_library.append(i)
+                self._fuzz_library.append(i)
         else:
             if type(value) in [list, tuple]:
                 # Use the supplied values as the fuzz library.
                 for val in iter(value):
-                    self.fuzz_library.append(val)
+                    self._fuzz_library.append(val)
             else:
                 # try only "smart" values.
                 self.add_integer_boundaries(0)
@@ -657,8 +657,8 @@ class BitField(BasePrimitive):
             case = integer + i
             # ensure the border case falls within the valid range for this field.
             if 0 <= case < self.max_num:
-                if case not in self.fuzz_library:
-                    self.fuzz_library.append(case)
+                if case not in self._fuzz_library:
+                    self._fuzz_library.append(case)
 
     def render(self):
         """

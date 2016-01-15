@@ -32,12 +32,12 @@ def groups_and_num_test_cases():
 
     print "\tdelim:  %d\t(%s)" % (
         req1.names["delim"].num_mutations(),
-        sum(map(len, req1.names["delim"].fuzz_library))
+        sum(map(len, req1.names["delim"]._fuzz_library))
     )
 
     print "\tstring: %d\t(%s)" % (
         req1.names["string"].num_mutations(),
-        sum(map(len, req1.names["string"].fuzz_library))
+        sum(map(len, req1.names["string"]._fuzz_library))
     )
 
     print "\tbyte:   %d" % req1.names["byte"].num_mutations()
