@@ -622,11 +622,11 @@ class Checksum(primitives.BasePrimitive):
             self._recursion_flag = True
             self.request.names[self.block_name].render()
             self._recursion_flag = False
-        elif self._ipv4_src_block_name:
+        if self._ipv4_src_block_name:
             self._recursion_flag = True
             self.request.names[self._ipv4_src_block_name].render()
             self._recursion_flag = False
-        elif self._ipv4_dst_block_name:
+        if self._ipv4_dst_block_name:
             self._recursion_flag = True
             self.request.names[self._ipv4_dst_block_name].render()
             self._recursion_flag = False
