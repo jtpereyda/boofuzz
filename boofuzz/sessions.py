@@ -222,6 +222,8 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = restart_sleep_time
         self._fuzz_data_logger = fuzz_data_logger
         self._check_data_received_each_request = check_data_received_each_request
+        # Flag used to cancel fuzzing for a given primitive:
+        self._skip_after_cur_test_case = False
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -563,7 +565,8 @@ class Session(pgraph.Graph):
                 # as long as we're not a group and not a repeat.
                 if not isinstance(self.fuzz_node.mutant, primitives.Group):
                     if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
-                        skipped = self.fuzz_node.mutant.exhaust()
+                        skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
+                        self._skip_after_cur_test_case = True
                         self._fuzz_data_logger.open_test_step(
                             "Crash threshold reached for this primitive, exhausting %d mutants." % skipped
                         )
@@ -779,6 +782,10 @@ class Session(pgraph.Graph):
             while self.fuzz_node.mutate():
                 self.total_mutant_index += 1
                 yield (edge, path)
+
+                if self._skip_after_cur_test_case:
+                    self._skip_after_cur_test_case = False
+                    break
             self.fuzz_node.reset()
 
             # recursively fuzz the remainder of the nodes in the session graph.

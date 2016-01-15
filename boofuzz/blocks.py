@@ -526,12 +526,12 @@ class Checksum(primitives.BasePrimitive):
             self.length = self.checksum_lengths[self.algorithm]
 
         # Edge cases and a couple arbitrary strings (all 1s, all Es)
-        self.fuzz_library = ['\x00' * self.length,
-                             '\x11' * self.length,
-                             '\xEE' * self.length,
-                             '\xFF' * self.length,
-                             '\xFF' * (self.length - 1) + '\xFE',
-                             '\x00' * (self.length - 1) + '\x01']
+        self._fuzz_library = ['\x00' * self.length,
+                              '\x11' * self.length,
+                              '\xEE' * self.length,
+                              '\xFF' * self.length,
+                              '\xFF' * (self.length - 1) + '\xFE',
+                              '\x00' * (self.length - 1) + '\x01']
 
         if self.algorithm == 'udp':
             if not self._ipv4_src_block_name:
@@ -710,32 +710,32 @@ class Repeat:
         self.original_value = ""  # default to nothing!
         self.rendered = ""  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
-        self.fuzz_library = []  # library of static fuzz heuristics to cycle through.
+        self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self.mutant_index = 0  # current mutation number
         self.current_reps = min_reps  # current number of repetitions
 
         # ensure the target block exists.
         if self.block_name not in self.request.names:
             raise sex.SullyRuntimeError(
-                "Can't add repeater for non-existent block: %s!" % self.block_name
+                    "Can't add repeater for non-existent block: %s!" % self.block_name
             )
 
         # ensure the user specified either a variable to tie this repeater to or a min/max val.
         if self.variable is None and self.max_reps is None:
             raise sex.SullyRuntimeError(
-                "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
+                    "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
             )
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, primitives.BitField):
             print self.variable
             raise sex.SullyRuntimeError(
-                "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
+                    "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
             )
 
         # if not binding variable was specified, propagate the fuzz library with the repetition counts.
         if not self.variable:
-            self.fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
+            self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
         # otherwise, disable fuzzing as the repetition count is determined by the variable.
         else:
             self.fuzzable = False
@@ -756,7 +756,7 @@ class Repeat:
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
             raise sex.SullyRuntimeError(
-                "Can't apply repeater to unclosed block: %s" % self.block_name
+                    "Can't apply repeater to unclosed block: %s" % self.block_name
             )
 
         # if we've run out of mutations, raise the completion flag.
@@ -772,11 +772,11 @@ class Repeat:
         if self.variable:
             self.current_reps = self.variable.value
         else:
-            self.current_reps = self.fuzz_library[self.mutant_index]
+            self.current_reps = self._fuzz_library[self.mutant_index]
 
         # set the current value as a multiple of the rendered block based on the current fuzz library count.
         block = self.request.closed_blocks[self.block_name]
-        self.value = block.rendered * self.fuzz_library[self.mutant_index]
+        self.value = block.rendered * self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -791,7 +791,7 @@ class Repeat:
         @return: Number of mutated forms this primitive can take.
         """
 
-        return len(self.fuzz_library)
+        return len(self._fuzz_library)
 
     def render(self):
         """
@@ -884,15 +884,14 @@ class Size:
         self.original_value = "N/A"  # for get_primitive
         self.s_type = "size"  # for ease of object identification
         self.bit_field = primitives.BitField(
-            0,
-            self.length * 8,
-            endian=self.endian,
-            output_format=self.format,
-            signed=self.signed
+                0,
+                self.length * 8,
+                endian=self.endian,
+                output_format=self.format,
+                signed=self.signed
         )
         self.rendered = ""
         self._fuzz_complete = False
-        self.fuzz_library = self.bit_field.fuzz_library
         self.mutant_index = self.bit_field.mutant_index
         self.value = self.bit_field.value
 

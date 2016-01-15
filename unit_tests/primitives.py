@@ -97,16 +97,16 @@ def fuzz_extension_tests():
     req = s_get("EXTENSION TEST")
 
     # these should be here now.
-    assert (0xdeadbeef in req.names["int"].fuzz_library)
-    assert (0xc0cac01a in req.names["int"].fuzz_library)
+    assert (0xdeadbeef in req.names["int"]._fuzz_library)
+    assert (0xc0cac01a in req.names["int"]._fuzz_library)
 
     # these should not as a char is too small to store them.
-    assert (0xdeadbeef not in req.names["char"].fuzz_library)
-    assert (0xc0cac01a not in req.names["char"].fuzz_library)
+    assert (0xdeadbeef not in req.names["char"]._fuzz_library)
+    assert (0xc0cac01a not in req.names["char"]._fuzz_library)
 
     # these should be here now.
-    assert ("pedram" in req.names["string"].fuzz_library)
-    assert ("amini" in req.names["string"].fuzz_library)
+    assert ("pedram" in req.names["string"]._fuzz_library)
+    assert ("amini" in req.names["string"]._fuzz_library)
 
     # restore existing fuzz extension libraries.
     try:
