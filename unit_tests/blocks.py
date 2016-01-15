@@ -6,7 +6,6 @@ def run():
     dependencies()
     repeaters()
     return_current_mutant()
-    exhaustion()
 
     # clear out the requests.
     blocks.REQUESTS = {}
@@ -177,39 +176,3 @@ def return_current_mutant():
         req1.mutate()
     assert (req1.mutant.name == "uhntiss")
     req1.reset()
-
-
-def exhaustion():
-    s_initialize("EXHAUSTION 1")
-
-    s_string("just wont eat", name="VIP")
-    s_dword(0x4141, name="eggos_rule")
-    s_dword(0x4242, name="danny_glover_is_the_man")
-
-    req1 = s_get("EXHAUSTION 1")
-
-    num_str_mutations = req1.names["VIP"].num_mutations()
-
-    # if we mutate string halfway, then exhaust, then mutate one time, we should be in the 2nd primitive
-    for i in xrange(num_str_mutations / 2):
-        req1.mutate()
-    req1.mutant.exhaust()
-
-    req1.mutate()
-    assert (req1.mutant.name == "eggos_rule")
-    req1.reset()
-
-    # if we mutate through the first primitive, then exhaust the 2nd, we should be in the 3rd
-    for i in xrange(num_str_mutations + 2):
-        req1.mutate()
-    req1.mutant.exhaust()
-
-    req1.mutate()
-    assert (req1.mutant.name == "danny_glover_is_the_man")
-    req1.reset()
-
-    # if we exhaust the first two primitives, we should be in the third
-    req1.mutant.exhaust()
-    req1.mutant.exhaust()
-    assert (req1.mutant.name == "danny_glover_is_the_man")
-
