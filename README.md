@@ -25,7 +25,7 @@ Unlike Sulley, boofuzz also features:
  - Far fewer bugs.
  
 Sulley is affectionately named after the creature from Monsters Inc., because of his fuzziness.
-Boofuzz is likewise named after the only creature known to have scared Sulley himself, boo!
+Boofuzz is likewise named after the only creature known to have scared Sulley himself: Boo!
 
 ![Boo from Monsters Inc](http://s21.postimg.org/rssnxdho7/boo_happy.png)
 
