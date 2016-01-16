@@ -339,16 +339,16 @@ class Block(object):
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep].value not in self.dep_values:
                     self._rendered = ""
-                    return
+                    return self._rendered
 
                 elif not self.dep_values and self.request.names[self.dep].value != self.dep_value:
                     self._rendered = ""
-                    return
+                    return self._rendered
 
             if self.dep_compare == "!=":
                 if self.dep_values and self.request.names[self.dep].value in self.dep_values:
                     self._rendered = ""
-                    return
+                    return self._rendered
 
                 elif self.request.names[self.dep].value == self.dep_value:
                     self._rendered = ""
@@ -356,19 +356,19 @@ class Block(object):
 
             if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep].value:
                 self._rendered = ""
-                return
+                return self._rendered
 
             if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep].value:
                 self._rendered = ""
-                return
+                return self._rendered
 
             if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep].value:
                 self._rendered = ""
-                return
+                return self._rendered
 
             if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep].value:
                 self._rendered = ""
-                return
+                return self._rendered
 
         #
         # otherwise, render and encode as usual.
