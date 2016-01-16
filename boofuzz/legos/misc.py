@@ -30,13 +30,13 @@ class DNSHostname(blocks.Block):
         new_str = ""
 
         # replace dots (.) with the substring length.
-        for part in self.rendered.split("."):
+        for part in self._rendered.split("."):
             new_str += str(len(part)) + part
 
         # be sure to null terminate too.
-        self.rendered = new_str + "\x00"
+        self._rendered = new_str + "\x00"
 
-        return self.rendered
+        return self._rendered
 
 
 class Tag(blocks.Block):

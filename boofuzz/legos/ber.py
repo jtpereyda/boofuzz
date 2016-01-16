@@ -39,9 +39,9 @@ class String(blocks.Block):
         blocks.Block.render(self)
 
         # TODO: What is this I don't even
-        self.rendered = self.prefix + "\x84" + self.rendered
+        self._rendered = self.prefix + "\x84" + self._rendered
 
-        return self.rendered
+        return self._rendered
 
 
 class Integer(blocks.Block):
@@ -72,5 +72,5 @@ class Integer(blocks.Block):
         # let the parent do the initial render.
         blocks.Block.render(self)
 
-        self.rendered = "\x02\x04" + self.rendered
-        return self.rendered
+        self._rendered = "\x02\x04" + self._rendered
+        return self._rendered

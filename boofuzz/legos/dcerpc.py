@@ -36,13 +36,13 @@ class NdrConformantArray(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self.rendered == "":
-            self.rendered = "\x00\x00\x00\x00"
+        if self._rendered == "":
+            self._rendered = "\x00\x00\x00\x00"
         else:
-            string_with_padding = self.rendered + calculate_four_byte_padding(self.rendered)
-            self.rendered = struct.pack("<L", len(self.rendered)) + string_with_padding
+            string_with_padding = self._rendered + calculate_four_byte_padding(self._rendered)
+            self._rendered = struct.pack("<L", len(self._rendered)) + string_with_padding
 
-        return self.rendered
+        return self._rendered
 
 
 class NdrString(blocks.Block):
@@ -76,22 +76,22 @@ class NdrString(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self.rendered == "":
-            self.rendered = "\x00\x00\x00\x00"
+        if self._rendered == "":
+            self._rendered = "\x00\x00\x00\x00"
         else:
             # ensure null termination.
-            self.rendered += "\x00"
+            self._rendered += "\x00"
 
             # format accordingly.
-            length = len(self.rendered)
-            self.rendered = "" \
-                            + struct.pack("<L", length) \
-                            + struct.pack("<L", 0) \
-                            + struct.pack("<L", length) \
-                            + self.rendered \
-                            + calculate_four_byte_padding(self.rendered)
+            length = len(self._rendered)
+            self._rendered = "" \
+                             + struct.pack("<L", length) \
+                             + struct.pack("<L", 0) \
+                             + struct.pack("<L", length) \
+                             + self._rendered \
+                             + calculate_four_byte_padding(self._rendered)
 
-        return self.rendered
+        return self._rendered
 
 
 class NdrWString(blocks.Block):
@@ -125,19 +125,19 @@ class NdrWString(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self.rendered == "":
-            self.rendered = "\x00\x00\x00\x00"
+        if self._rendered == "":
+            self._rendered = "\x00\x00\x00\x00"
         else:
             # unicode encode and null terminate.
-            self.rendered = self.rendered.encode("utf-16le") + "\x00"
+            self._rendered = self._rendered.encode("utf-16le") + "\x00"
 
             # format accordingly.
-            length = len(self.rendered)
-            self.rendered = "" \
-                            + struct.pack("<L", length) \
-                            + struct.pack("<L", 0) \
-                            + struct.pack("<L", length) \
-                            + self.rendered \
-                            + calculate_four_byte_padding(self.rendered)
+            length = len(self._rendered)
+            self._rendered = "" \
+                             + struct.pack("<L", length) \
+                             + struct.pack("<L", 0) \
+                             + struct.pack("<L", length) \
+                             + self._rendered \
+                             + calculate_four_byte_padding(self._rendered)
 
-        return self.rendered
+        return self._rendered
