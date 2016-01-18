@@ -31,7 +31,7 @@ class Request(object):
         # dictionary of list of sizers / checksums that were unable to complete rendering:
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
-        self.rendered = ""  # rendered block structure.
+        self._rendered = ""  # rendered block structure.
         self.mutant_index = 0  # current mutation index.
         self.mutant = None  # current primitive being mutated.
 
@@ -108,43 +108,12 @@ class Request(object):
         if self.block_stack:
             raise sex.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        # render every item in the stack.
-        for item in self.stack:
-            item.render()
-
-        # process remaining callbacks.
-        for key in self.callbacks.keys():
-            for item in self.callbacks[key]:
-                item.render()
-
-        # noinspection PyUnusedLocal
-        def update_size(stack, name):
-            # walk recursively through each block to update its size
-            blocks = []
-
-            for stack_item in stack:
-                if isinstance(stack_item, Size):
-                    stack_item.render()
-                elif isinstance(stack_item, Block):
-                    blocks += [stack_item]
-
-            for b in blocks:
-                update_size(b.stack, b.name)
-                b.render()
-
-        # call update_size on each block of the request
-        for item in self.stack:
-            if isinstance(item, Block):
-                update_size(item.stack, item.name)
-                item.render()
-
-        # now collect, merge and return the rendered items.
-        self.rendered = ""
+        self._rendered = ""
 
         for item in self.stack:
-            self.rendered += item.rendered
+            self._rendered += item.render()
 
-        return self.rendered
+        return self._rendered
 
     def reset(self):
         """
@@ -232,7 +201,7 @@ class Block(object):
         self.dep_compare = dep_compare
 
         self.stack = []  # block item stack.
-        self.rendered = ""  # rendered block contents.
+        self._rendered = ""  # rendered block contents.
         self.fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
@@ -369,69 +338,55 @@ class Block(object):
         if self.dep:
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep].value not in self.dep_values:
-                    self.rendered = ""
-                    return
+                    self._rendered = ""
+                    return self._rendered
 
                 elif not self.dep_values and self.request.names[self.dep].value != self.dep_value:
-                    self.rendered = ""
-                    return
+                    self._rendered = ""
+                    return self._rendered
 
             if self.dep_compare == "!=":
                 if self.dep_values and self.request.names[self.dep].value in self.dep_values:
-                    self.rendered = ""
-                    return
+                    self._rendered = ""
+                    return self._rendered
 
                 elif self.request.names[self.dep].value == self.dep_value:
-                    self.rendered = ""
+                    self._rendered = ""
                     return
 
             if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep].value:
-                self.rendered = ""
-                return
+                self._rendered = ""
+                return self._rendered
 
             if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep].value:
-                self.rendered = ""
-                return
+                self._rendered = ""
+                return self._rendered
 
             if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep].value:
-                self.rendered = ""
-                return
+                self._rendered = ""
+                return self._rendered
 
             if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep].value:
-                self.rendered = ""
-                return
+                self._rendered = ""
+                return self._rendered
 
         #
         # otherwise, render and encode as usual.
         #
 
-        # recursively render the items on the stack.
-        for item in self.stack:
-            item.render()
-
-        # now collect and merge the rendered items.
-        self.rendered = ""
+        self._rendered = ""
 
         for item in self.stack:
-            self.rendered += item.rendered
+            self._rendered += item.render()
 
         # add the completed block to the request dictionary.
         self.request.closed_blocks[self.name] = self
 
         # if an encoder was attached to this block, call it.
         if self.encoder:
-            self.rendered = self.encoder(self.rendered)
+            self._rendered = self.encoder(self._rendered)
 
-        # the block is now closed, clear out all the entries from the request back splice dictionary.
-        if self.name in self.request.callbacks:
-            for item in self.request.callbacks[self.name]:
-                item.render()
-
-        # now collect and merge the rendered items (again).
-        self.rendered = ""
-
-        for item in self.stack:
-            self.rendered += item.rendered
+        return self._rendered
 
     def reset(self):
         """
@@ -539,7 +494,7 @@ class Checksum(primitives.BasePrimitive):
             if not self._ipv4_dst_block_name:
                 raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_dst_block_name")
 
-        self.rendered = self._get_dummy_value()
+        self._rendered = self._get_dummy_value()
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
@@ -553,7 +508,7 @@ class Checksum(primitives.BasePrimitive):
         @rtype:  str
         @return: Checksum.
         """
-        data = self.request.names[self.block_name].rendered
+        data = self._cached_block_name
         if type(self.algorithm) is str:
             if self.algorithm == "crc32":
                 check = struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
@@ -567,8 +522,8 @@ class Checksum(primitives.BasePrimitive):
             elif self.algorithm == "udp":
                 return struct.pack(self.endian + "H",
                                    helpers.udp_checksum(msg=data,
-                                                        src_addr=self.request.names[self._ipv4_src_block_name].rendered,
-                                                        dst_addr=self.request.names[self._ipv4_dst_block_name].rendered,
+                                                        src_addr=self._cached_ipv4_dst_block_name,
+                                                        dst_addr=self._cached_ipv4_src_block_name,
                                                         )
                                    )
 
@@ -620,15 +575,18 @@ class Checksum(primitives.BasePrimitive):
 
         if self.block_name:
             self._recursion_flag = True
-            self.request.names[self.block_name].render()
+            self._cached_block_name = \
+                self.request.names[self.block_name].render()
             self._recursion_flag = False
         if self._ipv4_src_block_name:
             self._recursion_flag = True
-            self.request.names[self._ipv4_src_block_name].render()
+            self._cached_ipv4_src_block_name = \
+                self.request.names[self._ipv4_src_block_name].render()
             self._recursion_flag = False
         if self._ipv4_dst_block_name:
             self._recursion_flag = True
-            self.request.names[self._ipv4_dst_block_name].render()
+            self._cached_ipv4_dst_block_name = \
+                self.request.names[self._ipv4_dst_block_name].render()
             self._recursion_flag = False
 
     def render(self):
@@ -643,14 +601,14 @@ class Checksum(primitives.BasePrimitive):
         #     b. Calculate checksum.
 
         if self.fuzzable and self.mutant_index and not self._fuzz_complete:
-            self.rendered = self.value
+            self._rendered = self.value
         elif self._recursion_flag:
-            self.rendered = self._get_dummy_value()
+            self._rendered = self._get_dummy_value()
         else:
             self._render_dependencies()
-            self.rendered = self._checksum()
+            self._rendered = self._checksum()
 
-        return self.rendered
+        return self._rendered
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -708,7 +666,7 @@ class Repeat:
 
         self.value = ""
         self.original_value = ""  # default to nothing!
-        self.rendered = ""  # rendered value
+        self._rendered = ""  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self.mutant_index = 0  # current mutation number
@@ -776,7 +734,7 @@ class Repeat:
 
         # set the current value as a multiple of the rendered block based on the current fuzz library count.
         block = self.request.closed_blocks[self.block_name]
-        self.value = block.rendered * self._fuzz_library[self.mutant_index]
+        self.value = block.render() * self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -805,10 +763,10 @@ class Repeat:
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:
             block = self.request.closed_blocks[self.block_name]
-            self.value = block.rendered * self.variable.value
+            self.value = block.render() * self.variable.value
 
-        self.rendered = self.value
-        return self.rendered
+        self._rendered = self.value
+        return self._rendered
 
     def reset(self):
         """
@@ -890,7 +848,7 @@ class Size:
                 output_format=self.format,
                 signed=self.signed
         )
-        self.rendered = ""
+        self._rendered = ""
         self._fuzz_complete = False
         self.mutant_index = self.bit_field.mutant_index
         self.value = self.bit_field.value
@@ -949,7 +907,7 @@ class Size:
         """
         # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
         if self.fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
-            self.rendered = self.bit_field.render()
+            self._rendered = self.bit_field.render()
         else:
             length = self.offset
             if self.inclusive:
@@ -958,9 +916,9 @@ class Size:
 
             self.bit_field.value = self.math(length)
 
-            self.rendered = self.bit_field.render()
+            self._rendered = self.bit_field.render()
 
-        return self.rendered
+        return self._rendered
 
     def reset(self):
         """

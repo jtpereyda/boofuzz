@@ -17,7 +17,7 @@ class BasePrimitive(object):
         self.fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self.mutant_index = 0  # current mutation index into the fuzz library.
         self.original_value = None  # original value of primitive.
-        self.rendered = ""  # rendered value of primitive.
+        self._rendered = ""  # rendered value of primitive.
         self.value = None  # current value of primitive.
 
     def mutate(self):
@@ -61,8 +61,8 @@ class BasePrimitive(object):
         Nothing fancy on render, simply return the value.
         """
 
-        self.rendered = self.value
-        return self.rendered
+        self._rendered = self.value
+        return self._rendered
 
     def reset(self):
         """
@@ -570,11 +570,11 @@ class String(BasePrimitive):
         # try to encode the string properly and fall back to the default value on failure.
         # TODO: Fix this - seems hacky
         try:
-            self.rendered = str(self.value).encode(self.encoding)
+            self._rendered = str(self.value).encode(self.encoding)
         except:
-            self.rendered = self.value
+            self._rendered = self.value
 
-        return self.rendered
+        return self._rendered
 
 
 class BitField(BasePrimitive):
@@ -689,7 +689,7 @@ class BitField(BasePrimitive):
                 rendered.reverse()
                 rendered = "".join(rendered)
 
-            self.rendered = rendered
+            self._rendered = rendered
         else:
             # Otherwise we have ascii/something else
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
@@ -702,13 +702,13 @@ class BitField(BasePrimitive):
                 val = max_num - val - 1
 
                 # toss in the negative sign.
-                self.rendered = "%d" % ~val
+                self._rendered = "%d" % ~val
 
             # unsigned integer or positive signed integer.
             else:
-                self.rendered = "%d" % self.value
+                self._rendered = "%d" % self.value
 
-        return self.rendered
+        return self._rendered
 
     def to_binary(self, number=None, bit_count=None):
         """
