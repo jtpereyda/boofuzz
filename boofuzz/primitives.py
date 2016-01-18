@@ -18,7 +18,7 @@ class BasePrimitive(object):
         self.mutant_index = 0  # current mutation index into the fuzz library.
         self.original_value = None  # original value of primitive.
         self._rendered = ""  # rendered value of primitive.
-        self.value = None  # current value of primitive.
+        self._value = None  # current value of primitive.
 
     def mutate(self):
         """
@@ -35,11 +35,11 @@ class BasePrimitive(object):
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or fuzz_complete:
-            self.value = self.original_value
+            self._value = self.original_value
             return False
 
         # update the current value from the fuzz library.
-        self.value = self._fuzz_library[self.mutant_index]
+        self._value = self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -61,7 +61,7 @@ class BasePrimitive(object):
         Nothing fancy on render, simply return the value.
         """
 
-        self._rendered = self.value
+        self._rendered = self._value
         return self._rendered
 
     def reset(self):
@@ -71,13 +71,13 @@ class BasePrimitive(object):
 
         self._fuzz_complete = False
         self.mutant_index = 0
-        self.value = self.original_value
+        self._value = self.original_value
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, repr(self.value))
+        return '<%s %s>' % (self.__class__.__name__, repr(self._value))
 
     def __len__(self):
-        return len(self.value)
+        return len(self._value)
 
     def __nonzero__(self):
         """
@@ -105,20 +105,20 @@ class Delim(BasePrimitive):
 
         self.fuzzable = fuzzable
         self.name = name
-        self.value = self.original_value = value
+        self._value = self.original_value = value
         self.s_type = "delim"  # for ease of object identification
 
-        if self.value:
-            self._fuzz_library.append(self.value * 2)
-            self._fuzz_library.append(self.value * 5)
-            self._fuzz_library.append(self.value * 10)
-            self._fuzz_library.append(self.value * 25)
-            self._fuzz_library.append(self.value * 100)
-            self._fuzz_library.append(self.value * 500)
-            self._fuzz_library.append(self.value * 1000)
+        if self._value:
+            self._fuzz_library.append(self._value * 2)
+            self._fuzz_library.append(self._value * 5)
+            self._fuzz_library.append(self._value * 10)
+            self._fuzz_library.append(self._value * 25)
+            self._fuzz_library.append(self._value * 100)
+            self._fuzz_library.append(self._value * 500)
+            self._fuzz_library.append(self._value * 1000)
 
         self._fuzz_library.append("")
-        if self.value == " ":
+        if self._value == " ":
             self._fuzz_library.append("\t")
             self._fuzz_library.append("\t" * 2)
             self._fuzz_library.append("\t" * 100)
@@ -182,7 +182,7 @@ class Group(BasePrimitive):
 
         assert len(self.values) > 0, "You can't have an empty value list for your group!"
 
-        self.value = self.original_value = self.values[0]
+        self._value = self.original_value = self.values[0]
 
         for val in self.values:
             assert isinstance(val, basestring), "Value list may only contain strings or raw data"
@@ -200,12 +200,12 @@ class Group(BasePrimitive):
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or self._fuzz_complete:
-            self.value = self.original_value
+            self._value = self.original_value
             return False
 
         # step through the value list.
         # TODO: break this into a get_value() function, so we can keep mutate as close to standard as possible.
-        self.value = self.values[self.mutant_index]
+        self._value = self.values[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -249,7 +249,7 @@ class RandomData(BasePrimitive):
 
         super(RandomData, self).__init__()
 
-        self.value = self.original_value = str(value)
+        self._value = self.original_value = str(value)
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations
@@ -274,7 +274,7 @@ class RandomData(BasePrimitive):
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or self._fuzz_complete:
-            self.value = self.original_value
+            self._value = self.original_value
             return False
 
         # select a random length for this string.
@@ -285,9 +285,9 @@ class RandomData(BasePrimitive):
             length = self.min_length + self.mutant_index * self.step
 
         # reset the value and generate a random string of the determined length.
-        self.value = ""
+        self._value = ""
         for i in xrange(length):
-            self.value += chr(random.randint(0, 255))
+            self._value += chr(random.randint(0, 255))
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -320,7 +320,7 @@ class Static(BasePrimitive):
 
         self._fuzz_complete = True
         self.fuzzable = False
-        self.value = self.original_value = value
+        self._value = self.original_value = value
         self.name = name
         self.s_type = "static"
 
@@ -366,7 +366,7 @@ class String(BasePrimitive):
 
         super(String, self).__init__()
 
-        self.value = self.original_value = value
+        self._value = self.original_value = value
         self.size = size
         self.padding = padding
         self.encoding = encoding
@@ -375,15 +375,15 @@ class String(BasePrimitive):
         self.s_type = "string"  # for ease of object identification
         self.this_library = \
             [
-                self.value * 2,
-                self.value * 10,
-                self.value * 100,
+                self._value * 2,
+                self._value * 10,
+                self._value * 100,
 
                 # UTF-8
                 # TODO: This can't actually convert these to unicode strings...
-                self.value * 2 + "\xfe",
-                self.value * 10 + "\xfe",
-                self.value * 100 + "\xfe",
+                self._value * 2 + "\xfe",
+                self._value * 10 + "\xfe",
+                self._value * 100 + "\xfe",
             ]
         if not self._fuzz_library:
             self._fuzz_library = \
@@ -529,11 +529,11 @@ class String(BasePrimitive):
 
             # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
             if not self.fuzzable or self._fuzz_complete:
-                self.value = self.original_value
+                self._value = self.original_value
                 return False
 
             # update the current value from the fuzz library.
-            self.value = (self._fuzz_library + self.this_library)[self.mutant_index]
+            self._value = (self._fuzz_library + self.this_library)[self.mutant_index]
 
             # increment the mutation count.
             self.mutant_index += 1
@@ -544,12 +544,12 @@ class String(BasePrimitive):
 
             # ignore library items greater then user-supplied length.
             # TODO: might want to make this smarter.
-            if len(self.value) > self.size:
+            if len(self._value) > self.size:
                 continue
 
             # pad undersized library items.
-            if len(self.value) < self.size:
-                self.value += self.padding * (self.size - len(self.value))
+            if len(self._value) < self.size:
+                self._value += self.padding * (self.size - len(self._value))
                 break
 
         return True
@@ -570,9 +570,9 @@ class String(BasePrimitive):
         # try to encode the string properly and fall back to the default value on failure.
         # TODO: Fix this - seems hacky
         try:
-            self._rendered = str(self.value).encode(self.encoding)
+            self._rendered = str(self._value).encode(self.encoding)
         except:
-            self._rendered = self.value
+            self._rendered = self._value
 
         return self._rendered
 
@@ -608,7 +608,7 @@ class BitField(BasePrimitive):
         assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, (int, long)), "width must be an integer!"
 
-        self.value = self.original_value = value
+        self._value = self.original_value = value
         self.width = width
         self.max_num = max_num
         self.endian = endian
@@ -696,7 +696,7 @@ class BitField(BasePrimitive):
             if self.signed and self.to_binary()[0] == "1":
                 max_num = self.to_decimal("1" + "0" * (self.width - 1))
                 # chop off the sign bit.
-                val = self.value & self.to_decimal("1" * (self.width - 1))
+                val = self._value & self.to_decimal("1" * (self.width - 1))
 
                 # account for the fact that the negative scale works backwards.
                 val = max_num - val - 1
@@ -706,7 +706,7 @@ class BitField(BasePrimitive):
 
             # unsigned integer or positive signed integer.
             else:
-                self._rendered = "%d" % self.value
+                self._rendered = "%d" % self._value
 
         return self._rendered
 
@@ -723,15 +723,15 @@ class BitField(BasePrimitive):
         @return: Bit string
         """
         if not number:
-            if type(self.value) in [list, tuple]:
+            if type(self._value) in [list, tuple]:
                 # We have been given a list to cycle through that is not being mutated...
-                if self.cyclic_index == len(self.value):
+                if self.cyclic_index == len(self._value):
                     # Reset the index.
                     self.cyclic_index = 0
-                number = self.value[self.cyclic_index]
+                number = self._value[self.cyclic_index]
                 self.cyclic_index += 1
             else:
-                number = self.value
+                number = self._value
 
         if not bit_count:
             bit_count = self.width
@@ -774,8 +774,8 @@ class Byte(BitField):
 
         self.s_type = "byte"
 
-        if type(self.value) not in [int, long, list, tuple]:
-            self.value = struct.unpack(self.endian + "B", self.value)[0]
+        if type(self._value) not in [int, long, list, tuple]:
+            self._value = struct.unpack(self.endian + "B", self._value)[0]
 
 
 class Word(BitField):
@@ -788,8 +788,8 @@ class Word(BitField):
 
         self.s_type = "word"
 
-        if type(self.value) not in [int, long, list, tuple]:
-            self.value = struct.unpack(self.endian + "H", self.value)[0]
+        if type(self._value) not in [int, long, list, tuple]:
+            self._value = struct.unpack(self.endian + "H", self._value)[0]
 
 
 class DWord(BitField):
@@ -802,8 +802,8 @@ class DWord(BitField):
 
         self.s_type = "dword"
 
-        if type(self.value) not in [int, long, list, tuple]:
-            self.value = struct.unpack(self.endian + "L", self.value)[0]
+        if type(self._value) not in [int, long, list, tuple]:
+            self._value = struct.unpack(self.endian + "L", self._value)[0]
 
 
 class QWord(BitField):
@@ -815,5 +815,5 @@ class QWord(BitField):
 
         self.s_type = "qword"
 
-        if type(self.value) not in [int, long, list, tuple]:
-            self.value = struct.unpack(self.endian + "Q", self.value)[0]
+        if type(self._value) not in [int, long, list, tuple]:
+            self._value = struct.unpack(self.endian + "Q", self._value)[0]
