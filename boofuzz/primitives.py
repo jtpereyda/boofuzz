@@ -715,7 +715,7 @@ class BitField(BasePrimitive):
         Convert a number to a binary string.
 
         @type  number:    int
-        @param number:    (Optional, def=self.value) Number to convert
+        @param number:    (Optional, def=self._value) Number to convert
         @type  bit_count: int
         @param bit_count: (Optional, def=self.width) Width of bit string
 

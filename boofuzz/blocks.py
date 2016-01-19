@@ -240,7 +240,7 @@ class Block(object):
                 # if the group values are exhausted, we are done with this block.
                 if self.group_idx == group_count:
                     # restore the original group value.
-                    self.request.names[self.group]._value = self.request.names[self.group].original_value
+                    self.request.names[self.group].reset()
 
                 # otherwise continue mutating this group/block.
                 else:
@@ -293,7 +293,7 @@ class Block(object):
 
             # if we had a dependency, make sure we restore the original value.
             if self.dep:
-                self.request.names[self.dep]._value = self.request.names[self.dep].original_value
+                self.request.names[self.dep].reset()
 
         return mutated
 
@@ -728,7 +728,7 @@ class Repeat:
             return False
 
         if self.variable:
-            self.current_reps = self.variable._value
+            self.current_reps = self.variable.render()
         else:
             self.current_reps = self._fuzz_library[self.mutant_index]
 
@@ -763,7 +763,7 @@ class Repeat:
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:
             block = self.request.closed_blocks[self.block_name]
-            self._value = block.render() * self.variable._value
+            self._value = block.render() * self.variable.render()
 
         self._rendered = self._value
         return self._rendered
@@ -851,7 +851,6 @@ class Size:
         self._rendered = ""
         self._fuzz_complete = False
         self.mutant_index = self.bit_field.mutant_index
-        self._value = self.bit_field._value
 
         if not self.math:
             self.math = lambda (x): x
@@ -869,7 +868,6 @@ class Size:
         self._fuzz_complete = True
         self.mutant_index = self.num_mutations()
         self.bit_field.mutant_index = self.num_mutations()
-        self._value = self.original_value
 
         return num
 
