@@ -1,7 +1,9 @@
 # XDR TYPES (http://www.freesoft.org/CIE/RFC/1832/index.htm)
 
 from __future__ import absolute_import
+
 import struct
+
 from .. import blocks, primitives, sex
 from ..helpers import calculate_four_byte_padding
 
