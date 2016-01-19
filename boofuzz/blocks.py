@@ -221,7 +221,7 @@ class Block(object):
             group_count = self.request.names[self.group].num_mutations()
 
             # update the group value to that at the current index.
-            self.request.names[self.group].value = self.request.names[self.group].values[self.group_idx]
+            self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
 
             # mutate every item on the stack at the current group value.
             for item in self.stack:
@@ -240,12 +240,12 @@ class Block(object):
                 # if the group values are exhausted, we are done with this block.
                 if self.group_idx == group_count:
                     # restore the original group value.
-                    self.request.names[self.group].value = self.request.names[self.group].original_value
+                    self.request.names[self.group].reset()
 
                 # otherwise continue mutating this group/block.
                 else:
                     # update the group value to that at the current index.
-                    self.request.names[self.group].value = self.request.names[self.group].values[self.group_idx]
+                    self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
 
                     # this the mutate state for every item in this blocks stack.
                     # NOT THE BLOCK ITSELF THOUGH! (hence why we didn't call self.reset())
@@ -281,11 +281,11 @@ class Block(object):
         if mutated and self.dep:
             # if a list of values was specified, use the first item in the list.
             if self.dep_values:
-                self.request.names[self.dep].value = self.dep_values[0]
+                self.request.names[self.dep]._value = self.dep_values[0]
 
             # if a list of values was not specified, assume a single value is present.
             else:
-                self.request.names[self.dep].value = self.dep_value
+                self.request.names[self.dep]._value = self.dep_value
 
         # we are done mutating this block.
         if not mutated:
@@ -293,7 +293,7 @@ class Block(object):
 
             # if we had a dependency, make sure we restore the original value.
             if self.dep:
-                self.request.names[self.dep].value = self.request.names[self.dep].original_value
+                self.request.names[self.dep].reset()
 
         return mutated
 
@@ -337,36 +337,36 @@ class Block(object):
 
         if self.dep:
             if self.dep_compare == "==":
-                if self.dep_values and self.request.names[self.dep].value not in self.dep_values:
+                if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
                     self._rendered = ""
                     return self._rendered
 
-                elif not self.dep_values and self.request.names[self.dep].value != self.dep_value:
+                elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
                     self._rendered = ""
                     return self._rendered
 
             if self.dep_compare == "!=":
-                if self.dep_values and self.request.names[self.dep].value in self.dep_values:
+                if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
                     self._rendered = ""
                     return self._rendered
 
-                elif self.request.names[self.dep].value == self.dep_value:
+                elif self.request.names[self.dep]._value == self.dep_value:
                     self._rendered = ""
                     return
 
-            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep].value:
+            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
                 self._rendered = ""
                 return self._rendered
 
-            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep].value:
+            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
                 self._rendered = ""
                 return self._rendered
 
-            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep].value:
+            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
                 self._rendered = ""
                 return self._rendered
 
-            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep].value:
+            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
                 self._rendered = ""
                 return self._rendered
 
@@ -601,7 +601,7 @@ class Checksum(primitives.BasePrimitive):
         #     b. Calculate checksum.
 
         if self.fuzzable and self.mutant_index and not self._fuzz_complete:
-            self._rendered = self.value
+            self._rendered = self._value
         elif self._recursion_flag:
             self._rendered = self._get_dummy_value()
         else:
@@ -664,7 +664,7 @@ class Repeat:
         self.fuzzable = fuzzable
         self.name = name
 
-        self.value = ""
+        self._value = ""
         self.original_value = ""  # default to nothing!
         self._rendered = ""  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
@@ -723,18 +723,18 @@ class Repeat:
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
         if not self.fuzzable or self._fuzz_complete:
-            self.value = self.original_value
+            self._value = self.original_value
             self.current_reps = self.min_reps
             return False
 
         if self.variable:
-            self.current_reps = self.variable.value
+            self.current_reps = self.variable.render()
         else:
             self.current_reps = self._fuzz_library[self.mutant_index]
 
         # set the current value as a multiple of the rendered block based on the current fuzz library count.
         block = self.request.closed_blocks[self.block_name]
-        self.value = block.render() * self._fuzz_library[self.mutant_index]
+        self._value = block.render() * self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
         self.mutant_index += 1
@@ -763,9 +763,9 @@ class Repeat:
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:
             block = self.request.closed_blocks[self.block_name]
-            self.value = block.render() * self.variable.value
+            self._value = block.render() * self.variable.render()
 
-        self._rendered = self.value
+        self._rendered = self._value
         return self._rendered
 
     def reset(self):
@@ -774,7 +774,7 @@ class Repeat:
         """
         self._fuzz_complete = False
         self.mutant_index = 0
-        self.value = self.original_value
+        self._value = self.original_value
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
@@ -851,7 +851,6 @@ class Size:
         self._rendered = ""
         self._fuzz_complete = False
         self.mutant_index = self.bit_field.mutant_index
-        self.value = self.bit_field.value
 
         if not self.math:
             self.math = lambda (x): x
@@ -869,7 +868,6 @@ class Size:
         self._fuzz_complete = True
         self.mutant_index = self.num_mutations()
         self.bit_field.mutant_index = self.num_mutations()
-        self.value = self.original_value
 
         return num
 
@@ -914,7 +912,7 @@ class Size:
                 length += self.length
             length += len(self.request.names[self.block_name])
 
-            self.bit_field.value = self.math(length)
+            self.bit_field._value = self.math(length)
 
             self._rendered = self.bit_field.render()
 
