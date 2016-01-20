@@ -1,14 +1,30 @@
-class BasePrimitive(object):
+from ..ifuzzable import IFuzzable
+
+
+class BasePrimitive(IFuzzable):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
 
+    @property
+    def mutant_index(self):
+        return self._mutant_index
+
+    @property
+    def fuzzable(self):
+        return self._fuzzable
+
+    @property
+    def original_value(self):
+        return self._original_value
+
     def __init__(self):
+        self._fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
+        self._mutant_index = 0  # current mutation index into the fuzz library.
+        self._original_value = None  # original value of primitive.
+
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
-        self.fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
-        self.mutant_index = 0  # current mutation index into the fuzz library.
-        self.original_value = None  # original value of primitive.
         self._rendered = ""  # rendered value of primitive.
         self._value = None  # current value of primitive.
 
@@ -21,20 +37,20 @@ class BasePrimitive(object):
         """
         fuzz_complete = False
         # if we've ran out of mutations, raise the completion flag.
-        if self.mutant_index == self.num_mutations():
+        if self._mutant_index == self.num_mutations():
             self._fuzz_complete = True
             fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or fuzz_complete:
-            self._value = self.original_value
+        if not self._fuzzable or fuzz_complete:
+            self._value = self._original_value
             return False
 
         # update the current value from the fuzz library.
-        self._value = self._fuzz_library[self.mutant_index]
+        self._value = self._fuzz_library[self._mutant_index]
 
         # increment the mutation count.
-        self.mutant_index += 1
+        self._mutant_index += 1
 
         return True
 
@@ -62,8 +78,8 @@ class BasePrimitive(object):
         """
 
         self._fuzz_complete = False
-        self.mutant_index = 0
-        self._value = self.original_value
+        self._mutant_index = 0
+        self._value = self._original_value
 
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, repr(self._value))

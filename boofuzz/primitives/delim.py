@@ -16,9 +16,9 @@ class Delim(BasePrimitive):
 
         super(Delim, self).__init__()
 
-        self.fuzzable = fuzzable
+        self._fuzzable = fuzzable
         self.name = name
-        self._value = self.original_value = value
+        self._value = self._original_value = value
         self.s_type = "delim"  # for ease of object identification
 
         if self._value:

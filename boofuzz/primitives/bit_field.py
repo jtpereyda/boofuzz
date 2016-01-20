@@ -35,14 +35,14 @@ class BitField(BasePrimitive):
         assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, (int, long)), "width must be an integer!"
 
-        self._value = self.original_value = value
+        self._value = self._original_value = value
         self.width = width
         self.max_num = max_num
         self.endian = endian
         self.format = output_format
         self.signed = signed
         self.full_range = full_range
-        self.fuzzable = fuzzable
+        self._fuzzable = fuzzable
         self.name = name
         self.cyclic_index = 0         # when cycling through non-mutating values
 

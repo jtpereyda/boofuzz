@@ -65,7 +65,7 @@ class Checksum(primitives.BasePrimitive):
         self._ipv4_src_block_name = ipv4_src_block_name
         self._ipv4_dst_block_name = ipv4_dst_block_name
 
-        self.fuzzable = fuzzable
+        self._fuzzable = fuzzable
 
         if not self.length and self.algorithm in self.checksum_lengths.iterkeys():
             self.length = self.checksum_lengths[self.algorithm]
@@ -190,7 +190,7 @@ class Checksum(primitives.BasePrimitive):
         #     a. Render dependencies.
         #     b. Calculate checksum.
 
-        if self.fuzzable and self.mutant_index and not self._fuzz_complete:
+        if self._fuzzable and self._mutant_index and not self._fuzz_complete:
             self._rendered = self._value
         elif self._recursion_flag:
             self._rendered = self._get_dummy_value()

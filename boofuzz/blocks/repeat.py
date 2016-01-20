@@ -1,7 +1,9 @@
-from boofuzz import sex, primitives
+from .. import sex
+from .. import ifuzzable
+from ..primitives.bit_field import BitField
 
 
-class Repeat:
+class Repeat(ifuzzable.IFuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -37,15 +39,15 @@ class Repeat:
         self.min_reps = min_reps
         self.max_reps = max_reps
         self.step = step
-        self.fuzzable = fuzzable
+        self._fuzzable = fuzzable
         self.name = name
 
         self._value = ""
-        self.original_value = ""  # default to nothing!
+        self._original_value = ""  # default to nothing!
         self._rendered = ""  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
-        self.mutant_index = 0  # current mutation number
+        self._mutant_index = 0  # current mutation number
         self.current_reps = min_reps  # current number of repetitions
 
         # ensure the target block exists.
@@ -61,7 +63,7 @@ class Repeat:
             )
 
         # if a variable is specified, ensure it is an integer type.
-        if self.variable and not isinstance(self.variable, primitives.BitField):
+        if self.variable and not isinstance(self.variable, BitField):
             print self.variable
             raise sex.SullyRuntimeError(
                     "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
@@ -72,7 +74,19 @@ class Repeat:
             self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
         # otherwise, disable fuzzing as the repetition count is determined by the variable.
         else:
-            self.fuzzable = False
+            self._fuzzable = False
+
+    @property
+    def mutant_index(self):
+        return self._mutant_index
+
+    @property
+    def fuzzable(self):
+        return self._fuzzable
+
+    @property
+    def original_value(self):
+        return self._original_value
 
     def mutate(self):
         """
@@ -113,7 +127,7 @@ class Repeat:
         self._value = block.render() * self._fuzz_library[self.mutant_index]
 
         # increment the mutation count.
-        self.mutant_index += 1
+        self._mutant_index += 1
 
         return True
 
@@ -149,7 +163,7 @@ class Repeat:
         Reset the fuzz state of this primitive.
         """
         self._fuzz_complete = False
-        self.mutant_index = 0
+        self._mutant_index = 0
         self._value = self.original_value
 
     def __repr__(self):
