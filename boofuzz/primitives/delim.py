@@ -19,7 +19,6 @@ class Delim(BasePrimitive):
         self._fuzzable = fuzzable
         self._name = name
         self._value = self._original_value = value
-        self.s_type = "delim"  # for ease of object identification
 
         if self._value:
             self._fuzz_library.append(self._value * 2)

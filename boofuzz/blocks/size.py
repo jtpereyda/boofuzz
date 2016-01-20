@@ -51,7 +51,6 @@ class Size(IFuzzable):
         self._name = name
 
         self._original_value = "N/A"  # for get_primitive
-        self.s_type = "size"  # for ease of object identification
         self.bit_field = primitives.BitField(
                 0,
                 self.length * 8,

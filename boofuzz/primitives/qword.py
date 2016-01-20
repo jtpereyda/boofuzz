@@ -10,7 +10,5 @@ class QWord(BitField):
 
         super(QWord, self).__init__(value, width, max_num, *args, **kwargs)
 
-        self.s_type = "qword"
-
         if type(self._value) not in [int, long, list, tuple]:
             self._value = struct.unpack(self.endian + "Q", self._value)[0]

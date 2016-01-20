@@ -36,7 +36,6 @@ class RandomData(BasePrimitive):
         self._fuzzable = fuzzable
         self.step = step
         self._name = name
-        self.s_type = "random_data"  # for ease of object identification
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) / self.step + 1
 

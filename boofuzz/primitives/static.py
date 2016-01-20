@@ -18,7 +18,6 @@ class Static(BasePrimitive):
         self._fuzzable = False
         self._value = self._original_value = value
         self._name = name
-        self.s_type = "static"
 
     @property
     def name(self):

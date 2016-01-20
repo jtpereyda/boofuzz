@@ -18,7 +18,6 @@ class Group(BasePrimitive):
 
         self._name = name
         self.values = values
-        self.s_type = "group"
 
         assert len(self.values) > 0, "You can't have an empty value list for your group!"
 

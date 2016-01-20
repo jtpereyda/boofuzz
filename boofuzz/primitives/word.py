@@ -11,7 +11,6 @@ class Word(BitField):
 
         super(Word, self).__init__(value, width, max_num, *args, **kwargs)
 
-        self.s_type = "word"
 
         if type(self._value) not in [int, long, list, tuple]:
             self._value = struct.unpack(self.endian + "H", self._value)[0]

@@ -54,7 +54,6 @@ class Checksum(primitives.BasePrimitive):
         @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
         """
         super(Checksum, self).__init__()
-        self._s_type = "checksum"
 
         self._block_name = block_name
         self._request = request

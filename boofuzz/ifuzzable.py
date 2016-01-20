@@ -2,7 +2,7 @@ import abc
 
 
 class IFuzzable(object):
-    """Describes a fuzzable element of a message.
+    """Describes a fuzzable message element or message.
 
     Design Notes:
      - mutate and reset pretty much form an iterator. Future design goal is

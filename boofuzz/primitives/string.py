@@ -38,7 +38,6 @@ class String(BasePrimitive):
         self.encoding = encoding
         self._fuzzable = fuzzable
         self._name = name
-        self.s_type = "string"  # for ease of object identification
         self.this_library = \
             [
                 self._value * 2,
