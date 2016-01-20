@@ -15,7 +15,7 @@ class Request(IFuzzable):
         @param name: Name of this request
         """
 
-        self.name = name
+        self._name = name
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
@@ -26,6 +26,10 @@ class Request(IFuzzable):
         self._rendered = ""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self.mutant = None  # current primitive being mutated.
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def mutant_index(self):

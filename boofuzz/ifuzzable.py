@@ -26,6 +26,11 @@ class IFuzzable(object):
         """Original, non-mutated value of element."""
         return
 
+    @abc.abstractproperty
+    def name(self):
+        """Element name, should be specific for each instance."""
+        return
+
     @abc.abstractmethod
     def mutate(self):
         """Mutate this element. Returns True each time and False on completion.

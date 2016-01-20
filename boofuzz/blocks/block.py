@@ -28,7 +28,7 @@ class Block(IFuzzable):
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
 
-        self.name = name
+        self._name = name
         self.request = request
         self.group = group
         self.encoder = encoder
@@ -55,6 +55,10 @@ class Block(IFuzzable):
     @property
     def original_value(self):
         raise NotImplementedError
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         mutated = False

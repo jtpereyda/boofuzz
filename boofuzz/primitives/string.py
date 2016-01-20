@@ -37,7 +37,7 @@ class String(BasePrimitive):
         self.padding = padding
         self.encoding = encoding
         self._fuzzable = fuzzable
-        self.name = name
+        self._name = name
         self.s_type = "string"  # for ease of object identification
         self.this_library = \
             [
@@ -155,6 +155,10 @@ class String(BasePrimitive):
             # Same thing here
             if any(len(s) > max_len for s in self._fuzz_library):
                 self._fuzz_library = list(set([s[:max_len] for s in self._fuzz_library]))
+
+    @property
+    def name(self):
+        return self._name
 
     def add_long_strings(self, sequence):
         """

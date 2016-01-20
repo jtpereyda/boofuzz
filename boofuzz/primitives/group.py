@@ -16,7 +16,7 @@ class Group(BasePrimitive):
 
         super(Group, self).__init__()
 
-        self.name = name
+        self._name = name
         self.values = values
         self.s_type = "group"
 
@@ -26,6 +26,10 @@ class Group(BasePrimitive):
 
         for val in self.values:
             assert isinstance(val, basestring), "Value list may only contain strings or raw data"
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         """

@@ -40,7 +40,7 @@ class Repeat(ifuzzable.IFuzzable):
         self.max_reps = max_reps
         self.step = step
         self._fuzzable = fuzzable
-        self.name = name
+        self._name = name
 
         self._value = ""
         self._original_value = ""  # default to nothing!
@@ -75,6 +75,10 @@ class Repeat(ifuzzable.IFuzzable):
         # otherwise, disable fuzzing as the repetition count is determined by the variable.
         else:
             self._fuzzable = False
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def mutant_index(self):
@@ -167,7 +171,7 @@ class Repeat(ifuzzable.IFuzzable):
         self._value = self.original_value
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.name)
+        return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
         return self.current_reps * len(self.request.names[self.block_name])

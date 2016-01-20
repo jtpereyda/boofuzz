@@ -89,6 +89,10 @@ class Checksum(primitives.BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
+    @property
+    def name(self):
+        return self._name
+
     def _checksum(self):
         """
         Calculate and return the checksum (in raw bytes).

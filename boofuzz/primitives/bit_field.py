@@ -43,7 +43,7 @@ class BitField(BasePrimitive):
         self.signed = signed
         self.full_range = full_range
         self._fuzzable = fuzzable
-        self.name = name
+        self._name = name
         self.cyclic_index = 0         # when cycling through non-mutating values
 
         if not self.max_num:
@@ -72,6 +72,10 @@ class BitField(BasePrimitive):
                 self.add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
+
+    @property
+    def name(self):
+        return self._name
 
     def add_integer_boundaries(self, integer):
         """

@@ -35,10 +35,14 @@ class RandomData(BasePrimitive):
         self.max_mutations = max_mutations
         self._fuzzable = fuzzable
         self.step = step
-        self.name = name
+        self._name = name
         self.s_type = "random_data"  # for ease of object identification
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) / self.step + 1
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         """

@@ -1,10 +1,12 @@
 from ..ifuzzable import IFuzzable
+import abc
 
 
 class BasePrimitive(IFuzzable):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
+    __metaclass__ = abc.ABCMeta
 
     @property
     def mutant_index(self):

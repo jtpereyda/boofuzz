@@ -48,7 +48,7 @@ class Size(IFuzzable):
         self.signed = signed
         self.math = math
         self._fuzzable = fuzzable
-        self.name = name
+        self._name = name
 
         self._original_value = "N/A"  # for get_primitive
         self.s_type = "size"  # for ease of object identification
@@ -65,6 +65,10 @@ class Size(IFuzzable):
 
         if not self.math:
             self.math = lambda (x): x
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def mutant_index(self):
@@ -149,7 +153,7 @@ class Size(IFuzzable):
         self.bit_field.reset()
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.name)
+        return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
         return self.length
