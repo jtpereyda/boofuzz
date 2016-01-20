@@ -54,31 +54,31 @@ class Checksum(primitives.BasePrimitive):
         @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
         """
         super(Checksum, self).__init__()
-        self.s_type = "checksum"
+        self._s_type = "checksum"
 
-        self.block_name = block_name
-        self.request = request
-        self.algorithm = algorithm
-        self.length = length
-        self.endian = endian
-        self.name = name
+        self._block_name = block_name
+        self._request = request
+        self._algorithm = algorithm
+        self._length = length
+        self._endian = endian
+        self._name = name
         self._ipv4_src_block_name = ipv4_src_block_name
         self._ipv4_dst_block_name = ipv4_dst_block_name
 
         self._fuzzable = fuzzable
 
-        if not self.length and self.algorithm in self.checksum_lengths.iterkeys():
-            self.length = self.checksum_lengths[self.algorithm]
+        if not self._length and self._algorithm in self.checksum_lengths.iterkeys():
+            self._length = self.checksum_lengths[self._algorithm]
 
         # Edge cases and a couple arbitrary strings (all 1s, all Es)
-        self._fuzz_library = ['\x00' * self.length,
-                              '\x11' * self.length,
-                              '\xEE' * self.length,
-                              '\xFF' * self.length,
-                              '\xFF' * (self.length - 1) + '\xFE',
-                              '\x00' * (self.length - 1) + '\x01']
+        self._fuzz_library = ['\x00' * self._length,
+                              '\x11' * self._length,
+                              '\xEE' * self._length,
+                              '\xFF' * self._length,
+                              '\xFF' * (self._length - 1) + '\xFE',
+                              '\x00' * (self._length - 1) + '\x01']
 
-        if self.algorithm == 'udp':
+        if self._algorithm == 'udp':
             if not self._ipv4_src_block_name:
                 raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_src_block_name")
             if not self._ipv4_dst_block_name:
@@ -99,56 +99,56 @@ class Checksum(primitives.BasePrimitive):
         @return: Checksum.
         """
         data = self._cached_block_name
-        if type(self.algorithm) is str:
-            if self.algorithm == "crc32":
-                check = struct.pack(self.endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
+        if type(self._algorithm) is str:
+            if self._algorithm == "crc32":
+                check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
 
-            elif self.algorithm == "adler32":
-                check = struct.pack(self.endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
+            elif self._algorithm == "adler32":
+                check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
 
-            elif self.algorithm == "ipv4":
-                check = struct.pack(self.endian + "H", helpers.ipv4_checksum(data))
+            elif self._algorithm == "ipv4":
+                check = struct.pack(self._endian + "H", helpers.ipv4_checksum(data))
 
-            elif self.algorithm == "udp":
-                return struct.pack(self.endian + "H",
+            elif self._algorithm == "udp":
+                return struct.pack(self._endian + "H",
                                    helpers.udp_checksum(msg=data,
                                                         src_addr=self._cached_ipv4_dst_block_name,
                                                         dst_addr=self._cached_ipv4_src_block_name,
                                                         )
                                    )
 
-            elif self.algorithm == "md5":
+            elif self._algorithm == "md5":
                 digest = hashlib.md5(data).digest()
 
                 # TODO: is this right?
-                if self.endian == ">":
+                if self._endian == ">":
                     (a, b, c, d) = struct.unpack("<LLLL", digest)
                     digest = struct.pack(">LLLL", a, b, c, d)
 
                 check = digest
 
-            elif self.algorithm == "sha1":
+            elif self._algorithm == "sha1":
                 digest = hashlib.sha1(data).digest()
 
                 # TODO: is this right?
-                if self.endian == ">":
+                if self._endian == ">":
                     (a, b, c, d, e) = struct.unpack("<LLLLL", digest)
                     digest = struct.pack(">LLLLL", a, b, c, d, e)
 
                 check = digest
 
             else:
-                raise sex.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self.algorithm)
+                raise sex.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self._algorithm)
         else:
-            check = self.algorithm(data)
+            check = self._algorithm(data)
 
-        if self.length:
-            return check[:self.length]
+        if self._length:
+            return check[:self._length]
         else:
             return check
 
     def _get_dummy_value(self):
-        return self.checksum_lengths[self.algorithm] * '\x00'
+        return self.checksum_lengths[self._algorithm] * '\x00'
 
     def _render_dependencies(self):
         """
@@ -163,20 +163,20 @@ class Checksum(primitives.BasePrimitive):
         # 2. Render the target block.
         # 3. Clear recursion flag.
 
-        if self.block_name:
+        if self._block_name:
             self._recursion_flag = True
             self._cached_block_name = \
-                self.request.names[self.block_name].render()
+                self._request.names[self._block_name].render()
             self._recursion_flag = False
         if self._ipv4_src_block_name:
             self._recursion_flag = True
             self._cached_ipv4_src_block_name = \
-                self.request.names[self._ipv4_src_block_name].render()
+                self._request.names[self._ipv4_src_block_name].render()
             self._recursion_flag = False
         if self._ipv4_dst_block_name:
             self._recursion_flag = True
             self._cached_ipv4_dst_block_name = \
-                self.request.names[self._ipv4_dst_block_name].render()
+                self._request.names[self._ipv4_dst_block_name].render()
             self._recursion_flag = False
 
     def render(self):
@@ -201,10 +201,10 @@ class Checksum(primitives.BasePrimitive):
         return self._rendered
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.name)
+        return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return self.length
+        return self._length
 
     def __nonzero__(self):
         """
