@@ -16,10 +16,9 @@ class Delim(BasePrimitive):
 
         super(Delim, self).__init__()
 
-        self.fuzzable = fuzzable
-        self.name = name
-        self._value = self.original_value = value
-        self.s_type = "delim"  # for ease of object identification
+        self._fuzzable = fuzzable
+        self._name = name
+        self._value = self._original_value = value
 
         if self._value:
             self._fuzz_library.append(self._value * 2)
@@ -72,3 +71,7 @@ class Delim(BasePrimitive):
         self._fuzz_library.append("\r\n" * 64)
         self._fuzz_library.append("\r\n" * 128)
         self._fuzz_library.append("\r\n" * 512)
+
+    @property
+    def name(self):
+        return self._name

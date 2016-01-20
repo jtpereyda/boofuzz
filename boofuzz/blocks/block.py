@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 
-from boofuzz.primitives import BasePrimitive
+from ..primitives import BasePrimitive
+from ..ifuzzable import IFuzzable
 
 
-class Block(object):
+class Block(IFuzzable):
     def __init__(self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None,
                  dep_compare="=="):
         """
@@ -27,7 +28,7 @@ class Block(object):
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
 
-        self.name = name
+        self._name = name
         self.request = request
         self.group = group
         self.encoder = encoder
@@ -38,10 +39,26 @@ class Block(object):
 
         self.stack = []  # block item stack.
         self._rendered = ""  # rendered block contents.
-        self.fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
+        self._fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
-        self.mutant_index = 0  # current mutation index.
+        self._mutant_index = 0  # current mutation index.
+
+    @property
+    def mutant_index(self):
+        return self._mutant_index
+
+    @property
+    def fuzzable(self):
+        return self._fuzzable
+
+    @property
+    def original_value(self):
+        raise NotImplementedError
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         mutated = False

@@ -1,7 +1,8 @@
-from boofuzz import primitives
+from .. import primitives
+from ..ifuzzable import IFuzzable
 
 
-class Size:
+class Size(IFuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -46,11 +47,10 @@ class Size:
         self.inclusive = inclusive
         self.signed = signed
         self.math = math
-        self.fuzzable = fuzzable
-        self.name = name
+        self._fuzzable = fuzzable
+        self._name = name
 
-        self.original_value = "N/A"  # for get_primitive
-        self.s_type = "size"  # for ease of object identification
+        self._original_value = "N/A"  # for get_primitive
         self.bit_field = primitives.BitField(
                 0,
                 self.length * 8,
@@ -60,10 +60,26 @@ class Size:
         )
         self._rendered = ""
         self._fuzz_complete = False
-        self.mutant_index = self.bit_field.mutant_index
+        self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
             self.math = lambda (x): x
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def mutant_index(self):
+        return self._mutant_index
+
+    @property
+    def fuzzable(self):
+        return self._fuzzable
+
+    @property
+    def original_value(self):
+        return self._original_value
 
     def exhaust(self):
         """
@@ -73,11 +89,11 @@ class Size:
         @return: The number of mutations to reach exhaustion
         """
 
-        num = self.num_mutations() - self.mutant_index
+        num = self.num_mutations() - self._mutant_index
 
         self._fuzz_complete = True
-        self.mutant_index = self.num_mutations()
-        self.bit_field.mutant_index = self.num_mutations()
+        self._mutant_index = self.num_mutations()
+        self.bit_field._mutant_index = self.num_mutations()
 
         return num
 
@@ -89,7 +105,7 @@ class Size:
         @return: True on success, False otherwise.
         """
 
-        self.mutant_index += 1
+        self._mutant_index += 1
 
         not_finished_yet = self.bit_field.mutate()
 
@@ -114,7 +130,7 @@ class Size:
         :return Rendered value.
         """
         # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
-        if self.fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
+        if self._fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
             self._rendered = self.bit_field.render()
         else:
             length = self.offset
@@ -136,7 +152,7 @@ class Size:
         self.bit_field.reset()
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.name)
+        return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
         return self.length

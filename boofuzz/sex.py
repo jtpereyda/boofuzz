@@ -5,7 +5,7 @@ class BoofuzzError(Exception):
     pass
 
 
-class BoofuzzRestartFailedError(Exception):
+class BoofuzzRestartFailedError(BoofuzzError):
     pass
 
 

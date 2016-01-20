@@ -15,10 +15,13 @@ class Static(BasePrimitive):
         super(Static, self).__init__()
 
         self._fuzz_complete = True
-        self.fuzzable = False
-        self._value = self.original_value = value
-        self.name = name
-        self.s_type = "static"
+        self._fuzzable = False
+        self._value = self._original_value = value
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         """

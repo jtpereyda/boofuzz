@@ -32,13 +32,12 @@ class String(BasePrimitive):
 
         super(String, self).__init__()
 
-        self._value = self.original_value = value
+        self._value = self._original_value = value
         self.size = size
         self.padding = padding
         self.encoding = encoding
-        self.fuzzable = fuzzable
-        self.name = name
-        self.s_type = "string"  # for ease of object identification
+        self._fuzzable = fuzzable
+        self._name = name
         self.this_library = \
             [
                 self._value * 2,
@@ -156,6 +155,10 @@ class String(BasePrimitive):
             if any(len(s) > max_len for s in self._fuzz_library):
                 self._fuzz_library = list(set([s[:max_len] for s in self._fuzz_library]))
 
+    @property
+    def name(self):
+        return self._name
+
     def add_long_strings(self, sequence):
         """
         Given a sequence, generate a number of selectively chosen strings lengths of the given sequence and add to the
@@ -190,19 +193,19 @@ class String(BasePrimitive):
         # loop through the fuzz library until a suitable match is found.
         while 1:
             # if we've ran out of mutations, raise the completion flag.
-            if self.mutant_index == self.num_mutations():
+            if self._mutant_index == self.num_mutations():
                 self._fuzz_complete = True
 
             # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-            if not self.fuzzable or self._fuzz_complete:
-                self._value = self.original_value
+            if not self._fuzzable or self._fuzz_complete:
+                self._value = self._original_value
                 return False
 
             # update the current value from the fuzz library.
-            self._value = (self._fuzz_library + self.this_library)[self.mutant_index]
+            self._value = (self._fuzz_library + self.this_library)[self._mutant_index]
 
             # increment the mutation count.
-            self.mutant_index += 1
+            self._mutant_index += 1
 
             # if the size parameter is disabled, break out of the loop right now.
             if self.size == -1:

@@ -16,16 +16,19 @@ class Group(BasePrimitive):
 
         super(Group, self).__init__()
 
-        self.name = name
+        self._name = name
         self.values = values
-        self.s_type = "group"
 
         assert len(self.values) > 0, "You can't have an empty value list for your group!"
 
-        self._value = self.original_value = self.values[0]
+        self._value = self._original_value = self.values[0]
 
         for val in self.values:
             assert isinstance(val, basestring), "Value list may only contain strings or raw data"
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         """
@@ -35,20 +38,20 @@ class Group(BasePrimitive):
         @return: False
         """
         # TODO: See if num_mutations() can be done away with (me thinks yes).
-        if self.mutant_index == self.num_mutations():
+        if self._mutant_index == self.num_mutations():
             self._fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self._fuzz_complete:
-            self._value = self.original_value
+        if not self._fuzzable or self._fuzz_complete:
+            self._value = self._original_value
             return False
 
         # step through the value list.
         # TODO: break this into a get_value() function, so we can keep mutate as close to standard as possible.
-        self._value = self.values[self.mutant_index]
+        self._value = self.values[self._mutant_index]
 
         # increment the mutation count.
-        self.mutant_index += 1
+        self._mutant_index += 1
 
         return True
 

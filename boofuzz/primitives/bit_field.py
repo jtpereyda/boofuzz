@@ -35,15 +35,15 @@ class BitField(BasePrimitive):
         assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, (int, long)), "width must be an integer!"
 
-        self._value = self.original_value = value
+        self._value = self._original_value = value
         self.width = width
         self.max_num = max_num
         self.endian = endian
         self.format = output_format
         self.signed = signed
         self.full_range = full_range
-        self.fuzzable = fuzzable
-        self.name = name
+        self._fuzzable = fuzzable
+        self._name = name
         self.cyclic_index = 0         # when cycling through non-mutating values
 
         if not self.max_num:
@@ -72,6 +72,10 @@ class BitField(BasePrimitive):
                 self.add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
+
+    @property
+    def name(self):
+        return self._name
 
     def add_integer_boundaries(self, integer):
         """

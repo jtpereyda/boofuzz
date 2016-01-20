@@ -29,16 +29,19 @@ class RandomData(BasePrimitive):
 
         super(RandomData, self).__init__()
 
-        self._value = self.original_value = str(value)
+        self._value = self._original_value = str(value)
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations
-        self.fuzzable = fuzzable
+        self._fuzzable = fuzzable
         self.step = step
-        self.name = name
-        self.s_type = "random_data"  # for ease of object identification
+        self._name = name
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) / self.step + 1
+
+    @property
+    def name(self):
+        return self._name
 
     def mutate(self):
         """
@@ -49,12 +52,12 @@ class RandomData(BasePrimitive):
         """
 
         # if we've ran out of mutations, raise the completion flag.
-        if self.mutant_index == self.num_mutations():
+        if self._mutant_index == self.num_mutations():
             self._fuzz_complete = True
 
         # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self._fuzz_complete:
-            self._value = self.original_value
+        if not self._fuzzable or self._fuzz_complete:
+            self._value = self._original_value
             return False
 
         # select a random length for this string.
@@ -62,7 +65,7 @@ class RandomData(BasePrimitive):
             length = random.randint(self.min_length, self.max_length)
         # select a length function of the mutant index and the step.
         else:
-            length = self.min_length + self.mutant_index * self.step
+            length = self.min_length + self._mutant_index * self.step
 
         # reset the value and generate a random string of the determined length.
         self._value = ""
@@ -70,7 +73,7 @@ class RandomData(BasePrimitive):
             self._value += chr(random.randint(0, 255))
 
         # increment the mutation count.
-        self.mutant_index += 1
+        self._mutant_index += 1
 
         return True
 

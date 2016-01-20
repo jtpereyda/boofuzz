@@ -1,10 +1,11 @@
 import collections
 
-from boofuzz import sex
-from boofuzz.blocks.block import Block
+from .. import sex
+from .block import Block
+from ..ifuzzable import IFuzzable
 
 
-class Request(object):
+class Request(IFuzzable):
     def __init__(self, name):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
@@ -14,7 +15,7 @@ class Request(object):
         @param name: Name of this request
         """
 
-        self.name = name
+        self._name = name
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
@@ -23,8 +24,24 @@ class Request(object):
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
         self._rendered = ""  # rendered block structure.
-        self.mutant_index = 0  # current mutation index.
+        self._mutant_index = 0  # current mutation index.
         self.mutant = None  # current primitive being mutated.
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def mutant_index(self):
+        return self._mutant_index
+
+    @property
+    def fuzzable(self):
+        return True
+
+    @property
+    def original_value(self):
+        raise NotImplementedError
 
     def mutate(self):
         mutated = False
@@ -37,7 +54,7 @@ class Request(object):
                 break
 
         if mutated:
-            self.mutant_index += 1
+            self._mutant_index += 1
 
         return mutated
 
@@ -111,7 +128,7 @@ class Request(object):
         Reset every block and primitives mutant state under this request.
         """
 
-        self.mutant_index = 1
+        self._mutant_index = 1
         self.closed_blocks = {}
 
         for item in self.stack:
