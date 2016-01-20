@@ -6,7 +6,11 @@ from . import legos
 from . import primitives
 from . import sex
 
-from .blocks import Request, Block, Checksum, Repeat, Size
+from .blocks.request import Request
+from .blocks.block import Block
+from .blocks.checksum import Checksum
+from .blocks.repeat import Repeat
+from .blocks.size import Size
 from .constants import BIG_ENDIAN, LITTLE_ENDIAN
 from .event_hook import EventHook
 from .ez_outlet_reset import EzOutletReset
@@ -67,7 +71,7 @@ def s_initialize(name):
     if name in blocks.REQUESTS:
         raise sex.SullyRuntimeError("blocks.REQUESTS ALREADY EXISTS: %s" % name)
 
-    blocks.REQUESTS[name] = blocks.Request(name)
+    blocks.REQUESTS[name] = Request(name)
     blocks.CURRENT = blocks.REQUESTS[name]
 
 
@@ -148,7 +152,7 @@ def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_
     @param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
 
-    block = blocks.Block(name, blocks.CURRENT, group, encoder, dep, dep_value, dep_values, dep_compare)
+    block = Block(name, blocks.CURRENT, group, encoder, dep, dep_value, dep_values, dep_compare)
     blocks.CURRENT.push(block)
 
     return True
@@ -201,9 +205,9 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
     if block_name in blocks.CURRENT.block_stack:
         raise sex.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
-    checksum = blocks.Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
-                               ipv4_src_block_name=ipv4_src_block_name,
-                               ipv4_dst_block_name=ipv4_dst_block_name)
+    checksum = Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
+                        ipv4_src_block_name=ipv4_src_block_name,
+                        ipv4_dst_block_name=ipv4_dst_block_name)
     blocks.CURRENT.push(checksum)
 
 
@@ -231,7 +235,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    repeat = blocks.Repeat(block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable, name)
+    repeat = Repeat(block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable, name)
     blocks.CURRENT.push(repeat)
 
 
@@ -269,7 +273,7 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
     if block_name in blocks.CURRENT.block_stack:
         raise sex.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
 
-    size = blocks.Size(
+    size = Size(
             block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
     )
     blocks.CURRENT.push(size)
