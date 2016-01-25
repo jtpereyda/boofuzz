@@ -7,7 +7,7 @@ import ifuzz_logger
 import sex
 
 
-def _build_url(hostname, path):
+def _get_url(hostname, path):
     return urlparse.urlunparse(('http', hostname, path, '', '', ''))
 
 
@@ -17,8 +17,8 @@ class EzOutletReset:
     Uses the ezOutlet EZ-11b Internet IP-Enabled Remote Power Reboot Switch to
     reset a device under test (DUT).
 
-    It provides a post_fail method, meant to be given as a callback to a
-    Session object.
+    In addition to reset(), post_fail() is provided, meant to be given as a
+    callback to a Session object.
 
     It uses undocumented yet simple CGI scripts.
     """
@@ -44,6 +44,10 @@ class EzOutletReset:
         self._dut_reset_time = dut_reset_time
         self._timeout = timeout
         self._reset_delay = reset_delay
+
+    @property
+    def url(self):
+        return _get_url(self._hostname, self.RESET_URL_PATH)
 
     def post_fail(self, logger, *args, **kwargs):
         """Tries to reset device over HTTP and wait before returning.
@@ -71,26 +75,46 @@ class EzOutletReset:
         """
         _ = args  # only for forward-compatibility
         _ = kwargs  # only for forward-compatibility
-        logger = logger
 
-        url = _build_url(self._hostname, self.RESET_URL_PATH)
-
-        logger.log_info(self.LOG_REQUEST_MSG.format(url))
+        logger.log_info(self.LOG_REQUEST_MSG.format(self.url))
 
         try:
-            opened_url = urllib2.urlopen(url, timeout=self._timeout)
+            response = self.reset()
+            logger.log_recv(response)
+        except sex.SullyRuntimeError as e:
+            logger.log_info(e.message)
+            raise
+
+    def reset(self):
+        """Send reset request to ezOutlet device and wait for reset.
+
+        Returns: HTTP response contents.
+
+        Raises sex.SullyRuntimeError if device does not respond as expected.
+        """
+        response = self._http_get(self.url)
+
+        self._check_response(response)
+
+        self._wait_for_reset()
+
+        return response
+
+    def _http_get(self, url):
+        target_connection = self._connect_target(url)
+        return target_connection.read()
+
+    def _connect_target(self, url):
+        try:
+            return urllib2.urlopen(url, timeout=self._timeout)
         except urllib2.URLError:
-            if logger is not None:
-                logger.log_info(self.NO_RESPONSE_MSG.format(self._timeout))
             raise sex.SullyRuntimeError(self.NO_RESPONSE_MSG.format(self._timeout)), \
                 None, \
                 sys.exc_info()[2]
 
-        received = opened_url.read()
+    def _check_response(self, response):
+        if response != self.EXPECTED_RESPONSE_CONTENTS:
+            raise sex.SullyRuntimeError(self.UNEXPECTED_RESPONSE_MSG.format(response))
 
-        logger.log_recv(received)
-
-        if received != self.EXPECTED_RESPONSE_CONTENTS:
-            raise sex.SullyRuntimeError(self.UNEXPECTED_RESPONSE_MSG.format(received))
-
+    def _wait_for_reset(self):
         time.sleep(self._reset_delay + self._dut_reset_time)
