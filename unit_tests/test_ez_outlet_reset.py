@@ -291,6 +291,51 @@ class TestEzOutletReset(unittest.TestCase):
         mock_urllib2.urlopen.assert_called_once_with(self.sample_url, timeout=timeout)
         mock_time.sleep.assert_not_called()
 
+    def test_main_basic(self):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with a single argument.
+        Then: EzOutletReset constructor is called with hostname == given value
+              and wait_time == ez_outlet_reset.DEFAULT_WAIT_TIME.
+        """
+        pass
+
+    def test_main_reset_time_long(self):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with hostname and --reset-time arguments.
+        Then: EzOutletReset constructor is called with hostname == given value
+              and wait_time == given value.
+        """
+        pass
+
+    def test_main_reset_time_short(self):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with a single argument.
+        When: Calling main() with hostname and -t arguments.
+        Then: EzOutletReset constructor is called with hostname == given value
+              and wait_time == given value.
+        """
+        pass
+
+    def test_main_missing_target(self):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with no arguments.
+        Then: Script provides error output.
+        """
+        pass
+
+    def test_main_reset_unknown_arg(self):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with a single argument.
+        When: Calling main() with required arguments and an extra unknown argument.
+        Then: Script provides error output.
+        """
+        pass
+
 
 @pytest.mark.parametrize("hostname,expected_url", [('1.2.3.4', 'http://1.2.3.4/reset.cgi')])
 def test_url(hostname, expected_url):
