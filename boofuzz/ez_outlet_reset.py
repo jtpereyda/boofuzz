@@ -9,8 +9,6 @@ import sex
 
 
 HELP_TEXT = 'Send reset command to ezOutlet EZ-11b device.'
-HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOUtlet device.'
-HELP_TEXT_TIME_ARG = 'Time in seconds to wait for UUT to reset.'
 
 
 def _get_url(hostname, path):
@@ -26,9 +24,11 @@ class EzOutletReset:
     In addition to reset(), post_fail() is provided, meant to be given as a
     callback to a Session object.
 
-    It uses undocumented yet simple CGI scripts.
+    It uses undocumented but simple CGI scripts.
     """
     DEFAULT_RESET_DELAY = 3.05
+    DEFAULT_TIMEOUT = 30
+    DEFAULT_WAIT_TIME = 0
     RESET_URL_PATH = '/reset.cgi'
     EXPECTED_RESPONSE_CONTENTS = '0,0'
     NO_RESPONSE_MSG = "No response from EzOutlet. timeout value: {0}"
@@ -37,17 +37,17 @@ class EzOutletReset:
                                " Actual: {0}")
     LOG_REQUEST_MSG = 'HTTP GET {0}'
 
-    def __init__(self, hostname, dut_reset_time=0, timeout=30, reset_delay=DEFAULT_RESET_DELAY):
+    def __init__(self, hostname, wait_time=0, timeout=DEFAULT_TIMEOUT, reset_delay=DEFAULT_RESET_DELAY):
         """
         Args:
             hostname: Hostname or IP address of device.
-            dut_reset_time: Time in seconds to allow the device under test
-                to reboot.
+            wait_time: Time in seconds to allow the device being reset
+                to reboot. See also reset_delay.
             timeout: Time in seconds to wait for the EzOutlet to respond.
             reset_delay: Time the EzOutlet waits before switching back on.
         """
         self._hostname = hostname
-        self._dut_reset_time = dut_reset_time
+        self._dut_reset_time = wait_time
         self._timeout = timeout
         self._reset_delay = reset_delay
 
@@ -150,6 +150,12 @@ class EzOutletReset:
         time.sleep(self._reset_delay + self._dut_reset_time)
 
 
+HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOUtlet device.'
+HELP_TEXT_TIME_ARG = 'Time in seconds to wait for UUT to reset.' \
+                     ' Note that the script already waits {0} seconds for the' \
+                     ' ezOutlet to turn off and on.'.format(EzOutletReset.DEFAULT_RESET_DELAY)
+
+
 def parse_args(argv):
     parser = argparse.ArgumentParser(description=HELP_TEXT)
     parser.add_argument('target', help=HELP_TEXT_TARGET_ARG)
@@ -163,7 +169,7 @@ def parse_args(argv):
 def main(argv):
     parsed_args = parse_args(argv)
     ez_outlet = EzOutletReset(hostname=parsed_args.target,
-                              dut_reset_time=parsed_args.reset_time)
+                              wait_time=parsed_args.reset_time)
     ez_outlet.reset()
 
 
