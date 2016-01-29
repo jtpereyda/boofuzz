@@ -17,7 +17,11 @@ HELP_TEXT = (
 )
 
 
-class EzOutletResetUsageError(Exception):
+class EzOutletResetError(Exception):
+    pass
+
+
+class EzOutletResetUsageError(EzOutletResetError):
     pass
 
 
@@ -80,7 +84,7 @@ class EzOutletReset:
             **kwargs: Kept for forward-compatibility.
 
         Raises:
-            sex.SulleyRuntimeError: If the reset fails due to:
+            sex.SullyRuntimeError: If the reset fails due to:
                 - no response in self._timeout seconds or
                 - unexpected response contents (see
                   EzOutletReset.EXPECTED_RESPONSE_CONTENTS)
@@ -93,9 +97,11 @@ class EzOutletReset:
         try:
             response = self.reset()
             logger.log_recv(response)
-        except sex.SullyRuntimeError as e:
+        except EzOutletResetError as e:
             logger.log_info(e.message)
-            raise
+            raise sex.SullyRuntimeError(e.message), \
+                None, \
+                sys.exc_info()[2]
 
     def reset(self):
         """Send reset request to ezOutlet, check response, wait for reset.
@@ -109,7 +115,7 @@ class EzOutletReset:
         Returns: HTTP response contents.
 
         Raises:
-            sex.SulleyRuntimeError: If the reset fails due to:
+            EzOutletResetError: If the reset fails due to:
                 - no response in self._timeout seconds or
                 - unexpected response contents (see
                   EzOutletReset.EXPECTED_RESPONSE_CONTENTS)
@@ -131,13 +137,13 @@ class EzOutletReset:
         Returns: Response contents.
 
         Raises:
-            sex.SulleyRuntimeError: If the reset fails due to:
+            EzOutletResetError: If the reset fails due to:
                 - no response in self._timeout seconds
         """
         try:
             return urllib2.urlopen(url, timeout=self._timeout).read()
         except urllib2.URLError:
-            raise sex.SullyRuntimeError(self.NO_RESPONSE_MSG.format(self._timeout)), \
+            raise EzOutletResetError(self.NO_RESPONSE_MSG.format(self._timeout)), \
                 None, \
                 sys.exc_info()[2]
 
@@ -148,9 +154,14 @@ class EzOutletReset:
             response: Response.
 
         Returns: None
+
+        Raises:
+            EzOutletResetError: If the reset fails due to:
+                - unexpected response contents (see
+                  EzOutletReset.EXPECTED_RESPONSE_CONTENTS)
         """
         if response != self.EXPECTED_RESPONSE_CONTENTS:
-            raise sex.SullyRuntimeError(self.UNEXPECTED_RESPONSE_MSG.format(response))
+            raise EzOutletResetError(self.UNEXPECTED_RESPONSE_MSG.format(response))
 
     def _wait_for_reset(self):
         """Sleep for self._reset_delay + self._dut_reset_time.
@@ -193,22 +204,24 @@ class Parser(object):
 
 def usage_error(exception, usage_string):
     print(usage_string, file=sys.stderr)
-    print("{0}: {1}".format(os.path.basename(__file__), exception.message),
+    print("{0}: error: {1}".format(os.path.basename(__file__), exception.message),
           file=sys.stderr)
     raise SystemExit(2)
 
 
 def main(argv):
     parser = Parser()
-    parsed_args = None
     try:
         parsed_args = parser.parse_args(argv)
+        ez_outlet = EzOutletReset(hostname=parsed_args.target,
+                                  wait_time=parsed_args.reset_time)
+        ez_outlet.reset()
     except EzOutletResetUsageError as e:
         usage_error(e, parser.get_usage())
-
-    ez_outlet = EzOutletReset(hostname=parsed_args.target,
-                              wait_time=parsed_args.reset_time)
-    ez_outlet.reset()
+    except EzOutletResetError as e:
+        raise  # TODO
+    except Exception as e:
+        raise  # TODO
 
 
 if __name__ == "__main__":

@@ -222,7 +222,7 @@ class TestEzOutletReset(unittest.TestCase):
         Given: Mock urllib2 configured to raise urllib2.URLError on urlopen.
           and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling reset().
-        Then: reset() raises boofuzz.sex.SullyRuntimeError, e.
+        Then: reset() raises boofuzz.ez_outlet_reset.EzOutletResetError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.NO_RESPONSE_MSG.format(timeout).
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
@@ -242,7 +242,7 @@ class TestEzOutletReset(unittest.TestCase):
                                                    reset_delay=reset_delay)
 
         # When
-        with self.assertRaises(boofuzz.sex.SullyRuntimeError) as e:
+        with self.assertRaises(boofuzz.ez_outlet_reset.EzOutletResetError) as e:
             ez.reset()
 
         # Then
@@ -263,7 +263,7 @@ class TestEzOutletReset(unittest.TestCase):
                urlopen returns a mock whose read() method returns unexpected_response_contents.
           and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling reset().
-        Then: reset() raises boofuzz.sex.SullyRuntimeError, e.
+        Then: reset() raises boofuzz.ez_outlet_reset.EzOutletResetError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.UNEXPECTED_RESPONSE_MSG.format(unexpected_response_contents).
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
@@ -284,7 +284,7 @@ class TestEzOutletReset(unittest.TestCase):
                                                    reset_delay=reset_delay)
 
         # When
-        with self.assertRaises(boofuzz.sex.SullyRuntimeError) as e:
+        with self.assertRaises(boofuzz.ez_outlet_reset.EzOutletResetError) as e:
             ez.reset()
 
         # Then
