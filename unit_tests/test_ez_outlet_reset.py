@@ -10,13 +10,7 @@ except ImportError:
     import mock
 
 import boofuzz
-
-
-# Suppress unresolved since ez_outlet_reset is not part of the API.
-# Plan is to either make it public or move ez_outlet_reset into a
-# separate module.
-# noinspection PyUnresolvedReferences
-ez_outlet_reset = boofuzz.ez_outlet_reset
+from boofuzz import ez_outlet_reset
 
 
 class TestEzOutletReset(unittest.TestCase):
