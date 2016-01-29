@@ -465,7 +465,7 @@ class TestEzOutletReset(unittest.TestCase):
     def test_error_handling_ez_outlet_reset_error(self, mock_ez_outlet_reset):
         """
         Given: Mock ez_outlet_reset.EzOutletReset() configured to raise on
-               reset().
+               EzOutletResetError on reset().
           and: Mock STDERR, STDOUT.
          When: Calling main().
          Then: SystemExit is raised with code EXIT_CODE_ERR
@@ -484,6 +484,40 @@ class TestEzOutletReset(unittest.TestCase):
         assert re.search(".*: error: {0}".format(self.arbitrary_msg_2),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+    # Suppress since PyCharm doesn't recognize @mock.patch.object
+    # noinspection PyUnresolvedReferences
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    @mock.patch.object(boofuzz.ez_outlet_reset.EzOutletReset, 'reset',
+                       side_effect=Exception(arbitrary_msg_2))
+    def test_error_handling_unhandled_error(self, mock_ez_outlet_reset):
+        """
+        Given: Mock ez_outlet_reset.EzOutletReset.reset() configured to raise an
+               Exception on reset().
+          and: Mock STDERR, STDOUT.
+         When: Calling main().
+         Then: SystemExit is raised with code EXIT_CODE_ERR
+          and: STDERR <= ".*: error: Unhandled exception! Please file bug report.\n\nTraceback.*{0}.*".format(exception.message)'
+          and: STDOUT is silent.
+          and: Mock ez_outlet_reset.EzOutletReset.reset() was called.
+        """
+        args = ['ez_outlet_reset.py', '1.2.3.4']
+
+        # When
+        with pytest.raises(SystemExit) as exception_info:
+            boofuzz.ez_outlet_reset.main(args)
+
+        # Then
+        assert exception_info.value.message == EXIT_CODE_ERR
+
+        assert re.search(".*: error: Unhandled exception! Please file bug report.\n\nTraceback.*{0}.*".format(self.arbitrary_msg_2),
+                         boofuzz.ez_outlet_reset.sys.stderr.getvalue(),
+                         flags=re.DOTALL) is not None
+
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+        mock_ez_outlet_reset.assert_called_with()
 
 
 @pytest.mark.parametrize("hostname,expected_url", [('1.2.3.4', 'http://1.2.3.4/reset.cgi')])

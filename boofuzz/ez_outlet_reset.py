@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import time
+import traceback
 import urllib2
 import urlparse
 
@@ -218,6 +219,13 @@ def handle_error(exception):
     raise SystemExit(EXIT_CODE_ERR)
 
 
+def handle_unexpected_error():
+    print("{0}: error: Unhandled exception! Please file bug report.\n\n{1}".format(os.path.basename(__file__),
+                                                                                   traceback.format_exc()),
+          file=sys.stderr)
+    raise SystemExit(EXIT_CODE_ERR)
+
+
 def main(argv):
     parser = _Parser()
     try:
@@ -229,8 +237,8 @@ def main(argv):
         usage_error(e, parser.get_usage())
     except EzOutletResetError as e:
         handle_error(e)
-    except Exception as e:
-        raise  # TODO
+    except Exception:
+        handle_unexpected_error()
 
 
 if __name__ == "__main__":
