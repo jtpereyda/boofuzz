@@ -30,25 +30,25 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock urllib2 configured such that
                urlopen returns a mock whose read() method returns expected_response_contents.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling post_fail() with a mock_logger.
         Then: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: mock_logger.log_info(EzOutletReset.LOG_REQUEST_MSG.format(sample_url)) is called
               where sample_rul is ez_outlet_reset._get_url's result.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
          and: mock_logger.log_recv() is called with expected_response_contents.
-         and: time.sleep(dut_reset_time + reset_delay) is called.
+         and: time.sleep(wait_time + reset_delay) is called.
         """
         # Given
         mock_urllib2.configure_mock(
                 **{'urlopen.return_value': mock.MagicMock(
                         **{'read.return_value': self.expected_response_contents})})
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         e = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                  dut_reset_time=dut_reset_time,
+                                                  wait_time=wait_time,
                                                   timeout=timeout,
                                                   reset_delay=reset_delay)
 
@@ -62,7 +62,7 @@ class TestEzOutletReset(unittest.TestCase):
         mock_get_url.assert_called_with(hostname, boofuzz.ez_outlet_reset.EzOutletReset.RESET_URL_PATH)
         mock_urllib2.urlopen.assert_called_once_with(self.sample_url, timeout=timeout)
         mock_logger.log_recv.assert_called_once_with(self.expected_response_contents)
-        mock_time.sleep.assert_called_once_with(dut_reset_time + reset_delay)
+        mock_time.sleep.assert_called_once_with(wait_time + reset_delay)
 
     # Suppress since PyCharm doesn't recognize @mock.patch.object
     # noinspection PyUnresolvedReferences
@@ -72,7 +72,7 @@ class TestEzOutletReset(unittest.TestCase):
     def test_post_fail_no_response(self, mock_time, mock_urllib2, mock_get_url):
         """
         Given: Mock urllib2 configured to raise urllib2.URLError on urlopen.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling post_fail() with a mock_logger.
         Then: post_fail() raises boofuzz.sex.SullyRuntimeError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.NO_RESPONSE_MSG.format(timeout).
@@ -83,18 +83,18 @@ class TestEzOutletReset(unittest.TestCase):
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
          and: mock_logger.log_recv() is _not_ called
-         and: time.sleep(dut_reset_time + reset_delay) is _not_ called.
+         and: time.sleep(wait_time + reset_delay) is _not_ called.
         """
         # Given
         mock_urllib2.configure_mock(**{'urlopen.side_effect': urllib2.URLError("Dummy reason")})
         mock_urllib2.URLError = urllib2.URLError  # Restore mocked-away URLError
         # and
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         ez = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                   dut_reset_time=dut_reset_time,
+                                                   wait_time=wait_time,
                                                    timeout=timeout,
                                                    reset_delay=reset_delay)
 
@@ -125,7 +125,7 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock urllib2 configured such that
                urlopen returns a mock whose read() method returns unexpected_response_contents.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling post_fail() with a mock_logger.
         Then: post_fail() raises boofuzz.sex.SullyRuntimeError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.UNEXPECTED_RESPONSE_MSG.format(unexpected_response_contents).
@@ -135,7 +135,7 @@ class TestEzOutletReset(unittest.TestCase):
                2. EzOutletReset.UNEXPECTED_RESPONSE_MSG.format(unexpected_response_contents).
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
-         and: time.sleep(dut_reset_time + reset_delay) is _not_ called.
+         and: time.sleep(wait_time + reset_delay) is _not_ called.
         """
         # Given
         mock_urllib2.configure_mock(
@@ -143,11 +143,11 @@ class TestEzOutletReset(unittest.TestCase):
                         **{'read.return_value': self.unexpected_response_contents})})
         # and
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         ez = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                   dut_reset_time=dut_reset_time,
+                                                   wait_time=wait_time,
                                                    timeout=timeout,
                                                    reset_delay=reset_delay)
 
@@ -179,23 +179,23 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock urllib2 configured such that
                urlopen returns a mock whose read() method returns expected_response_contents.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling reset().
         Then: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
          and: expected_response_contents is returned.
-         and: time.sleep(dut_reset_time + reset_delay) is called.
+         and: time.sleep(wait_time + reset_delay) is called.
         """
         # Given
         mock_urllib2.configure_mock(
                 **{'urlopen.return_value': mock.MagicMock(
                         **{'read.return_value': self.expected_response_contents})})
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         uut = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                    dut_reset_time=dut_reset_time,
+                                                    wait_time=wait_time,
                                                     timeout=timeout,
                                                     reset_delay=reset_delay)
 
@@ -206,7 +206,7 @@ class TestEzOutletReset(unittest.TestCase):
         mock_get_url.assert_called_with(hostname, boofuzz.ez_outlet_reset.EzOutletReset.RESET_URL_PATH)
         mock_urllib2.urlopen.assert_called_once_with(self.sample_url, timeout=timeout)
         self.assertEqual(self.expected_response_contents, result)
-        mock_time.sleep.assert_called_once_with(dut_reset_time + reset_delay)
+        mock_time.sleep.assert_called_once_with(wait_time + reset_delay)
 
     # Suppress since PyCharm doesn't recognize @mock.patch.object
     # noinspection PyUnresolvedReferences
@@ -216,24 +216,24 @@ class TestEzOutletReset(unittest.TestCase):
     def test_reset_no_response(self, mock_time, mock_urllib2, mock_get_url):
         """
         Given: Mock urllib2 configured to raise urllib2.URLError on urlopen.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling reset().
         Then: reset() raises boofuzz.sex.SullyRuntimeError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.NO_RESPONSE_MSG.format(timeout).
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
-         and: time.sleep(dut_reset_time + reset_delay) is _not_ called.
+         and: time.sleep(wait_time + reset_delay) is _not_ called.
         """
         # Given
         mock_urllib2.configure_mock(**{'urlopen.side_effect': urllib2.URLError("Dummy reason")})
         mock_urllib2.URLError = urllib2.URLError  # Restore mocked-away URLError
         # and
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         ez = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                   dut_reset_time=dut_reset_time,
+                                                   wait_time=wait_time,
                                                    timeout=timeout,
                                                    reset_delay=reset_delay)
 
@@ -257,13 +257,13 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock urllib2 configured such that
                urlopen returns a mock whose read() method returns unexpected_response_contents.
-          and: EzOutletReset initialized with an IP address, dut_reset_time, timeout, and reset_delay.
+          and: EzOutletReset initialized with an IP address, wait_time, timeout, and reset_delay.
         When: Calling reset().
         Then: reset() raises boofuzz.sex.SullyRuntimeError, e.
          and: e.message == ez_outlet_reset.EzOutletReset.UNEXPECTED_RESPONSE_MSG.format(unexpected_response_contents).
          and: ez_outlet_reset._get_url is called using the IP address with ez_outlet_reset.RESET_URL_PATH.
          and: urllib2.urlopen(ez_outlet_reset._get_url's result, timeout) is called.
-         and: time.sleep(dut_reset_time + reset_delay) is _not_ called.
+         and: time.sleep(wait_time + reset_delay) is _not_ called.
         """
         # Given
         mock_urllib2.configure_mock(
@@ -271,11 +271,11 @@ class TestEzOutletReset(unittest.TestCase):
                         **{'read.return_value': self.unexpected_response_contents})})
         # and
         hostname = '12.34.56.78'
-        dut_reset_time = 12.34
+        wait_time = 12.34
         reset_delay = 3.21
         timeout = 11.12
         ez = boofuzz.ez_outlet_reset.EzOutletReset(hostname=hostname,
-                                                   dut_reset_time=dut_reset_time,
+                                                   wait_time=wait_time,
                                                    timeout=timeout,
                                                    reset_delay=reset_delay)
 
