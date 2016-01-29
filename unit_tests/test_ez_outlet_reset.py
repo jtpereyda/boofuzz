@@ -403,7 +403,14 @@ class TestEzOutletReset(unittest.TestCase):
                   .format(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT)
          and: STDOUT is silent.
         """
-        pass
+        args = ['ez_outlet_reset.py', '1.2.3.4', ez_outlet_reset.RESET_TIME_ARG_LONG, str(-1)]
+
+        with pytest.raises(SystemExit):
+            ez_outlet_reset.main(args)
+
+        assert re.search(".*: error: argument{0}/{1}: value must be non-negative.".format(boofuzz.ez_outlet_reset.RESET_TIME_ARG_LONG, boofuzz.ez_outlet_reset.RESET_TIME_ARG_SHORT),
+                         boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
 
 @pytest.mark.parametrize("hostname,expected_url", [('1.2.3.4', 'http://1.2.3.4/reset.cgi')])
