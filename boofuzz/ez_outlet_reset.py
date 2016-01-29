@@ -167,42 +167,45 @@ HELP_TEXT_RESET_TIME_ARG = 'Extra time in seconds to wait, e.g. for device reboo
 RESET_TIME_ARG_SHORT = '-t'
 RESET_TIME_ARG_LONG = '--reset-time'
 
-parser = None
+
+class Parser(object):
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description=HELP_TEXT)
+        self.parser.add_argument('target', help=HELP_TEXT_TARGET_ARG)
+        self.parser.add_argument(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT,
+                                 type=float,
+                                 default=0,
+                                 help=HELP_TEXT_RESET_TIME_ARG)
+
+    def parse_args(self, argv):
+        parsed_args = self.parser.parse_args(argv[1:])
+
+        if parsed_args.reset_time < 0:
+            raise EzOutletResetUsageError(
+                    "error: argument{0}/{1}: value must be non-negative.".format(
+                            RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT))
+
+        return parsed_args
+
+    def get_usage(self):
+        return self.parser.format_usage()
 
 
-def parse_args(argv):
-    global parser
-    parser = argparse.ArgumentParser(description=HELP_TEXT)
-    parser.add_argument('target', help=HELP_TEXT_TARGET_ARG)
-    parser.add_argument(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT,
-                        type=float,
-                        default=0,
-                        help=HELP_TEXT_RESET_TIME_ARG)
-
-    parsed_args = parser.parse_args(argv[1:])
-
-    if parsed_args.reset_time < 0:
-        raise EzOutletResetUsageError(
-                "error: argument{0}/{1}: value must be non-negative.".format(
-                        RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT))
-
-    return parsed_args
-
-
-def usage_error(exception):
-    global parser
-    print(parser.format_usage(), file=sys.stderr)
+def usage_error(exception, usage_string):
+    print(usage_string, file=sys.stderr)
     print("{0}: {1}".format(os.path.basename(__file__), exception.message),
           file=sys.stderr)
     raise SystemExit(2)
 
 
 def main(argv):
+    parser = Parser()
     parsed_args = None
     try:
-        parsed_args = parse_args(argv)
+        parsed_args = parser.parse_args(argv)
     except EzOutletResetUsageError as e:
-        usage_error(e)
+        usage_error(e, parser.get_usage())
+
     ez_outlet = EzOutletReset(hostname=parsed_args.target,
                               wait_time=parsed_args.reset_time)
     ez_outlet.reset()
