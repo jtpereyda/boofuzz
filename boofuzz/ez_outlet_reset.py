@@ -7,8 +7,15 @@ import ifuzz_logger
 
 import sex
 
+HELP_TEXT = (
+    """Send reset command to ezOutlet EZ-11b device; wait for on/off cycle.
 
-HELP_TEXT = 'Send reset command to ezOutlet EZ-11b device.'
+    Use --reset-time to wait additional time, e.g. for device reboot."""
+)
+
+
+class EzOutletResetUsageError(Exception):
+    pass
 
 
 def _get_url(hostname, path):
@@ -27,11 +34,11 @@ class EzOutletReset:
     It uses undocumented but simple CGI scripts.
     """
     DEFAULT_RESET_DELAY = 3.05
-    DEFAULT_TIMEOUT = 30
+    DEFAULT_TIMEOUT = 10
     DEFAULT_WAIT_TIME = 0
     RESET_URL_PATH = '/reset.cgi'
     EXPECTED_RESPONSE_CONTENTS = '0,0'
-    NO_RESPONSE_MSG = "No response from EzOutlet. timeout value: {0}"
+    NO_RESPONSE_MSG = "No response from EzOutlet after {0} seconds."
     UNEXPECTED_RESPONSE_MSG = ("Unexpected response from EzOutlet. Expected: " +
                                repr(EXPECTED_RESPONSE_CONTENTS) +
                                " Actual: {0}")
@@ -149,10 +156,11 @@ class EzOutletReset:
         """
         time.sleep(self._reset_delay + self._dut_reset_time)
 
-HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOUtlet device.'
-HELP_TEXT_RESET_TIME_ARG = 'Time in seconds to wait for UUT to reset.' \
-                     ' Note that the script already waits {0} seconds for the' \
-                     ' ezOutlet to turn off and on.'.format(EzOutletReset.DEFAULT_RESET_DELAY)
+
+HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOutlet device.'
+HELP_TEXT_RESET_TIME_ARG = 'Extra time in seconds to wait, e.g. for device reboot.' \
+                           ' Note that the script already waits {0} seconds for the' \
+                           ' ezOutlet to turn off and on.'.format(EzOutletReset.DEFAULT_RESET_DELAY)
 RESET_TIME_ARG_SHORT = '-t'
 RESET_TIME_ARG_LONG = '--reset-time'
 

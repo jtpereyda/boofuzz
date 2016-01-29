@@ -1,4 +1,5 @@
-import io
+import StringIO
+import re
 import unittest
 import urllib2
 
@@ -294,7 +295,7 @@ class TestEzOutletReset(unittest.TestCase):
         mock_urllib2.urlopen.assert_called_once_with(self.sample_url, timeout=timeout)
         mock_time.sleep.assert_not_called()
 
-    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=io.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
     @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
     def test_main_basic(self, mock_ez_outlet_reset):
         """
@@ -313,7 +314,7 @@ class TestEzOutletReset(unittest.TestCase):
                                                      wait_time=boofuzz.EzOutletReset.DEFAULT_WAIT_TIME)
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
-    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=io.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
     @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
     def test_main_reset_time_long(self, mock_ez_outlet_reset):
         """
@@ -333,7 +334,7 @@ class TestEzOutletReset(unittest.TestCase):
                                                      wait_time=wait_time)
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
-    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=io.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
     @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
     def test_main_reset_time_short(self, mock_ez_outlet_reset):
         """
@@ -353,30 +354,54 @@ class TestEzOutletReset(unittest.TestCase):
                                                      wait_time=wait_time)
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
-    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
-    def test_main_missing_target(self, mock_ez_outlet_reset):
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    def test_main_missing_target(self):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with no arguments.
-        Then: Script provides error output.
+        Then: SystemExit is raised.
+         and: STDERR includes ".*: error: too few arguments"
+         and: STDOUT is silent.
         """
-        pass
+        args = ['ez_outlet_reset.py']
 
-    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
-    def test_main_unknown_arg(self, mock_ez_outlet_reset):
+        with pytest.raises(SystemExit):
+            ez_outlet_reset.main(args)
+
+        assert re.search(".*: error: too few arguments", boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    def test_main_unknown_arg(self,):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with required arguments and an extra unknown argument.
-        Then: Script provides error output.
+        Then: SystemExit is raised.
+         and: STDOUT <= ".*: error: unrecognized arguments: {0}".format(bad_arg)
+         and: STDOUT is silent.
         """
-        pass
+        bad_arg = '--blab'
+        args = ['ez_outlet_reset.py', '1.2.3.4', bad_arg]
 
-    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
-    def test_main_reset_time_invalid(self, mock_ez_outlet_reset):
+        with pytest.raises(SystemExit):
+            ez_outlet_reset.main(args)
+
+        assert re.search(".*: error: unrecognized arguments: {0}".format(bad_arg),
+                         boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    def test_main_reset_time_negative(self):
         """
         Given: Mock EzOutletReset.
-        When: Calling main() with hostname and _invalid_ reset time argument.
-        Then: Script provides error output.
+        When: Calling main() with hostname and negative reset time argument.
+        Then: SystemExit is raised.
+         and: STDOUT <= ".*: error: argument{0}/{1}: value must be non-negative."
+                  .format(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT)
+         and: STDOUT is silent.
         """
         pass
 
