@@ -15,12 +15,19 @@ except ImportError:
 import boofuzz
 from boofuzz import ez_outlet_reset
 
+EXIT_CODE_ERR = 1
+EXIT_CODE_PARSER_ERR = 2
+
 
 class TestEzOutletReset(unittest.TestCase):
     """
     EzOutletReset.post_fail is basically all side-effects, so its test is
     rather heavy in mocks.
     """
+
+    arbitrary_msg_1 = 'arbitrary message'
+    arbitrary_msg_2 = '"Always check a module in cleaner than when you checked it out." --Uncle Bob'
+
     sample_url = 'DEAD STRINGS TELL NO TALES'
     expected_response_contents = boofuzz.EzOutletReset.EXPECTED_RESPONSE_CONTENTS
     unexpected_response_contents = '1,0'
@@ -360,33 +367,38 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with no arguments.
-        Then: SystemExit is raised.
+        Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
          and: STDERR includes ".*: error: too few arguments"
          and: STDOUT is silent.
         """
         args = ['ez_outlet_reset.py']
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exception_info:
             ez_outlet_reset.main(args)
 
+        assert exception_info.value.message == EXIT_CODE_PARSER_ERR
+
         assert re.search(".*: error: too few arguments", boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
     @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
     @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
-    def test_main_unknown_arg(self,):
+    def test_main_unknown_arg(self, ):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with required arguments and an extra unknown argument.
-        Then: SystemExit is raised.
-         and: STDOUT <= ".*: error: unrecognized arguments: {0}".format(bad_arg)
+        Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
+         and: STDERR <= ".*: error: unrecognized arguments: {0}".format(bad_arg)
          and: STDOUT is silent.
         """
         bad_arg = '--blab'
         args = ['ez_outlet_reset.py', '1.2.3.4', bad_arg]
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exception_info:
             ez_outlet_reset.main(args)
+
+        assert exception_info.value.message == EXIT_CODE_PARSER_ERR
 
         assert re.search(".*: error: unrecognized arguments: {0}".format(bad_arg),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
@@ -398,17 +410,78 @@ class TestEzOutletReset(unittest.TestCase):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with hostname and negative reset time argument.
-        Then: SystemExit is raised.
-         and: STDOUT <= ".*: error: argument{0}/{1}: value must be non-negative."
+        Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
+         and: STDERR <= ".*: error: argument{0}/{1}: value must be non-negative."
                   .format(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT)
          and: STDOUT is silent.
         """
         args = ['ez_outlet_reset.py', '1.2.3.4', ez_outlet_reset.RESET_TIME_ARG_LONG, str(-1)]
 
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit) as exception_info:
             ez_outlet_reset.main(args)
 
-        assert re.search(".*: error: argument{0}/{1}: value must be non-negative.".format(boofuzz.ez_outlet_reset.RESET_TIME_ARG_LONG, boofuzz.ez_outlet_reset.RESET_TIME_ARG_SHORT),
+        assert exception_info.value.message == EXIT_CODE_PARSER_ERR
+
+        assert re.search(".*: error: argument{0}/{1}: value must be non-negative.".format(
+                boofuzz.ez_outlet_reset.RESET_TIME_ARG_LONG, boofuzz.ez_outlet_reset.RESET_TIME_ARG_SHORT),
+                boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+    # Suppress since PyCharm doesn't recognize @mock.patch.object
+    # noinspection PyUnresolvedReferences
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    @mock.patch.object(boofuzz.ez_outlet_reset._Parser, 'parse_args',
+                       side_effect=ez_outlet_reset.EzOutletResetUsageError(arbitrary_msg_1))
+    def test_error_handling_ez_outlet_reset_usage_error(self, mock_parser):
+        """
+        Given: Mock ez_outlet_reset._Parser() configured to raise on
+               parse_args().
+          and: Mock STDERR, STDOUT.
+         When: Calling main().
+         Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
+          and: STDERR <= ".*: error: {0}".format(exception.message)'
+          and: STDOUT is silent.
+        """
+        args = ['ez_outlet_reset.py', '1.2.3.4']
+
+        # When
+        with pytest.raises(SystemExit) as exception_info:
+            boofuzz.ez_outlet_reset.main(args)
+
+        # Then
+        assert exception_info.value.message == EXIT_CODE_PARSER_ERR
+
+        assert re.search(".*: error: {0}".format(self.arbitrary_msg_1),
+                         boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+    # Suppress since PyCharm doesn't recognize @mock.patch.object
+    # noinspection PyUnresolvedReferences
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stdout', new=StringIO.StringIO())
+    @mock.patch('boofuzz.ez_outlet_reset.sys.stderr', new=StringIO.StringIO())
+    @mock.patch.object(boofuzz.ez_outlet_reset.EzOutletReset, 'reset',
+                       side_effect=ez_outlet_reset.EzOutletResetError(arbitrary_msg_2))
+    def test_error_handling_ez_outlet_reset_error(self, mock_ez_outlet_reset):
+        """
+        Given: Mock ez_outlet_reset.EzOutletReset() configured to raise on
+               reset().
+          and: Mock STDERR, STDOUT.
+         When: Calling main().
+         Then: SystemExit is raised with code EXIT_CODE_ERR
+          and: STDERR <= ".*: error: {0}".format(exception.message)'
+          and: STDOUT is silent.
+        """
+        args = ['ez_outlet_reset.py', '1.2.3.4']
+
+        # When
+        with pytest.raises(SystemExit) as exception_info:
+            boofuzz.ez_outlet_reset.main(args)
+
+        # Then
+        assert exception_info.value.message == EXIT_CODE_ERR
+
+        assert re.search(".*: error: {0}".format(self.arbitrary_msg_2),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 

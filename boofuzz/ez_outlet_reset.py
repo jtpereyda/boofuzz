@@ -16,6 +16,9 @@ HELP_TEXT = (
     Use --reset-time to wait additional time, e.g. for device reboot."""
 )
 
+EXIT_CODE_ERR = 1
+EXIT_CODE_PARSER_ERR = 2
+
 
 class EzOutletResetError(Exception):
     pass
@@ -179,7 +182,7 @@ RESET_TIME_ARG_SHORT = '-t'
 RESET_TIME_ARG_LONG = '--reset-time'
 
 
-class Parser(object):
+class _Parser(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description=HELP_TEXT)
         self.parser.add_argument('target', help=HELP_TEXT_TARGET_ARG)
@@ -206,11 +209,17 @@ def usage_error(exception, usage_string):
     print(usage_string, file=sys.stderr)
     print("{0}: error: {1}".format(os.path.basename(__file__), exception.message),
           file=sys.stderr)
-    raise SystemExit(2)
+    raise SystemExit(EXIT_CODE_PARSER_ERR)
+
+
+def handle_error(exception):
+    print("{0}: error: {1}".format(os.path.basename(__file__), exception.message),
+          file=sys.stderr)
+    raise SystemExit(EXIT_CODE_ERR)
 
 
 def main(argv):
-    parser = Parser()
+    parser = _Parser()
     try:
         parsed_args = parser.parse_args(argv)
         ez_outlet = EzOutletReset(hostname=parsed_args.target,
@@ -219,7 +228,7 @@ def main(argv):
     except EzOutletResetUsageError as e:
         usage_error(e, parser.get_usage())
     except EzOutletResetError as e:
-        raise  # TODO
+        handle_error(e)
     except Exception as e:
         raise  # TODO
 
