@@ -149,20 +149,21 @@ class EzOutletReset:
         """
         time.sleep(self._reset_delay + self._dut_reset_time)
 
-
 HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOUtlet device.'
-HELP_TEXT_TIME_ARG = 'Time in seconds to wait for UUT to reset.' \
+HELP_TEXT_RESET_TIME_ARG = 'Time in seconds to wait for UUT to reset.' \
                      ' Note that the script already waits {0} seconds for the' \
                      ' ezOutlet to turn off and on.'.format(EzOutletReset.DEFAULT_RESET_DELAY)
+RESET_TIME_ARG_SHORT = '-t'
+RESET_TIME_ARG_LONG = '--reset-time'
 
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(description=HELP_TEXT)
     parser.add_argument('target', help=HELP_TEXT_TARGET_ARG)
-    parser.add_argument('--reset-time', '-t',
+    parser.add_argument(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT,
                         type=float,
                         default=0,
-                        help=HELP_TEXT_TIME_ARG)
+                        help=HELP_TEXT_RESET_TIME_ARG)
     return parser.parse_args(argv[1:])
 
 

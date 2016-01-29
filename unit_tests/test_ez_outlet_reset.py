@@ -12,6 +12,13 @@ except ImportError:
 import boofuzz
 
 
+# Suppress unresolved since ez_outlet_reset is not part of the API.
+# Plan is to either make it public or move ez_outlet_reset into a
+# separate module.
+# noinspection PyUnresolvedReferences
+ez_outlet_reset = boofuzz.ez_outlet_reset
+
+
 class TestEzOutletReset(unittest.TestCase):
     """
     EzOutletReset.post_fail is basically all side-effects, so its test is
@@ -291,35 +298,58 @@ class TestEzOutletReset(unittest.TestCase):
         mock_urllib2.urlopen.assert_called_once_with(self.sample_url, timeout=timeout)
         mock_time.sleep.assert_not_called()
 
-    def test_main_basic(self):
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_basic(self, mock_ez_outlet_reset):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with a single argument.
         Then: EzOutletReset constructor is called with hostname == given value
               and wait_time == ez_outlet_reset.DEFAULT_WAIT_TIME.
         """
-        pass
+        hostname = '255.254.253.252'
+        args = ['ez_outlet_reset.py', hostname]
 
-    def test_main_reset_time_long(self):
+        ez_outlet_reset.main(args)
+
+        mock_ez_outlet_reset.assert_called_once_with(hostname=hostname,
+                                                     wait_time=boofuzz.EzOutletReset.DEFAULT_WAIT_TIME)
+
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_reset_time_long(self, mock_ez_outlet_reset):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with hostname and --reset-time arguments.
         Then: EzOutletReset constructor is called with hostname == given value
               and wait_time == given value.
         """
-        pass
+        hostname = '255.254.253.252'
+        wait_time = 77
+        args = ['ez_outlet_reset.py', hostname, ez_outlet_reset.RESET_TIME_ARG_LONG, str(wait_time)]
 
-    def test_main_reset_time_short(self):
+        ez_outlet_reset.main(args)
+
+        mock_ez_outlet_reset.assert_called_once_with(hostname=hostname,
+                                                     wait_time=wait_time)
+
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_reset_time_short(self, mock_ez_outlet_reset):
         """
         Given: Mock EzOutletReset.
-        When: Calling main() with a single argument.
         When: Calling main() with hostname and -t arguments.
         Then: EzOutletReset constructor is called with hostname == given value
               and wait_time == given value.
         """
-        pass
+        hostname = '255.254.253.252'
+        wait_time = 1
+        args = ['ez_outlet_reset.py', hostname, ez_outlet_reset.RESET_TIME_ARG_SHORT, str(wait_time)]
 
-    def test_main_missing_target(self):
+        ez_outlet_reset.main(args)
+
+        mock_ez_outlet_reset.assert_called_once_with(hostname=hostname,
+                                                     wait_time=wait_time)
+
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_missing_target(self, mock_ez_outlet_reset):
         """
         Given: Mock EzOutletReset.
         When: Calling main() with no arguments.
@@ -327,11 +357,20 @@ class TestEzOutletReset(unittest.TestCase):
         """
         pass
 
-    def test_main_reset_unknown_arg(self):
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_unknown_arg(self, mock_ez_outlet_reset):
         """
         Given: Mock EzOutletReset.
-        When: Calling main() with a single argument.
         When: Calling main() with required arguments and an extra unknown argument.
+        Then: Script provides error output.
+        """
+        pass
+
+    @mock.patch('boofuzz.ez_outlet_reset.EzOutletReset')
+    def test_main_reset_time_invalid(self, mock_ez_outlet_reset):
+        """
+        Given: Mock EzOutletReset.
+        When: Calling main() with hostname and _invalid_ reset time argument.
         Then: Script provides error output.
         """
         pass
