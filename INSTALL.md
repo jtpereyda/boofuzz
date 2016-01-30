@@ -33,7 +33,7 @@ Tips:
 
  * To install unit test dependencies as well:
 
-        `sudo pip install -e .[testing]`
+        `sudo pip install -e .[dev]`
 
 * If you're behind a proxy:
 
