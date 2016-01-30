@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import functools
 
 from . import blocks
+from . import ez_outlet_reset  # For use of main()
 from . import legos
 from . import primitives
 from . import sex
