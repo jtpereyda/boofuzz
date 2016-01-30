@@ -199,52 +199,65 @@ class _Parser(object):
                                  default=0,
                                  help=HELP_TEXT_RESET_TIME_ARG)
 
+    def get_usage(self):
+        return self.parser.format_usage()
+
     def parse_args(self, argv):
         parsed_args = self.parser.parse_args(argv[1:])
 
-        if parsed_args.reset_time < 0:
-            raise EzOutletResetUsageError(RESET_TIME_NEGATIVE_ERROR_MESSAGE)
+        self._check_args(parsed_args)
 
         return parsed_args
 
-    def get_usage(self):
-        return self.parser.format_usage()
+    @staticmethod
+    def _check_args(parsed_args):
+        if parsed_args.reset_time < 0:
+            raise EzOutletResetUsageError(RESET_TIME_NEGATIVE_ERROR_MESSAGE)
+
+_parser = _Parser()
+
+
+def _print_usage():
+    print(_parser.get_usage(), file=sys.stderr)
 
 
 def _print_error(msg):
     print(ERROR_STRING.format(PROGRAM_NAME, msg), file=sys.stderr)
 
 
-def usage_error(exception, usage_string):
-    print(usage_string, file=sys.stderr)
+def _usage_error(exception):
+    _print_usage()
     _print_error(msg=exception.message)
-    raise SystemExit(EXIT_CODE_PARSER_ERR)
+    sys.exit(EXIT_CODE_PARSER_ERR)
 
 
-def handle_error(exception):
+def _handle_error(exception):
     _print_error(msg=exception.message)
-    raise SystemExit(EXIT_CODE_ERR)
+    sys.exit(EXIT_CODE_ERR)
 
 
-def handle_unexpected_error(exception):
+def _handle_unexpected_error(exception):
     _ = exception  # exception gets printed by traceback.format_exc()
     _print_error(msg=UNHANDLED_ERROR_MESSAGE.format(traceback.format_exc()))
-    raise SystemExit(EXIT_CODE_ERR)
+    sys.exit(EXIT_CODE_ERR)
+
+
+def _parse_args_and_reset(argv):
+    parsed_args = _parser.parse_args(argv)
+    ez_outlet = EzOutletReset(hostname=parsed_args.target,
+                              wait_time=parsed_args.reset_time)
+    ez_outlet.reset()
 
 
 def main(argv):
-    parser = _Parser()
     try:
-        parsed_args = parser.parse_args(argv)
-        ez_outlet = EzOutletReset(hostname=parsed_args.target,
-                                  wait_time=parsed_args.reset_time)
-        ez_outlet.reset()
+        _parse_args_and_reset(argv)
     except EzOutletResetUsageError as e:
-        usage_error(e, parser.get_usage())
+        _usage_error(e)
     except EzOutletResetError as e:
-        handle_error(e)
+        _handle_error(e)
     except Exception as e:
-        handle_unexpected_error(e)
+        _handle_unexpected_error(e)
 
 
 if __name__ == "__main__":
