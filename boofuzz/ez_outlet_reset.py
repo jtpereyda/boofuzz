@@ -11,11 +11,26 @@ import urlparse
 import ifuzz_logger
 import sex
 
+_DEFAULT_RESET_DELAY = 3.05
+
 HELP_TEXT = (
     """Send reset command to ezOutlet EZ-11b device; wait for on/off cycle.
 
     Use --reset-time to wait additional time, e.g. for device reboot."""
 )
+PROGRAM_NAME = os.path.basename(__file__)
+RESET_TIME_ARG_SHORT = '-t'
+RESET_TIME_ARG_LONG = '--reset-time'
+
+HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOutlet device.'
+HELP_TEXT_RESET_TIME_ARG = 'Extra time in seconds to wait, e.g. for device reboot.' \
+                           ' Note that the script already waits {0} seconds for the' \
+                           ' ezOutlet to turn off and on.'.format(_DEFAULT_RESET_DELAY)
+
+ERROR_STRING = "{0}: error: {1}"
+UNHANDLED_ERROR_MESSAGE = "Unhandled exception! Please file bug report.\n\n{0}"
+RESET_TIME_NEGATIVE_ERROR_MESSAGE = "argument{0}/{1}: value must be non-negative.".format(RESET_TIME_ARG_LONG,
+                                                                                          RESET_TIME_ARG_SHORT)
 
 EXIT_CODE_ERR = 1
 EXIT_CODE_PARSER_ERR = 2
@@ -44,7 +59,7 @@ class EzOutletReset:
 
     It uses undocumented but simple CGI scripts.
     """
-    DEFAULT_RESET_DELAY = 3.05
+    DEFAULT_RESET_DELAY = _DEFAULT_RESET_DELAY
     DEFAULT_TIMEOUT = 10
     DEFAULT_WAIT_TIME = 0
     RESET_URL_PATH = '/reset.cgi'
@@ -175,14 +190,6 @@ class EzOutletReset:
         time.sleep(self._reset_delay + self._dut_reset_time)
 
 
-HELP_TEXT_TARGET_ARG = 'IP address/hostname of ezOutlet device.'
-HELP_TEXT_RESET_TIME_ARG = 'Extra time in seconds to wait, e.g. for device reboot.' \
-                           ' Note that the script already waits {0} seconds for the' \
-                           ' ezOutlet to turn off and on.'.format(EzOutletReset.DEFAULT_RESET_DELAY)
-RESET_TIME_ARG_SHORT = '-t'
-RESET_TIME_ARG_LONG = '--reset-time'
-
-
 class _Parser(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description=HELP_TEXT)
@@ -196,9 +203,7 @@ class _Parser(object):
         parsed_args = self.parser.parse_args(argv[1:])
 
         if parsed_args.reset_time < 0:
-            raise EzOutletResetUsageError(
-                    "error: argument{0}/{1}: value must be non-negative.".format(
-                            RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT))
+            raise EzOutletResetUsageError(RESET_TIME_NEGATIVE_ERROR_MESSAGE)
 
         return parsed_args
 
@@ -206,23 +211,24 @@ class _Parser(object):
         return self.parser.format_usage()
 
 
+def _print_error(msg):
+    print(ERROR_STRING.format(PROGRAM_NAME, msg), file=sys.stderr)
+
+
 def usage_error(exception, usage_string):
     print(usage_string, file=sys.stderr)
-    print("{0}: error: {1}".format(os.path.basename(__file__), exception.message),
-          file=sys.stderr)
+    _print_error(msg=exception.message)
     raise SystemExit(EXIT_CODE_PARSER_ERR)
 
 
 def handle_error(exception):
-    print("{0}: error: {1}".format(os.path.basename(__file__), exception.message),
-          file=sys.stderr)
+    _print_error(msg=exception.message)
     raise SystemExit(EXIT_CODE_ERR)
 
 
-def handle_unexpected_error():
-    print("{0}: error: Unhandled exception! Please file bug report.\n\n{1}".format(os.path.basename(__file__),
-                                                                                   traceback.format_exc()),
-          file=sys.stderr)
+def handle_unexpected_error(exception):
+    _ = exception  # exception gets printed by traceback.format_exc()
+    _print_error(msg=UNHANDLED_ERROR_MESSAGE.format(traceback.format_exc()))
     raise SystemExit(EXIT_CODE_ERR)
 
 
@@ -237,8 +243,8 @@ def main(argv):
         usage_error(e, parser.get_usage())
     except EzOutletResetError as e:
         handle_error(e)
-    except Exception:
-        handle_unexpected_error()
+    except Exception as e:
+        handle_unexpected_error(e)
 
 
 if __name__ == "__main__":

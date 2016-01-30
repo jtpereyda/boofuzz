@@ -64,7 +64,9 @@ class TestEzOutletReset(unittest.TestCase):
                                                   reset_delay=reset_delay)
 
         # When
-        mock_logger = mock.MagicMock()
+        mock_logger = mock.MagicMock(spec=boofuzz.IFuzzLogger)
+        # PyCharm can't match MagicMock types.
+        # noinspection PyTypeChecker
         e.post_fail(logger=mock_logger)
 
         # Then
@@ -110,8 +112,10 @@ class TestEzOutletReset(unittest.TestCase):
                                                    reset_delay=reset_delay)
 
         # When
-        mock_logger = mock.MagicMock()
+        mock_logger = mock.MagicMock(spec=boofuzz.IFuzzLogger)
         with self.assertRaises(boofuzz.sex.SullyRuntimeError) as e:
+            # PyCharm can't match MagicMock types.
+            # noinspection PyTypeChecker
             ez.post_fail(logger=mock_logger)
 
         # Then
@@ -163,8 +167,10 @@ class TestEzOutletReset(unittest.TestCase):
                                                    reset_delay=reset_delay)
 
         # When
-        mock_logger = mock.MagicMock()
+        mock_logger = mock.MagicMock(spec=boofuzz.IFuzzLogger)
         with self.assertRaises(boofuzz.sex.SullyRuntimeError) as e:
+            # PyCharm can't match MagicMock types.
+            # noinspection PyTypeChecker
             ez.post_fail(logger=mock_logger)
 
         # Then
@@ -411,8 +417,8 @@ class TestEzOutletReset(unittest.TestCase):
         Given: Mock EzOutletReset.
         When: Calling main() with hostname and negative reset time argument.
         Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
-         and: STDERR <= ".*: error: argument{0}/{1}: value must be non-negative."
-                  .format(RESET_TIME_ARG_LONG, RESET_TIME_ARG_SHORT)
+         and: STDERR <= ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME,
+                                                             ez_outlet_reset.RESET_TIME_NEGATIVE_ERROR_MESSAGE)
          and: STDOUT is silent.
         """
         args = ['ez_outlet_reset.py', '1.2.3.4', ez_outlet_reset.RESET_TIME_ARG_LONG, str(-1)]
@@ -422,9 +428,9 @@ class TestEzOutletReset(unittest.TestCase):
 
         assert exception_info.value.message == EXIT_CODE_PARSER_ERR
 
-        assert re.search(".*: error: argument{0}/{1}: value must be non-negative.".format(
-                boofuzz.ez_outlet_reset.RESET_TIME_ARG_LONG, boofuzz.ez_outlet_reset.RESET_TIME_ARG_SHORT),
-                boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
+        assert re.search(ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME,
+                                                             ez_outlet_reset.RESET_TIME_NEGATIVE_ERROR_MESSAGE),
+                         boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
 
     # Suppress since PyCharm doesn't recognize @mock.patch.object
@@ -440,8 +446,9 @@ class TestEzOutletReset(unittest.TestCase):
           and: Mock STDERR, STDOUT.
          When: Calling main().
          Then: SystemExit is raised with code EXIT_CODE_PARSER_ERR
-          and: STDERR <= ".*: error: {0}".format(exception.message)'
+          and: STDERR <= ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME, self.arbitrary_msg_1)
           and: STDOUT is silent.
+          and: Mock ez_outlet_reset._Parser.parse_args() was called.
         """
         args = ['ez_outlet_reset.py', '1.2.3.4']
 
@@ -452,9 +459,11 @@ class TestEzOutletReset(unittest.TestCase):
         # Then
         assert exception_info.value.message == EXIT_CODE_PARSER_ERR
 
-        assert re.search(".*: error: {0}".format(self.arbitrary_msg_1),
+        assert re.search(ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME, self.arbitrary_msg_1),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+        mock_parser.assert_called_with(args)
 
     # Suppress since PyCharm doesn't recognize @mock.patch.object
     # noinspection PyUnresolvedReferences
@@ -469,8 +478,9 @@ class TestEzOutletReset(unittest.TestCase):
           and: Mock STDERR, STDOUT.
          When: Calling main().
          Then: SystemExit is raised with code EXIT_CODE_ERR
-          and: STDERR <= ".*: error: {0}".format(exception.message)'
+          and: STDERR <= ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME, self.arbitrary_msg_2)
           and: STDOUT is silent.
+          and: Mock ez_outlet_reset.EzOutletReset.reset() was called.
         """
         args = ['ez_outlet_reset.py', '1.2.3.4']
 
@@ -481,9 +491,11 @@ class TestEzOutletReset(unittest.TestCase):
         # Then
         assert exception_info.value.message == EXIT_CODE_ERR
 
-        assert re.search(".*: error: {0}".format(self.arbitrary_msg_2),
+        assert re.search(ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME, self.arbitrary_msg_2),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue()) is not None
         assert boofuzz.ez_outlet_reset.sys.stdout.getvalue() == ''
+
+        mock_ez_outlet_reset.assert_called_with()
 
     # Suppress since PyCharm doesn't recognize @mock.patch.object
     # noinspection PyUnresolvedReferences
@@ -498,7 +510,9 @@ class TestEzOutletReset(unittest.TestCase):
           and: Mock STDERR, STDOUT.
          When: Calling main().
          Then: SystemExit is raised with code EXIT_CODE_ERR
-          and: STDERR <= ".*: error: Unhandled exception! Please file bug report.\n\nTraceback.*{0}.*".format(exception.message)'
+          and: STDERR <= ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME,
+                                                             ez_outlet_reset.UNHANDLED_ERROR_MESSAGE.format(
+                                                                 "Traceback.*{0}.*".format(self.arbitrary_msg_2)))
           and: STDOUT is silent.
           and: Mock ez_outlet_reset.EzOutletReset.reset() was called.
         """
@@ -511,7 +525,9 @@ class TestEzOutletReset(unittest.TestCase):
         # Then
         assert exception_info.value.message == EXIT_CODE_ERR
 
-        assert re.search(".*: error: Unhandled exception! Please file bug report.\n\nTraceback.*{0}.*".format(self.arbitrary_msg_2),
+        assert re.search(ez_outlet_reset.ERROR_STRING.format(ez_outlet_reset.PROGRAM_NAME,
+                                                             ez_outlet_reset.UNHANDLED_ERROR_MESSAGE.format(
+                                                                     "Traceback.*{0}.*".format(self.arbitrary_msg_2))),
                          boofuzz.ez_outlet_reset.sys.stderr.getvalue(),
                          flags=re.DOTALL) is not None
 
