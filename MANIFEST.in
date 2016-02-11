@@ -1,5 +1,5 @@
-include *.md
 include *.py
+include *.rst
 include *.txt
 recursive-include boofuzz *.md
 recursive-include boofuzz *.py
