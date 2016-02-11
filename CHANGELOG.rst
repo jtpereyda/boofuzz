@@ -3,6 +3,7 @@
 New features
 ~~~~~~~~~~~~
 
+-  Now on PyPI! ``pip install boofuzz``
 -  API is now centralized so all classes are available at top level
    ``boofuzz.*``
 
