@@ -69,6 +69,6 @@ here on GitHub.
 For other questions, feel free to `email me`_.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
-.. _INSTALL.md: INSTALL.md
+.. _INSTALL.rst: INSTALL.rst
 .. _Sulley FTP example: https://www.securepla.net/fuzzing-101-with-sulley/
 .. _email me: https://github.com/jtpereyda
