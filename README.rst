@@ -42,7 +42,7 @@ Installation
 ------------
 
 Boofuzz installs as a Python library used to build fuzzer scripts. See
-`INSTALL.md`_ for step-by-step instructions.
+`INSTALL.rst`_ for step-by-step instructions.
 
 Getting Started
 ---------------
