@@ -437,6 +437,8 @@ class Session(pgraph.Graph):
 
         @see: export_file()
         """
+        if self.session_filename is None:
+            return
 
         try:
             with open(self.session_filename, "rb") as f:
@@ -815,7 +817,9 @@ class Session(pgraph.Graph):
         else:
             msg = "primitive name: None, "
 
-        msg += "type: %s, default value: %s" % (type(self.fuzz_node.mutant).__name__, self.fuzz_node.mutant.original_value)
+        msg += "type: %s, default value: %s" % (
+            type(self.fuzz_node.mutant).__name__, self.fuzz_node.mutant.original_value
+        )
         self._fuzz_data_logger.log_info(msg)
         self._fuzz_data_logger.log_info(
             "Test case %d of %d for this node. %d of %d overall." % (self.fuzz_node.mutant_index,
