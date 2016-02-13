@@ -437,6 +437,8 @@ class Session(pgraph.Graph):
 
         @see: export_file()
         """
+        if self.session_filename is None:
+            return
 
         try:
             with open(self.session_filename, "rb") as f:
