@@ -1,6 +1,10 @@
 Upcoming Release
 ================
 
+Fixes
+~~~~~
+-  Session constructor param ``session_filename`` is now optional.
+
 0.0.1-dev2
 ==========
 New features
