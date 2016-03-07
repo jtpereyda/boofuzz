@@ -31,9 +31,20 @@ class Request(IFuzzable):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, value):
+        self._name = value
+
     @property
     def mutant_index(self):
         return self._mutant_index
+
+    @mutant_index.setter
+    def mutant_index(self, value):
+        if isinstance(value, int):
+            self._mutant_index = value
+        else:
+            raise TypeError('Expected an Int')
 
     @property
     def fuzzable(self):
