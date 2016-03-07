@@ -14,7 +14,7 @@ from boofuzz import helpers
                           ('1.2.256', b'\x01\x02\x01\x00'),
                           ('1.2.65535', b'\x01\x02\xFF\xFF'),
                           ('1.16777215', b'\x01\xFF\xFF\xFF'),
-                          ('4294967295', b'\xFF\xFF\xFF\xFF')])
+                          ('4294967294', b'\xFF\xFF\xFF\xFE')])
 @scenario('helpers_ip_str_to_bytes.feature', 'Valid IP addresses')
 def test_valid_ip_addresses(ip_str, ip_bytes):
     pass
