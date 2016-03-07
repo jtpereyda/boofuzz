@@ -3,8 +3,15 @@ Upcoming Release
 
 Fixes
 ~~~~~
--  Session constructor param ``session_filename`` is now optional.
 -  Missing property setters in ``boofuzz.request.Request`` now implemented.
+-  Unit tests now pass on Windows.
+
+0.0.1-dev3
+==========
+
+Fixes
+~~~~~
+-  Session constructor param ``session_filename`` is now optional.
 
 0.0.1-dev2
 ==========
