@@ -4,6 +4,7 @@ Upcoming Release
 Fixes
 ~~~~~
 -  Session constructor param ``session_filename`` is now optional.
+-  Missing property setters in ``boofuzz.request.Request`` now implemented.
 
 0.0.1-dev2
 ==========
