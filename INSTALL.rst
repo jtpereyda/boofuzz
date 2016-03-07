@@ -104,7 +104,7 @@ and has been replaced with boofuzz’s loggi
 
 .. _help site: http://www.howtogeek.com/197947/how-to-install-python-on-windows/
 .. _releases page: https://github.com/jtpereyda/boofuzz/releases
-.. _`https://github.com/jtpereyda/boofuzz`:
+.. _`https://github.com/jtpereyda/boofuzz`: https://github.com/jtpereyda/boofuzz
 .. _fork: https://github.com/Fitblip/pydbg
 .. _pydasm: https://github.com/jtpereyda/libdasm
 .. _Visual C++ Compiler for Python 2.7: http://aka.ms/vcpython27
