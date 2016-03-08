@@ -1,10 +1,11 @@
-Upcoming Release
-================
+0.0.1-dev4
+==========
 
 Fixes
 ~~~~~
 -  Missing property setters in ``boofuzz.request.Request`` now implemented.
 -  Unit tests now pass on Windows.
+-  Fixed wheel build issue; boofuzz subpackages were missing.
 
 0.0.1-dev3
 ==========
