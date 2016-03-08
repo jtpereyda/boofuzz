@@ -3,7 +3,7 @@ import ast
 import os
 import re
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -29,7 +29,7 @@ setup(
         maintainer_email='joshua.t.pereyda@gmail.com',
         url='https://github.com/jtpereyda/boofuzz',
         license='GPL',
-        packages=['boofuzz'],
+        packages=find_packages(exclude=['unit_tests']),
         package_data={'boofuzz': ['web/templates/*', 'web/static/css/*']},
         install_requires=[
             'future', 'pyserial', 'pydot2==1.0.33', 'tornado==4.0.2',
