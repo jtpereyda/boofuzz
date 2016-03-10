@@ -169,11 +169,22 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
-                 check_data_received_each_request=True,
-                 log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
-                 ):
+    def __init__(
+        self,
+        session_filename=None,
+        skip=0,
+        sleep_time=1.0,
+        restart_interval=0,
+        web_port=26000,
+        crash_threshold=3,
+        restart_sleep_time=300,
+        fuzz_data_logger=None,
+        check_data_received_each_request=True,
+        log_level=logging.INFO,
+        logfile=None,
+        logfile_level=logging.DEBUG,
+        stop_first=False
+    ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
@@ -247,6 +258,7 @@ class Session(pgraph.Graph):
         self.root.label = self.root.name
         self.last_recv = None
         self.last_send = None
+        self.stop_first = stop_first
 
         self.add_node(self.root)
 
@@ -575,7 +587,7 @@ class Session(pgraph.Graph):
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            self.restart_target(target, stop_first=False)
+            self.restart_target(target, stop_first=self.stop_first)
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
