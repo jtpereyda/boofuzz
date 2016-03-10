@@ -3,6 +3,7 @@
 
 Fixes
 ~~~~~
+-  Stopping the target process before restarting in is now optional (default is not to stop).
 -  Missing property setters in ``boofuzz.request.Request`` now implemented.
 -  Unit tests now pass on Windows.
 -  Fixed wheel build issue; boofuzz subpackages were missing.
