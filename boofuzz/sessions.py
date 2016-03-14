@@ -411,7 +411,7 @@ class Session(pgraph.Graph):
                         and self.restart_interval \
                         and num_cases_actually_fuzzed % self.restart_interval == 0:
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                    self.restart_target(self.targets[0])
+                    self.restart_target(self.targets[0], stop_first=self.stop_first)
 
                 self._fuzz_current_case(*fuzz_args)
 
