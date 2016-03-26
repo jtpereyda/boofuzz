@@ -68,6 +68,8 @@ here on GitHub.
 
 For other questions, check out the `boofuzz Google Group`_.
 
+For updates, follow @fuzztheplanet on Twitter.
+
 .. _Sulley: https://github.com/OpenRCE/sulley
 .. _INSTALL.rst: INSTALL.rst
 .. _Sulley FTP example: https://www.securepla.net/fuzzing-101-with-sulley/
