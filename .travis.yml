@@ -7,4 +7,4 @@ before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 install: pip install tox
 
 script:
-    - tox
+    - sudo tox
