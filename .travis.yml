@@ -1,13 +1,10 @@
 language: python
 
-python:
-    - "2.7"
-
 sudo: required
 
 before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 
-install: pip install -e .[dev]
+install: pip install tox
 
 script:
-    - sudo py.test
+    - tox
