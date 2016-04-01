@@ -7,3 +7,4 @@ dist/
 .idea/
 testing/
 .cache
+.tox
