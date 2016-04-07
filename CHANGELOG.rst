@@ -1,8 +1,9 @@
-Upcoming
-========
+0.0.1-dev5
+==========
 Development
 -----------
 -  Tests now run on tox.
+-  Added Google Groups and Twitter link.
 
 0.0.1-dev4
 ==========
