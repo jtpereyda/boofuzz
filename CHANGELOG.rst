@@ -1,10 +1,12 @@
-0.0.2 (unreleased)
-==================
+0.0.2
+=====
+Continuous deployment with Travis.
+
 Development
 -----------
 -  Added build and PyPI badges.
 -  Added CONTRIBUTING.rst.
--  `check-manifest` now runs in `tox`.
+-  `check-manifest` now runs in automated build.
 -  Travis now deploys to PyPI!
 
 0.0.1-dev5
