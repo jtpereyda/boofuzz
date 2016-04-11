@@ -2,7 +2,8 @@
 ==================
 Development
 -----------
--  Add build and PyPI badges.
+-  Added build and PyPI badges.
+-  Added CONTRIBUTING.rst.
 
 0.0.1-dev5
 ==========
