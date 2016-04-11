@@ -4,6 +4,7 @@ Development
 -----------
 -  Added build and PyPI badges.
 -  Added CONTRIBUTING.rst.
+-  `check-manifest` now runs in `tox`.
 
 0.0.1-dev5
 ==========
