@@ -1,3 +1,6 @@
+0.0.2 (unreleased)
+==================
+
 0.0.1-dev5
 ==========
 Development
@@ -30,13 +33,7 @@ New features
 -  API is now centralized so all classes are available at top level
    ``boofuzz.*``
 
-0.0.2 (unreleased)
-                  
-
-- Nothing changed yet.
-
-
-0.0.1-dev5 (2016-04-07)
+   -  This makes it way easier to use. Everything can be used like
       ``boofuzz.MyClass`` instead of ``boofuzz.my_file.MyClass``.
 
 -  Added ``EzOutletReset`` class to support restarting devices using an
