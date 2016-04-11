@@ -10,3 +10,4 @@ recursive-include requests *.py
 recursive-include unit_tests *.feature
 recursive-include unit_tests *.py
 recursive-include utils *.py
+include tox.ini

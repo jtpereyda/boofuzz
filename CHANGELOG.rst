@@ -1,8 +1,9 @@
-Upcoming
-========
+0.0.1-dev5
+==========
 Development
 -----------
 -  Tests now run on tox.
+-  Added Google Groups and Twitter link.
 
 0.0.1-dev4
 ==========
@@ -29,7 +30,7 @@ New features
 -  API is now centralized so all classes are available at top level
    ``boofuzz.*``
 
-   -  This makes it way easier to use. Everything can be used like
+0.0.1-dev5 (2016-04-07)
       ``boofuzz.MyClass`` instead of ``boofuzz.my_file.MyClass``.
 
 -  Added ``EzOutletReset`` class to support restarting devices using an
