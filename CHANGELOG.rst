@@ -1,5 +1,8 @@
 0.0.2 (unreleased)
 ==================
+Development
+-----------
+-  Add build and PyPI badges.
 
 0.0.1-dev5
 ==========

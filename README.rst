@@ -1,5 +1,10 @@
 boofuzz
 =======
+.. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
+    :target: https://travis-ci.org/jtpereyda/boofuzz
+
+.. image:: https://img.shields.io/pypi/v/boofuzz.svg
+    :target: https://pypi.python.org/pypi/boofuzz
 
 Boofuzz is a fork of and the successor to the `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility,
