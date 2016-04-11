@@ -30,6 +30,12 @@ New features
 -  API is now centralized so all classes are available at top level
    ``boofuzz.*``
 
+0.0.2 (unreleased)
+                  
+
+- Nothing changed yet.
+
+
 0.0.1-dev5 (2016-04-07)
       ``boofuzz.MyClass`` instead of ``boofuzz.my_file.MyClass``.
 
@@ -70,7 +76,7 @@ all of the refactors enable new features, fixes, and unit tests.
       ``Block``, ``Request``, and all ``BasePrimitive`` classes.
    -  Made effectively private members actually private.
    -  Eliminated ``exhaust()`` function. It was used only once and was
-      primarily a convoluted break statement. Now it’s gone. :)
+      primarily a convoluted break statement. Now it's gone. :)
    -  Split all block and primitive classes into separate files.
 
 -  Many Unit tests added.
