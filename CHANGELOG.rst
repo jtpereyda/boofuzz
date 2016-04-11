@@ -5,6 +5,7 @@ Development
 -  Added build and PyPI badges.
 -  Added CONTRIBUTING.rst.
 -  `check-manifest` now runs in `tox`.
+-  Travis now deploys to PyPI!
 
 0.0.1-dev5
 ==========
