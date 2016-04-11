@@ -45,38 +45,28 @@ Prep
 
 2. Use :code:`git status` to verify that no superfluous files are present to be included in the source distribution.
 
-3. Use check-manifest_ to update MANIFEST.in:
-  ::
+3. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
-      check-manifest -u
-
-4. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
-
-5. Modify CHANGELOG file:
+4. Modify CHANGELOG file:
 
   - Update version number.
   - Edit release notes for publication.
 
-6. Verify tests pass (continuous integration is OK for this).
+5. Verify tests pass (continuous integration is OK for this).
 
-7. Merge release branch.
+6. Merge release branch.
 
 Checks
 ++++++
 
-1. Use check-manifest_ to verify that no files are missing:
-  ::
+1. Use :code:`git status` to verify that no superfluous files are present to be included in the source distribution.
 
-      check-manifest
-
-2. Use :code:`git status` to verify that no superfluous files are present to be included in the source distribution.
-
-3. Build distributions:
+2. Build distributions:
   ::
 
       python setup.py sdist bdist_wheel
 
-4. Visually inspect wheel distribution for correctness.
+3. Visually inspect wheel distribution for correctness.
 
 Release
 +++++++
