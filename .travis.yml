@@ -12,7 +12,7 @@ deploy:
   user: jtpereyda
   password:
     secure: fVupJXYZ9JM+nkSZhBHZAxFIh+1Vzpccf3A3IkTvrXAkNu3H1KkfXnvq/3E6ffQSBkNiIBCw1zNn17BYCbcmhyvlk4uvT2T3pG2lHfaqCkyEB//wvjxhKDQCjRwR0Duf30tUXmrSLTZdUDxNP+vXS5Vx0zaEx+srAaj9Ah74xpA6766kTJR95RWtzksZ5ckMSkxOFimrv03zcBcz2jiNkv08ysXoliNTTCdhHNmokkfGAnBNmozyPW+VhIec0uLo4mu7DOopAvGjEO9ObHYCTESXCuTfW/9kTkBDYORPd/aQ4yaR5zJfQlx1DYhITly4g8VH7eSSGKhnTOTeZWVMdsT9gGHjh5oDnKbkPjiWgkm4F45IREZcQGmhKQhn9uqAaCV/RvK8kOygyiIvwo9JZUJaZLOERQF95PboR3vpXHyWYXU+fQbAiR2S53G8YJRS1abCkPYqnwYqlQI4Ig1tK0IJfmSWxtT+qbUvfSd1ghJsl7MK0hFfsv09nZ3Sx+x4tXBQbjKWDrZzEEiAXn4NWH/HpuOpB6Xwy4z43YxU7lXoqJpwr47HmBZE5JpnYtKodnLgCUbYrVdR/opZ8YWLn2/gXqQydBcELWyMnKB+NHk0QSzNbF/1u6bv6nX+NBOHB8inRc8SYd+hFNdcvOhdy1NoMCgUh35hd4CIMhg0unY=
-  distributions: sdist bdist_wheel
+  distributions: "sdist bdist_wheel"
   skip_cleanup: true
   on:
     tags: true

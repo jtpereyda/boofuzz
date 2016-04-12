@@ -28,7 +28,7 @@ from .sessions import Session, Target
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 
-__version__ = '0.0.3.dev6'
+__version__ = '0.0.3.dev7'
 
 
 # REQUEST MANAGEMENT
