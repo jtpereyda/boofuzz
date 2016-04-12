@@ -14,4 +14,4 @@ deploy:
     distributions: sdist bdist_wheel
     repo: jtpereyda/boofuzz
     branch: master
-    skip_cleanup: true
+  skip_cleanup: true
