@@ -1,3 +1,7 @@
+0.0.3
+=====
+Fixed deployment from 0.0.2.
+
 0.0.2
 =====
 Continuous deployment with Travis.
