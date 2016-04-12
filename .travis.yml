@@ -5,6 +5,7 @@ install: pip install tox
 script:
 - sudo tox
 before_deploy:
+- sudo chown $USER:$USER *
 - pwd
 - ls -la
 deploy:
