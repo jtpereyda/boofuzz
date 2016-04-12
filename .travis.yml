@@ -6,7 +6,7 @@ script:
 - sudo tox
 before_deploy:
 - pwd
-- ls
+- ls -la
 deploy:
   provider: pypi
   user: jtpereyda
@@ -20,4 +20,4 @@ deploy:
     branch: master
 after_deploy:
 - pwd
-- ls
+- ls -la
