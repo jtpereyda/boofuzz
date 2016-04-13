@@ -37,51 +37,22 @@ On every pull request:
 
 Release Checklist
 -----------------
+Releases are deployed from Travis based on git tags.
 
 Prep
 ++++
 
 1. Create release branch.
 
-2. Use :code:`git status` to verify that no superfluous files are present to be included in the source distribution.
+2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
-3. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
+3. Modify CHANGELOG file for publication if needed.
 
-4. Modify CHANGELOG file:
-
-  - Update version number.
-  - Edit release notes for publication.
-
-5. Verify tests pass (continuous integration is OK for this).
-
-6. Merge release branch.
-
-Checks
-++++++
-
-1. Use :code:`git status` to verify that no superfluous files are present to be included in the source distribution.
-
-2. Build distributions:
-  ::
-
-      python setup.py sdist bdist_wheel
-
-3. Visually inspect wheel distribution for correctness.
+4. Merge release branch.
 
 Release
 +++++++
 
-1. Upload to testpypi if changes impact PyPI (e.g., if README changed):
-  ::
+1. Create release tag in Github.
 
-      twine upload -r test  dist\ezoutlet-x.y.z-py2-none-any.whl dist\ezoutlet-0.0.1-dev3.zip
-
-
-2. Upload to pypi:
-  ::
-
-      twine upload dist\ezoutlet-x.y.z-py2-none-any.whl dist\ezoutlet-0.0.1-dev3.zip
-
-.. _check-manifest: https://pypi.python.org/pypi/check-manifest
-
-3. Create accompanying release on GitHub.
+2. Verify Travis deployment succeeds.

@@ -1,6 +1,7 @@
 0.0.3
 =====
-Fixed deployment from 0.0.2.
+-  Fixed deployment from 0.0.2.
+-  Simplify CONTRIBUTING.rst for automated deployment.
 
 0.0.2
 =====
