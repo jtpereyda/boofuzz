@@ -7,12 +7,7 @@ before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 install: pip install tox
 
 script:
-- sudo tox
-
-before_deploy:
-- # If the script step uses sudo, the build artifacts will be owned by root.
-- # `chown` to the build user to support the deploy step.
-- sudo chown -R $USER:$USER *
+- tox
 
 deploy:
   provider: pypi

@@ -2,6 +2,7 @@
 =====
 -  Fixed deployment from 0.0.2.
 -  Simplify CONTRIBUTING.rst for automated deployment.
+-  tox no longer runs entirely as sudo. The sudo has been moved into tox.ini and is more fine-grained.
 
 0.0.2
 =====
@@ -11,7 +12,7 @@ Development
 -----------
 -  Added build and PyPI badges.
 -  Added CONTRIBUTING.rst.
--  `check-manifest` now runs in automated build.
+-  check-manifest now runs in automated build.
 -  Travis now deploys to PyPI!
 
 0.0.1-dev5
@@ -25,7 +26,7 @@ Development
 ==========
 
 Fixes
-~~~~~
+-----
 -  Missing property setters in ``boofuzz.request.Request`` now implemented.
 -  Unit tests now pass on Windows.
 -  Fixed wheel build issue; boofuzz subpackages were missing.
@@ -34,13 +35,13 @@ Fixes
 ==========
 
 Fixes
-~~~~~
+-----
 -  Session constructor param ``session_filename`` is now optional.
 
 0.0.1-dev2
 ==========
 New features
-~~~~~~~~~~~~
+------------
 
 -  Now on PyPI! ``pip install boofuzz``
 -  API is now centralized so all classes are available at top level
@@ -53,14 +54,14 @@ New features
    ezOutlet EZ-11b.
 
 Backwards-incompatible
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 -  Target now only takes an ``ITargetConnection``. This separates
    responsibilities and makes our code more flexible with different
    kinds of connections.
 
 Fixes
-~~~~~
+-----
 
 -  Bugs fixed:
 
@@ -75,7 +76,7 @@ Fixes
       properly.
 
 Back-end Improvements
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 This section took the most work. It has the least visible impact, but
 all of the refactors enable new features, fixes, and unit tests.
@@ -92,7 +93,7 @@ all of the refactors enable new features, fixes, and unit tests.
 -  Many Unit tests added.
 
 Other
-~~~~~
+-----
 
 -  Continuous integration with Travis is running!
 -  Doc organization improvements.
