@@ -9,11 +9,6 @@ install: pip install tox
 script:
 - tox
 
-before_deploy:
-- # If the script step uses sudo, the build artifacts will be owned by root.
-- # `chown` to the build user to support the deploy step.
-- sudo chown -R $USER:$USER *
-
 deploy:
   provider: pypi
   user: jtpereyda
