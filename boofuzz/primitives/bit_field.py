@@ -91,21 +91,17 @@ class BitField(BasePrimitive):
                 if case not in self._fuzz_library:
                     self._fuzz_library.append(case)
 
-    def render(self):
-        """
-        Render the primitive.
-        """
-
+    def _render(self, value):
         if self.format == "binary":
             bit_stream = ""
             rendered = ""
 
             # pad the bit stream to the next byte boundary.
             if self.width % 8 == 0:
-                bit_stream += self.to_binary()
+                bit_stream += self.to_binary(value)
             else:
                 bit_stream = "0" * (8 - (self.width % 8))
-                bit_stream += self.to_binary()
+                bit_stream += self.to_binary(value)
 
             # convert the bit stream from a string of bits into raw bytes.
             for i in xrange(len(bit_stream) / 8):
@@ -120,32 +116,32 @@ class BitField(BasePrimitive):
                 rendered.reverse()
                 rendered = "".join(rendered)
 
-            self._rendered = rendered
+            _rendered = rendered
         else:
             # Otherwise we have ascii/something else
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
-            if self.signed and self.to_binary()[0] == "1":
+            if self.signed and self.to_binary(value)[0] == "1":
                 max_num = self.to_decimal("1" + "0" * (self.width - 1))
                 # chop off the sign bit.
-                val = self._value & self.to_decimal("1" * (self.width - 1))
+                val = value & self.to_decimal("1" * (self.width - 1))
 
                 # account for the fact that the negative scale works backwards.
                 val = max_num - val - 1
 
                 # toss in the negative sign.
-                self._rendered = "%d" % ~val
+                _rendered = "%d" % ~val
 
             # unsigned integer or positive signed integer.
             else:
-                self._rendered = "%d" % self._value
+                _rendered = "%d" % value
 
-        return self._rendered
+        return _rendered
 
-    def to_binary(self, number=None, bit_count=None):
+    def to_binary(self, number, bit_count=None):
         """
         Convert a number to a binary string.
 
-        @type  number:    int
+        @type  number:    int|list|tuple
         @param number:    (Optional, def=self._value) Number to convert
         @type  bit_count: int
         @param bit_count: (Optional, def=self.width) Width of bit string
@@ -153,16 +149,13 @@ class BitField(BasePrimitive):
         @rtype:  str
         @return: Bit string
         """
-        if not number:
-            if type(self._value) in [list, tuple]:
-                # We have been given a list to cycle through that is not being mutated...
-                if self.cyclic_index == len(self._value):
-                    # Reset the index.
-                    self.cyclic_index = 0
-                number = self._value[self.cyclic_index]
-                self.cyclic_index += 1
-            else:
-                number = self._value
+        if type(number) in [list, tuple]:
+            # We have been given a list to cycle through that is not being mutated...
+            if self.cyclic_index == len(number):
+                # Reset the index.
+                self.cyclic_index = 0
+            number = number[self.cyclic_index]
+            self.cyclic_index += 1
 
         if not bit_count:
             bit_count = self.width

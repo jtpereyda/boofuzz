@@ -18,12 +18,13 @@ class BasePrimitive(IFuzzable):
 
     @property
     def original_value(self):
-        return self._original_value
+        return self._render(self._original_value)
 
     def __init__(self):
         self._fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self._mutant_index = 0  # current mutation index into the fuzz library.
         self._original_value = None  # original value of primitive.
+        self._original_value_rendered = None # original value as rendered
 
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
@@ -71,8 +72,18 @@ class BasePrimitive(IFuzzable):
         Nothing fancy on render, simply return the value.
         """
 
-        self._rendered = self._value
+        self._rendered = self._render(self._value)
         return self._rendered
+
+    def _render(self, value):
+        """
+        Render an arbitrary value.
+
+        :param value Value to render.
+        :return: Rendered value
+        :rtype: bytes
+        """
+        return value
 
     def reset(self):
         """

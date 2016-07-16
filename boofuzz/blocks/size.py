@@ -50,7 +50,6 @@ class Size(IFuzzable):
         self._fuzzable = fuzzable
         self._name = name
 
-        self._original_value = "N/A"  # for get_primitive
         self.bit_field = primitives.BitField(
                 0,
                 self.length * 8,
@@ -79,7 +78,10 @@ class Size(IFuzzable):
 
     @property
     def original_value(self):
-        return self._original_value
+        saved_value = self.bit_field._value  # super dangerous implementation
+        original_value = self._normal_value()
+        self.bit_field._value = saved_value
+        return original_value
 
     def exhaust(self):
         """
@@ -133,16 +135,19 @@ class Size(IFuzzable):
         if self._fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
             self._rendered = self.bit_field.render()
         else:
-            length = self.offset
-            if self.inclusive:
-                length += self.length
-            length += len(self.request.names[self.block_name])
-
-            self.bit_field._value = self.math(length)
-
-            self._rendered = self.bit_field.render()
+            self._rendered = self._normal_value()
 
         return self._rendered
+
+    def _normal_value(self):
+        length = self.offset
+        if self.inclusive:
+            length += self.length
+        length += len(self.request.names[self.block_name])
+
+        self.bit_field._value = self.math(length)
+
+        return self.bit_field.render()
 
     def reset(self):
         """

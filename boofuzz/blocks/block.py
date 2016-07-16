@@ -54,7 +54,12 @@ class Block(IFuzzable):
 
     @property
     def original_value(self):
-        raise NotImplementedError
+        self._rendered = b""
+
+        for item in self.stack:
+            self._rendered += item.render()
+
+        return self._rendered
 
     @property
     def name(self):

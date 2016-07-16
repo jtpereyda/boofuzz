@@ -136,7 +136,7 @@ class Request(IFuzzable):
         if self.block_stack:
             raise sex.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = ""
+        self._rendered = b""
 
         for item in self.stack:
             self._rendered += item.render()
