@@ -1,5 +1,6 @@
 from .. import primitives
 from ..ifuzzable import IFuzzable
+from ..blocks import Request
 
 
 class Size(IFuzzable):
@@ -16,7 +17,7 @@ class Size(IFuzzable):
 
         @type  block_name:    str
         @param block_name:    Name of block to apply sizer to
-        @type  request:       s_request
+        @type  request:       Request
         @param request:       Request this block belongs to
         @type  length:        int
         @param length:        (Optional, def=4) Length of sizer
@@ -64,6 +65,9 @@ class Size(IFuzzable):
         if not self.math:
             self.math = lambda (x): x
 
+        # Set the recursion flag before calling a method that may cause a recursive loop.
+        self._recursion_flag = False
+
     @property
     def name(self):
         return self._name
@@ -78,10 +82,14 @@ class Size(IFuzzable):
 
     @property
     def original_value(self):
+        length = self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
+
         saved_value = self.bit_field._value  # super dangerous implementation
-        original_value = self._normal_value()
+        self.bit_field._value = self.math(length)
+        rendered_length = self.bit_field.render()
         self.bit_field._value = saved_value
-        return original_value
+
+        return rendered_length
 
     def exhaust(self):
         """
@@ -134,20 +142,44 @@ class Size(IFuzzable):
         # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
         if self._fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
             self._rendered = self.bit_field.render()
+        elif self._recursion_flag:
+            self._rendered = self._get_dummy_value()
         else:
             self._rendered = self._normal_value()
 
         return self._rendered
 
+    def _get_dummy_value(self):
+        return self.length * '\x00'
+
     def _normal_value(self):
-        length = self.offset
-        if self.inclusive:
-            length += self.length
-        length += len(self.request.names[self.block_name])
-
+        length = self.offset + self._inclusive_length_of_self + self._length_of_target_block
         self.bit_field._value = self.math(length)
-
         return self.bit_field.render()
+
+    @property
+    def _inclusive_length_of_self(self):
+        """Return length of self or zero if inclusive flag is False."""
+        if self.inclusive:
+            return self.length
+        else:
+            return 0
+
+    @property
+    def _length_of_target_block(self):
+        """Return length of target block, including mutations if it is currently mutated."""
+        self._recursion_flag = True
+        length = len(self.request.names[self.block_name])
+        self._recursion_flag = False
+        return length
+
+    @property
+    def _original_length_of_target_block(self):
+        """Return length of target block, including mutations if it is currently mutated."""
+        self._recursion_flag = True
+        length = len(self.request.names[self.block_name].original_value)
+        self._recursion_flag = False
+        return length
 
     def reset(self):
         """
