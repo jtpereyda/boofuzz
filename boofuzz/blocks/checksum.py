@@ -97,16 +97,19 @@ class Checksum(primitives.BasePrimitive):
         if self._recursion_flag:
             return self._get_dummy_value()
         else:
-            return self._checksum(self._target_block_original_value)
+            return self._checksum(data=self._get_original_value_of_block(self._block_name),
+                                  ipv4_src=self._get_original_value_of_block(self._ipv4_src_block_name),
+                                  ipv4_dst=self._get_original_value_of_block(self._ipv4_dst_block_name))
 
-    @property
-    def _target_block_original_value(self):
-        self._recursion_flag = True
-        _original_value = self._request.names[self._block_name].original_value
-        self._recursion_flag = False
-        return _original_value
+    def _get_original_value_of_block(self, block_name):
+        result = None
+        if block_name:
+            self._recursion_flag = True
+            result = self._request.names[block_name].original_value
+            self._recursion_flag = False
+        return result
 
-    def _checksum(self, data):
+    def _checksum(self, data, ipv4_src, ipv4_dst):
         """
         Calculate and return the checksum (in raw bytes) of data.
 
@@ -129,8 +132,8 @@ class Checksum(primitives.BasePrimitive):
             elif self._algorithm == "udp":
                 return struct.pack(self._endian + "H",
                                    helpers.udp_checksum(msg=data,
-                                                        src_addr=self._cached_ipv4_dst_block_name,
-                                                        dst_addr=self._cached_ipv4_src_block_name,
+                                                        src_addr=ipv4_src,
+                                                        dst_addr=ipv4_dst,
                                                         )
                                    )
 
@@ -167,35 +170,6 @@ class Checksum(primitives.BasePrimitive):
     def _get_dummy_value(self):
         return self.checksum_lengths[self._algorithm] * '\x00'
 
-    def _render_dependencies(self):
-        """
-        Renders all dependencies.
-        Precondition: _dependencies_check_and_set() returns True.
-
-        :return None
-        """
-        # Algorithm for each dependency:
-        # 1. Set the recursion flag (avoids recursion loop in step b if target
-        #    block contains self).
-        # 2. Render the target block.
-        # 3. Clear recursion flag.
-
-        if self._block_name:
-            self._recursion_flag = True
-            self._cached_block_name = \
-                self._request.names[self._block_name].render()
-            self._recursion_flag = False
-        if self._ipv4_src_block_name:
-            self._recursion_flag = True
-            self._cached_ipv4_src_block_name = \
-                self._request.names[self._ipv4_src_block_name].render()
-            self._recursion_flag = False
-        if self._ipv4_dst_block_name:
-            self._recursion_flag = True
-            self._cached_ipv4_dst_block_name = \
-                self._request.names[self._ipv4_dst_block_name].render()
-            self._recursion_flag = False
-
     def render(self):
         """
         Calculate the checksum of the specified block using the specified algorithm.
@@ -212,10 +186,18 @@ class Checksum(primitives.BasePrimitive):
         elif self._recursion_flag:
             self._rendered = self._get_dummy_value()
         else:
-            self._render_dependencies()
-            self._rendered = self._checksum(self._cached_block_name)
-
+            self._rendered = self._checksum(data=self._render_block(self._block_name),
+                                            ipv4_src=self._render_block(self._ipv4_src_block_name),
+                                            ipv4_dst=self._render_block(self._ipv4_dst_block_name))
         return self._rendered
+
+    def _render_block(self, block_name):
+        result = None
+        if block_name:
+            self._recursion_flag = True
+            result = self._request.names[block_name].render()
+            self._recursion_flag = False
+        return result
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)
