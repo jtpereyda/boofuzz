@@ -20,6 +20,8 @@ def a_checksum(context):
     checksum = Checksum(block_name="unit-test-block", request=request, fuzzable=True, name="Checksum block")
     request.push(checksum)
 
+    request.pop()
+
     context.uut = checksum
     context.block = block
     context.request = request
@@ -47,6 +49,8 @@ def udp_checksum(context):
                         algorithm='udp',
                         name="Checksum block", )
     request.push(checksum)
+
+    request.pop()
 
     context.uut = checksum
     context.block = ipv4_packet

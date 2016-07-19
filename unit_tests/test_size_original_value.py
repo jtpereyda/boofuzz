@@ -26,14 +26,20 @@ class SizeChangingBlock(BasePrimitive):
 @given('A Size')
 def request_one_block(context):
     request = Request("unit-test-request")
+
     block = Block(name="unit-test-block", request=Request)
     request.push(block)
+
     byte1 = Byte(0x01, name="Byte block 1")
     byte2 = Byte(0x02, name="Byte block 2")
-    block.push(byte1)
-    block.push(byte2)
+    request.push(byte1)
+    request.push(byte2)
+
     size = Size(block_name="unit-test-block", request=request, fuzzable=True, name="Size block")
     request.push(size)
+
+    request.pop()
+
     context.uut = size
 
 
