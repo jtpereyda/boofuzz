@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+import operator
+import functools
 
 from ..primitives import BasePrimitive
 from ..ifuzzable import IFuzzable
@@ -12,7 +14,7 @@ class Block(IFuzzable):
 
         @type  name:        str
         @param name:        Name of the new block
-        @type  request:     s_request
+        @type  request:     Request
         @param request:     Request this block belongs to
         @type  group:       str
         @param group:       (Optional, def=None) Name of group to associate this block with
@@ -54,12 +56,12 @@ class Block(IFuzzable):
 
     @property
     def original_value(self):
-        self._rendered = b""
+        original_value = b""
 
         for item in self.stack:
-            self._rendered += item.render()
+            original_value += item.original_value
 
-        return self._rendered
+        return original_value
 
     @property
     def name(self):
