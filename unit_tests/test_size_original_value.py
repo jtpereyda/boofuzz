@@ -95,6 +95,7 @@ def mutate_target_block_thrice(context):
 
 @when('Calling original_value')
 def call_original_value(context):
+    context.uut.render()  # Ensure UUT object state is updated
     context.result = context.uut.original_value
 
 
