@@ -6,6 +6,7 @@ scenarios('size_original_value.feature')
 
 
 class SizeChangingBlock(BasePrimitive):
+    @property
     def name(self):
         return self._name
 
@@ -39,12 +40,18 @@ def request_one_block(context):
 @given('A Size whose target block will change size upon mutation')
 def request_one_block(context):
     request = Request("unit-test-request")
+
     block = Block(name="unit-test-block", request=Request)
     request.push(block)
-    size_changing_block = SizeChangingBlock(name="Size-changing block")
-    block.push(size_changing_block)
-    size = Size(block_name="unit-test-block", request=request, fuzzable=True, name="Size block")
+
+    size_changing_block = SizeChangingBlock(name="size-changing-block")
+    request.push(size_changing_block)
+
+    request.pop()
+
+    size = Size(block_name="size-changing-block", request=request, fuzzable=True, name="Size block")
     request.push(size)
+
     context.uut = size
     context.block = block
     context.request = request
