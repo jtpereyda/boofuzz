@@ -92,16 +92,30 @@ class Checksum(primitives.BasePrimitive):
     def name(self):
         return self._name
 
-    def _checksum(self):
-        """
-        Calculate and return the checksum (in raw bytes).
+    @property
+    def original_value(self):
+        if self._recursion_flag:
+            return self._get_dummy_value()
+        else:
+            return self._checksum(self._target_block_original_value)
 
-        Precondition: _render_dependencies() was just called.
+    @property
+    def _target_block_original_value(self):
+        self._recursion_flag = True
+        _original_value = self._request.names[self._block_name].original_value
+        self._recursion_flag = False
+        return _original_value
 
-        @rtype:  str
-        @return: Checksum.
+    def _checksum(self, data):
         """
-        data = self._cached_block_name
+        Calculate and return the checksum (in raw bytes) of data.
+
+        :param data Data on which to calculate checksum.
+        :type data str
+
+        :rtype:  str
+        :return: Checksum.
+        """
         if type(self._algorithm) is str:
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
@@ -199,7 +213,7 @@ class Checksum(primitives.BasePrimitive):
             self._rendered = self._get_dummy_value()
         else:
             self._render_dependencies()
-            self._rendered = self._checksum()
+            self._rendered = self._checksum(self._cached_block_name)
 
         return self._rendered
 
