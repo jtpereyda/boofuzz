@@ -1,11 +1,24 @@
 import hashlib
 import struct
 import zlib
+from functools import wraps
 
 from .. import primitives
 from ..constants import LITTLE_ENDIAN
 from .. import sex
 from .. import helpers
+
+
+def _may_recurse(f):
+    @wraps(f)
+    def safe_recurse(self, *args, **kwargs):
+        self._recursion_flag = True
+        result = f(self, *args, **kwargs)
+        self._recursion_flag = False
+        return result
+
+    return safe_recurse
+    # _may_recurse = staticmethod(_may_recurse)
 
 
 class Checksum(primitives.BasePrimitive):
@@ -97,17 +110,13 @@ class Checksum(primitives.BasePrimitive):
         if self._recursion_flag:
             return self._get_dummy_value()
         else:
-            return self._checksum(data=self._get_original_value_of_block(self._block_name),
-                                  ipv4_src=self._get_original_value_of_block(self._ipv4_src_block_name),
-                                  ipv4_dst=self._get_original_value_of_block(self._ipv4_dst_block_name))
+            return self._checksum(data=self._original_value_of_block(self._block_name),
+                                  ipv4_src=self._original_value_of_block(self._ipv4_src_block_name),
+                                  ipv4_dst=self._original_value_of_block(self._ipv4_dst_block_name))
 
-    def _get_original_value_of_block(self, block_name):
-        result = None
-        if block_name:
-            self._recursion_flag = True
-            result = self._request.names[block_name].original_value
-            self._recursion_flag = False
-        return result
+    @_may_recurse
+    def _original_value_of_block(self, block_name):
+        return self._request.names[block_name].original_value if block_name is not None else None
 
     def _checksum(self, data, ipv4_src, ipv4_dst):
         """
@@ -191,13 +200,9 @@ class Checksum(primitives.BasePrimitive):
                                             ipv4_dst=self._render_block(self._ipv4_dst_block_name))
         return self._rendered
 
+    @_may_recurse
     def _render_block(self, block_name):
-        result = None
-        if block_name:
-            self._recursion_flag = True
-            result = self._request.names[block_name].render()
-            self._recursion_flag = False
-        return result
+        return self._request.names[block_name].render() if block_name is not None else None
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)
