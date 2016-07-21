@@ -1,5 +1,9 @@
 boofuzz
 =======
+
+.. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
+   :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
+   :target: https://gitter.im/jtpereyda/boofuzz?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
     :target: https://travis-ci.org/jtpereyda/boofuzz
 
