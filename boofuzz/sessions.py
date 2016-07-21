@@ -170,7 +170,7 @@ class Connection(pgraph.Edge):
 
 class Session(pgraph.Graph):
     def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
+                 crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ):
@@ -188,7 +188,7 @@ class Session(pgraph.Graph):
         @type  crash_threshold:    int
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: int
-        @kwarg restart_sleep_time: (Optional, def=300) Time in seconds to sleep when target can't be restarted
+        @kwarg restart_sleep_time: (Optional, def=5) Time in seconds to sleep when target can't be restarted
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
