@@ -3,6 +3,7 @@
 -  Fixed deployment from 0.0.2.
 -  Simplify CONTRIBUTING.rst for automated deployment.
 -  tox no longer runs entirely as sudo. The sudo has been moved into tox.ini and is more fine-grained.
+-  Reduced default ``Session.__init__`` ``restart_sleep_time`` from 5 minutes to 5 seconds.
 
 0.0.2
 =====
