@@ -18,6 +18,7 @@ from . import primitives
 from . import ifuzz_logger
 from . import fuzz_logger
 from . import event_hook
+from . import fuzz_logger_text
 
 from .web.app import app
 
@@ -169,10 +170,11 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
+    def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
+                 target=None,
                  ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
@@ -182,7 +184,7 @@ class Session(pgraph.Graph):
         @type  skip:               int
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         float
-        @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
+        @kwarg sleep_time:         (Optional, def=0.0) Time to sleep in between tests
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
@@ -192,7 +194,7 @@ class Session(pgraph.Graph):
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
-        @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+        @kwarg fuzz_data_logger:   (Optional, def=Log to STDOUT) For saving test data and results.
         @type check_data_received_each_request:  bool
         @kwarg check_data_received_each_request: (Optional, def=True) If True, Session will verify that some data has
                                                  been received after transmitting each node. If False, it will not.
@@ -206,6 +208,8 @@ class Session(pgraph.Graph):
         @type  logfile_level:      int
         @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
                                    (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
+        @type target:              Target
+        @kwarg target:             (Optional, def=None) Target for fuzz session. Target must be fully initialized.
         """
         _ = log_level
         _ = logfile
@@ -220,7 +224,10 @@ class Session(pgraph.Graph):
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
-        self._fuzz_data_logger = fuzz_data_logger
+        if fuzz_data_logger is None:
+            self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[fuzz_logger_text.FuzzLoggerText()])
+        else:
+            self._fuzz_data_logger = fuzz_data_logger
         self._check_data_received_each_request = check_data_received_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
@@ -249,6 +256,9 @@ class Session(pgraph.Graph):
         self.last_send = None
 
         self.add_node(self.root)
+
+        if target is not None:
+            self.add_target(target=target)
 
     def add_node(self, node):
         """

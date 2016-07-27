@@ -1,6 +1,7 @@
 0.0.4
 =====
 -  Add Gitter badge to README.
+-  Add default sleep_time and fuzz_data_logger for Session to simplify boilerplate.
 
 0.0.3
 =====
