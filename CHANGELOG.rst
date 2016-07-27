@@ -1,3 +1,7 @@
+0.0.4
+=====
+-  Add Gitter badge to README.
+
 0.0.3
 =====
 -  Fixed deployment from 0.0.2.
