@@ -174,6 +174,7 @@ class Session(pgraph.Graph):
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
+                 target=None,
                  ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
@@ -207,6 +208,8 @@ class Session(pgraph.Graph):
         @type  logfile_level:      int
         @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
                                    (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
+        @type target:              Target
+        @kwarg target:             (Optional, def=None) Target for fuzz session. Target must be fully initialized.
         """
         _ = log_level
         _ = logfile
@@ -253,6 +256,9 @@ class Session(pgraph.Graph):
         self.last_send = None
 
         self.add_node(self.root)
+
+        if target is not None:
+            self.add_target(target=target)
 
     def add_node(self, node):
         """
