@@ -169,7 +169,7 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
+    def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
@@ -182,7 +182,7 @@ class Session(pgraph.Graph):
         @type  skip:               int
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         float
-        @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
+        @kwarg sleep_time:         (Optional, def=0.0) Time to sleep in between tests
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
