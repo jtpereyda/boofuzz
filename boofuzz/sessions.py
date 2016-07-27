@@ -18,6 +18,7 @@ from . import primitives
 from . import ifuzz_logger
 from . import fuzz_logger
 from . import event_hook
+from . import fuzz_logger_text
 
 from .web.app import app
 
@@ -192,7 +193,7 @@ class Session(pgraph.Graph):
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
-        @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+        @kwarg fuzz_data_logger:   (Optional, def=Log to STDOUT) For saving test data and results.
         @type check_data_received_each_request:  bool
         @kwarg check_data_received_each_request: (Optional, def=True) If True, Session will verify that some data has
                                                  been received after transmitting each node. If False, it will not.
@@ -220,7 +221,10 @@ class Session(pgraph.Graph):
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
-        self._fuzz_data_logger = fuzz_data_logger
+        if fuzz_data_logger is None:
+            self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[fuzz_logger_text.FuzzLoggerText()])
+        else:
+            self._fuzz_data_logger = fuzz_data_logger
         self._check_data_received_each_request = check_data_received_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
