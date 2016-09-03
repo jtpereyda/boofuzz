@@ -19,7 +19,7 @@ USAGE = """USAGE: process_monitor.py
     [-p|--proc_name NAME]     process name to search for and attach to
     [-i|--ignore_pid PID]     PID to ignore when searching for target process
     [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
-    [--port PORT]             TCP port to bind this agent to
+    [-P|--port PORT]          TCP port to bind this agent to
     """
 
 
