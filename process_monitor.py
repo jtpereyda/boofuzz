@@ -365,7 +365,7 @@ if __name__ == "__main__":
             ignore_pid = int(arg)
         if opt in ("-l", "--log_level"):
             log_level = int(arg)
-        if opt in ("-p", "--proc_Name"):
+        if opt in ("-p", "--proc_name"):
             proc_name = arg
         if opt in ("-P", "--port"):
             PORT = int(arg)
