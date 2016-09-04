@@ -9,6 +9,10 @@ class BoofuzzRestartFailedError(BoofuzzError):
     pass
 
 
+class BoofuzzTargetConnectionFailedError(BoofuzzError):
+    pass
+
+
 class SullyRuntimeError(Exception):
     pass
 
