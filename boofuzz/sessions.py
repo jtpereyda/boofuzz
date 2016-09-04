@@ -423,6 +423,13 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
             self.export_file()
             raise
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_error(
+                "Cannot connect to target; target presumed down."
+                " Note: Normally a failure should be detected, and the target reset."
+                " This error may mean you have no restart method configured, or your error"
+                " detection is not working.")
+            self.export_file()
 
     def fuzz_single_case(self, mutant_index):
         """
