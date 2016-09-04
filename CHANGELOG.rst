@@ -1,3 +1,9 @@
+Upcoming
+========
+Fixes
+-----
+-  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
+
 0.0.4
 =====
 -  Add Gitter badge to README.
