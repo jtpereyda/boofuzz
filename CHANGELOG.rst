@@ -2,6 +2,7 @@ Upcoming
 ========
 Fixes
 -----
+-  Boofuzz will no longer crash, but will rather give a helpful error message, if the target refuses socket connections.
 -  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
 -  Fix procmon argument processing bug.
 -  Fix typos in INSTALL.rst.
