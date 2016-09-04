@@ -542,10 +542,15 @@ class Session(pgraph.Graph):
             self.netmon_results[self.total_mutant_index] = captured_bytes
 
         # check if our fuzz crashed the target. procmon.post_send() returns False if the target crashes.
-        if target.procmon and not target.procmon.post_send():
-            self._fuzz_data_logger.log_info(
-                "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
-                                                                       target.procmon.get_crash_synopsis()))
+        if target.procmon:
+            self._fuzz_data_logger.open_test_step("Contact process monitor")
+            self._fuzz_data_logger.log_check("procmon.post_send()")
+            if target.procmon.post_send():
+                self._fuzz_data_logger.log_pass("No crash detected.")
+            else:
+                self._fuzz_data_logger.log_fail(
+                    "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
+                                                                           target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
         """Process any failure sin self.crash_synopses.
