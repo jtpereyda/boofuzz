@@ -2,6 +2,7 @@ Upcoming
 ========
 Fixes
 -----
+-  Boofuzz now properly reports crashes detected by the process monitor. It was calling log_info instead of log_fail.
 -  Boofuzz will no longer crash, but will rather give a helpful error message, if the target refuses socket connections.
 -  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
 -  Fix procmon argument processing bug.
