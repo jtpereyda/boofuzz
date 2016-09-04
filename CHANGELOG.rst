@@ -3,6 +3,7 @@ Upcoming
 Fixes
 -----
 -  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
+-  Fix procmon argument processing bug.
 -  Fix typos in INSTALL.rst.
 
 0.0.4
