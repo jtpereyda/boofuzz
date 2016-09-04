@@ -8,7 +8,7 @@ import os
 
 import pydbg
 import pydbg.defines
-import utils
+from boofuzz import utils
 
 from boofuzz import pedrpc
 

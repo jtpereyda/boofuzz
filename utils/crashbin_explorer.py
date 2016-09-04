@@ -4,7 +4,7 @@ import getopt
 import sys
 sys.path.append(r"../../../paimei")
 
-import utils
+from boofuzz import utils
 import pgraph
 
 USAGE = "\nUSAGE: crashbin_explorer.py <xxx.crashbin>"                                      \

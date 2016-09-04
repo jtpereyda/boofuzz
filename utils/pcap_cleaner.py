@@ -4,7 +4,7 @@ import os
 import sys
 sys.path.append(r"..\..\..\paimei")
 
-import utils
+from boofuzz import utils
 
 USAGE = "\nUSAGE: pcap_cleaner.py <xxx.crashbin> <path to pcaps>\n"
 
