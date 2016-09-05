@@ -1,5 +1,5 @@
-Upcoming
-========
+0.0.5
+=====
 Fixes
 -----
 -  Boofuzz now properly reports crashes detected by the process monitor. It was calling log_info instead of log_fail.
