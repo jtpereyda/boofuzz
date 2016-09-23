@@ -58,7 +58,7 @@ process\_monitor.py (Windows only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The process monitor is a tool for detecting crashes and restarting an
-application on Windows (process\_monitor\_unx.py is provided for Unix).
+application on Windows (process\_monitor\_unix.py is provided for Unix).
 
 The process monitor is included with boofuzz, but requires additional
 libraries to run. While boofuzz typically runs on a different machine
@@ -100,7 +100,7 @@ Deprecated: network\_monitor.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The network monitor was Sulley’s primary tool for recording test data,
-and has been replaced with boofuzz’s loggi
+and has been replaced with boofuzz’s logging mechanisms.
 
 .. _help site: http://www.howtogeek.com/197947/how-to-install-python-on-windows/
 .. _releases page: https://github.com/jtpereyda/boofuzz/releases

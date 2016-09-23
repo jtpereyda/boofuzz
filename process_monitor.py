@@ -8,7 +8,7 @@ import os
 
 import pydbg
 import pydbg.defines
-import utils
+from boofuzz import utils
 
 from boofuzz import pedrpc
 
@@ -19,7 +19,7 @@ USAGE = """USAGE: process_monitor.py
     [-p|--proc_name NAME]     process name to search for and attach to
     [-i|--ignore_pid PID]     PID to ignore when searching for target process
     [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
-    [--port PORT]             TCP port to bind this agent to
+    [-P|--port PORT]          TCP port to bind this agent to
     """
 
 
@@ -365,7 +365,7 @@ if __name__ == "__main__":
             ignore_pid = int(arg)
         if opt in ("-l", "--log_level"):
             log_level = int(arg)
-        if opt in ("-p", "--proc_Name"):
+        if opt in ("-p", "--proc_name"):
             proc_name = arg
         if opt in ("-P", "--port"):
             PORT = int(arg)

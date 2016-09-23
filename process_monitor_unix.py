@@ -22,7 +22,7 @@ Replicated methods:
     - log
     - post_send
     - pre_send
-    _ start_target
+    - start_target
     - stop_target
     - set_start_commands
     - set_stop_commands

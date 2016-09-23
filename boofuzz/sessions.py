@@ -18,6 +18,7 @@ from . import primitives
 from . import ifuzz_logger
 from . import fuzz_logger
 from . import event_hook
+from . import fuzz_logger_text
 
 from .web.app import app
 
@@ -169,10 +170,11 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
-    def __init__(self, session_filename=None, skip=0, sleep_time=1.0, restart_interval=0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=300, fuzz_data_logger=None,
+    def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
+                 crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
+                 target=None,
                  ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
@@ -182,17 +184,17 @@ class Session(pgraph.Graph):
         @type  skip:               int
         @kwarg skip:               (Optional, def=0) Number of test cases to skip
         @type  sleep_time:         float
-        @kwarg sleep_time:         (Optional, def=1.0) Time to sleep in between tests
+        @kwarg sleep_time:         (Optional, def=0.0) Time to sleep in between tests
         @type  restart_interval:   int
         @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
         @type  crash_threshold:    int
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: int
-        @kwarg restart_sleep_time: (Optional, def=300) Time in seconds to sleep when target can't be restarted
+        @kwarg restart_sleep_time: (Optional, def=5) Time in seconds to sleep when target can't be restarted
         @type  web_port:	       int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
-        @kwarg fuzz_data_logger:   (Optional, def=None) For saving test data and results.
+        @kwarg fuzz_data_logger:   (Optional, def=Log to STDOUT) For saving test data and results.
         @type check_data_received_each_request:  bool
         @kwarg check_data_received_each_request: (Optional, def=True) If True, Session will verify that some data has
                                                  been received after transmitting each node. If False, it will not.
@@ -206,6 +208,8 @@ class Session(pgraph.Graph):
         @type  logfile_level:      int
         @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
                                    (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
+        @type target:              Target
+        @kwarg target:             (Optional, def=None) Target for fuzz session. Target must be fully initialized.
         """
         _ = log_level
         _ = logfile
@@ -220,7 +224,10 @@ class Session(pgraph.Graph):
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
-        self._fuzz_data_logger = fuzz_data_logger
+        if fuzz_data_logger is None:
+            self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[fuzz_logger_text.FuzzLoggerText()])
+        else:
+            self._fuzz_data_logger = fuzz_data_logger
         self._check_data_received_each_request = check_data_received_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
@@ -249,6 +256,9 @@ class Session(pgraph.Graph):
         self.last_send = None
 
         self.add_node(self.root)
+
+        if target is not None:
+            self.add_target(target=target)
 
     def add_node(self, node):
         """
@@ -413,6 +423,13 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
             self.export_file()
             raise
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_error(
+                "Cannot connect to target; target presumed down."
+                " Note: Normally a failure should be detected, and the target reset."
+                " This error may mean you have no restart method configured, or your error"
+                " detection is not working.")
+            self.export_file()
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -525,10 +542,15 @@ class Session(pgraph.Graph):
             self.netmon_results[self.total_mutant_index] = captured_bytes
 
         # check if our fuzz crashed the target. procmon.post_send() returns False if the target crashes.
-        if target.procmon and not target.procmon.post_send():
-            self._fuzz_data_logger.log_info(
-                "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
-                                                                       target.procmon.get_crash_synopsis()))
+        if target.procmon:
+            self._fuzz_data_logger.open_test_step("Contact process monitor")
+            self._fuzz_data_logger.log_check("procmon.post_send()")
+            if target.procmon.post_send():
+                self._fuzz_data_logger.log_pass("No crash detected.")
+            else:
+                self._fuzz_data_logger.log_fail(
+                    "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
+                                                                           target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
         """Process any failure sin self.crash_synopses.

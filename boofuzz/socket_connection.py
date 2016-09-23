@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import ssl
 import httplib
 import socket
+import errno
 
 from . import helpers
 from . import itarget_connection
@@ -115,7 +116,13 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # Connect is needed only for TCP protocols
         if self.proto == "tcp" or self.proto == "ssl":
-            self._sock.connect((self.host, self.port))
+            try:
+                self._sock.connect((self.host, self.port))
+            except socket.error as e:
+                if e.errno == errno.ECONNREFUSED:
+                    raise sex.BoofuzzTargetConnectionFailedError(e.message)
+                else:
+                    raise
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":

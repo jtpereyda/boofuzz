@@ -1,8 +1,24 @@
+0.0.5
+=====
+Fixes
+-----
+-  Boofuzz now properly reports crashes detected by the process monitor. It was calling log_info instead of log_fail.
+-  Boofuzz will no longer crash, but will rather give a helpful error message, if the target refuses socket connections.
+-  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
+-  Fix procmon argument processing bug.
+-  Fix typos in INSTALL.rst.
+
+0.0.4
+=====
+-  Add Gitter badge to README.
+-  Add default sleep_time and fuzz_data_logger for Session to simplify boilerplate.
+
 0.0.3
 =====
 -  Fixed deployment from 0.0.2.
 -  Simplify CONTRIBUTING.rst for automated deployment.
 -  tox no longer runs entirely as sudo. The sudo has been moved into tox.ini and is more fine-grained.
+-  Reduced default ``Session.__init__`` ``restart_sleep_time`` from 5 minutes to 5 seconds.
 
 0.0.2
 =====
