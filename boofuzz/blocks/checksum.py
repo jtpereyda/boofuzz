@@ -18,7 +18,6 @@ def _may_recurse(f):
         return result
 
     return safe_recurse
-    # _may_recurse = staticmethod(_may_recurse)
 
 
 class Checksum(primitives.BasePrimitive):
@@ -183,14 +182,7 @@ class Checksum(primitives.BasePrimitive):
         """
         Calculate the checksum of the specified block using the specified algorithm.
         """
-        # Algorithm summary:
-        # 1. If fuzzable, use fuzz library.
-        # 2. Else-if the recursion flag is set, just render a dummy value.
-        # 3. Else (if the recursion flag is not set), calculate checksum:
-        #     a. Render dependencies.
-        #     b. Calculate checksum.
-
-        if self._fuzzable and self._mutant_index and not self._fuzz_complete:
+        if self._should_render_fuzz_value():
             self._rendered = self._value
         elif self._recursion_flag:
             self._rendered = self._get_dummy_value()
@@ -199,6 +191,9 @@ class Checksum(primitives.BasePrimitive):
                                             ipv4_src=self._render_block(self._ipv4_src_block_name),
                                             ipv4_dst=self._render_block(self._ipv4_dst_block_name))
         return self._rendered
+
+    def _should_render_fuzz_value(self):
+        return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
 
     @_may_recurse
     def _render_block(self, block_name):
