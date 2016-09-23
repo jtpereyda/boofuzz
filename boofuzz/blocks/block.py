@@ -12,7 +12,7 @@ class Block(IFuzzable):
 
         @type  name:        str
         @param name:        Name of the new block
-        @type  request:     s_request
+        @type  request:     Request
         @param request:     Request this block belongs to
         @type  group:       str
         @param group:       (Optional, def=None) Name of group to associate this block with
@@ -54,7 +54,12 @@ class Block(IFuzzable):
 
     @property
     def original_value(self):
-        raise NotImplementedError
+        original_value = b""
+
+        for item in self.stack:
+            original_value += item.original_value
+
+        return original_value
 
     @property
     def name(self):

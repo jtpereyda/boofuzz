@@ -1,11 +1,23 @@
 import hashlib
 import struct
 import zlib
+from functools import wraps
 
 from .. import primitives
 from ..constants import LITTLE_ENDIAN
 from .. import sex
 from .. import helpers
+
+
+def _may_recurse(f):
+    @wraps(f)
+    def safe_recurse(self, *args, **kwargs):
+        self._recursion_flag = True
+        result = f(self, *args, **kwargs)
+        self._recursion_flag = False
+        return result
+
+    return safe_recurse
 
 
 class Checksum(primitives.BasePrimitive):
@@ -92,16 +104,40 @@ class Checksum(primitives.BasePrimitive):
     def name(self):
         return self._name
 
-    def _checksum(self):
+    def render(self):
         """
-        Calculate and return the checksum (in raw bytes).
-
-        Precondition: _render_dependencies() was just called.
-
-        @rtype:  str
-        @return: Checksum.
+        Calculate the checksum of the specified block using the specified algorithm.
         """
-        data = self._cached_block_name
+        if self._should_render_fuzz_value():
+            self._rendered = self._value
+        elif self._recursion_flag:
+            self._rendered = self._get_dummy_value()
+        else:
+            self._rendered = self._checksum(data=self._render_block(self._block_name),
+                                            ipv4_src=self._render_block(self._ipv4_src_block_name),
+                                            ipv4_dst=self._render_block(self._ipv4_dst_block_name))
+        return self._rendered
+
+    def _should_render_fuzz_value(self):
+        return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
+
+    def _get_dummy_value(self):
+        return self.checksum_lengths[self._algorithm] * '\x00'
+
+    @_may_recurse
+    def _render_block(self, block_name):
+        return self._request.names[block_name].render() if block_name is not None else None
+
+    def _checksum(self, data, ipv4_src, ipv4_dst):
+        """
+        Calculate and return the checksum (in raw bytes) of data.
+
+        :param data Data on which to calculate checksum.
+        :type data str
+
+        :rtype:  str
+        :return: Checksum.
+        """
         if type(self._algorithm) is str:
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
@@ -115,8 +151,8 @@ class Checksum(primitives.BasePrimitive):
             elif self._algorithm == "udp":
                 return struct.pack(self._endian + "H",
                                    helpers.udp_checksum(msg=data,
-                                                        src_addr=self._cached_ipv4_dst_block_name,
-                                                        dst_addr=self._cached_ipv4_src_block_name,
+                                                        src_addr=ipv4_src,
+                                                        dst_addr=ipv4_dst,
                                                         )
                                    )
 
@@ -150,58 +186,18 @@ class Checksum(primitives.BasePrimitive):
         else:
             return check
 
-    def _get_dummy_value(self):
-        return self.checksum_lengths[self._algorithm] * '\x00'
-
-    def _render_dependencies(self):
-        """
-        Renders all dependencies.
-        Precondition: _dependencies_check_and_set() returns True.
-
-        :return None
-        """
-        # Algorithm for each dependency:
-        # 1. Set the recursion flag (avoids recursion loop in step b if target
-        #    block contains self).
-        # 2. Render the target block.
-        # 3. Clear recursion flag.
-
-        if self._block_name:
-            self._recursion_flag = True
-            self._cached_block_name = \
-                self._request.names[self._block_name].render()
-            self._recursion_flag = False
-        if self._ipv4_src_block_name:
-            self._recursion_flag = True
-            self._cached_ipv4_src_block_name = \
-                self._request.names[self._ipv4_src_block_name].render()
-            self._recursion_flag = False
-        if self._ipv4_dst_block_name:
-            self._recursion_flag = True
-            self._cached_ipv4_dst_block_name = \
-                self._request.names[self._ipv4_dst_block_name].render()
-            self._recursion_flag = False
-
-    def render(self):
-        """
-        Calculate the checksum of the specified block using the specified algorithm.
-        """
-        # Algorithm summary:
-        # 1. If fuzzable, use fuzz library.
-        # 2. Else-if the recursion flag is set, just render a dummy value.
-        # 3. Else (if the recursion flag is not set), calculate checksum:
-        #     a. Render dependencies.
-        #     b. Calculate checksum.
-
-        if self._fuzzable and self._mutant_index and not self._fuzz_complete:
-            self._rendered = self._value
-        elif self._recursion_flag:
-            self._rendered = self._get_dummy_value()
+    @property
+    def original_value(self):
+        if self._recursion_flag:
+            return self._get_dummy_value()
         else:
-            self._render_dependencies()
-            self._rendered = self._checksum()
+            return self._checksum(data=self._original_value_of_block(self._block_name),
+                                  ipv4_src=self._original_value_of_block(self._ipv4_src_block_name),
+                                  ipv4_dst=self._original_value_of_block(self._ipv4_dst_block_name))
 
-        return self._rendered
+    @_may_recurse
+    def _original_value_of_block(self, block_name):
+        return self._request.names[block_name].original_value if block_name is not None else None
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

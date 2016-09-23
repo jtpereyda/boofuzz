@@ -232,15 +232,16 @@ class String(BasePrimitive):
         """
         return len(self._fuzz_library) + len(self.this_library)
 
-    def render(self):
+    def _render(self, value):
+        """Render string value, properly encoded.
         """
-        Render the primitive, encode the string according to the specified encoding.
-        """
-        # try to encode the string properly and fall back to the default value on failure.
-        # TODO: Fix this - seems hacky
         try:
-            self._rendered = str(self._value).encode(self.encoding)
-        except:
-            self._rendered = self._value
+            # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
+            # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
+            # range.
+            _rendered = str(value).decode('ascii').encode(self.encoding)
+        except UnicodeDecodeError:
+            # If we can't decode the string, just treat it like a plain byte string
+            _rendered = value
 
-        return self._rendered
+        return _rendered
