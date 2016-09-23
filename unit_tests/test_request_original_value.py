@@ -54,36 +54,3 @@ def result_equals_render(context):
 def result_equals_render_after_reset(context):
     context.uut.reset()
     assert context.result == context.uut.render()
-
-# class TestRequestOriginalValue(unittest.TestCase):
-#     def test_same_as_initial_render_1_block(self):
-#         """
-#         Given A Request with one block
-#         When Calling original_value
-#         Then Result equals .render()
-#         """
-#         pass
-#
-#     def test_same_as_initial_render_many_blocks(self):
-#         """
-#         Given A Request with multiple blocks
-#         When Calling original_value
-#         Then Result equals .render()
-#         """
-#         pass
-#
-#     def test_same_as_initial_render_after_mutate(self):
-#         """
-#         Given A Request with multiple_blocks mutated once
-#         When Calling original_value
-#         Then Result equals .render()
-#         """
-#         pass
-#
-#     def test_same_as_initial_render_after_2_mutations(self):
-#         """
-#         Given A Request with multiple_blocks mutated twice
-#         When Calling original_value
-#         Then Result equals .render()
-#         """
-#         pass

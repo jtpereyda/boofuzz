@@ -233,13 +233,6 @@ class String(BasePrimitive):
         return len(self._fuzz_library) + len(self.this_library)
 
     def _render(self, value):
-        """Render value, encode the string according to the specified encoding.
+        """Render string value, properly encoded.
         """
-        # try to encode the string properly and fall back to the default value on failure.
-        # TODO: Fix this - seems hacky
-        try:
-            _rendered = str(value).encode(self.encoding)
-        except:
-            _rendered = value
-
-        return _rendered
+        return str(value).encode(self.encoding, errors='replace')
