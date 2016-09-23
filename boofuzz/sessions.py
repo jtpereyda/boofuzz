@@ -191,7 +191,7 @@ class Session(pgraph.Graph):
         @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
         @type  restart_sleep_time: int
         @kwarg restart_sleep_time: (Optional, def=5) Time in seconds to sleep when target can't be restarted
-        @type  web_port:	       int
+        @type  web_port:           int
         @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
         @type fuzz_data_logger:    fuzz_logger.FuzzLogger
         @kwarg fuzz_data_logger:   (Optional, def=Log to STDOUT) For saving test data and results.
@@ -736,7 +736,11 @@ class Session(pgraph.Graph):
 
         # Receive data
         # TODO: Remove magic number (10000)
-        self.last_recv = self.targets[0].recv(10000)
+        try:
+            self.last_recv = self.targets[0].recv(10000)
+        except socket.error:
+            print("[debug] here")
+            self.last_recv = None
 
         if self._check_data_received_each_request:
             self._fuzz_data_logger.log_check("Verify some data was received from the target.")
