@@ -1,7 +1,37 @@
 import struct
+from builtins import range
 
 from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive
+
+
+def binary_string_to_int(binary):
+    """
+    Convert a binary string to a decimal number.
+
+    @type  binary: str
+    @param binary: Binary string
+
+    @rtype:  int
+    @return: Converted bit string
+    """
+
+    return int(binary, 2)
+
+
+def int_to_binary_string(number, bit_width):
+    """
+    Convert a number to a binary string.
+
+    @type  number:    int
+    @param number:    (Optional, def=self._value) Number to convert
+    @type  bit_width: int
+    @param bit_width: (Optional, def=self.width) Width of bit string
+
+    @rtype:  str
+    @return: Bit string
+    """
+    return "".join(map(lambda x: str((number >> x) & 1), range(bit_width - 1, -1, -1)))
 
 
 class BitField(BasePrimitive):
@@ -47,13 +77,13 @@ class BitField(BasePrimitive):
         self.cyclic_index = 0         # when cycling through non-mutating values
 
         if not self.max_num:
-            self.max_num = self.to_decimal("1" + "0" * width)
+            self.max_num = binary_string_to_int("1" + "0" * width)
 
         assert isinstance(self.max_num, (int, long)), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.
-            for i in xrange(0, self.max_num):
+            for i in range(0, self.max_num):
                 self._fuzz_library.append(i)
         else:
             if type(value) in [list, tuple]:
@@ -84,7 +114,7 @@ class BitField(BasePrimitive):
         @type  integer: int
         @param integer: int to append to fuzz heuristics
         """
-        for i in xrange(-10, 10):
+        for i in range(-10, 10):
             case = integer + i
             # ensure the border case falls within the valid range for this field.
             if 0 <= case < self.max_num:
@@ -92,26 +122,43 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(case)
 
     def _render(self, value):
-        if self.format == "binary":
+        return self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+
+    @staticmethod
+    def render_int(value, output_format, bit_width, endian, signed):
+        """
+        Convert value to a bit or byte string.
+
+        Args:
+            value (int): Value to convert to a byte string.
+            output_format (str): "binary" or "ascii"
+            bit_width (int): Width of output in bits.
+            endian: BIG_ENDIAN or LITTLE_ENDIAN
+            signed (bool):
+
+        Returns:
+            str: value converted to a byte string
+        """
+        if output_format == "binary":
             bit_stream = ""
             rendered = ""
 
             # pad the bit stream to the next byte boundary.
-            if self.width % 8 == 0:
-                bit_stream += self.to_binary(value)
+            if bit_width % 8 == 0:
+                bit_stream += int_to_binary_string(value, bit_width)
             else:
-                bit_stream = "0" * (8 - (self.width % 8))
-                bit_stream += self.to_binary(value)
+                bit_stream = "0" * (8 - (bit_width % 8))
+                bit_stream += int_to_binary_string(value, bit_width)
 
             # convert the bit stream from a string of bits into raw bytes.
-            for i in xrange(len(bit_stream) / 8):
+            for i in range(len(bit_stream) / 8):
                 chunk_min = 8 * i
                 chunk_max = chunk_min + 8
                 chunk = bit_stream[chunk_min:chunk_max]
-                rendered += struct.pack("B", self.to_decimal(chunk))
+                rendered += struct.pack("B", binary_string_to_int(chunk))
 
-            # if necessary, convert the endianess of the raw bytes.
-            if self.endian == LITTLE_ENDIAN:
+            # if necessary, convert the endianness of the raw bytes.
+            if endian == LITTLE_ENDIAN:
                 rendered = list(rendered)
                 rendered.reverse()
                 rendered = "".join(rendered)
@@ -120,10 +167,10 @@ class BitField(BasePrimitive):
         else:
             # Otherwise we have ascii/something else
             # if the sign flag is raised and we are dealing with a signed integer (first bit is 1).
-            if self.signed and self.to_binary(value)[0] == "1":
-                max_num = self.to_decimal("1" + "0" * (self.width - 1))
+            if signed and int_to_binary_string(value, bit_width)[0] == "1":
+                max_num = binary_string_to_int("1" + "0" * (bit_width - 1))
                 # chop off the sign bit.
-                val = value & self.to_decimal("1" * (self.width - 1))
+                val = value & binary_string_to_int("1" * (bit_width - 1))
 
                 # account for the fact that the negative scale works backwards.
                 val = max_num - val - 1
@@ -134,47 +181,7 @@ class BitField(BasePrimitive):
             # unsigned integer or positive signed integer.
             else:
                 _rendered = "%d" % value
-
         return _rendered
-
-    def to_binary(self, number, bit_count=None):
-        """
-        Convert a number to a binary string.
-
-        @type  number:    int|list|tuple
-        @param number:    (Optional, def=self._value) Number to convert
-        @type  bit_count: int
-        @param bit_count: (Optional, def=self.width) Width of bit string
-
-        @rtype:  str
-        @return: Bit string
-        """
-        if type(number) in [list, tuple]:
-            # We have been given a list to cycle through that is not being mutated...
-            if self.cyclic_index == len(number):
-                # Reset the index.
-                self.cyclic_index = 0
-            number = number[self.cyclic_index]
-            self.cyclic_index += 1
-
-        if not bit_count:
-            bit_count = self.width
-
-        return "".join(map(lambda x: str((number >> x) & 1), range(bit_count - 1, -1, -1)))
-
-    # noinspection PyMethodMayBeStatic
-    def to_decimal(self, binary):
-        """
-        Convert a binary string to a decimal number.
-
-        @type  binary: str
-        @param binary: Binary string
-
-        @rtype:  int
-        @return: Converted bit string
-        """
-
-        return int(binary, 2)
 
     def __len__(self):
         return self.width / 8

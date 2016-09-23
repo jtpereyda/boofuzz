@@ -12,8 +12,8 @@ class Size(IFuzzable):
     def __init__(self, block_name, request, offset=0, length=4, endian="<", output_format="binary", inclusive=False,
                  signed=False, math=None, fuzzable=False, name=None):
         """
-        Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
-        currently open blocks.
+        Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
+        grandparent are allowed.
 
         @type  block_name:    str
         @param block_name:    Name of block to apply sizer to
@@ -82,14 +82,11 @@ class Size(IFuzzable):
 
     @property
     def original_value(self):
-        length = self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
+        length = self._original_calculated_length()
+        return self._length_to_bytes(length)
 
-        saved_value = self.bit_field._value  # super dangerous implementation
-        self.bit_field._value = self.math(length)
-        rendered_length = self.bit_field.render()
-        self.bit_field._value = saved_value
-
-        return rendered_length
+    def _original_calculated_length(self):
+        return self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
 
     def exhaust(self):
         """
@@ -139,23 +136,34 @@ class Size(IFuzzable):
 
         :return Rendered value.
         """
-        # if the sizer is fuzzable and we have not yet exhausted the the possible bit field values, use the fuzz value.
-        if self._fuzzable and self.bit_field.mutant_index and not self._fuzz_complete:
+        if self._should_render_fuzz_value():
             self._rendered = self.bit_field.render()
         elif self._recursion_flag:
             self._rendered = self._get_dummy_value()
         else:
-            self._rendered = self._normal_value()
+            self._rendered = self._render()
 
         return self._rendered
+
+    def _should_render_fuzz_value(self):
+        return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
 
     def _get_dummy_value(self):
         return self.length * '\x00'
 
-    def _normal_value(self):
-        length = self.offset + self._inclusive_length_of_self + self._length_of_target_block
-        self.bit_field._value = self.math(length)
-        return self.bit_field.render()
+    def _render(self):
+        length = self._calculated_length()
+        return self._length_to_bytes(length)
+
+    def _calculated_length(self):
+        return self.offset + self._inclusive_length_of_self + self._length_of_target_block
+
+    def _length_to_bytes(self, length):
+        return primitives.BitField.render_int(value=self.math(length),
+                                              output_format=self.format,
+                                              bit_width=self.length * 8,
+                                              endian=self.endian,
+                                              signed=self.signed)
 
     @property
     def _inclusive_length_of_self(self):
