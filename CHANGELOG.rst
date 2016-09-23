@@ -1,3 +1,10 @@
+Upcoming
+========
+Features
+--------
+-  Added ``Request.original_value()`` function to render the request as if it were not fuzzed.
+   This will help enable reuse of a fuzz definition to generate valid requests.
+
 0.0.5
 =====
 Fixes
