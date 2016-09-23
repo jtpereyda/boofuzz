@@ -104,18 +104,29 @@ class Checksum(primitives.BasePrimitive):
     def name(self):
         return self._name
 
-    @property
-    def original_value(self):
-        if self._recursion_flag:
-            return self._get_dummy_value()
+    def render(self):
+        """
+        Calculate the checksum of the specified block using the specified algorithm.
+        """
+        if self._should_render_fuzz_value():
+            self._rendered = self._value
+        elif self._recursion_flag:
+            self._rendered = self._get_dummy_value()
         else:
-            return self._checksum(data=self._original_value_of_block(self._block_name),
-                                  ipv4_src=self._original_value_of_block(self._ipv4_src_block_name),
-                                  ipv4_dst=self._original_value_of_block(self._ipv4_dst_block_name))
+            self._rendered = self._checksum(data=self._render_block(self._block_name),
+                                            ipv4_src=self._render_block(self._ipv4_src_block_name),
+                                            ipv4_dst=self._render_block(self._ipv4_dst_block_name))
+        return self._rendered
+
+    def _should_render_fuzz_value(self):
+        return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
+
+    def _get_dummy_value(self):
+        return self.checksum_lengths[self._algorithm] * '\x00'
 
     @_may_recurse
-    def _original_value_of_block(self, block_name):
-        return self._request.names[block_name].original_value if block_name is not None else None
+    def _render_block(self, block_name):
+        return self._request.names[block_name].render() if block_name is not None else None
 
     def _checksum(self, data, ipv4_src, ipv4_dst):
         """
@@ -175,29 +186,18 @@ class Checksum(primitives.BasePrimitive):
         else:
             return check
 
-    def _get_dummy_value(self):
-        return self.checksum_lengths[self._algorithm] * '\x00'
-
-    def render(self):
-        """
-        Calculate the checksum of the specified block using the specified algorithm.
-        """
-        if self._should_render_fuzz_value():
-            self._rendered = self._value
-        elif self._recursion_flag:
-            self._rendered = self._get_dummy_value()
+    @property
+    def original_value(self):
+        if self._recursion_flag:
+            return self._get_dummy_value()
         else:
-            self._rendered = self._checksum(data=self._render_block(self._block_name),
-                                            ipv4_src=self._render_block(self._ipv4_src_block_name),
-                                            ipv4_dst=self._render_block(self._ipv4_dst_block_name))
-        return self._rendered
-
-    def _should_render_fuzz_value(self):
-        return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
+            return self._checksum(data=self._original_value_of_block(self._block_name),
+                                  ipv4_src=self._original_value_of_block(self._ipv4_src_block_name),
+                                  ipv4_dst=self._original_value_of_block(self._ipv4_dst_block_name))
 
     @_may_recurse
-    def _render_block(self, block_name):
-        return self._request.names[block_name].render() if block_name is not None else None
+    def _original_value_of_block(self, block_name):
+        return self._request.names[block_name].original_value if block_name is not None else None
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)
