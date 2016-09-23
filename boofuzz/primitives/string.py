@@ -235,4 +235,13 @@ class String(BasePrimitive):
     def _render(self, value):
         """Render string value, properly encoded.
         """
-        return str(value).encode(self.encoding, errors='replace')
+        try:
+            # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
+            # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
+            # range.
+            _rendered = str(value).decode('ascii').encode(self.encoding)
+        except UnicodeDecodeError:
+            # If we can't decode the string, just treat it like a plain byte string
+            _rendered = value
+
+        return _rendered
