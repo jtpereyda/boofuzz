@@ -1,6 +1,18 @@
+from functools import wraps
 from .. import primitives
 from ..ifuzzable import IFuzzable
 from ..blocks import Request
+
+
+def _may_recurse(f):
+    @wraps(f)
+    def safe_recurse(self, *args, **kwargs):
+        self._recursion_flag = True
+        result = f(self, *args, **kwargs)
+        self._recursion_flag = False
+        return result
+
+    return safe_recurse
 
 
 class Size(IFuzzable):
@@ -174,19 +186,17 @@ class Size(IFuzzable):
             return 0
 
     @property
+    @_may_recurse
     def _length_of_target_block(self):
         """Return length of target block, including mutations if it is currently mutated."""
-        self._recursion_flag = True
         length = len(self.request.names[self.block_name])
-        self._recursion_flag = False
         return length
 
     @property
+    @_may_recurse
     def _original_length_of_target_block(self):
         """Return length of target block, including mutations if it is currently mutated."""
-        self._recursion_flag = True
         length = len(self.request.names[self.block_name].original_value)
-        self._recursion_flag = False
         return length
 
     def reset(self):

@@ -1,6 +1,4 @@
 from __future__ import absolute_import
-import operator
-import functools
 
 from ..primitives import BasePrimitive
 from ..ifuzzable import IFuzzable
