@@ -156,6 +156,15 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
             data = bytes('')
+        except socket.error as e:
+            if (e.errno == errno.ECONNABORTED) or \
+               (e.errno == errno.ECONNREFUSED) or \
+               (e.errno == errno.ECONNRESET) or  \
+               (e.errno == errno.ENETRESET) or \
+               (e.errno == errno.ETIMEDOUT):
+                data = bytes('')
+            else:
+                raise
 
         return data
 

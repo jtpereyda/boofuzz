@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import zlib
 import time
 import socket
+import errno
 import cPickle
 import threading
 import logging
@@ -730,8 +731,22 @@ class Session(pgraph.Graph):
         if not data:
             data = node.render()
 
-        # Try to send payload down-range
-        self.targets[0].send(data)
+        # Implement a retry function to open the connection
+        # again if it was closed in the previous fuzz-case
+        retry = 0
+        while retry < 3:
+            try:
+                # Try to send payload down-range
+                self.targets[0].send(data)
+            except socket.error as e:
+                if (e.errno == errno.ECONNABORTED) or \
+                   (e.errno == errno.ECONNRESET) or  \
+                   (e.errno == errno.ENETRESET):
+                    retry += 1
+                    continue
+                else:
+                    raise
+            break
         self.last_send = data
 
         # Receive data
