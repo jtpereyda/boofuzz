@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 import zlib
 import time
-import socket
-import errno
 import cPickle
 import threading
 import logging
@@ -108,6 +106,9 @@ class Target(object):
 
         :return: Received data.
         """
+        if self._fuzz_data_logger is not None:
+            self._fuzz_data_logger.log_info("Receiving...")
+
         data = self._target_connection.recv(max_bytes=max_bytes)
 
         if self._fuzz_data_logger is not None:
@@ -713,8 +714,8 @@ class Session(pgraph.Graph):
         """
         Render and transmit a node, process callbacks accordingly.
 
-        @type  sock:   socket.socket
-        @param sock:   Socket to transmit node on
+        @type  sock:   Target
+        @param sock:   Socket-like object on which to transmit node
         @type  node:   pgraph.node.node (Node)
         @param node:   Request/Node to transmit
         @type  edge:   pgraph.edge.edge (pgraph.edge)
@@ -731,35 +732,27 @@ class Session(pgraph.Graph):
         if not data:
             data = node.render()
 
-        # Implement a retry function to open the connection
-        # again if it was closed in the previous fuzz-case
-        retry = 0
-        while retry < 3:
-            try:
-                # Try to send payload down-range
-                self.targets[0].send(data)
-            except socket.error as e:
-                if (e.errno == errno.ECONNABORTED) or \
-                   (e.errno == errno.ECONNRESET) or  \
-                   (e.errno == errno.ENETRESET):
-                    retry += 1
-                    continue
+        try:
+            # Try to send payload down-range
+            self.targets[0].send(data)
+            self.last_send = data
+
+            # Receive data
+            # TODO: Remove magic number (10000)
+            self.last_recv = self.targets[0].recv(10000)
+
+            if self._check_data_received_each_request:
+                self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+                if not self.last_recv:
+                    # Assume a crash?
+                    self._fuzz_data_logger.log_fail("Nothing received from target.")
                 else:
-                    raise
-            break
-        self.last_send = data
-
-        # Receive data
-        # TODO: Remove magic number (10000)
-        self.last_recv = self.targets[0].recv(10000)
-
-        if self._check_data_received_each_request:
-            self._fuzz_data_logger.log_check("Verify some data was received from the target.")
-            if not self.last_recv:
-                # Assume a crash?
-                self._fuzz_data_logger.log_fail("Nothing received from target.")
-            else:
-                self._fuzz_data_logger.log_pass("Some data received from target.")
+                    self._fuzz_data_logger.log_pass("Some data received from target.")
+        except sex.BoofuzzTargetConnectionReset:
+            self._fuzz_data_logger.log_fail("Target connection reset.")
+        except sex.BoofuzzTargetConnectionAborted:
+            self._fuzz_data_logger.log_fail("Target connection lost: Software caused connection abort. You may have a"
+                                            " network issue, or an issue with firewalls or anti-virus.")
 
     def build_webapp_thread(self, port=26000):
         app.session = self

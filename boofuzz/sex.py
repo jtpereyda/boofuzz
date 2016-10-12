@@ -13,6 +13,14 @@ class BoofuzzTargetConnectionFailedError(BoofuzzError):
     pass
 
 
+class BoofuzzTargetConnectionReset(BoofuzzError):
+    pass
+
+
+class BoofuzzTargetConnectionAborted(BoofuzzError):
+    pass
+
+
 class SullyRuntimeError(Exception):
     pass
 
