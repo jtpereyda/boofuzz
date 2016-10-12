@@ -4,6 +4,8 @@ Features
 --------
 -  Added ``Request.original_value()`` function to render the request as if it were not fuzzed.
    This will help enable reuse of a fuzz definition to generate valid requests.
+-  ``SocketConnection`` can now send and receive UDP broadcast packets using the ``udp_broadcast`` constructor
+   parameter.
 
 0.0.5
 =====

@@ -36,7 +36,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  bind=None,
                  timeout=5.0,
                  ethernet_proto=ETH_P_IP,
-                 l2_dst='\xFF' * 6):
+                 l2_dst='\xFF' * 6,
+                 udp_broadcast=False):
         """
         @type  host:    str
         @param host:    Hostname or IP address of target system,
@@ -65,6 +66,12 @@ class SocketConnection(itarget_connection.ITargetConnection):
         @type l2_dst:   str
         @kwarg l2_dst:  (Optional, def='\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast))
                         Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
+
+        @type udp_broadcast:
+                        bool
+        @kwarg udp_broadcast:
+                        Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send() to
+                        work, and '' for bind host for recv() to work.
         """
         self.MAX_PAYLOADS["udp"] = helpers.get_max_udp_size()
 
@@ -75,6 +82,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.proto = proto.lower()
         self.ethernet_proto = ethernet_proto
         self.l2_dst = l2_dst
+        self._udp_broadcast = udp_broadcast
 
         self._sock = None
 
@@ -105,6 +113,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             if self.bind:
                 self._sock.bind(self.bind)
+            if self._udp_broadcast:
+                self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
         elif self.proto == "raw-l2":
             self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
         elif self.proto == "raw-l3":
