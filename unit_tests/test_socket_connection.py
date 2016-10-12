@@ -28,6 +28,8 @@ ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet fram
 RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l2']
 RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l3']
 
+TEST_ERR_NO_NON_LOOPBACK_IPV4 = 'No local non-loopback IPv4 address found.'
+
 
 def get_local_non_loopback_ipv4_addresses_info():
     for interface in netifaces.interfaces():
@@ -359,6 +361,8 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
+    @pytest.mark.skipif(not any(True for _ in get_local_non_loopback_ipv4_addresses_info()),
+                        reason=TEST_ERR_NO_NON_LOOPBACK_IPV4)
     def test_udp_broadcast_client(self):
         """
         Given: A SocketConnection 'udp' object with udp_broadcast set, and a UDP server.
@@ -366,7 +370,11 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns length of payload.
          and: Sent and received data is as expected.
         """
-        broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+        try:
+            broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+        except StopIteration:
+            assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
+
         data_to_send = bytes('"Never drink because you need it, for this is rational drinking, and the way to death and'
                              ' hell. But drink because you do not need it, for this is irrational drinking, and the'
                              ' ancient health of the world."')
