@@ -9,6 +9,8 @@ import unittest
 import zlib
 
 import pytest
+import ipaddress
+import netifaces
 
 from boofuzz.socket_connection import SocketConnection
 from boofuzz import socket_connection
@@ -25,6 +27,17 @@ ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet fram
 
 RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l2']
 RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l3']
+
+
+def get_local_non_loopback_ipv4_addresses_info():
+    for interface in netifaces.interfaces():
+        # Not all interfaces have an IPv4 address:
+        if netifaces.AF_INET in netifaces.ifaddresses(interface):
+            # Some interfaces have multiple IPv4 addresses:
+            for address_info in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
+                address_object = ipaddress.IPv4Address(unicode(address_info['addr'], 'utf-8'))
+                if not address_object.is_loopback:
+                    yield address_info
 
 
 def udp_packet(payload, src_port, dst_port):
@@ -330,6 +343,45 @@ class TestSocketConnection(unittest.TestCase):
         uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='udp',
                                bind=(socket.gethostname(), 0))
         uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # When
+        uut.open()
+        send_result = uut.send(data=data_to_send)
+        received = uut.recv(10000)
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.isAlive())
+
+        # Then
+        self.assertEqual(send_result, len(data_to_send))
+        self.assertEqual(data_to_send, server.received)
+        self.assertEqual(received, server.data_to_send)
+
+    def test_udp_broadcast_client(self):
+        """
+        Given: A SocketConnection 'udp' object with udp_broadcast set, and a UDP server.
+        When: Calling SocketConnection.open(), .send(), .recv(), and .close()
+        Then: send() returns length of payload.
+         and: Sent and received data is as expected.
+        """
+        broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+        data_to_send = bytes('"Never drink because you need it, for this is rational drinking, and the way to death and'
+                             ' hell. But drink because you do not need it, for this is irrational drinking, and the'
+                             ' ancient health of the world."')
+
+        # Given
+        server = MiniTestServer(proto='udp', host='')
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = SocketConnection(host=broadcast_addr, port=server.active_port, proto='udp',
+                               bind=('', server.active_port + 1), udp_broadcast=True)
+        uut.logger = logging.getLogger("BoofuzzUTLogger")
 
         # When
         uut.open()

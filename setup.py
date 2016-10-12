@@ -35,7 +35,8 @@ setup(
             'future', 'pyserial', 'pydot2==1.0.33', 'tornado==4.0.2',
             'Flask==0.10.1', 'impacket'],
         extras_require={
-            'dev': ['check-manifest', 'mock', 'pytest', 'pytest-bdd'],
+            # This list is duplicated in tox.ini. Make sure to change both!
+            'dev': ['check-manifest', 'mock', 'pytest', 'pytest-bdd', 'netifaces', 'ipaddress'],
         },
         classifiers=[
             'Development Status :: 4 - Beta',
