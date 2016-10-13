@@ -7,6 +7,11 @@ Features
 -  ``SocketConnection`` can now send and receive UDP broadcast packets using the ``udp_broadcast`` constructor
    parameter.
 
+Fixes
+-----
+-  Maximum UDP payload value was incorrect, causing crashes for tests running over UDP. It now works on some systems,
+   but the maximum value may be too high for systems that set it lower than the maximum possible value, 65507.
+
 0.0.5
 =====
 Fixes
