@@ -31,14 +31,22 @@ RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l3']
 TEST_ERR_NO_NON_LOOPBACK_IPV4 = 'No local non-loopback IPv4 address found.'
 
 
+def bytes_or_unicode_to_unicode(s):
+    if isinstance(s, bytes):
+        return s.decode('utf-8')
+    else:
+        return s
+
+
 def get_local_non_loopback_ipv4_addresses_info():
     for interface in netifaces.interfaces():
         # Not all interfaces have an IPv4 address:
         if netifaces.AF_INET in netifaces.ifaddresses(interface):
             # Some interfaces have multiple IPv4 addresses:
             for address_info in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
-                address_object = ipaddress.IPv4Address(unicode(address_info['addr'], 'utf-8'))
-                if not address_object.is_loopback:
+                # netifaces gives unicode strings in Windows, byte strings in Linux:
+                address_str = bytes_or_unicode_to_unicode(address_info['addr'])
+                if not ipaddress.IPv4Address(address_str).is_loopback:
                     yield address_info
 
 
