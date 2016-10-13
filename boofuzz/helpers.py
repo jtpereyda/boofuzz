@@ -70,7 +70,8 @@ def get_max_udp_size():
             ctypes.pointer(bufsize)
     )
 
-    return ctypes.c_ulong.from_buffer(buf).value
+    # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
+    return min(ctypes.c_ulong.from_buffer(buf).value, ip_constants.UDP_MAX_PAYLOAD_IPV4_THEORETICAL)
 
 
 def calculate_four_byte_padding(string, character="\x00"):
@@ -234,7 +235,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # If the packet is too big, the checksum is undefined since len(msg)
     # won't fit into two bytes. So we just pick our best definition.
     # "Truncate" the message as it appears in the checksum.
-    msg = msg[0:ip_constants.UDP_MAX_LENGTH]
+    msg = msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(
             _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +

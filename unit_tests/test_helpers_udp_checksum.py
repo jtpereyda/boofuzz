@@ -40,23 +40,23 @@ def msg_60_bytes(context):
 
 @given('Maximum length - 1 msg')
 def msg_max_minus_1(context):
-    context.msg = b'\x80\x01' * int(math.ceil(ip_constants.UDP_MAX_LENGTH / 2))
-    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH - 1]
-    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH - 1
+    context.msg = b'\x80\x01' * int(math.ceil(ip_constants.UDP_MAX_LENGTH_THEORETICAL / 2))
+    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL - 1]
+    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH_THEORETICAL - 1
 
 
 @given('Maximum length msg')
 def msg_max(context):
-    context.msg = b'\x80\x01' * int(math.ceil(ip_constants.UDP_MAX_LENGTH / 2))
-    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH]
-    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH
+    context.msg = b'\x80\x01' * int(math.ceil(ip_constants.UDP_MAX_LENGTH_THEORETICAL / 2))
+    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
+    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH_THEORETICAL
 
 
 @given('Maximum length + 1 msg')
 def msg_max_plus_1(context):
-    context.msg = b'\x80\x01' * int(math.ceil((ip_constants.UDP_MAX_LENGTH + 1) / 2))
-    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH + 1]
-    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH + 1
+    context.msg = b'\x80\x01' * int(math.ceil((ip_constants.UDP_MAX_LENGTH_THEORETICAL + 1) / 2))
+    context.msg = context.msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL + 1]
+    assert len(context.msg) == ip_constants.UDP_MAX_LENGTH_THEORETICAL + 1
 
 
 @given(parsers.cfparse('src_addr {text}'))
