@@ -1,5 +1,5 @@
-Upcoming
-========
+0.0.6
+=====
 Features
 --------
 -  Added ``Request.original_value()`` function to render the request as if it were not fuzzed.
