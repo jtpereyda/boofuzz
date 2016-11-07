@@ -14,6 +14,7 @@ Fixes
    but the maximum value may be too high for systems that set it lower than the maximum possible value, 65507.
 -  ``SocketConnection`` class now handles more send and receive errors:  ``ECONNABORTED``, ``ECONNRESET``,
    ``ENETRESET``, and ``ETIMEDOUT``.
+-  Fixed setup.py to not include superfluous packages.
 
 Development
 -----------
