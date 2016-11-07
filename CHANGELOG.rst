@@ -4,6 +4,18 @@ Features
 --------
 -  Added ``Request.original_value()`` function to render the request as if it were not fuzzed.
    This will help enable reuse of a fuzz definition to generate valid requests.
+-  ``Target.recv()`` now logs an entry before receiving data, in order to help debug receiving issues.
+
+Fixes
+-----
+-  ``SocketConnection`` class now handles more send and receive errors:  ``ECONNABORTED``, ``ECONNRESET``,
+   ``ENETRESET``, and ``ETIMEDOUT``.
+-
+
+Development
+-----------
+-  Added two exceptions: ``BoofuzzTargetConnectionReset`` and ``BoofuzzTargetConnectionAborted``.
+-  These two exceptions are handled in ``sessions.py`` and may be thrown by any ``ITargetConnection`` implementation.
 
 0.0.5
 =====
