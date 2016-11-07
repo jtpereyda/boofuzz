@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 import ssl
+import sys
 import httplib
 import socket
 import errno
+from future.utils import raise_
 
 from . import helpers
 from . import itarget_connection
@@ -166,6 +168,15 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
             data = bytes('')
+        except socket.error as e:
+            if e.errno == errno.ECONNABORTED:
+                raise_(sex.BoofuzzTargetConnectionAborted, None, sys.exc_info()[2])
+            elif (e.errno == errno.ECONNRESET) or \
+                    (e.errno == errno.ENETRESET) or \
+                    (e.errno == errno.ETIMEDOUT):
+                raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+            else:
+                raise
 
         return data
 
@@ -184,21 +195,30 @@ class SocketConnection(itarget_connection.ITargetConnection):
         except KeyError:
             pass  # data = data
 
-        if self.proto in ["tcp", "ssl"]:
-            num_sent = self._sock.send(data)
-        elif self.proto == "udp":
-            num_sent = self._sock.sendto(data, (self.host, self.port))
-        elif self.proto == "raw-l2":
-            num_sent = self._sock.sendto(data, (self.host, 0))
-        elif self.proto == "raw-l3":
-            # Address tuple: (interface string,
-            #                 Ethernet protocol number,
-            #                 packet type (recv only),
-            #                 hatype (recv only),
-            #                 Ethernet address)
-            # See man 7 packet for more details.
-            num_sent = self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
-        else:
-            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
-
+        try:
+            if self.proto in ["tcp", "ssl"]:
+                num_sent = self._sock.send(data)
+            elif self.proto == "udp":
+                num_sent = self._sock.sendto(data, (self.host, self.port))
+            elif self.proto == "raw-l2":
+                num_sent = self._sock.sendto(data, (self.host, 0))
+            elif self.proto == "raw-l3":
+                # Address tuple: (interface string,
+                #                 Ethernet protocol number,
+                #                 packet type (recv only),
+                #                 hatype (recv only),
+                #                 Ethernet address)
+                # See man 7 packet for more details.
+                num_sent = self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
+            else:
+                raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+        except socket.error as e:
+            if e.errno == errno.ECONNABORTED:
+                raise_(sex.BoofuzzTargetConnectionAborted, None, sys.exc_info()[2])
+            elif (e.errno == errno.ECONNRESET) or \
+                    (e.errno == errno.ENETRESET) or \
+                    (e.errno == errno.ETIMEDOUT):
+                raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+            else:
+                raise
         return num_sent

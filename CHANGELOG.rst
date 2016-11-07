@@ -6,11 +6,19 @@ Features
    This will help enable reuse of a fuzz definition to generate valid requests.
 -  ``SocketConnection`` can now send and receive UDP broadcast packets using the ``udp_broadcast`` constructor
    parameter.
+-  ``Target.recv()`` now logs an entry before receiving data, in order to help debug receiving issues.
 
 Fixes
 -----
 -  Maximum UDP payload value was incorrect, causing crashes for tests running over UDP. It now works on some systems,
    but the maximum value may be too high for systems that set it lower than the maximum possible value, 65507.
+-  ``SocketConnection`` class now handles more send and receive errors:  ``ECONNABORTED``, ``ECONNRESET``,
+   ``ENETRESET``, and ``ETIMEDOUT``.
+
+Development
+-----------
+-  Added two exceptions: ``BoofuzzTargetConnectionReset`` and ``BoofuzzTargetConnectionAborted``.
+-  These two exceptions are handled in ``sessions.py`` and may be thrown by any ``ITargetConnection`` implementation.
 
 0.0.5
 =====

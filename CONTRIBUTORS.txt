@@ -36,3 +36,5 @@ Peter Silberman <peter.silberman@gmail.com>
     - Upcoming file fuzzing capability.
     - Bug reports.
 	
+Markus Piéton <https://github.com/marpie>
+    - Serious bug fix footwork.
