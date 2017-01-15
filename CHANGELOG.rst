@@ -1,3 +1,7 @@
+Upcoming
+========
+-  Added several command injection strings from fuzzdb.
+
 0.0.6
 =====
 Features
