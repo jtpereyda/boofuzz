@@ -50,9 +50,13 @@ the only creature known to have scared Sulley himself: Boo!
 
 Installation
 ------------
+::
+
+    pip install boofuzz
+
 
 Boofuzz installs as a Python library used to build fuzzer scripts. See
-`INSTALL.rst`_ for step-by-step instructions.
+`INSTALL.rst`_ for advanced and detailed instructions.
 
 Getting Started
 ---------------
