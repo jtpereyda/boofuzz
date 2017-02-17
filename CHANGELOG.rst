@@ -1,6 +1,13 @@
-Upcoming
-========
+0.0.7
+=====
+Features
+--------
 -  Added several command injection strings from fuzzdb.
+-  Blocks can now be created and nested using `with s_block("my-block"):`
+
+Fixes
+-----
+-  Fixed pydot import error message
 
 0.0.6
 =====
