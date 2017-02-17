@@ -1,6 +1,12 @@
-Upcoming
-========
+0.0.7
+=====
+Features
+--------
 -  Added several command injection strings from fuzzdb.
+
+Fixes
+-----
+-  Fixed pydot import error message
 
 0.0.6
 =====
