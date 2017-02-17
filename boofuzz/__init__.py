@@ -152,11 +152,14 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
     @param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
     class ScopedBlock(Block):
+        def __init__(self, block):
+            self.block = block
+
         def __enter__(self):
             """
             Setup before entering the "with" statement body
             """
-            return self
+            return self.block
 
         def __exit__(self, type, value, traceback):
             """
@@ -165,10 +168,9 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             # Automagically close the block when exiting the "with" statement
             s_block_end()
 
-    block = ScopedBlock(name, blocks.CURRENT, group, encoder, dep, dep_value, dep_values, dep_compare)
-    blocks.CURRENT.push(block)
+    block = s_block_start(name, group, encoder, dep, dep_value, dep_values, dep_compare)
 
-    return block
+    return ScopedBlock(block)
 
 def s_block_start(name, *args, **kwargs):
     """
@@ -181,9 +183,13 @@ def s_block_start(name, *args, **kwargs):
                 ...
         s_block_close()
 
+    @note Prefer using s_block to this function directly
     @see s_block
     """
-    return s_block(name, *args, **kwargs)
+    block = Block(name, blocks.CURRENT, *args, **kwargs)
+    blocks.CURRENT.push(block)
+
+    return block
 
 
 # noinspection PyUnusedLocal
