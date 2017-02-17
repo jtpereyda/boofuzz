@@ -6,6 +6,7 @@ def run():
     dependencies()
     repeaters()
     return_current_mutant()
+    with_statements()
 
     # clear out the requests.
     blocks.REQUESTS = {}
@@ -176,3 +177,14 @@ def return_current_mutant():
         req1.mutate()
     assert (req1.mutant.name == "uhntiss")
     req1.reset()
+
+def with_statements():
+    s_initialize("WITH TEST")
+
+    with s_block("BLOCK1") as b:
+        assert (b.name == "BLOCK1")
+        s_static("test")
+
+    req = s_get("WITH TEST")
+    assert (req.num_mutations() == 0)
+    assert (req.render() == "test")
