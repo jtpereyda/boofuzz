@@ -3,6 +3,7 @@
 Features
 --------
 -  Added several command injection strings from fuzzdb.
+-  Blocks can now be created and nested using `with s_block("my-block"):`
 
 Fixes
 -----
