@@ -126,13 +126,12 @@ def s_switch(name):
 # ## BLOCK MANAGEMENT
 
 
-def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
-    # TODO: Either convert this to a with() statement, or add a new one that is compatible.
+def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
     """
-    Open a new block under the current request. This routine always returns True so you can make your fuzzer pretty
-    with indenting::
+    Open a new block under the current request. The returned instance supports the "with" interface so it will
+    be automatically closed for you::
 
-        if s_block_start("header"):
+        with s_block("header"):
             s_static("\\x00\\x01")
             if s_block_start("body"):
                 ...
@@ -152,11 +151,39 @@ def s_block_start(name, group=None, encoder=None, dep=None, dep_value=None, dep_
     @type  dep_compare: str
     @param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
+    class ScopedBlock(Block):
+        def __enter__(self):
+            """
+            Setup before entering the "with" statement body
+            """
+            return self
 
-    block = Block(name, blocks.CURRENT, group, encoder, dep, dep_value, dep_values, dep_compare)
+        def __exit__(self, type, value, traceback):
+            """
+            Cleanup after executing the "with" statement body
+            """
+            # Automagically close the block when exiting the "with" statement
+            s_block_end()
+
+    block = ScopedBlock(name, blocks.CURRENT, group, encoder, dep, dep_value, dep_values, dep_compare)
     blocks.CURRENT.push(block)
 
-    return True
+    return block
+
+def s_block_start(name, *args, **kwargs):
+    """
+    Open a new block under the current request. This routine always returns an instance so you can make your fuzzer pretty
+    with indenting::
+
+        if s_block_start("header"):
+            s_static("\\x00\\x01")
+            if s_block_start("body"):
+                ...
+        s_block_close()
+
+    @see s_block
+    """
+    return s_block(name, *args, **kwargs)
 
 
 # noinspection PyUnusedLocal
