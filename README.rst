@@ -1,5 +1,5 @@
-boofuzz
-=======
+boofuzz: Network Protocol Fuzzing for Humans
+============================================
 
 .. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
    :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
