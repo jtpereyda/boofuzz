@@ -1,6 +1,6 @@
 *.pyc
 archived_fuzzies/*.session
-docs/
+docs/_build/
 build/
 dist/
 *.egg-info/

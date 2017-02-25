@@ -11,23 +11,24 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
     Since serial ports provide no default functionality for separating messages/packets, this class provides
     several means:
-     - timeout: Return received bytes after timeout seconds.
-     - msg_separator_time:
-                Return received bytes after the wire is silent for a given time.
-                This is useful, e.g., for terminal protocols without a machine-readable delimiter.
-                A response may take a long time to send its information, and you know the message is done
-                when data stops coming.
-     - content_check:
-                A user-defined function takes the data received so far and checks for a packet.
-                The function should return 0 if the packet isn't finished yet, or n if a valid message of n
-                bytes has been received. Remaining bytes are stored for next call to recv().
+    * timeout: Return received bytes after timeout seconds.
+    * msg_separator_time:
+      Return received bytes after the wire is silent for a given time.
+      This is useful, e.g., for terminal protocols without a machine-readable delimiter.
+      A response may take a long time to send its information, and you know the message is done
+      when data stops coming.
+    * content_check:
+      A user-defined function takes the data received so far and checks for a packet.
+      The function should return 0 if the packet isn't finished yet, or n if a valid message of n
+      bytes has been received. Remaining bytes are stored for next call to recv(). Example:
 
-                Example:
-                def content_check_newline(data):
-                  if data.find('\n') >= 0:
-                    return data.find('\n')
-                  else:
-                    return 0
+      ::
+        def content_check_newline(data):
+        if data.find('\n') >= 0:
+          return data.find('\n')
+        else:
+          return 0
+
     If none of these methods are used, your connection may hang forever.
     """
 
