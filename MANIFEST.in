@@ -11,3 +11,8 @@ recursive-include unit_tests *.feature
 recursive-include unit_tests *.py
 recursive-include utils *.py
 include tox.ini
+
+recursive-include docs *.bat
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile

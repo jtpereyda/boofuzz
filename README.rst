@@ -1,5 +1,5 @@
-boofuzz
-=======
+boofuzz: Network Protocol Fuzzing for Humans
+============================================
 
 .. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
    :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
@@ -10,7 +10,7 @@ boofuzz
 .. image:: https://img.shields.io/pypi/v/boofuzz.svg
     :target: https://pypi.python.org/pypi/boofuzz
 
-Boofuzz is a fork of and the successor to the `Sulley`_ fuzzing
+Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility,
 with the eventual goal of being able to fuzz anything fuzzable.
 
