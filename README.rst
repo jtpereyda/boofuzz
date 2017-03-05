@@ -82,12 +82,13 @@ Overflow. Make sure to use the ``fuzzing`` tag.
 If you’ve found a bug, or have an idea/suggestion/request, file an issue
 here on GitHub.
 
-For other questions, check out the `boofuzz Google Group`_.
+For other questions, check out boofuzz on `gitter`_ or `Google Groups`_.
 
 For updates, follow `@fuzztheplanet`_ on Twitter.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
 .. _INSTALL.rst: INSTALL.rst
 .. _Sulley FTP example: https://www.securepla.net/fuzzing-101-with-sulley/
-.. _boofuzz Google Group: https://groups.google.com/d/forum/boofuzz
+.. _Google Groups: https://groups.google.com/d/forum/boofuzz
+.. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
