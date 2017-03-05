@@ -46,8 +46,6 @@ the only creature known to have scared Sulley himself: Boo!
 .. image:: _static/boo.png
    :alt: Boo from Monsters Inc
 
-   Boo from Monsters Inc
-
 Installation
 ------------
 ::
