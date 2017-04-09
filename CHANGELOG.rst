@@ -1,3 +1,9 @@
+Next
+====
+Fixes
+-----
+-  Fixed: The pedrpc module was not being properly included in imports.
+
 0.0.7
 =====
 Features
