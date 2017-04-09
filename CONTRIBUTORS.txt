@@ -6,6 +6,9 @@ Charles Timko <https://www.popebp.com>
 Charlie Miller <charlesamiller@hotmail.com>
     - General ideas, beta testing and morale support.
 
+Chris Bisnett <cbisnett@gmail.com>
+    - Python with statement blocks
+
 Gabriel Campana <gc.campana@gmail.com>
     - Bunch of bug fixes (including finally fixing the memory leak issue).
     - Various feature enhancements including Ctrl-C support on Unix and the addition of an instrumentation class.
