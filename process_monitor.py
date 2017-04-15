@@ -372,7 +372,7 @@ if __name__ == "__main__":
             PORT = int(arg)
 
     if not crash_bin:
-        ERR(USAGE)
+        crash_bin = 'crash-bin'
 
     # spawn the PED-RPC servlet.
     try:

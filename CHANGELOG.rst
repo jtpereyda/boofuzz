@@ -8,6 +8,7 @@ Features
 Fixes
 -----
 -  Fixed: The pedrpc module was not being properly included in imports.
+-  Made process_monitor.py --crash_bin optional (as documented)
 
 0.0.7
 =====
