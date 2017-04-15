@@ -1,17 +1,18 @@
 import unittest
+import re
 import StringIO
 from boofuzz import fuzz_logger_text
 
 LOGGER_PREAMBLE = ".*"
-TEST_CASE_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_CASE_FORMAT + '\n'
-TEST_STEP_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.TEST_STEP_FORMAT + '\n'
-LOG_CHECK_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_CHECK_FORMAT + '\n'
-LOG_INFO_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_INFO_FORMAT + '\n'
-LOG_PASS_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_PASS_FORMAT + '\n'
-LOG_FAIL_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_FAIL_FORMAT + '\n'
-LOG_RECV_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_RECV_FORMAT + '\n'
-LOG_SEND_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_SEND_FORMAT + '\n'
-LOG_ERROR_FORMAT = LOGGER_PREAMBLE + fuzz_logger_text.FuzzLoggerText.LOG_ERROR_FORMAT + '\n'
+TEST_CASE_FORMAT = fuzz_logger_text.FuzzLoggerText.TEST_CASE_FORMAT + '\n'
+TEST_STEP_FORMAT = fuzz_logger_text.FuzzLoggerText.TEST_STEP_FORMAT + '\n'
+LOG_CHECK_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_CHECK_FORMAT + '\n'
+LOG_INFO_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_INFO_FORMAT + '\n'
+LOG_PASS_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_PASS_FORMAT + '\n'
+LOG_FAIL_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_FAIL_FORMAT + '\n'
+LOG_RECV_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_RECV_FORMAT + '\n'
+LOG_SEND_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_SEND_FORMAT + '\n'
+LOG_ERROR_FORMAT = fuzz_logger_text.FuzzLoggerText.LOG_ERROR_FORMAT + '\n'
 DEFAULT_TEST_CASE_ID = fuzz_logger_text.FuzzLoggerText.DEFAULT_TEST_CASE_ID
 
 
@@ -145,7 +146,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
 
     def test_open_test_step(self):
         """
@@ -162,9 +163,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_STEP_FORMAT.format(self.some_test_step_msg))
+                                 LOGGER_PREAMBLE + re.escape(TEST_STEP_FORMAT.format(self.some_test_step_msg)))
 
     def test_log_check(self):
         """
@@ -181,9 +182,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_CHECK_FORMAT.format(self.some_log_check_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_CHECK_FORMAT.format(self.some_log_check_msg)))
 
     def test_log_error(self):
         """
@@ -200,9 +201,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_ERROR_FORMAT.format(self.some_log_error_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_ERROR_FORMAT.format(self.some_log_error_msg)))
 
     def test_log_recv(self):
         """
@@ -219,9 +220,10 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_recv_data)))
+                                 LOGGER_PREAMBLE + re.escape(
+                                     LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_recv_data))))
 
     def test_log_send(self):
         """
@@ -238,10 +240,11 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format(len(self.some_send_data),
-                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data)))
+                                 LOGGER_PREAMBLE + re.escape(LOG_SEND_FORMAT.format(len(self.some_send_data),
+                                                                                    fuzz_logger_text.DEFAULT_HEX_TO_STR(
+                                                                                        self.some_send_data))))
 
     def test_log_info(self):
         """
@@ -258,9 +261,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_INFO_FORMAT.format(self.some_log_info_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_INFO_FORMAT.format(self.some_log_info_msg)))
 
     def test_log_fail(self):
         """
@@ -277,9 +280,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_FAIL_FORMAT.format(self.some_log_fail_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_FAIL_FORMAT.format(self.some_log_fail_msg)))
 
     def test_log_pass(self):
         """
@@ -296,9 +299,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_PASS_FORMAT.format(self.some_log_pass_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_PASS_FORMAT.format(self.some_log_pass_msg)))
 
     def test_open_test_case_empty(self):
         """
@@ -312,7 +315,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format('')))
 
     def test_open_test_step_empty(self):
         """
@@ -328,9 +331,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_STEP_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(TEST_STEP_FORMAT.format('')))
 
     def test_log_check_empty(self):
         """
@@ -346,9 +349,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_CHECK_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(LOG_CHECK_FORMAT.format('')))
 
     def test_log_error_empty(self):
         """
@@ -364,9 +367,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_ERROR_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(LOG_ERROR_FORMAT.format('')))
 
     def test_log_recv_empty(self):
         """
@@ -382,9 +385,10 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes(''))))
+                                 LOGGER_PREAMBLE + re.escape(
+                                     LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('')))))
 
     def test_log_send_empty(self):
         """
@@ -400,10 +404,10 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format(len(bytes('')),
-                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes(''))))
+                                 LOGGER_PREAMBLE + re.escape(LOG_SEND_FORMAT.format(len(bytes('')),
+                                                             fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('')))))
 
     def test_log_info_empty(self):
         """
@@ -419,9 +423,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_INFO_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(LOG_INFO_FORMAT.format('')))
 
     def test_log_fail_empty(self):
         """
@@ -437,9 +441,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_FAIL_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(LOG_FAIL_FORMAT.format('')))
 
     def test_log_pass_empty(self):
         """
@@ -455,9 +459,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_PASS_FORMAT.format(''))
+                                 LOGGER_PREAMBLE + re.escape(LOG_PASS_FORMAT.format('')))
 
     def test_several(self):
         """
@@ -489,24 +493,25 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_STEP_FORMAT.format(self.some_test_step_msg))
+                                 LOGGER_PREAMBLE + re.escape(TEST_STEP_FORMAT.format(self.some_test_step_msg)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_recv_data)))
+                                 LOGGER_PREAMBLE + re.escape(
+                                     LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_recv_data))))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_SEND_FORMAT.format(len(self.some_send_data),
-                                                        fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data)))
+                                 LOGGER_PREAMBLE + re.escape(LOG_SEND_FORMAT.format(len(self.some_send_data),
+                                                             fuzz_logger_text.DEFAULT_HEX_TO_STR(self.some_send_data))))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_INFO_FORMAT.format(self.some_log_info_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_INFO_FORMAT.format(self.some_log_info_msg)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_CHECK_FORMAT.format(self.some_log_check_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_CHECK_FORMAT.format(self.some_log_check_msg)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_FAIL_FORMAT.format(self.some_log_fail_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_FAIL_FORMAT.format(self.some_log_fail_msg)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_PASS_FORMAT.format(self.some_log_pass_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_PASS_FORMAT.format(self.some_log_pass_msg)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_ERROR_FORMAT.format(self.some_log_error_msg))
+                                 LOGGER_PREAMBLE + re.escape(LOG_ERROR_FORMAT.format(self.some_log_error_msg)))
 
     def test_hex_to_str_function(self):
         """
@@ -519,6 +524,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: open_test_case logs as expected.
          and: log_recv logs as expected, using the custom hex_to_str function.
         """
+
         # Given
         def hex_to_str(hex_data):
             return hex_data.decode()
@@ -532,9 +538,9 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 TEST_CASE_FORMAT.format(self.some_test_case_id))
+                                 LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOG_RECV_FORMAT.format(hex_to_str(self.some_recv_data)))
+                                 LOGGER_PREAMBLE + re.escape(LOG_RECV_FORMAT.format(hex_to_str(self.some_recv_data))))
 
 
 if __name__ == '__main__':

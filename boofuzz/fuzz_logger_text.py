@@ -2,9 +2,12 @@ from __future__ import print_function
 from builtins import bytes
 import sys
 import time
+from colorama import Fore, Back, Style, init
+
 from . import helpers
 from . import ifuzz_logger_backend
 
+init()
 
 def hex_to_hexstr(input_bytes):
     """
@@ -36,15 +39,15 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     Using two FuzzLoggerTexts, a FuzzLogger instance can be configured to output to
     both console and file.
     """
-    TEST_CASE_FORMAT = "Test Case: {0}"
-    TEST_STEP_FORMAT = "Test Step: {0}"
-    LOG_ERROR_FORMAT = "Error!!!! {0}"
+    TEST_CASE_FORMAT = Fore.YELLOW + Style.BRIGHT + "Test Case: {0}" + Style.RESET_ALL
+    TEST_STEP_FORMAT = Fore.MAGENTA + Style.BRIGHT + "Test Step: {0}" + Style.RESET_ALL
+    LOG_ERROR_FORMAT = Back.RED + Style.BRIGHT + "Error!!!! {0}" + Style.RESET_ALL
     LOG_CHECK_FORMAT = "Check: {0}"
     LOG_INFO_FORMAT = "Info: {0}"
-    LOG_PASS_FORMAT = "Check OK: {0}"
-    LOG_FAIL_FORMAT = "Check Failed: {0}"
-    LOG_RECV_FORMAT = "Received: {0}"
-    LOG_SEND_FORMAT = "Transmitting {0} bytes: {1}"
+    LOG_PASS_FORMAT = Fore.GREEN + Style.BRIGHT + "Check OK: {0}" + Style.RESET_ALL
+    LOG_FAIL_FORMAT = Fore.RED + Style.BRIGHT + "Check Failed: {0}" + Style.RESET_ALL
+    LOG_RECV_FORMAT = Fore.CYAN + "Received: {0}" + Style.RESET_ALL
+    LOG_SEND_FORMAT = Fore.CYAN + "Transmitting {0} bytes: {1}" + Style.RESET_ALL
     DEFAULT_TEST_CASE_ID = "DefaultTestCase"
     INDENT_SIZE = 2
 
