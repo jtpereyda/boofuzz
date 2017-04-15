@@ -192,7 +192,9 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.dbg = DebuggerThread(self.start_commands[0])
         self.dbg.spawn_target()
         # prevent blocking by spawning off another thread to waitpid
-        threading.Thread(target=self.dbg.start_monitoring).start()
+        t = threading.Thread(target=self.dbg.start_monitoring)
+        t.daemon = True
+        t.start()
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
         return True

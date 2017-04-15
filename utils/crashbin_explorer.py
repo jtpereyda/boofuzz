@@ -20,7 +20,7 @@ try:
         raise Exception
 
     opts, args = getopt.getopt(sys.argv[2:], "t:g:", ["test=", "graph="])
-except:
+except Exception:
     print USAGE
     sys.exit(1)
 
@@ -35,7 +35,7 @@ for opt, arg in opts:
 try:
     crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
-except:
+except Exception:
     print "unable to open crashbin: '%s'." % sys.argv[1]
     sys.exit(1)
 

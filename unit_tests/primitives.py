@@ -74,7 +74,7 @@ def fuzz_extension_tests():
     try:
         shutil.move(".fuzz_strings", ".fuzz_strings_backup")
         shutil.move(".fuzz_ints", ".fuzz_ints_backup")
-    except:
+    except Exception:
         pass
 
     # create extension libraries for unit test.
@@ -112,5 +112,5 @@ def fuzz_extension_tests():
     try:
         shutil.move(".fuzz_strings_backup", ".fuzz_strings")
         shutil.move(".fuzz_ints_backup", ".fuzz_ints")
-    except:
+    except Exception:
         pass

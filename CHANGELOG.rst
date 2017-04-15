@@ -3,6 +3,7 @@ Next
 Features
 --------
 -  Console output - now with colors!
+-  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py
 
 Fixes
 -----

@@ -104,7 +104,7 @@ class DebuggerThread(threading.Thread):
             self.dbg.attach(self.pid)
             self.dbg.run()
             self.process_monitor.log("debugger thread-%s exiting" % self.getName())
-        except:
+        except Exception:
             pass
 
         # TODO: removing the following line appears to cause some concurrency issues.
@@ -169,7 +169,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # restore any previously recorded crashes.
         try:
             self.crash_bin.import_file(self.crash_filename)
-        except:
+        except Exception:
             pass
 
         self.log("Process Monitor PED-RPC server initialized:")
@@ -276,13 +276,14 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
         try:
             self.crash_bin.import_file(self.crash_filename)
-        except:
+        except Exception:
             pass
 
         # if we don't already have a debugger thread, instantiate and start one now.
         if not self.debugger_thread or not self.debugger_thread.isAlive():
             self.log("creating debugger thread", 5)
             self.debugger_thread = DebuggerThread(self, self.proc_name, self.ignore_pid)
+            self.debugger_thread.daemon = True
             self.debugger_thread.start()
             self.log("giving debugger thread 2 seconds to settle in", 5)
             time.sleep(2)
