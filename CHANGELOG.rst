@@ -3,13 +3,15 @@ Next
 Features
 --------
 -  Console output - now with colors!
--  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py.
+-  The process monitor (procmon) now tracks processes by PID rather than searching by name. Therefore, stop_commands
+   and proc_name are no longer required.
+-  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 
 Fixes
 -----
 -  Fixed: The pedrpc module was not being properly included in imports.
 -  Made process_monitor.py --crash_bin optional (as documented).
--  Improved procmon (process monitor) behavior when certain parameters aren't given.
+-  Improved procmon behavior when certain parameters aren't given.
 -  Improved procmon error handling.
 
 0.0.7

@@ -25,7 +25,7 @@ USAGE = """USAGE: process_monitor.py
 
 
 class DebuggerThread(threading.Thread):
-    def __init__(self, process_monitor, process, pid_to_ignore=None):
+    def __init__(self, process_monitor, proc_name=None, ignore_pid=None, pid=None):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
@@ -33,13 +33,13 @@ class DebuggerThread(threading.Thread):
         threading.Thread.__init__(self)
 
         self.process_monitor = process_monitor
-        self.proc_name = process
-        self.ignore_pid = pid_to_ignore
+        self.proc_name = proc_name
+        self.ignore_pid = ignore_pid
 
         self.access_violation = False
         self.active = True
         self.dbg = pydbg.pydbg()
-        self.pid = None
+        self.pid = pid
 
         # give this thread a unique name.
         self.setName("%d" % time.time())
@@ -97,12 +97,15 @@ class DebuggerThread(threading.Thread):
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
 
-        if self.proc_name is not None:
-            self.process_monitor.log("debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+        if self.proc_name is not None or self.pid is not None:
 
             # watch for and try attaching to the process.
             try:
-                self.watch()
+                if self.pid is None and self.proc_name is not None:
+                    self.process_monitor.log(
+                        "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+                    self.watch()
+                self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
                 self.dbg.attach(self.pid)
                 self.dbg.run()
                 self.process_monitor.log("debugger thread-%s exiting" % self.getName())
@@ -158,6 +161,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.stop_commands = []
         self.start_commands = []
+        self._process = None
         self.test_number = None
         self.debugger_thread = None
         self.crash_bin = utils.crash_binning.CrashBinning()
@@ -180,6 +184,13 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("\t proc name:   %s" % self.proc_name)
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._process is not None:
+            self._process.kill()
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -299,7 +310,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
                 for command in self.start_commands:
                     try:
-                        subprocess.Popen(command)
+                        self._process = subprocess.Popen(command)
                     except WindowsError as e:
                         print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
                         return False
@@ -307,12 +318,14 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                 self.log("done. target up and running, giving it 5 seconds to settle in.")
                 time.sleep(5)
 
-            self.log("creating debugger thread", 5)
-            self.debugger_thread = DebuggerThread(self, self.proc_name, self.ignore_pid)
-            self.debugger_thread.daemon = True
-            self.debugger_thread.start()
-            self.log("giving debugger thread 2 seconds to settle in", 5)
-            time.sleep(2)
+            if self._process is not None:
+                self.log("creating debugger thread", 5)
+                self.debugger_thread = DebuggerThread(self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
+                                                      pid=self._process.pid)
+                self.debugger_thread.daemon = True
+                self.debugger_thread.start()
+                self.log("giving debugger thread 2 seconds to settle in", 5)
+                time.sleep(2)
 
         return True
 
@@ -326,15 +339,18 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.log("stopping target process")
 
-        for command in self.stop_commands:
-            if command == "TERMINATE_PID":
-                dbg = pydbg.pydbg()
-                for (pid, name) in dbg.enumerate_processes():
-                    if name.lower() == self.proc_name.lower():
-                        os.system("taskkill /pid %d" % pid)
-                        break
-            else:
-                os.system(command)
+        if len(self.stop_commands) < 1:
+            self._process.kill()
+        else:
+            for command in self.stop_commands:
+                if command == "TERMINATE_PID":
+                    dbg = pydbg.pydbg()
+                    for (pid, name) in dbg.enumerate_processes():
+                        if name.lower() == self.proc_name.lower():
+                            os.system("taskkill /pid %d" % pid)
+                            break
+                else:
+                    os.system(command)
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)
@@ -349,7 +365,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.stop_commands = new_stop_commands
 
 
-if __name__ == "__main__":
+def main():
+    global PORT
     opts = None
     # parse command line options.
     try:
@@ -386,7 +403,9 @@ if __name__ == "__main__":
     if not crash_bin:
         crash_bin = 'crash-bin'
 
-    # spawn the PED-RPC servlet.
-    servlet = ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
-    servlet.serve_forever()
-    # TODO: Handle errors
+    with ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level) as servlet:
+        servlet.serve_forever()
+
+
+if __name__ == "__main__":
+    main()

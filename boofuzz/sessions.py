@@ -82,8 +82,8 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key in self.procmon_options.keys():
-                eval('self.procmon.set_%s(self.procmon_options["%s"])' % (key, key))
+            for key, value in self.procmon_options.items():
+                getattr(self.procmon, 'set_{0}'.format(key))(value)
 
         # If the network monitor is alive, set it's options
         if self.netmon:
