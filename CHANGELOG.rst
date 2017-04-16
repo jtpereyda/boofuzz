@@ -3,6 +3,7 @@ Next
 Features
 --------
 -  Console output - now with colors!
+-  process_monitor_unix.py: added option to move coredumps for later analysis
 
 Fixes
 -----
