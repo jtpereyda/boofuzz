@@ -1,4 +1,5 @@
 #!c:\\python\\python.exe
+from __future__ import print_function
 import subprocess
 import threading
 import getopt
@@ -96,19 +97,20 @@ class DebuggerThread(threading.Thread):
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
 
-        self.process_monitor.log("debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+        if self.proc_name is not None:
+            self.process_monitor.log("debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
 
-        # watch for and try attaching to the process.
-        try:
-            self.watch()
-            self.dbg.attach(self.pid)
-            self.dbg.run()
-            self.process_monitor.log("debugger thread-%s exiting" % self.getName())
-        except Exception:
-            pass
+            # watch for and try attaching to the process.
+            try:
+                self.watch()
+                self.dbg.attach(self.pid)
+                self.dbg.run()
+                self.process_monitor.log("debugger thread-%s exiting" % self.getName())
+            except Exception:
+                pass
 
-        # TODO: removing the following line appears to cause some concurrency issues.
-        del self.dbg
+            # TODO: removing the following line appears to cause some concurrency issues.
+            del self.dbg
 
     def watch(self):
         """
@@ -232,7 +234,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def post_send(self):
         """
@@ -243,24 +245,27 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         crashes = 0
-        av = self.debugger_thread.access_violation
+        if self.debugger_thread is None:
+            return True
+        else:
+            av = self.debugger_thread.access_violation
 
-        # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
-        # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
-        # uncovering the details of the access violation.
-        if av:
-            while self.debugger_thread.isAlive():
-                time.sleep(1)
+            # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
+            # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
+            # uncovering the details of the access violation.
+            if av:
+                while self.debugger_thread.isAlive():
+                    time.sleep(1)
 
-            self.debugger_thread = None
+                self.debugger_thread = None
 
-        # serialize the crash bin to disk.
-        self.crash_bin.export_file(self.crash_filename)
-        # for binary in self.crash_bin.bins.keys():
-        # crashes += len(self.crash_bin.bins[binary])
-        for binary, crash_list in self.crash_bin.bins.iteritems():
-            crashes += len(crash_list)
-        return not av
+            # serialize the crash bin to disk.
+            self.crash_bin.export_file(self.crash_filename)
+            # for binary in self.crash_bin.bins.keys():
+            # crashes += len(self.crash_bin.bins[binary])
+            for binary, crash_list in self.crash_bin.bins.iteritems():
+                crashes += len(crash_list)
+            return not av
 
     def pre_send(self, test_number):
         """
@@ -279,14 +284,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         except Exception:
             pass
 
-        # if we don't already have a debugger thread, instantiate and start one now.
-        if not self.debugger_thread or not self.debugger_thread.isAlive():
-            self.log("creating debugger thread", 5)
-            self.debugger_thread = DebuggerThread(self, self.proc_name, self.ignore_pid)
-            self.debugger_thread.daemon = True
-            self.debugger_thread.start()
-            self.log("giving debugger thread 2 seconds to settle in", 5)
-            time.sleep(2)
+        self.start_target()
 
     def start_target(self):
         """
@@ -294,14 +292,28 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful. No failure detection yet.
         """
+        # if we don't already have a debugger thread, instantiate and start one now.
+        if not self.debugger_thread or not self.debugger_thread.isAlive():
+            if len(self.start_commands) > 0:
+                self.log("starting target process")
 
-        self.log("starting target process")
+                for command in self.start_commands:
+                    try:
+                        subprocess.Popen(command)
+                    except WindowsError as e:
+                        print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
+                        return False
 
-        for command in self.start_commands:
-            subprocess.Popen(command)
+                self.log("done. target up and running, giving it 5 seconds to settle in.")
+                time.sleep(5)
 
-        self.log("done. target up and running, giving it 5 seconds to settle in.")
-        time.sleep(5)
+            self.log("creating debugger thread", 5)
+            self.debugger_thread = DebuggerThread(self, self.proc_name, self.ignore_pid)
+            self.debugger_thread.daemon = True
+            self.debugger_thread.start()
+            self.log("giving debugger thread 2 seconds to settle in", 5)
+            time.sleep(2)
+
         return True
 
     def stop_target(self):
@@ -375,10 +387,6 @@ if __name__ == "__main__":
         crash_bin = 'crash-bin'
 
     # spawn the PED-RPC servlet.
-    try:
-        servlet = ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
-        servlet.serve_forever()
-    except Exception as e:
-        # TODO: Add servlet.shutdown
-        # TODO: Add KeyboardInterrupt
-        ERR("Error starting RPC server!\n\t%s" % e)
+    servlet = ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
+    servlet.serve_forever()
+    # TODO: Handle errors

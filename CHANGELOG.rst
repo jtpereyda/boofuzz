@@ -3,12 +3,14 @@ Next
 Features
 --------
 -  Console output - now with colors!
--  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py
+-  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py.
 
 Fixes
 -----
 -  Fixed: The pedrpc module was not being properly included in imports.
--  Made process_monitor.py --crash_bin optional (as documented)
+-  Made process_monitor.py --crash_bin optional (as documented).
+-  Improved procmon (process monitor) behavior when certain parameters aren't given.
+-  Improved procmon error handling.
 
 0.0.7
 =====
