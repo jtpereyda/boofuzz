@@ -2,26 +2,18 @@
 from __future__ import print_function
 import subprocess
 import threading
-import getopt
 import time
 import sys
 import os
 
 import pydbg
 import pydbg.defines
-from boofuzz import utils
+from cement.core.foundation import CementApp
 
+from boofuzz import utils
 from boofuzz import pedrpc
 
-PORT = 26002
-ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
-USAGE = """USAGE: process_monitor.py
-    [-c|--crash_bin FILENAME] filename to serialize crash bin class to
-    [-p|--proc_name NAME]     process name to search for and attach to
-    [-i|--ignore_pid PID]     PID to ignore when searching for target process
-    [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
-    [-P|--port PORT]          TCP port to bind this agent to
-    """
+DEFAULT_PORT = 26002
 
 
 class DebuggerThread(threading.Thread):
@@ -274,7 +266,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             self.crash_bin.export_file(self.crash_filename)
             # for binary in self.crash_bin.bins.keys():
             # crashes += len(self.crash_bin.bins[binary])
-            for binary, crash_list in self.crash_bin.bins.iteritems():
+            for binary, crash_list in self.crash_bin.bins.items():
                 crashes += len(crash_list)
             return not av
 
@@ -365,46 +357,37 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.stop_commands = new_stop_commands
 
 
-def main():
-    global PORT
-    opts = None
-    # parse command line options.
-    try:
-        # TODO: Refactor to use something less dumb
-        opts, args = getopt.getopt(
-            sys.argv[1:],
-            "c:i:l:p:",
-            [
-                "crash_bin=",
-                "ignore_pid=",
-                "log_level=",
-                "proc_name=",
-                "port="
-            ]
-        )
-    except getopt.GetoptError:
-        ERR(USAGE)
-
-    crash_bin = ignore_pid = proc_name = None
-    log_level = 1
-
-    for opt, arg in opts:
-        if opt in ("-c", "--crash_bin"):
-            crash_bin = arg
-        if opt in ("-i", "--ignore_pid"):
-            ignore_pid = int(arg)
-        if opt in ("-l", "--log_level"):
-            log_level = int(arg)
-        if opt in ("-p", "--proc_name"):
-            proc_name = arg
-        if opt in ("-P", "--port"):
-            PORT = int(arg)
-
-    if not crash_bin:
-        crash_bin = 'crash-bin'
-
-    with ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level) as servlet:
+def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
+    with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin, proc=proc_name,
+                                    pid_to_ignore=ignore_pid, level=log_level) as servlet:
         servlet.serve_forever()
+
+
+class ProcessMonitorApp(CementApp):
+    class Meta:
+        label = 'procmon'
+
+
+def main():
+    with ProcessMonitorApp() as app:
+        app.args.add_argument('-f', '--foo', action='store', metavar='STR',
+                              help='the notorious foo option')
+        app.args.add_argument("-c", "--crash_bin", help='filename to serialize crash bin class to', default='crash-bin',
+                              metavar='FILENAME')
+        app.args.add_argument("-i", "--ignore_pid", help='PID to ignore when searching for target process', type=int,
+                              metavar='PID')
+        app.args.add_argument("-l", "--log_level", help='log level: default 1, increase for more verbosity', type=int,
+                              default=1, metavar='LEVEL')
+        app.args.add_argument("-p", "--proc_name", help='process name to search for and attach to', metavar='NAME')
+        app.args.add_argument("-P", "--port", help='TCP port to bind this agent to', type=int, default=DEFAULT_PORT)
+
+        app.run()  # parses args
+
+        serve_procmon(port=app.pargs.port,
+                      crash_bin=app.pargs.crash_bin,
+                      proc_name=app.pargs.proc_name,
+                      ignore_pid=app.pargs.ignore_pid,
+                      log_level=app.pargs.log_level)
 
 
 if __name__ == "__main__":

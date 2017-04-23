@@ -5,6 +5,7 @@ Features
 -  Console output - now with colors!
 -  The process monitor (procmon) now tracks processes by PID rather than searching by name. Therefore, stop_commands
    and proc_name are no longer required.
+-  Added --help parameter to process monitor.
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 
 Fixes
