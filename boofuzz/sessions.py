@@ -36,7 +36,7 @@ class Target(object):
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection, procmon=None, procmon_options=None):
         """
         @type  connection: itarget_connection.ITargetConnection
         @param connection: Connection to system under test.
@@ -44,13 +44,15 @@ class Target(object):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
+        self.procmon = procmon
 
         # set these manually once target is instantiated.
         self.netmon = None
-        self.procmon = None
         self.vmcontrol = None
         self.netmon_options = {}
-        self.procmon_options = {}
+        if procmon_options is None:
+            procmon_options = {}
+        self.procmon_options = procmon_options
         self.vmcontrol_options = {}
 
     def close(self):
