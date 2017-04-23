@@ -14,6 +14,7 @@ Fixes
 -  Made process_monitor.py --crash_bin optional (as documented).
 -  Improved procmon behavior when certain parameters aren't given.
 -  Improved procmon error handling.
+-  Fixed a bug in which the procmon would not properly restart a target that had failed without crashing.
 
 0.0.7
 =====

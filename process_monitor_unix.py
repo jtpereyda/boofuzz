@@ -215,6 +215,15 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
             else:
                 os.system(command)
 
+    def restart_target(self):
+        """
+        Stop and start the target process.
+
+        @returns True if successful.
+        """
+        self.stop_target()
+        return self.start_target()
+
     def set_start_commands(self, start_commands):
         """
         We expect start_commands to be a list with one element for example

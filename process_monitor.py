@@ -293,7 +293,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         Start up the target process by issuing the commands in self.start_commands.
 
-        @returns True if successful. No failure detection yet.
+        @returns True if successful.
         """
         # if we don't already have a debugger thread, instantiate and start one now.
         if not self.debugger_thread or not self.debugger_thread.isAlive():
@@ -343,6 +343,15 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                             break
                 else:
                     os.system(command)
+
+    def restart_target(self):
+        """
+        Stop and start the target process.
+
+        @returns True if successful.
+        """
+        self.stop_target()
+        return self.start_target()
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)

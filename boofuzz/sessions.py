@@ -599,7 +599,7 @@ class Session(pgraph.Graph):
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            self.restart_target(target, stop_first=False)
+            self.restart_target(target)
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
@@ -654,16 +654,13 @@ class Session(pgraph.Graph):
         # default to doing nothing.
         pass
 
-    def restart_target(self, target, stop_first=True):
+    def restart_target(self, target):
         """
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
         restart the target process. Otherwise, do nothing.
 
         @type  target: session.target
         @param target: Target we are restarting
-
-        @type stop_first: bool
-        @param stop_first: Set to True to stop the target before starting.
 
         @raise sex.BoofuzzRestartFailedError if restart fails.
         """
@@ -681,13 +678,11 @@ class Session(pgraph.Graph):
         # if we have a connected process monitor, restart the target process.
         elif target.procmon:
             self._fuzz_data_logger.log_info("restarting target process")
-            if stop_first:
-                target.procmon.stop_target()
 
-            if not target.procmon.start_target():
+            if not target.procmon.restart_target():
                 raise sex.BoofuzzRestartFailedError()
 
-            # give the process a few seconds to settle in.
+            self._fuzz_data_logger.log_info("giving the process 3 seconds to settle in ")
             time.sleep(3)
 
         # otherwise all we can do is wait a while for the target to recover on its own.
