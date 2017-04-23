@@ -277,11 +277,11 @@ class Server:
 
             try:
                 method = getattr(self, method_name)
-                ret = method(*args, **kwargs)
             except AttributeError:
                 # if the method can't be found notify the user and raise an error
-                sys.stderr.write("PED-RPC> remote method %s cannot be found\n" % method_name)
+                sys.stderr.write('PED-RPC> remote method "{0}" of {1} cannot be found\n'.format(method_name, self))
                 raise
+            ret = method(*args, **kwargs)
 
             # transmit the return value to the client, continue on socket disconnect.
             try:
