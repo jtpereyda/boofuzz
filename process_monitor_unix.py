@@ -56,7 +56,10 @@ class DebuggerThread:
         """
 
         self.start_command = start_command
-        self.tokens = start_command.split(' ')
+        if isinstance(start_command, basestring):
+            self.tokens = start_command.split(' ')
+        else:
+            self.tokens = start_command
         self.cmd_args = []
         self.pid = None
         self.exit_status = None
@@ -108,8 +111,8 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.dbg            = None
         self.last_synopsis  = None
         self.test_number    = 0
-        self.start_commands = None
-        self.stop_commands  = None
+        self.start_commands = []
+        self.stop_commands  = []
         self.proc_name      = None
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
@@ -209,11 +212,14 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.log("stopping target process")
 
-        for command in self.stop_commands:
-            if command == "TERMINATE_PID":
-                self.dbg.stop_target()
-            else:
-                os.system(command)
+        if len(self.stop_commands) < 1:
+            self.dbg.stop_target()
+        else:
+            for command in self.stop_commands:
+                if command == "TERMINATE_PID":
+                    self.dbg.stop_target()
+                else:
+                    os.system(command)
 
     def restart_target(self):
         """

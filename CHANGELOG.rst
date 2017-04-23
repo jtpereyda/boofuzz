@@ -7,6 +7,7 @@ Features
    and proc_name are no longer required.
 -  Added --help parameter to process monitor.
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
+-  Made Unix procmon more compatible with Windows.
 
 Fixes
 -----
