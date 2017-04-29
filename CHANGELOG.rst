@@ -8,6 +8,8 @@ Features
 -  Added `--help` parameter to process monitor.
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 -  Made Unix procmon more compatible with Windows.
+-  Improved procmon debugger error handling, e.g., when running 64-bit apps.
+-  Windows procmon now runs even if pydbg fails.
 -  Target class now takes `procmon` and `procmon_options` in constructor.
 
 Fixes

@@ -92,17 +92,14 @@ class DebuggerThread(threading.Thread):
         if self.proc_name is not None or self.pid is not None:
 
             # watch for and try attaching to the process.
-            try:
-                if self.pid is None and self.proc_name is not None:
-                    self.process_monitor.log(
-                        "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
-                    self.watch()
-                self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
-                self.dbg.attach(self.pid)
-                self.dbg.run()
-                self.process_monitor.log("debugger thread-%s exiting" % self.getName())
-            except Exception:
-                pass
+            if self.pid is None and self.proc_name is not None:
+                self.process_monitor.log(
+                    "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+                self.watch()
+            self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
+            self.dbg.attach(self.pid)
+            self.dbg.run()
+            self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
             # TODO: removing the following line appears to cause some concurrency issues.
             del self.dbg
@@ -295,8 +292,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        # if we don't already have a debugger thread, instantiate and start one now.
-        if not self.debugger_thread or not self.debugger_thread.isAlive():
+        # if we don't already have a debugger thread or process, start one now.
+        if (not self.debugger_thread or not self.debugger_thread.isAlive()) and (self._process is None or self._process.poll() is not None):
             if len(self.start_commands) > 0:
                 self.log("starting target process")
 
