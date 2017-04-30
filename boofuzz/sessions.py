@@ -36,7 +36,7 @@ class Target(object):
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection, procmon=None, procmon_options=None):
         """
         @type  connection: itarget_connection.ITargetConnection
         @param connection: Connection to system under test.
@@ -44,13 +44,15 @@ class Target(object):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
+        self.procmon = procmon
 
         # set these manually once target is instantiated.
         self.netmon = None
-        self.procmon = None
         self.vmcontrol = None
         self.netmon_options = {}
-        self.procmon_options = {}
+        if procmon_options is None:
+            procmon_options = {}
+        self.procmon_options = procmon_options
         self.vmcontrol_options = {}
 
     def close(self):
@@ -82,8 +84,8 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key in self.procmon_options.keys():
-                eval('self.procmon.set_%s(self.procmon_options["%s"])' % (key, key))
+            for key, value in self.procmon_options.items():
+                getattr(self.procmon, 'set_{0}'.format(key))(value)
 
         # If the network monitor is alive, set it's options
         if self.netmon:
@@ -599,7 +601,7 @@ class Session(pgraph.Graph):
                         self.total_mutant_index += skipped
                         self.fuzz_node.mutant_index += skipped
 
-            self.restart_target(target, stop_first=False)
+            self.restart_target(target)
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
@@ -654,16 +656,13 @@ class Session(pgraph.Graph):
         # default to doing nothing.
         pass
 
-    def restart_target(self, target, stop_first=True):
+    def restart_target(self, target):
         """
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
         restart the target process. Otherwise, do nothing.
 
         @type  target: session.target
         @param target: Target we are restarting
-
-        @type stop_first: bool
-        @param stop_first: Set to True to stop the target before starting.
 
         @raise sex.BoofuzzRestartFailedError if restart fails.
         """
@@ -681,13 +680,11 @@ class Session(pgraph.Graph):
         # if we have a connected process monitor, restart the target process.
         elif target.procmon:
             self._fuzz_data_logger.log_info("restarting target process")
-            if stop_first:
-                target.procmon.stop_target()
 
-            if not target.procmon.start_target():
+            if not target.procmon.restart_target():
                 raise sex.BoofuzzRestartFailedError()
 
-            # give the process a few seconds to settle in.
+            self._fuzz_data_logger.log_info("giving the process 3 seconds to settle in ")
             time.sleep(3)
 
         # otherwise all we can do is wait a while for the target to recover on its own.
@@ -750,9 +747,12 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             self._fuzz_data_logger.log_fail("Target connection reset.")
-        except sex.BoofuzzTargetConnectionAborted:
-            self._fuzz_data_logger.log_fail("Target connection lost: Software caused connection abort. You may have a"
-                                            " network issue, or an issue with firewalls or anti-virus.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a network "
+                                            "issue, or an issue with firewalls or anti-virus. Try disabling your"
+                                            "firewall."
+                                            .format(e.socket_errno, e.socket_errmsg))
+            pass
 
     def build_webapp_thread(self, port=26000):
         app.session = self

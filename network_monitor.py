@@ -68,11 +68,11 @@ Network Device List:
                 # if there is a DHCP address snag that, otherwise fall back to the IP address.
                 try:
                     ip = _winreg.QueryValueEx(key, "DhcpIPAddress")[0]
-                except:
+                except Exception:
                     ip = _winreg.QueryValueEx(key, "IPAddress")[0][0]
 
                 pcapy_device = pcapy_device + "\t" + ip
-            except:
+            except Exception:
                 pass
 
         message += "    [%d] %s\n" % (index, pcapy_device)
@@ -282,7 +282,7 @@ def main():
         # Now wait in a way that will not block signals like SIGINT
         helpers.pause_for_signal()
 
-    except:
+    except Exception:
         pass
 
 if __name__ == "__main__":

@@ -1,30 +1,23 @@
 #!c:\\python\\python.exe
+from __future__ import print_function
 import subprocess
 import threading
-import getopt
 import time
 import sys
 import os
 
 import pydbg
 import pydbg.defines
-from boofuzz import utils
+from cement.core.foundation import CementApp
 
+from boofuzz import utils
 from boofuzz import pedrpc
 
-PORT = 26002
-ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
-USAGE = """USAGE: process_monitor.py
-    [-c|--crash_bin FILENAME] filename to serialize crash bin class to
-    [-p|--proc_name NAME]     process name to search for and attach to
-    [-i|--ignore_pid PID]     PID to ignore when searching for target process
-    [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
-    [-P|--port PORT]          TCP port to bind this agent to
-    """
+DEFAULT_PORT = 26002
 
 
 class DebuggerThread(threading.Thread):
-    def __init__(self, process_monitor, process, pid_to_ignore=None):
+    def __init__(self, process_monitor, proc_name=None, ignore_pid=None, pid=None):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
@@ -32,13 +25,13 @@ class DebuggerThread(threading.Thread):
         threading.Thread.__init__(self)
 
         self.process_monitor = process_monitor
-        self.proc_name = process
-        self.ignore_pid = pid_to_ignore
+        self.proc_name = proc_name
+        self.ignore_pid = ignore_pid
 
         self.access_violation = False
         self.active = True
         self.dbg = pydbg.pydbg()
-        self.pid = None
+        self.pid = pid
 
         # give this thread a unique name.
         self.setName("%d" % time.time())
@@ -96,19 +89,20 @@ class DebuggerThread(threading.Thread):
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
 
-        self.process_monitor.log("debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+        if self.proc_name is not None or self.pid is not None:
 
-        # watch for and try attaching to the process.
-        try:
-            self.watch()
+            # watch for and try attaching to the process.
+            if self.pid is None and self.proc_name is not None:
+                self.process_monitor.log(
+                    "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+                self.watch()
+            self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
             self.dbg.attach(self.pid)
             self.dbg.run()
             self.process_monitor.log("debugger thread-%s exiting" % self.getName())
-        except:
-            pass
 
-        # TODO: removing the following line appears to cause some concurrency issues.
-        del self.dbg
+            # TODO: removing the following line appears to cause some concurrency issues.
+            del self.dbg
 
     def watch(self):
         """
@@ -156,6 +150,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.stop_commands = []
         self.start_commands = []
+        self._process = None
         self.test_number = None
         self.debugger_thread = None
         self.crash_bin = utils.crash_binning.CrashBinning()
@@ -169,7 +164,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # restore any previously recorded crashes.
         try:
             self.crash_bin.import_file(self.crash_filename)
-        except:
+        except Exception:
             pass
 
         self.log("Process Monitor PED-RPC server initialized:")
@@ -178,6 +173,13 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("\t proc name:   %s" % self.proc_name)
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self._process is not None:
+            self._process.kill()
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -232,7 +234,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def post_send(self):
         """
@@ -243,24 +245,27 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         crashes = 0
-        av = self.debugger_thread.access_violation
+        if self.debugger_thread is None:
+            return True
+        else:
+            av = self.debugger_thread.access_violation
 
-        # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
-        # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
-        # uncovering the details of the access violation.
-        if av:
-            while self.debugger_thread.isAlive():
-                time.sleep(1)
+            # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
+            # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
+            # uncovering the details of the access violation.
+            if av:
+                while self.debugger_thread.isAlive():
+                    time.sleep(1)
 
-            self.debugger_thread = None
+                self.debugger_thread = None
 
-        # serialize the crash bin to disk.
-        self.crash_bin.export_file(self.crash_filename)
-        # for binary in self.crash_bin.bins.keys():
-        # crashes += len(self.crash_bin.bins[binary])
-        for binary, crash_list in self.crash_bin.bins.iteritems():
-            crashes += len(crash_list)
-        return not av
+            # serialize the crash bin to disk.
+            self.crash_bin.export_file(self.crash_filename)
+            # for binary in self.crash_bin.bins.keys():
+            # crashes += len(self.crash_bin.bins[binary])
+            for binary, crash_list in self.crash_bin.bins.items():
+                crashes += len(crash_list)
+            return not av
 
     def pre_send(self, test_number):
         """
@@ -276,31 +281,41 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
         try:
             self.crash_bin.import_file(self.crash_filename)
-        except:
+        except Exception:
             pass
 
-        # if we don't already have a debugger thread, instantiate and start one now.
-        if not self.debugger_thread or not self.debugger_thread.isAlive():
-            self.log("creating debugger thread", 5)
-            self.debugger_thread = DebuggerThread(self, self.proc_name, self.ignore_pid)
-            self.debugger_thread.start()
-            self.log("giving debugger thread 2 seconds to settle in", 5)
-            time.sleep(2)
+        self.start_target()
 
     def start_target(self):
         """
         Start up the target process by issuing the commands in self.start_commands.
 
-        @returns True if successful. No failure detection yet.
+        @returns True if successful.
         """
+        # if we don't already have a debugger thread or process, start one now.
+        if (not self.debugger_thread or not self.debugger_thread.isAlive()) and (self._process is None or self._process.poll() is not None):
+            if len(self.start_commands) > 0:
+                self.log("starting target process")
 
-        self.log("starting target process")
+                for command in self.start_commands:
+                    try:
+                        self._process = subprocess.Popen(command)
+                    except WindowsError as e:
+                        print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
+                        return False
 
-        for command in self.start_commands:
-            subprocess.Popen(command)
+                self.log("done. target up and running, giving it 5 seconds to settle in.")
+                time.sleep(5)
 
-        self.log("done. target up and running, giving it 5 seconds to settle in.")
-        time.sleep(5)
+            if self._process is not None:
+                self.log("creating debugger thread", 5)
+                self.debugger_thread = DebuggerThread(self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
+                                                      pid=self._process.pid)
+                self.debugger_thread.daemon = True
+                self.debugger_thread.start()
+                self.log("giving debugger thread 2 seconds to settle in", 5)
+                time.sleep(2)
+
         return True
 
     def stop_target(self):
@@ -313,15 +328,27 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.log("stopping target process")
 
-        for command in self.stop_commands:
-            if command == "TERMINATE_PID":
-                dbg = pydbg.pydbg()
-                for (pid, name) in dbg.enumerate_processes():
-                    if name.lower() == self.proc_name.lower():
-                        os.system("taskkill /pid %d" % pid)
-                        break
-            else:
-                os.system(command)
+        if len(self.stop_commands) < 1:
+            self._process.kill()
+        else:
+            for command in self.stop_commands:
+                if command == "TERMINATE_PID":
+                    dbg = pydbg.pydbg()
+                    for (pid, name) in dbg.enumerate_processes():
+                        if name.lower() == self.proc_name.lower():
+                            os.system("taskkill /pid %d" % pid)
+                            break
+                else:
+                    os.system(command)
+
+    def restart_target(self):
+        """
+        Stop and start the target process.
+
+        @returns True if successful.
+        """
+        self.stop_target()
+        return self.start_target()
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)
@@ -336,48 +363,38 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.stop_commands = new_stop_commands
 
 
-if __name__ == "__main__":
-    opts = None
-    # parse command line options.
-    try:
-        # TODO: Refactor to use something less dumb
-        opts, args = getopt.getopt(
-            sys.argv[1:],
-            "c:i:l:p:",
-            [
-                "crash_bin=",
-                "ignore_pid=",
-                "log_level=",
-                "proc_name=",
-                "port="
-            ]
-        )
-    except getopt.GetoptError:
-        ERR(USAGE)
-
-    crash_bin = ignore_pid = proc_name = None
-    log_level = 1
-
-    for opt, arg in opts:
-        if opt in ("-c", "--crash_bin"):
-            crash_bin = arg
-        if opt in ("-i", "--ignore_pid"):
-            ignore_pid = int(arg)
-        if opt in ("-l", "--log_level"):
-            log_level = int(arg)
-        if opt in ("-p", "--proc_name"):
-            proc_name = arg
-        if opt in ("-P", "--port"):
-            PORT = int(arg)
-
-    if not crash_bin:
-        ERR(USAGE)
-
-    # spawn the PED-RPC servlet.
-    try:
-        servlet = ProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, proc_name, ignore_pid, log_level)
+def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
+    with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin, proc=proc_name,
+                                    pid_to_ignore=ignore_pid, level=log_level) as servlet:
         servlet.serve_forever()
-    except Exception as e:
-        # TODO: Add servlet.shutdown
-        # TODO: Add KeyboardInterrupt
-        ERR("Error starting RPC server!\n\t%s" % e)
+
+
+class ProcessMonitorApp(CementApp):
+    class Meta:
+        label = 'procmon'
+
+
+def main():
+    with ProcessMonitorApp() as app:
+        app.args.add_argument('-f', '--foo', action='store', metavar='STR',
+                              help='the notorious foo option')
+        app.args.add_argument("-c", "--crash_bin", help='filename to serialize crash bin class to', default='crash-bin',
+                              metavar='FILENAME')
+        app.args.add_argument("-i", "--ignore_pid", help='PID to ignore when searching for target process', type=int,
+                              metavar='PID')
+        app.args.add_argument("-l", "--log_level", help='log level: default 1, increase for more verbosity', type=int,
+                              default=1, metavar='LEVEL')
+        app.args.add_argument("-p", "--proc_name", help='process name to search for and attach to', metavar='NAME')
+        app.args.add_argument("-P", "--port", help='TCP port to bind this agent to', type=int, default=DEFAULT_PORT)
+
+        app.run()  # parses args
+
+        serve_procmon(port=app.pargs.port,
+                      crash_bin=app.pargs.crash_bin,
+                      proc_name=app.pargs.proc_name,
+                      ignore_pid=app.pargs.ignore_pid,
+                      log_level=app.pargs.log_level)
+
+
+if __name__ == "__main__":
+    main()

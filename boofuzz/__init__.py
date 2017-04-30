@@ -173,6 +173,7 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
 
     return ScopedBlock(block)
 
+
 def s_block_start(name, *args, **kwargs):
     """
     Open a new block under the current request. This routine always returns an instance so you can make your fuzzer pretty

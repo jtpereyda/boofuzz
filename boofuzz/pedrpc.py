@@ -4,6 +4,8 @@ import time
 import socket
 import cPickle
 
+import select
+
 
 class Client:
     def __init__(self, host, port):
@@ -43,14 +45,14 @@ class Client:
             self.__server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__server_sock.settimeout(3.0)
             self.__server_sock.connect((self.__host, self.__port))
-        except:
+        except Exception:
             if self.__retry != 5:
                 self.__retry += 1
                 time.sleep(5)
                 self.__connect()
             else:
                 sys.stderr.write("PED-RPC> unable to connect to server %s:%d\n" % (self.__host, self.__port))
-                raise Exception            
+                raise
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
@@ -104,7 +106,7 @@ class Client:
             try:
                 self.__pickle_send((method_name, (args, kwargs)))
                 break
-            except:
+            except Exception:
                 # re-connect to the PED-RPC server if the sock died.
                 self.__connect()
 
@@ -131,7 +133,7 @@ class Client:
             #       it gets worse. you would think that simply returning here would break things, but it doesn't.
             #       gotta track this down at some point.
             length = struct.unpack("<L", self.__server_sock.recv(4))[0]
-        except:
+        except Exception:
             return
 
         try:
@@ -141,9 +143,9 @@ class Client:
                 chunk     = self.__server_sock.recv(length)
                 received += chunk
                 length   -= len(chunk)
-        except:
+        except Exception:
             sys.stderr.write("PED-RPC> connection to server severed during recv()\n")
-            raise Exception
+            raise
 
         return cPickle.loads(received)
 
@@ -165,9 +167,9 @@ class Client:
         try:
             self.__server_sock.send(struct.pack("<L", len(data)))
             self.__server_sock.send(data)
-        except:
+        except Exception:
             sys.stderr.write("PED-RPC> connection to server severed during send()\n")
-            raise Exception
+            raise
 
 
 class Server:
@@ -184,7 +186,7 @@ class Server:
             self.__server.settimeout(None)
             self.__server.bind((host, port))
             self.__server.listen(1)
-        except:
+        except Exception:
             sys.stderr.write("unable to bind to %s:%d\n" % (host, port))
             sys.exit(1)
 
@@ -221,7 +223,7 @@ class Server:
                 chunk     = self.__client_sock.recv(length)
                 received += chunk
                 length   -= len(chunk)
-        except:
+        except Exception:
             sys.stderr.write("PED-RPC> connection client severed during recv()\n")
             raise Exception
 
@@ -245,7 +247,7 @@ class Server:
         try:
             self.__client_sock.send(struct.pack("<L", len(data)))
             self.__client_sock.send(data)
-        except:
+        except Exception:
             sys.stderr.write("PED-RPC> connection to client severed during send()\n")
             raise Exception
 
@@ -257,7 +259,12 @@ class Server:
             self.__disconnect()
 
             # accept a client connection.
-            (self.__client_sock, self.__client_address) = self.__server.accept()
+            while True:
+                readable, writeable, errored = select.select([self.__server], [], [], .1)
+                if len(readable) > 0:
+                    assert readable[0] == self.__server
+                    (self.__client_sock, self.__client_address) = self.__server.accept()
+                    break
 
             self.__debug("accepted connection from %s:%d" % (self.__client_address[0], self.__client_address[1]))
 
@@ -265,22 +272,19 @@ class Server:
             try:
                 (method_name, (args, kwargs)) = self.__pickle_recv()
                 self.__debug("%s(args=%s, kwargs=%s)" % (method_name, args, kwargs))
-            except:
+            except Exception:
                 continue
 
             try:
-                # resolve a pointer to the requested method and call it.
-                # Wat.
-                exec("method_pointer = self.%s" % method_name)
-                # noinspection PyUnresolvedReferences
-                ret = method_pointer(*args, **kwargs)
+                method = getattr(self, method_name)
             except AttributeError:
                 # if the method can't be found notify the user and raise an error
-                sys.stderr.write("PED-RPC> remote method %s cannot be found\n" % method_name)
-                continue
+                sys.stderr.write('PED-RPC> remote method "{0}" of {1} cannot be found\n'.format(method_name, self))
+                raise
+            ret = method(*args, **kwargs)
 
             # transmit the return value to the client, continue on socket disconnect.
             try:
                 self.__pickle_send(ret)
-            except:
+            except Exception:
                 continue

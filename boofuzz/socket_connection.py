@@ -170,7 +170,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
             data = bytes('')
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(sex.BoofuzzTargetConnectionAborted, None, sys.exc_info()[2])
+                raise_(sex.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror), None, sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):
@@ -214,7 +214,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(sex.BoofuzzTargetConnectionAborted, None, sys.exc_info()[2])
+                raise_(sex.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
+                       None, sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):

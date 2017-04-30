@@ -266,7 +266,7 @@ class CrashBinning:
             for (addr, handler, handler_str) in self.last_crash.seh_unwind:
                 try:
                     disasm = self.pydbg.disasm(handler)
-                except:
+                except Exception:
                     disasm = "[INVALID]"
 
                 synopsis += "\t%08x -> %s %s\n" % (addr, handler_str, disasm)

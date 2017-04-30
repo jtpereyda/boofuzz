@@ -4,10 +4,22 @@ Features
 --------
 -  Console output - now with colors!
 -  process_monitor_unix.py: added option to move coredumps for later analysis
+-  The process monitor (procmon) now tracks processes by PID rather than searching by name. Therefore, stop_commands
+   and proc_name are no longer required.
+-  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
+-  Made Unix procmon more compatible with Windows.
+-  Improved procmon debugger error handling, e.g., when running 64-bit apps.
+-  Windows procmon now runs even if pydbg fails.
+-  Added `--help` parameter to process monitor.
+-  Target class now takes `procmon` and `procmon_options` in constructor.
 
 Fixes
 -----
 -  Fixed: The pedrpc module was not being properly included in imports.
+-  Made process_monitor.py --crash_bin optional (as documented).
+-  Improved procmon behavior when certain parameters aren't given.
+-  Improved procmon error handling.
+-  Fixed a bug in which the procmon would not properly restart a target that had failed without crashing.
 
 0.0.7
 =====

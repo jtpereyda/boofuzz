@@ -15,7 +15,7 @@ try:
     from win32api import GetShortPathName
     # noinspection PyUnresolvedReferences
     from win32com.shell import shell
-except:
+except Exception:
     if os.name == "nt":
         print "[!] Failed to import win32api/win32com modules, please install these! Bailing..."
         sys.exit(1)
@@ -82,7 +82,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                         vmrun = fullpath + "\\vmrun.exe"
                         print "[*] Using %s" % vmrun
                         break
-            except:
+            except Exception:
                 print "[!] Error while trying to find vmrun.exe. Try again without -i."
                 sys.exit(1)
 
@@ -110,7 +110,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                         break
                     else:
                         print "[!] No .vmx file found in the selected folder, please try again"
-            except:
+            except Exception:
                 print "[!] Error while trying to find the .vmx file. Try again without -i."
                 sys.exit(1)
 
@@ -286,7 +286,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                 try:
                     line = GetShortPathName(line)
                 # skip invalid paths.
-                except:
+                except Exception:
                     continue
 
             if self.vmx.lower() == line.lower():
@@ -350,7 +350,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
                         vmrun = fullpath + "\\VBoxManage.exe"
                         print "[*] Using %s" % vmrun
                         break
-            except:
+            except Exception:
                 print "[!] Error while trying to find VBoxManage.exe. Try again without -I."
                 sys.exit(1)
 

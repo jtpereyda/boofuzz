@@ -1,3 +1,4 @@
+import attr
 # Sulley EXception Class
 
 
@@ -17,8 +18,13 @@ class BoofuzzTargetConnectionReset(BoofuzzError):
     pass
 
 
+@attr.s
 class BoofuzzTargetConnectionAborted(BoofuzzError):
-    pass
+    """
+    Raised on `errno.ECONNABORTED`.
+    """
+    socket_errno = attr.ib()
+    socket_errmsg = attr.ib()
 
 
 class SullyRuntimeError(Exception):

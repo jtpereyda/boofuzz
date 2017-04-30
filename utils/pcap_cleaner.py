@@ -20,7 +20,7 @@ if len(sys.argv) != 3:
 try:
     crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
-except:
+except Exception:
     print "unable to open crashbin: '%s'." % sys.argv[1]
     sys.exit(1)
 
