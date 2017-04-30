@@ -11,6 +11,7 @@ Features
 -  Improved procmon debugger error handling, e.g., when running 64-bit apps.
 -  Windows procmon now runs even if pydbg fails.
 -  Target class now takes `procmon` and `procmon_options` in constructor.
+-  Added example fuzz scripts.
 
 Fixes
 -----
