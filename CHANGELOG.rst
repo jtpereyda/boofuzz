@@ -3,13 +3,14 @@ Next
 Features
 --------
 -  Console output - now with colors!
+-  process_monitor_unix.py: added option to move coredumps for later analysis
 -  The process monitor (procmon) now tracks processes by PID rather than searching by name. Therefore, stop_commands
    and proc_name are no longer required.
--  Added `--help` parameter to process monitor.
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 -  Made Unix procmon more compatible with Windows.
 -  Improved procmon debugger error handling, e.g., when running 64-bit apps.
 -  Windows procmon now runs even if pydbg fails.
+-  Added `--help` parameter to process monitor.
 -  Target class now takes `procmon` and `procmon_options` in constructor.
 
 Fixes

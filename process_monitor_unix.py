@@ -42,7 +42,9 @@ Limitations
 USAGE = "USAGE: process_monitor_unix.py"\
         "\n    -c|--crash_bin             File to record crash info too" \
         "\n    [-P|--port PORT]             TCP port to bind this agent too"\
-        "\n    [-l|--log_level LEVEL]       log level (default 1), increase for more verbosity"
+        "\n    [-l|--log_level LEVEL]       log level (default 1), increase for more verbosity"\
+        "\n    [-d|--coredump_dir dir]      directory where coredumps are moved to "\
+        "\n                                 (you may need to adjust ulimits to create coredumps)"
 
 ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 
@@ -95,7 +97,7 @@ class DebuggerThread:
 
 
 class NIXProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, cbin, level=1):
+    def __init__(self, host, port, cbin, coredump_dir, level=1):
         """
         @type host: str
         @param host: Hostname or IP address
@@ -114,6 +116,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.start_commands = []
         self.stop_commands  = []
         self.proc_name      = None
+        self.coredump_dir   = coredump_dir
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
@@ -167,7 +170,26 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
             rec_file.write(self.last_synopsis)
             rec_file.close()
 
+            if self.coredump_dir is not None:
+                dest = os.path.join(self.coredump_dir, str(self.test_number))
+                src = self._get_coredump_path()
+
+                if src is not None:
+                    self.log("moving core dump %s -> %s" % (src, dest))
+                    os.rename(src, dest)
+
         return self.dbg.is_alive()
+
+    def _get_coredump_path(self):
+        """
+        This method returns the path to the coredump file if one was created
+        """
+        if sys.platform == 'linux' or sys.platform == 'linux2':
+            path = './core'
+            if os.path.isfile(path):
+                return path
+                
+        return None
 
     def pre_send(self, test_number):
         """
@@ -189,6 +211,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful. No failure detection yet.
         """
+
 
         self.log("starting target process")
 
@@ -268,13 +291,14 @@ if __name__ == "__main__":
     # parse command line options.
     opts = None
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "c:P:l:", ["crash_bin=", "port=", "log_level="])
+        opts, args = getopt.getopt(sys.argv[1:], "c:P:l:d:", ["crash_bin=", "port=", "log_level=", "coredump_dir="])
     except getopt.GetoptError:
         ERR(USAGE)
 
     log_level = 1
     PORT = None
     crash_bin = None
+    coredump_dir = None
     for opt, arg in opts:
         if opt in ("-c", "--crash_bin"):
             crash_bin  = arg
@@ -282,6 +306,8 @@ if __name__ == "__main__":
             PORT = int(arg)
         if opt in ("-l", "--log_level"):
             log_level  = int(arg)
+        if opt in ("-d", "--coredump_dir"):
+            coredump_dir = arg
 
     if not crash_bin:
         ERR(USAGE)
@@ -289,8 +315,12 @@ if __name__ == "__main__":
     if not PORT:
         PORT = 26002
 
+    if coredump_dir is not None and not os.path.isdir(coredump_dir):
+        ERR("coredump_dir must be an existing directory")
+
     # spawn the PED-RPC servlet.
 
-    servlet = NIXProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, log_level)
+    servlet = NIXProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, coredump_dir, log_level)
     servlet.serve_forever()
+
 
