@@ -4,7 +4,7 @@ include *.txt
 recursive-include boofuzz *.md
 recursive-include boofuzz *.py
 recursive-include examples *.py
-recursive-include new_examples *.py
+recursive-include examples *.md
 recursive-include requests *.html
 recursive-include requests *.py
 recursive-include unit_tests *.feature
