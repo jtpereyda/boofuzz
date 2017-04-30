@@ -81,18 +81,26 @@ If you want to use process\_monitor.py, follow these additional steps:
 
 3. Verify that process\_monitor.py runs:
 
-   ::
+    ::
 
-       C:\Users\IEUser\Downloads\boofuzz>python process_monitor.py
-       ERR> USAGE: process_monitor.py
-           [-c|--crash_bin FILENAME] filename to serialize crash bin class to
-           [-p|--proc_name NAME]     process name to search for and attach to
-           [-i|--ignore_pid PID]     PID to ignore when searching for target process
-           [-l|--log_level LEVEL]    log level: default 1, increase for more verbosity
-           [--port PORT]             TCP port to bind this agent to
+        C:\Users\IEUser\Downloads\boofuzz>python process_monitor.py -h
+        usage: procmon [-h] [--debug] [--quiet] [-f STR] [-c FILENAME] [-i PID]
+                       [-l LEVEL] [-p NAME] [-P PORT]
 
-
-       C:\Users\IEUser\Downloads\boofuzz>
+        optional arguments:
+          -h, --help            show this help message and exit
+          --debug               toggle debug output
+          --quiet               suppress all output
+          -f STR, --foo STR     the notorious foo option
+          -c FILENAME, --crash_bin FILENAME
+                                filename to serialize crash bin class to
+          -i PID, --ignore_pid PID
+                                PID to ignore when searching for target process
+          -l LEVEL, --log_level LEVEL
+                                log level: default 1, increase for more verbosity
+          -p NAME, --proc_name NAME
+                                process name to search for and attach to
+          -P PORT, --port PORT  TCP port to bind this agent to
 
 \*\* Building pydasm on Windows requires the `Visual C++ Compiler for
 Python 2.7`_.
