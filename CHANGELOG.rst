@@ -12,6 +12,7 @@ Features
 -  Windows procmon now runs even if pydbg fails.
 -  Added `--help` parameter to process monitor.
 -  Target class now takes `procmon` and `procmon_options` in constructor.
+-  Added example fuzz scripts.
 
 Fixes
 -----
