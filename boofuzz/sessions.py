@@ -747,9 +747,12 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             self._fuzz_data_logger.log_fail("Target connection reset.")
-        except sex.BoofuzzTargetConnectionAborted:
-            self._fuzz_data_logger.log_fail("Target connection lost: Software caused connection abort. You may have a"
-                                            " network issue, or an issue with firewalls or anti-virus.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a network "
+                                            "issue, or an issue with firewalls or anti-virus. Try disabling your"
+                                            "firewall."
+                                            .format(e.socket_errno, e.socket_errmsg))
+            pass
 
     def build_webapp_thread(self, port=26000):
         app.session = self
