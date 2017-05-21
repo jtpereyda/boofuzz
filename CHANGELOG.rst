@@ -1,3 +1,12 @@
+Upcoming
+========
+Features
+--------
+-  `s_size` is now fuzzable by default.
+
+Fixes
+-----
+
 0.0.8
 =====
 Features

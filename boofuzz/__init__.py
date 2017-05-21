@@ -276,7 +276,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
 
 
 def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False,
-           math=None, fuzzable=False, name=None):
+           math=None, fuzzable=True, name=None):
     """
     Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
     currently open blocks.
@@ -300,7 +300,7 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
     @type  math:          Function
     @param math:          (Optional, def=None) Apply the mathematical operations defined in this function to the size
     @type  fuzzable:      bool
-    @param fuzzable:      (Optional, def=False) Enable/disable fuzzing of this sizer
+    @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
     @type  name:          str
     @param name:          Name of this sizer field
     """
