@@ -122,6 +122,8 @@ class Checksum(primitives.BasePrimitive):
         return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
 
     def _get_dummy_value(self):
+        if self._length:
+            return self._length * '\x00'
         return self.checksum_lengths[self._algorithm] * '\x00'
 
     @_may_recurse

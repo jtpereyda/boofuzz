@@ -6,6 +6,7 @@ Features
 
 Fixes
 -----
+-  Fixed: add a dummy value custom checksum in checksum helper (issue #107)
 
 0.0.8
 =====
