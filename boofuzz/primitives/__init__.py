@@ -4,6 +4,7 @@ from .bit_field import BitField
 from .byte import Byte
 from .delim import Delim
 from .dword import DWord
+from .fuzz_list import FuzzList
 from .group import Group
 from .qword import QWord
 from .random_data import RandomData
