@@ -489,7 +489,7 @@ def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, ma
 
 def s_from_file(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
     """
-    Push a string onto the current block stack.
+    Push a value from file onto the current block stack.
 
     @type  value:    str
     @param value:    Default string value
