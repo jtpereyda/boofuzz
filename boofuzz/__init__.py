@@ -23,7 +23,7 @@ from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
 from .primitives import (BasePrimitive, Delim, Group,
                          RandomData, Static, String, BitField,
-                         Byte, Word, DWord, QWord, FuzzList)
+                         Byte, Word, DWord, QWord, FromFile)
 from .serial_connection import SerialConnection
 from .sessions import Session, Target
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
@@ -487,7 +487,7 @@ def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, ma
     s = primitives.String(value, size, padding, encoding, fuzzable, max_len, name)
     blocks.CURRENT.push(s)
 
-def s_fuzz_list(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
+def s_from_file(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
     """
     Push a string onto the current block stack.
 
@@ -509,7 +509,7 @@ def s_fuzz_list(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True,
     @param filename: (Mandatory) Specify filename where to read fuzz list
     """
 
-    s = primitives.FuzzList(value, size, padding, encoding, fuzzable, max_len, name, filename)
+    s = primitives.FromFile(value, size, padding, encoding, fuzzable, max_len, name, filename)
     blocks.CURRENT.push(s)
 
 # noinspection PyTypeChecker

@@ -4,7 +4,7 @@ import glob
 from .base_primitive import BasePrimitive
 
 
-class FuzzList(BasePrimitive):
+class FromFile(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
@@ -31,7 +31,7 @@ class FuzzList(BasePrimitive):
         @param filename: Filename pattern to load all fuzz value
         """
 
-        super(FuzzList, self).__init__()
+        super(FromFile, self).__init__()
 
         self._value = self._original_value = value
         self.size = size
