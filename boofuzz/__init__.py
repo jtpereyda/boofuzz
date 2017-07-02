@@ -23,7 +23,7 @@ from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
 from .primitives import (BasePrimitive, Delim, Group,
                          RandomData, Static, String, BitField,
-                         Byte, Word, DWord, QWord)
+                         Byte, Word, DWord, QWord, FromFile)
 from .serial_connection import SerialConnection
 from .sessions import Session, Target
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
@@ -487,6 +487,26 @@ def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, ma
     s = primitives.String(value, size, padding, encoding, fuzzable, max_len, name)
     blocks.CURRENT.push(s)
 
+def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
+    """
+    Push a value from file onto the current block stack.
+
+    @type  value:    str
+    @param value:    Default string value
+    @type  encoding: str
+    @param encoding: (Optonal, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
+    @type  fuzzable: bool
+    @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
+    @type  max_len:  int
+    @param max_len:  (Optional, def=0) Maximum string length
+    @type  name:     str
+    @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
+    @type  filename: str
+    @param filename: (Mandatory) Specify filename where to read fuzz list
+    """
+
+    s = primitives.FromFile(value, encoding, fuzzable, max_len, name, filename)
+    blocks.CURRENT.push(s)
 
 # noinspection PyTypeChecker
 def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False,
