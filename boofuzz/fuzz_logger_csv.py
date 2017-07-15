@@ -1,15 +1,10 @@
 from __future__ import print_function
 import sys
-import time
 import datetime
 import csv
 
 from . import helpers
 from . import ifuzz_logger_backend
-
-# from IPython import embed
-
-# init()
 
 def hex_to_hexstr(input_bytes):
     """
@@ -20,17 +15,11 @@ def hex_to_hexstr(input_bytes):
 
     @return: Printable string.
     """
-    #return helpers.hex_str(input_bytes) + " " + repr(bytes(input_bytes))
-    return '0x' + ''.join("{:02x}".format(ord(b)) for b in input_bytes)
+    return helpers.hex_str(input_bytes)
 
 DEFAULT_HEX_TO_STR = hex_to_hexstr
 
-
 def get_time_stamp():
-    # t = time.time()
-    # s = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(t))
-    # s += ",%03d]" % (t * 1000 % 1000)
-    # s = t.isoFormat()
     s = datetime.datetime.utcnow().isoformat()
     return s
 
@@ -80,6 +69,6 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def log_pass(self, description=""):
         self._print_log_msg(["pass", "", "", description])
 
-    def _print_log_msg(self, msg, indent_level=0):
+    def _print_log_msg(self, msg):
         time_stamp = get_time_stamp()
         self._csv_handle.writerow([time_stamp] + msg)

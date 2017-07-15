@@ -25,7 +25,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
         Then: Hex of several-line string is output first, then repr format.
         """
         given = "abc\n123\r\nA\n"
-        expected = "0x6162630a3132330d0a410a"
+        expected = u'61 62 63 0a 31 32 33 0d 0a 41 0a'
         self.assertEqual(expected, fuzz_logger_csv.hex_to_hexstr(given))
 
 class TestFuzzLoggerCsv(unittest.TestCase):
