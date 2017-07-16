@@ -37,8 +37,9 @@ Unlike Sulley, boofuzz also features:
 -  Much easier install experience!
 -  Support for arbitrary communications mediums.
 -  Built-in support for serial fuzzing, ethernet- and IP-layer, UDP broadcast.
--  *Extensible* instrumentation/failure detection.
 -  Better recording of test data -- consistent, thorough, clear.
+-  Test result CSV export.
+-  *Extensible* instrumentation/failure detection.
 -  Far fewer bugs.
 
 Sulley is affectionately named after the giant teal and purple creature
