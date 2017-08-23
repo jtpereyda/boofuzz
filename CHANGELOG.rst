@@ -1,5 +1,5 @@
-Upcoming
-========
+0.0.9
+=====
 Features
 --------
 -  `s_size` is now fuzzable by default.
@@ -8,7 +8,7 @@ Features
 
 Fixes
 -----
--  Fixed: add a dummy value custom checksum in checksum helper (issue #107)
+-  Fixed: Add missing dummy value for custom checksum, allowing recursive uses of length/checksum (issue #107)
 
 0.0.8
 =====
