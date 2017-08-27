@@ -4,30 +4,11 @@ boofuzz.utils package
 Submodules
 ----------
 
-boofuzz.utils.crash_binning module
-----------------------------------
+.. toctree::
 
-.. automodule:: boofuzz.utils.crash_binning
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.utils.dcerpc module
----------------------------
-
-.. automodule:: boofuzz.utils.dcerpc
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.utils.scada module
---------------------------
-
-.. automodule:: boofuzz.utils.scada
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   boofuzz.utils.crash_binning
+   boofuzz.utils.dcerpc
+   boofuzz.utils.scada
 
 Module contents
 ---------------

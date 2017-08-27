@@ -1,6 +1,34 @@
 import abc
 
 
+class DocStringInheritor(type):
+    """
+    A variation on
+    http://groups.google.com/group/comp.lang.python/msg/26f7b4fcb4d66c95
+    by Paul McGuire
+    """
+    def __new__(meta, name, bases, clsdict):
+        if not('__doc__' in clsdict and clsdict['__doc__']):
+            for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()):
+                doc=mro_cls.__doc__
+                if doc:
+                    clsdict['__doc__']=doc
+                    break
+        for attr, attribute in clsdict.items():
+            if not attribute.__doc__:
+                for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()
+                                if hasattr(mro_cls, attr)):
+                    doc=getattr(getattr(mro_cls,attr),'__doc__')
+                    if doc:
+                        if isinstance(attribute, property):
+                            clsdict[attr] = property(attribute.fget, attribute.fset,
+                                                     attribute.fdel, doc)
+                        else:
+                            attribute.__doc__ = doc
+                        break
+        return type.__new__(meta, name, bases, clsdict)
+
+
 class IFuzzable(object):
     """Describes a fuzzable message element or message.
 
@@ -8,7 +36,7 @@ class IFuzzable(object):
      - mutate and reset pretty much form an iterator. Future design goal is
        to eliminate them and add a generator function in their place.
     """
-    __metaclass__ = abc.ABCMeta
+    __metaclass__ = DocStringInheritor
 
     @abc.abstractproperty
     def fuzzable(self):
@@ -39,8 +67,8 @@ class IFuzzable(object):
 
         Mutated values available through render().
 
-        @rtype:  bool
-        @return: True if there are mutations left, False otherwise.
+        Returns:
+            bool: True if there are mutations left, False otherwise.
         """
         return
 
@@ -48,8 +76,8 @@ class IFuzzable(object):
     def num_mutations(self):
         """Return the total number of mutations for this element.
 
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take
+        Returns:
+            int: Number of mutated forms this primitive can take
         """
         return
 
@@ -72,7 +100,8 @@ class IFuzzable(object):
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.
 
-        @return: Length of element (length of mutated element if mutated).
+        Returns:
+            int: Length of element (length of mutated element if mutated).
         """
         return
 
@@ -83,6 +112,7 @@ class IFuzzable(object):
         Design Note: Exists in case some wise guy uses `if my_element:` to
         check for null value.
 
-        :return: True
+        Returns:
+            bool: True
         """
         return

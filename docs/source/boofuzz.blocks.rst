@@ -4,46 +4,13 @@ boofuzz.blocks package
 Submodules
 ----------
 
-boofuzz.blocks.block module
----------------------------
+.. toctree::
 
-.. automodule:: boofuzz.blocks.block
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.blocks.checksum module
-------------------------------
-
-.. automodule:: boofuzz.blocks.checksum
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.blocks.repeat module
-----------------------------
-
-.. automodule:: boofuzz.blocks.repeat
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.blocks.request module
------------------------------
-
-.. automodule:: boofuzz.blocks.request
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.blocks.size module
---------------------------
-
-.. automodule:: boofuzz.blocks.size
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   boofuzz.blocks.block
+   boofuzz.blocks.checksum
+   boofuzz.blocks.repeat
+   boofuzz.blocks.request
+   boofuzz.blocks.size
 
 Module contents
 ---------------

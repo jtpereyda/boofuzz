@@ -4,14 +4,9 @@ boofuzz.web package
 Submodules
 ----------
 
-boofuzz.web.app module
-----------------------
+.. toctree::
 
-.. automodule:: boofuzz.web.app
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   boofuzz.web.app
 
 Module contents
 ---------------

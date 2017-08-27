@@ -4,38 +4,12 @@ boofuzz.pgraph package
 Submodules
 ----------
 
-boofuzz.pgraph.cluster module
------------------------------
+.. toctree::
 
-.. automodule:: boofuzz.pgraph.cluster
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.pgraph.edge module
---------------------------
-
-.. automodule:: boofuzz.pgraph.edge
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.pgraph.graph module
----------------------------
-
-.. automodule:: boofuzz.pgraph.graph
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-boofuzz.pgraph.node module
---------------------------
-
-.. automodule:: boofuzz.pgraph.node
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   boofuzz.pgraph.cluster
+   boofuzz.pgraph.edge
+   boofuzz.pgraph.graph
+   boofuzz.pgraph.node
 
 Module contents
 ---------------
