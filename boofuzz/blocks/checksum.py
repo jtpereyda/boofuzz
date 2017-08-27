@@ -21,6 +21,30 @@ def _may_recurse(f):
 
 
 class Checksum(primitives.BasePrimitive):
+    """
+    Checksum bound to the block with the specified name.
+
+    The algorithm may be chosen by name with the algorithm parameter, or a custom function may be specified with
+    the algorithm parameter.
+
+    The length field is only necessary for custom algorithms.
+
+    Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
+    or length calculations.
+
+    Args:
+        block_name (str): Name of target block for checksum calculations.
+        request (s_request): Request this block belongs to.
+        algorithm (Union[str, function], optional): Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+        length (int, optional): Length of checksum, auto-calculated by default.
+            Must be specified manually when using custom algorithm.
+        endian (str, optional): Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >).
+            Defaults to LITTLE_ENDIAN.
+        fuzzable (bool, optional): Enable/disable fuzzing. Defaults to true.
+        name (str): Name of this checksum field
+        ipv4_src_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 source address.
+        ipv4_dst_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
+    """
     checksum_lengths = {
         "crc32": 4,
         "adler32": 4,
@@ -34,37 +58,6 @@ class Checksum(primitives.BasePrimitive):
                  name=None,
                  ipv4_src_block_name=None,
                  ipv4_dst_block_name=None):
-        """
-        Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
-        currently open blocks.
-
-        @type  block_name: str
-        @param block_name: Name of block to apply sizer to
-
-        @type  request:    s_request
-        @param request:    Request this block belongs to
-
-        @type  algorithm:  str or def
-        @param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
-
-        @type  length:     int
-        @param length:     (Optional, def=0) Length of checksum, specify 0 to auto-calculate.
-                           Must be specified manually when using custom algorithm.
-        @type  endian:     Character
-        @param endian:     (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-
-        @type  fuzzable:   bool
-        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
-
-        @type  name:       str
-        @param name:       Name of this checksum field
-
-        @type ipv4_src_block_name: str
-        @param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address.
-
-        @type ipv4_dst_block_name: str
-        @param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
-        """
         super(Checksum, self).__init__()
 
         self._block_name = block_name
