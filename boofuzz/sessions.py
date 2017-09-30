@@ -439,11 +439,14 @@ class Session(pgraph.Graph):
         """
         Fuzz a test case by mutant_index.
 
-        :type mutant_index: int
-        :param mutant_index: Non-negative integer.
+        Args:
+            mutant_index (int): Non-negative integer.
 
-        :return: None
-        :raise sex.SulleyRuntimeError
+        Returns:
+            None
+
+        Raises:
+            sex.SulleyRuntimeError: If any error is encountered while executing the test case.
         """
         fuzz_index = 1
         for fuzz_args in self._fuzz_case_iterator():
@@ -617,21 +620,17 @@ class Session(pgraph.Graph):
 
         @see: pre_send()
 
-        @type  target: Target
-        @param target: Target with sock-like interface.
+        Args:
+            target (Target): Target with sock-like interface.
+            fuzz_data_logger (ifuzz_logger.IFuzzLogger): Allows logging of test checks and passes/failures.
+                Provided with a test case and test step already opened.
 
-        @type  fuzz_data_logger: ifuzz_logger.IFuzzLogger
-        @param fuzz_data_logger: Allows logging of test checks and passes/failures.
-                                 Provided with a test case and test step already opened.
+            session (Session): Session object calling post_send.
+                Useful properties include last_send and last_recv.
 
-        @type  session: Session
-        @param session: Session object calling post_send.
-                        Useful properties include last_send and last_recv.
-
-        @param sock: DEPRECATED Included for backward-compatibility. Same as target.
-
-        @param args: Implementations should include *args and **kwargs for forward-compatibility.
-        @param kwargs: Implementations should include *args and **kwargs for forward-compatibility.
+            sock: DEPRECATED Included for backward-compatibility. Same as target.
+            args: Implementations should include \*args and \**kwargs for forward-compatibility.
+            kwargs: Implementations should include \*args and \**kwargs for forward-compatibility.
         """
 
         # default to doing nothing.

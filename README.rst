@@ -13,8 +13,8 @@ boofuzz: Network Protocol Fuzzing for Humans
     :target: https://gitter.im/jtpereyda/boofuzz?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
-framework. Besides numerous bug fixes, boofuzz aims for extensibility,
-with the eventual goal of being able to fuzz anything fuzzable.
+framework. Besides numerous bug fixes, boofuzz aims for extensibility.
+The goal: fuzz everything.
 
 Why?
 ----
@@ -61,11 +61,17 @@ Installation
 Boofuzz installs as a Python library used to build fuzzer scripts. See
 `INSTALL.rst`_ for advanced and detailed instructions.
 
+
+Documentation
+-------------
+
+Documentation is available at http://boofuzz.readthedocs.io/.
+
 Getting Started
 ---------------
 
-No quickstart guide is available yet, but in the meantime you can use
-this `Sulley FTP example`_ as a baseline.
+See No quickstart guide is available yet, but in the meantime you can use
+the `boofuzz-ftp project`_ as a baseline.
 
 Contributions
 -------------
@@ -89,7 +95,7 @@ For updates, follow `@fuzztheplanet`_ on Twitter.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
 .. _INSTALL.rst: INSTALL.rst
-.. _Sulley FTP example: https://www.securepla.net/fuzzing-101-with-sulley/
+.. _boofuzz-ftp project: https://github.com/jtpereyda/boofuzz-ftp
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet

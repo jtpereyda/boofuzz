@@ -1,5 +1,5 @@
-boofuzz.ifuzzable module
-========================
+IFuzzable
+=========
 
 .. automodule:: boofuzz.ifuzzable
     :members:

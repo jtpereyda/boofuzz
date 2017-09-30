@@ -7,10 +7,10 @@ from . import serial_connection_low_level
 class SerialConnection(itarget_connection.ITargetConnection):
     """
     ITargetConnection implementation for generic serial ports.
-    Designed to utilize SerialConnectionLowLevel (see __init__).
 
     Since serial ports provide no default functionality for separating messages/packets, this class provides
     several means:
+
     * timeout: Return received bytes after timeout seconds.
     * msg_separator_time:
       Return received bytes after the wire is silent for a given time.
@@ -20,14 +20,13 @@ class SerialConnection(itarget_connection.ITargetConnection):
     * content_check:
       A user-defined function takes the data received so far and checks for a packet.
       The function should return 0 if the packet isn't finished yet, or n if a valid message of n
-      bytes has been received. Remaining bytes are stored for next call to recv(). Example:
+      bytes has been received. Remaining bytes are stored for next call to recv(). Example: ::
 
-      ::
-        def content_check_newline(data):
-        if data.find('\n') >= 0:
-          return data.find('\n')
-        else:
-          return 0
+           def content_check_newline(data):
+           if data.find('\\n') >= 0:
+               return data.find('\\n')
+           else:
+               return 0
 
     If none of these methods are used, your connection may hang forever.
     """
@@ -122,7 +121,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
         :param data: Data to send.
 
-        :rtype int
+        :rtype: int
         :return: Number of bytes actually sent.
         """
         bytes_sent = 0
