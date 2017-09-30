@@ -119,11 +119,6 @@ For updates, follow `@fuzztheplanet`_ on Twitter.
 .. _boofuzz-ftp: https://github.com/jtpereyda/boofuzz-ftp
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
 Indices and tables
 ==================
 
