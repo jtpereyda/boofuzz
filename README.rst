@@ -34,12 +34,13 @@ Like Sulley, boofuzz incorporates all the critical elements of a fuzzer:
 
 Unlike Sulley, boofuzz also features:
 
--  Much easier install experience!
+-  Online `documentation`_.
 -  Support for arbitrary communications mediums.
 -  Built-in support for serial fuzzing, ethernet- and IP-layer, UDP broadcast.
 -  Better recording of test data -- consistent, thorough, clear.
 -  Test result CSV export.
 -  *Extensible* instrumentation/failure detection.
+-  Much easier install experience!
 -  Far fewer bugs.
 
 Sulley is affectionately named after the giant teal and purple creature
@@ -65,19 +66,13 @@ Boofuzz installs as a Python library used to build fuzzer scripts. See
 Documentation
 -------------
 
-Documentation is available at http://boofuzz.readthedocs.io/.
-
-Getting Started
----------------
-
-See No quickstart guide is available yet, but in the meantime you can use
-the `boofuzz-ftp project`_ as a baseline.
+Documentation is available at http://boofuzz.readthedocs.io/, including nifty quickstart guides.
 
 Contributions
 -------------
 
 Pull requests are welcome, as boofuzz is actively maintained (at the
-time of this writing ;)).
+time of this writing ;)). See `CONTRIBUTING.rst`_.
 
 Support
 -------
@@ -95,7 +90,9 @@ For updates, follow `@fuzztheplanet`_ on Twitter.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
 .. _INSTALL.rst: INSTALL.rst
+.. _CONTRIBUTING.rst: CONTRIBUTING.rst
 .. _boofuzz-ftp project: https://github.com/jtpereyda/boofuzz-ftp
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
+.. _documentation: http://boofuzz.readthedocs.io/
