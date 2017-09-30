@@ -27,28 +27,28 @@ class Size(IFuzzable):
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.
 
-        @type  block_name:    str
-        @param block_name:    Name of block to apply sizer to
-        @type  request:       Request
-        @param request:       Request this block belongs to
-        @type  length:        int
-        @param length:        (Optional, def=4) Length of sizer
-        @type  offset:        int
-        @param offset:        (Optional, def=0) Offset for calculated size value
-        @type  endian:        chr
-        @param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-        @type  output_format: str
-        @param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
-        @type  inclusive:     bool
-        @param inclusive:     (Optional, def=False) Should the sizer count its own length?
-        @type  signed:        bool
-        @param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-        @type  math:          def
-        @param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
-        @type  fuzzable:      bool
-        @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
-        @type  name:          str
-        @param name:          Name of this sizer field
+        :type  block_name:    str
+        :param block_name:    Name of block to apply sizer to
+        :type  request:       Request
+        :param request:       Request this block belongs to
+        :type  length:        int
+        :param length:        (Optional, def=4) Length of sizer
+        :type  offset:        int
+        :param offset:        (Optional, def=0) Offset for calculated size value
+        :type  endian:        chr
+        :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+        :type  output_format: str
+        :param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
+        :type  inclusive:     bool
+        :param inclusive:     (Optional, def=False) Should the sizer count its own length?
+        :type  signed:        bool
+        :param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
+        :type  math:          def
+        :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
+        :type  fuzzable:      bool
+        :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
+        :type  name:          str
+        :param name:          Name of this sizer field
         """
 
         self.block_name = block_name
@@ -104,8 +104,8 @@ class Size(IFuzzable):
         """
         Exhaust the possible mutations for this primitive.
 
-        @rtype:  int
-        @return: The number of mutations to reach exhaustion
+        :rtype:  int
+        :return: The number of mutations to reach exhaustion
         """
 
         num = self.num_mutations() - self._mutant_index
@@ -120,8 +120,8 @@ class Size(IFuzzable):
         """
         Wrap the mutation routine of the internal bit_field primitive.
 
-        @rtype:  Boolean
-        @return: True on success, False otherwise.
+        :rtype:  Boolean
+        :return: True on success, False otherwise.
         """
 
         self._mutant_index += 1
@@ -136,8 +136,8 @@ class Size(IFuzzable):
         """
         Wrap the num_mutations routine of the internal bit_field primitive.
 
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take.
+        :rtype:  int
+        :return: Number of mutated forms this primitive can take.
         """
 
         return self.bit_field.num_mutations()
@@ -146,7 +146,7 @@ class Size(IFuzzable):
         """
         Render the sizer.
 
-        :return Rendered value.
+        :return: Rendered value.
         """
         if self._should_render_fuzz_value():
             self._rendered = self.bit_field.render()

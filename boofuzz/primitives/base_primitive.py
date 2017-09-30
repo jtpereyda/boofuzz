@@ -1,12 +1,16 @@
-from ..ifuzzable import IFuzzable
 import abc
+
+from ..ifuzzable import IFuzzable
 
 
 class BasePrimitive(IFuzzable):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
-    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def name(self):
+        pass
 
     @property
     def mutant_index(self):
@@ -32,12 +36,6 @@ class BasePrimitive(IFuzzable):
         self._value = None  # current value of primitive.
 
     def mutate(self):
-        """
-        Mutate the primitive by stepping through the fuzz library, return False on completion.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
         fuzz_complete = False
         # if we've ran out of mutations, raise the completion flag.
         if self._mutant_index == self.num_mutations():
@@ -58,13 +56,6 @@ class BasePrimitive(IFuzzable):
         return True
 
     def num_mutations(self):
-        """
-        Calculate and return the total number of mutations for this individual primitive.
-
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take
-        """
-
         return len(self._fuzz_library)
 
     def render(self):
@@ -79,17 +70,15 @@ class BasePrimitive(IFuzzable):
         """
         Render an arbitrary value.
 
-        :param value Value to render.
-        :return: Rendered value
-        :rtype: bytes
+        Args:
+            value: Value to render.
+
+        Returns:
+            bytes: Rendered value
         """
         return value
 
     def reset(self):
-        """
-        Reset this primitive to the starting mutation state.
-        """
-
         self._fuzz_complete = False
         self._mutant_index = 0
         self._value = self._original_value

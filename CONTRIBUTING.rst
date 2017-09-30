@@ -1,3 +1,7 @@
+============
+Contributing
+============
+
 Issues and Bugs
 ===============
 If you have a bug report or idea for improvement, please create an issue on GitHub, or a pull request with the fix.
@@ -9,17 +13,22 @@ All pull requests are subject to professional code review. If you do not want yo
 Contributors
 ============
 
+See :ref:`install` for instructions on installing boofuzz from source with developer options.
+
 Pull Request Checklist
 ----------------------
 
-1. Verify tests pass:
-  ::
+1. Verify tests pass: ::
 
       tox
 
 2. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
 
 3. Modify CHANGELOG.rst to say what you changed.
+
+4. If adding a new module, re-run sphinx-apidoc: ::
+
+      sphinx-apidoc --separate -o source ..\boofuzz
 
 Maintainers
 ===========

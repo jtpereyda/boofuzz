@@ -3,9 +3,10 @@ import serial
 
 
 class SerialConnectionLowLevel(iserial_like.ISerialLike):
-    """
-    A basic wrapper for a serial object.
+    """Internal wrapper for a serial object; backend for SerialConnection.
+
     Separated from SerialConnection to allow for effective unit testing.
+
     Implements serial_like.ISerialLike.
     """
 

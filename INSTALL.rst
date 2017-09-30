@@ -35,7 +35,7 @@ Tips:
 
        `sudo pip install -e .`
 
--  To install unit test dependencies as well:
+-  To install developer tools (unit test dependencies, test runners, etc.) as well:
 
    ::
 
@@ -110,6 +110,7 @@ Deprecated: network\_monitor.py
 
 The network monitor was Sulley’s primary tool for recording test data,
 and has been replaced with boofuzz’s logging mechanisms.
+However, some people still prefer the PCAP approach.
 
 .. _help site: http://www.howtogeek.com/197947/how-to-install-python-on-windows/
 .. _releases page: https://github.com/jtpereyda/boofuzz/releases

@@ -42,13 +42,13 @@ class IFuzzLogger(object):
             Check Failed
 
     A test case is opened for each fuzzing case. A test step is opened for each
-    high-level test step. Test steps can include, for example::
+    high-level test step. Test steps can include, for example:
 
-     * Fuzzing
-     * Set up (pre-fuzzing)
-     * Post-test cleanup
-     * Instrumentation checks
-     * Reset due to failure
+    * Fuzzing
+    * Set up (pre-fuzzing)
+    * Post-test cleanup
+    * Instrumentation checks
+    * Reset due to failure
 
     Within a test step, a test may log data sent, data received, checks, check
     results, and other information.
