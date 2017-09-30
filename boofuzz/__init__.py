@@ -2,7 +2,6 @@ from __future__ import absolute_import
 import functools
 
 from . import blocks
-from . import ez_outlet_reset  # For use of main()
 from . import legos
 from . import pedrpc
 from . import primitives
@@ -15,7 +14,6 @@ from .blocks.repeat import Repeat
 from .blocks.size import Size
 from .constants import BIG_ENDIAN, LITTLE_ENDIAN
 from .event_hook import EventHook
-from .ez_outlet_reset import EzOutletReset
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_text import FuzzLoggerText
 from .fuzz_logger_csv import FuzzLoggerCsv
