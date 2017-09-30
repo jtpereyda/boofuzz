@@ -13,7 +13,7 @@ All pull requests are subject to professional code review. If you do not want yo
 Contributors
 ============
 
-See :ref:`install` for instructions on installing boofuzz from source with developer options.
+See installation instructions for details on installing boofuzz from source with developer options.
 
 Pull Request Checklist
 ----------------------
