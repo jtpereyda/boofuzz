@@ -72,6 +72,12 @@ User Guide
     user/install
     user/quickstart
 
+Public Fuzz Libraries
+---------------------
+
+The only known protocol library available is `boofuzz-ftp`_, and it is so far only a demo. If you have an open source
+fuzz library to share, please :ref:`let us know <community>`!
+
 API Documentation
 -----------------
 
@@ -95,7 +101,7 @@ time of this writing ;)). See :ref:`contributing`.
 Community
 ---------
 
-If your question takes the form of “How do I… with boofuzz?” or “I got
+For questions that take the form of “How do I… with boofuzz?” or “I got
 this error with boofuzz, why?”, consider posting your question on Stack
 Overflow. Make sure to use the ``fuzzing`` tag.
 
@@ -107,11 +113,10 @@ For other questions, check out boofuzz on `gitter`_ or `Google Groups`_.
 For updates, follow `@fuzztheplanet`_ on Twitter.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
-.. _INSTALL.rst: INSTALL.rst
-.. _boofuzz-ftp project: https://github.com/jtpereyda/boofuzz-ftp
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
+.. _boofuzz-ftp: https://github.com/jtpereyda/boofuzz-ftp
 
 
 .. toctree::

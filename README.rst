@@ -74,10 +74,10 @@ Contributions
 Pull requests are welcome, as boofuzz is actively maintained (at the
 time of this writing ;)). See `CONTRIBUTING.rst`_.
 
-Support
--------
+Community
+---------
 
-If your question takes the form of “How do I… with boofuzz?” or “I got
+For questions that take the form of “How do I… with boofuzz?” or “I got
 this error with boofuzz, why?”, consider posting your question on Stack
 Overflow. Make sure to use the ``fuzzing`` tag.
 
@@ -89,10 +89,9 @@ For other questions, check out boofuzz on `gitter`_ or `Google Groups`_.
 For updates, follow `@fuzztheplanet`_ on Twitter.
 
 .. _Sulley: https://github.com/OpenRCE/sulley
-.. _INSTALL.rst: INSTALL.rst
-.. _CONTRIBUTING.rst: CONTRIBUTING.rst
-.. _boofuzz-ftp project: https://github.com/jtpereyda/boofuzz-ftp
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
 .. _documentation: http://boofuzz.readthedocs.io/
+.. _INSTALL.rst: INSTALL.rst
+.. _CONTRIBUTING.rst: CONTRIBUTING.rst
