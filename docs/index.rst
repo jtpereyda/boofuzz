@@ -72,11 +72,16 @@ User Guide
     user/install
     user/quickstart
 
-Public Fuzz Libraries
----------------------
+Public Protocol Libraries
+-------------------------
 
-The only known protocol library available is `boofuzz-ftp`_, and it is so far only a demo. If you have an open source
-fuzz library to share, please :ref:`let us know <community>`!
+The following protocol libraries are free and open source, but the implementations are not at all close to full protocol
+coverage:
+
+- `boofuzz-ftp`_
+- `boofuzz-http`_
+
+If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
 
 API Documentation
 -----------------
@@ -117,6 +122,7 @@ For updates, follow `@fuzztheplanet`_ on Twitter.
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
 .. _boofuzz-ftp: https://github.com/jtpereyda/boofuzz-ftp
+.. _boofuzz-http: https://github.com/jtpereyda/boofuzz-http
 
 
 Indices and tables
