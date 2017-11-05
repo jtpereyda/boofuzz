@@ -175,6 +175,33 @@ class Connection(pgraph.Edge):
 
 
 class Session(pgraph.Graph):
+    """
+    Extends pgraph.graph and provides a container for architecting protocol dialogs.
+
+    Args:
+        session_filename (str): Filename to serialize persistent data to. Default None.
+        skip (int):             Number of test cases to skip. Default 0.
+        sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
+        restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
+        crash_threshold (int):  Maximum number of crashes allowed before a node is exhaust. Default 3.
+        restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
+        web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+        fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
+        check_data_received_each_request (bool): If True, Session will verify that some data has
+                                                 been received after transmitting each node, and if not, register a
+                                                 failure. If False, this check will not be performed. Default True.
+        ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
+                                failures.
+        ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
+        target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
+
+        log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                Was once used to set the log level.
+        logfile (str):          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                Was once the name of the log file.
+        logfile_level (int):    DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                Was once used to set the log level for the logfile. Default logger.INFO.
+    """
     def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
@@ -183,33 +210,6 @@ class Session(pgraph.Graph):
                  ignore_connection_aborted=False,
                  target=None,
                  ):
-        """
-        Extends pgraph.graph and provides a container for architecting protocol dialogs.
-
-        Args:
-            session_filename (str): Filename to serialize persistent data to. Default None.
-            skip (int):             Number of test cases to skip. Default 0.
-            sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
-            restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
-            crash_threshold (int):  Maximum number of crashes allowed before a node is exhaust. Default 3.
-            restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
-            web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
-            fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
-            check_data_received_each_request (bool): If True, Session will verify that some data has
-                                                     been received after transmitting each node, and if not, register a
-                                                     failure. If False, this check will not be performed. Default True.
-            ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
-                                    failures.
-            ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
-            target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
-
-            log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                    Was once used to set the log level.
-            logfile (str):          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                    Was once the name of the log file.
-            logfile_level (int):    DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                    Was once used to set the log level for the logfile. Default logger.INFO.
-        """
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
         _ = log_level
