@@ -38,8 +38,8 @@ class Target(object):
 
     def __init__(self, connection, procmon=None, procmon_options=None):
         """
-        @type  connection: itarget_connection.ITargetConnection
-        @param connection: Connection to system under test.
+        Args:
+            connection (itarget_connection.ITargetConnection): Connection to system under test.
         """
         self._fuzz_data_logger = None
 
@@ -103,10 +103,11 @@ class Target(object):
         """
         Receive up to max_bytes data from the target.
 
-        :param max_bytes: Maximum number of bytes to receive.
-        :type max_bytes: int
+        Args:
+            max_bytes (int): Maximum number of bytes to receive.
 
-        :return: Received data.
+        Returns:
+            Received data.
         """
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_info("Receiving...")
@@ -122,9 +123,11 @@ class Target(object):
         """
         Send data to the target. Only valid after calling open!
 
-        :param data: Data to send.
+        Args:
+            data: Data to send.
 
-        :return: None
+        Returns:
+            None
         """
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_send(data)
@@ -160,12 +163,10 @@ class Connection(pgraph.Edge):
         the data returned from the last socket transmission and sock is the live socket. A callback is also useful in
         situations where, for example, the size of the next packet is specified in the first packet.
 
-        @type  src:      int
-        @param src:      Edge source ID
-        @type  dst:      int
-        @param dst:      Edge destination ID
-        @type  callback: def
-        @param callback: (Optional, def=None) Callback function to pass received data to between node xmits
+        Args:
+            src (int): Edge source ID
+            dst (int): Edge destination ID
+            callback (function): Optional. Callback function to pass received data to between node xmits
         """
 
         super(Connection, self).__init__(src, dst)
@@ -178,43 +179,39 @@ class Session(pgraph.Graph):
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
+                 ignore_connection_reset=False,
+                 ignore_connection_aborted=False,
                  target=None,
                  ):
         """
         Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
-        @type  session_filename:   str
-        @kwarg session_filename:   (Optional, def=None) Filename to serialize persistent data to
-        @type  skip:               int
-        @kwarg skip:               (Optional, def=0) Number of test cases to skip
-        @type  sleep_time:         float
-        @kwarg sleep_time:         (Optional, def=0.0) Time to sleep in between tests
-        @type  restart_interval:   int
-        @kwarg restart_interval    (Optional, def=0) Restart the target after n test cases, disable by setting to 0
-        @type  crash_threshold:    int
-        @kwarg crash_threshold     (Optional, def=3) Maximum number of crashes allowed before a node is exhaust
-        @type  restart_sleep_time: int
-        @kwarg restart_sleep_time: (Optional, def=5) Time in seconds to sleep when target can't be restarted
-        @type  web_port:	       int
-        @kwarg web_port:           (Optional, def=26000) Port for monitoring fuzzing campaign via a web browser
-        @type fuzz_data_logger:    fuzz_logger.FuzzLogger
-        @kwarg fuzz_data_logger:   (Optional, def=Log to STDOUT) For saving test data and results.
-        @type check_data_received_each_request:  bool
-        @kwarg check_data_received_each_request: (Optional, def=True) If True, Session will verify that some data has
-                                                 been received after transmitting each node. If False, it will not.
+        Args:
+            session_filename (str): Filename to serialize persistent data to. Default None.
+            skip (int):             Number of test cases to skip. Default 0.
+            sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
+            restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
+            crash_threshold (int):  Maximum number of crashes allowed before a node is exhaust. Default 3.
+            restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
+            web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+            fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
+            check_data_received_each_request (bool): If True, Session will verify that some data has
+                                                     been received after transmitting each node, and if not, register a
+                                                     failure. If False, this check will not be performed. Default True.
+            ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
+                                    failures.
+            ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
+            target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
 
-        @type  log_level:          int
-        @kwarg log_level:          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                   (Optional, def=logger.INFO) Was once used to set the log level.
-        @type  logfile:            str
-        @kwarg logfile:            DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                   (Optional, def=None) Was once the name of the log file.
-        @type  logfile_level:      int
-        @kwarg logfile_level:      DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                   (Optional, def=logger.INFO) Was once used to set the log level for the logfile.
-        @type target:              Target
-        @kwarg target:             (Optional, def=None) Target for fuzz session. Target must be fully initialized.
+            log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                    Was once used to set the log level.
+            logfile (str):          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                    Was once the name of the log file.
+            logfile_level (int):    DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
+                                    Was once used to set the log level for the logfile. Default logger.INFO.
         """
+        self._ignore_connection_reset = ignore_connection_reset
+        self._ignore_connection_aborted = ignore_connection_aborted
         _ = log_level
         _ = logfile
         _ = logfile_level
@@ -269,8 +266,8 @@ class Session(pgraph.Graph):
         Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
         node is added.
 
-        @type  node: pGRAPH Node
-        @param node: Node to add to session graph
+        Args:
+            node (pgraph.Node): Node to add to session graph
         """
 
         node.number = len(self.nodes)
@@ -285,8 +282,8 @@ class Session(pgraph.Graph):
         """
         Add a target to the session. Multiple targets can be added for parallel fuzzing.
 
-        @type  target: Target
-        @param target: Target to add to session
+        Args:
+            target (Target): Target to add to session
         """
 
         # pass specified target parameters to the PED-RPC server.
@@ -322,15 +319,13 @@ class Session(pgraph.Graph):
         example, if you need to fill in the dynamic IP address of the target register a callback that snags the IP
         from sock.getpeername()[0].
 
-        @type  src:      str or Request (Node)
-        @param src:      Source request name or request node
-        @type  dst:      str or Request (Node)
-        @param dst:      Destination request name or request node
-        @type  callback: def
-        @param callback: (Optional, def=None) Callback function to pass received data to between node xmits
+        Args:
+            src (str or Request (pgrah.Node)): Source request name or request node
+            dst (str or Request (pgrah.Node), optional): Destination request name or request node
+            callback (def, optional): Callback function to pass received data to between node xmits. Default None.
 
-        @rtype:  pgraph.Edge
-        @return: The edge between the src and dst.
+        Returns:
+            pgraph.Edge: The edge between the src and dst.
         """
 
         # if only a source was provided, then make it the destination and set the source to the root node.
@@ -397,7 +392,8 @@ class Session(pgraph.Graph):
         after calling this method. helpers.pause_for_signal() is
         available to this end.
 
-        :return: None
+        Returns:
+            None
         """
         self.server_init()
 
@@ -493,13 +489,12 @@ class Session(pgraph.Graph):
         Number of total mutations in the graph. The logic of this routine is identical to that of fuzz(). See fuzz()
         for inline comments. The member variable self.total_num_mutations is updated appropriately by this routine.
 
-        @type  this_node: request (node)
-        @param this_node: (Optional, def=None) Current node that is being fuzzed.
-        @type  path:      list
-        @param path:      (Optional, def=[]) Nodes along the path to the current one being fuzzed.
+        Args:
+            this_node (request (node)): Current node that is being fuzzed. Default None.
+            path (list): Nodes along the path to the current one being fuzzed. Default [].
 
-        @rtype:  int
-        @return: Total number of mutations in this session.
+        Returns:
+            int: Total number of mutations in this session.
         """
 
         if this_node is None:
@@ -538,8 +533,8 @@ class Session(pgraph.Graph):
         """
         Poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
 
-        @type  target: Target
-        @param target: Session target whose PED-RPC services we are polling
+        Args:
+            target (Target): Session target whose PED-RPC services we are polling
         """
         # kill the pcap thread and see how many bytes the sniffer recorded.
         if target.netmon:
@@ -570,10 +565,11 @@ class Session(pgraph.Graph):
 
         Should be called after each fuzz test case.
 
-        @param target: Target to restart if failure occurred.
-        @type target: Target
+        Args:
+            target (Target): Target to restart if failure occurred.
 
-        @return: None
+        Returns:
+            None
         """
         crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self.total_mutant_index, [])
         if len(crash_synopses) > 0:
@@ -648,8 +644,8 @@ class Session(pgraph.Graph):
 
         @see: pre_send()
 
-        @type  sock: Socket
-        @param sock: Connected socket to target
+        Args:
+            sock (Socket): Connected socket to target
         """
 
         # default to doing nothing.
@@ -660,8 +656,8 @@ class Session(pgraph.Graph):
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
         restart the target process. Otherwise, do nothing.
 
-        @type  target: session.target
-        @param target: Target we are restarting
+        Args:
+            target (session.target): Target we are restarting
 
         @raise sex.BoofuzzRestartFailedError if restart fails.
         """
@@ -710,12 +706,10 @@ class Session(pgraph.Graph):
         """
         Render and transmit a node, process callbacks accordingly.
 
-        @type  sock:   Target
-        @param sock:   Socket-like object on which to transmit node
-        @type  node:   pgraph.node.node (Node)
-        @param node:   Request/Node to transmit
-        @type  edge:   pgraph.edge.edge (pgraph.edge)
-        @param edge:   Edge along the current fuzz path from "node" to next node.
+        Args:
+            sock (Target, optional): Socket-like object on which to transmit node
+            node (pgraph.node.node (Node), optional): Request/Node to transmit
+            edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
         """
 
         data = None
@@ -745,12 +739,21 @@ class Session(pgraph.Graph):
                 else:
                     self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
-            self._fuzz_data_logger.log_fail("Target connection reset.")
+            if self._ignore_connection_reset:
+                self._fuzz_data_logger.log_info("Target connection reset.")
+            else:
+                self._fuzz_data_logger.log_fail("Target connection reset.")
         except sex.BoofuzzTargetConnectionAborted as e:
-            self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a network "
-                                            "issue, or an issue with firewalls or anti-virus. Try disabling your"
-                                            "firewall."
-                                            .format(e.socket_errno, e.socket_errmsg))
+            if self._ignore_connection_aborted:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            else:
+                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
             pass
 
     def build_webapp_thread(self, port=26000):
@@ -770,10 +773,9 @@ class Session(pgraph.Graph):
         No arguments are necessary as they are both utilized internally
         during the recursive traversal of the session graph.
 
-        @type  this_node: node.Node
-        @param this_node: (Optional, def=None) Current node that is being fuzzed.
-        @type  path:      list
-        @param path:      (Optional, def=[]) Nodes along the path to the current one being fuzzed.
+        Args:
+            this_node (node.Node, optional): Current node that is being fuzzed. Default None.
+            path (list, optional): Nodes along the path to the current one being fuzzed. Default [].
 
         :raise sex.SullyRuntimeError:
         """
