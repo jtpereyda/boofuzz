@@ -1,3 +1,14 @@
+0.0.10
+=====
+Features
+--------
+-  Add Session ignore_connection_reset parameter to suppress ECONNRESET errors.
+-  Add Session ignore_connection_aborted parameter to suppress ECONNABORTED errors.
+
+Fixes
+-----
+-  Fix Session class docstring formats.
+
 0.0.9
 =====
 Features
