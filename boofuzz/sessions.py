@@ -727,11 +727,11 @@ class Session(pgraph.Graph):
             self.targets[0].send(data)
             self.last_send = data
 
-            # Receive data
-            # TODO: Remove magic number (10000)
-            self.last_recv = self.targets[0].recv(10000)
-
             if self._check_data_received_each_request:
+                # Receive data
+                # TODO: Remove magic number (10000)
+                self.last_recv = self.targets[0].recv(10000)
+
                 self._fuzz_data_logger.log_check("Verify some data was received from the target.")
                 if not self.last_recv:
                     # Assume a crash?
