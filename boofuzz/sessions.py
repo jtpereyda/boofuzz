@@ -36,7 +36,7 @@ class Target(object):
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
     """
 
-    def __init__(self, connection, procmon=None, procmon_options=None):
+    def __init__(self, connection, procmon=None, procmon_options=None, netmon=None):
         """
         Args:
             connection (itarget_connection.ITargetConnection): Connection to system under test.
@@ -45,9 +45,9 @@ class Target(object):
 
         self._target_connection = connection
         self.procmon = procmon
+        self.netmon = netmon
 
         # set these manually once target is instantiated.
-        self.netmon = None
         self.vmcontrol = None
         self.netmon_options = {}
         if procmon_options is None:
