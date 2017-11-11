@@ -1,3 +1,9 @@
+Upcoming
+========
+Features
+--------
+-  Set Session `check_data_received_each_request` to False to disable receive after send
+
 0.0.10
 =====
 Features
