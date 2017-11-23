@@ -28,7 +28,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                                          udp_broadcast=True)
         raw_layer_2 = (host='lo', proto='raw-l2')
         raw_layer_2 = (host='lo', proto='raw-l2',
-                       l2_dst='\xFF\xFF\xFF\xFF\xFF\xFF', ethernet_proto=socket_connection.ETH_P_IP)
+                       l2_dst='\\xFF\\xFF\\xFF\\xFF\\xFF\\xFF', ethernet_proto=socket_connection.ETH_P_IP)
         raw_layer_3 = (host='lo', proto='raw-l3')
 
 
