@@ -9,40 +9,40 @@ Built-in logging classes are detailed below.
 
 Logging Interface
 =================
-.. automodule:: boofuzz.ifuzz_logger
+.. autoclass:: boofuzz.IFuzzLogger
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: boofuzz.ifuzz_logger_backend
+.. autoclass:: boofuzz.IFuzzLoggerBackend
     :members:
     :undoc-members:
     :show-inheritance:
 
 Text Logging
 ============
-.. automodule:: boofuzz.fuzz_logger_text
+.. autoclass:: boofuzz.FuzzLoggerText
     :members:
     :undoc-members:
     :show-inheritance:
 
 CSV Logging
 ===========
-.. automodule:: boofuzz.fuzz_logger_csv
+.. autoclass:: boofuzz.FuzzLoggerCsv
     :members:
     :undoc-members:
     :show-inheritance:
 
 File Logging
 ============
-.. automodule:: boofuzz.fuzz_logger_file
+.. autoclass:: boofuzz.FuzzLoggerFile
     :members:
     :undoc-members:
     :show-inheritance:
 
 FuzzLogger Object
 =================
-.. automodule:: boofuzz.fuzz_logger
+.. autoclass:: boofuzz.FuzzLogger
     :members:
     :undoc-members:
     :show-inheritance:
