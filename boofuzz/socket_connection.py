@@ -19,9 +19,25 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
     Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
 
-    Examples:
+    Examples::
+
         tcp_connection = SocketConnection(host='127.0.0.1', port=17971)
         udp_connection = SocketConnection(host='127.0.0.1', port=17971, proto='udp')
+
+    Args:
+        host (str): Hostname or IP address of target system, or network interface string if using raw-l2 or raw-l3.
+        port (int): Port of target service. Required for proto values 'tcp', 'udp', 'ssl'.
+        proto (str): Communication protocol ("tcp", "udp", "ssl", "raw-l2", "raw-l3"). Default "tcp".
+            raw-l2: Send packets at layer 2. Must include link layer header (e.g. Ethernet frame).
+            raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
+        bind (tuple (host, port)): Socket bind address and port. Required if using recv() with 'udp' protocol.
+        timeout (float): Seconds to wait for a send/recv prior to timing out. Default 5.0.
+        ethernet_proto (int): Ethernet protocol when using 'raw-l3'. 16 bit integer. Default ETH_P_IP (0x0800).
+            See "if_ether.h" in Linux documentation for more options.
+        l2_dst (str): Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
+            Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast).
+        udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send() to
+            work, and '' for bind host for recv() to work.
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
@@ -40,41 +56,6 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  ethernet_proto=ETH_P_IP,
                  l2_dst='\xFF' * 6,
                  udp_broadcast=False):
-        """
-        @type  host:    str
-        @param host:    Hostname or IP address of target system,
-                        or network interface string if using raw-l2 or raw-l3.
-
-        @type  port:    int
-        @param port:    Port of target service. Required for proto values 'tcp', 'udp', 'ssl'.
-
-        @type  proto:   str
-        @kwarg proto:   (Optional, def="tcp") Communication protocol ("tcp", "udp", "ssl", "raw-l2", "raw-l3")
-                        raw-l2: Send packets at layer 2. Must include link layer header (e.g. Ethernet frame).
-                        raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
-
-        @type  bind:    tuple (host, port)
-        @kwarg bind:    (Optional, def=None) Socket bind address and port. Required if using recv() with 'udp' protocol.
-
-        @type  timeout: float
-        @kwarg timeout: (Optional, def=5.0) Seconds to wait for a send/recv prior to timing out
-
-        @type ethernet_proto:
-                        int
-        @kwarg ethernet_proto:
-                        (Optional, def=ETH_P_IP (0x0800)) Ethernet protocol when using 'raw-l3'. 16 bit integer.
-                        See "if_ether.h" in Linux documentation for more options.
-
-        @type l2_dst:   str
-        @kwarg l2_dst:  (Optional, def='\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast))
-                        Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
-
-        @type udp_broadcast:
-                        bool
-        @kwarg udp_broadcast:
-                        Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send() to
-                        work, and '' for bind host for recv() to work.
-        """
         self.MAX_PAYLOADS["udp"] = helpers.get_max_udp_size()
 
         self.host = host
@@ -98,7 +79,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         """
         Close connection to the target.
 
-        :return: None
+        Returns:
+            None
         """
         self._sock.close()
 
@@ -106,7 +88,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         """
         Opens connection to the target. Make sure to call close!
 
-        :return: None
+        Returns:
+            None
         """
         # Create socket
         if self.proto == "tcp" or self.proto == "ssl":
@@ -145,10 +128,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
         """
         Receive up to max_bytes data from the target.
 
-        :param max_bytes: Maximum number of bytes to receive.
-        :type max_bytes: int
+        Args:
+            max_bytes (int): Maximum number of bytes to receive.
 
-        :return: Received data.
+        Returns:
+            Received data.
         """
         try:
             if self.proto in ['tcp', 'ssl']:
@@ -185,10 +169,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
         Send data to the target. Only valid after calling open!
         Some protocols will truncate; see self.MAX_PAYLOADS.
 
-        :param data: Data to send.
+        Args:
+            data: Data to send.
 
-        :rtype int
-        :return: Number of bytes actually sent.
+        Returns:
+            int: Number of bytes actually sent.
         """
         try:
             data = data[:self.MAX_PAYLOADS[self.proto]]
