@@ -29,27 +29,20 @@ class SerialConnection(itarget_connection.ITargetConnection):
                return 0
 
     If none of these methods are used, your connection may hang forever.
+
+    Args:
+        port (Union[int, str]): Serial port name or number.
+        baudrate (int): Baud rate for port.
+        timeout (float): For recv(). After timeout seconds from receive start, recv() will return all received data,
+            if any.
+        message_separator_time (float): After message_separator_time seconds _without receiving any more data_,
+            recv() will return. Optional. Default None.
+        content_checker (function(str) -> int): User-defined function. recv() will pass all bytes received so far to
+            this method. If the method returns n > 0, recv() will return n bytes. If it returns 0, recv() will keep on
+            reading.
     """
 
     def __init__(self, port=0, baudrate=9600, timeout=5, message_separator_time=0.300, content_checker=None):
-        """
-        @type  port:                   int | str
-        @param port:                   Serial port name or number.
-        @type baudrate:                int
-        @param baudrate:               Baud rate for port.
-        @type timeout:                 float
-        @param timeout:                For recv(). After timeout seconds from receive start,
-                                       recv() will return all received data, if any.
-        @type message_separator_time:  float
-        @param message_separator_time: (Optional, def=None)
-                                       After message_separator_time seconds _without receiving any more data_,
-                                       recv() will return.
-        @type content_checker:         function(str) -> int
-        @param content_checker:        (Optional, def=None) User-defined function.
-                                           recv() will pass all bytes received so far to this method.
-                                           If the method returns n > 0, recv() will return n bytes.
-                                           If it returns 0, recv() will keep on reading.
-        """
         self._connection = serial_connection_low_level.SerialConnectionLowLevel(port=port, baudrate=baudrate)
         self.timeout = timeout
         self.message_separator_time = message_separator_time
@@ -69,7 +62,8 @@ class SerialConnection(itarget_connection.ITargetConnection):
         """
         Opens connection to the target. Make sure to call close!
 
-        :return: None
+        Returns:
+            No  ne
         """
         self._connection.open()
 
@@ -77,10 +71,11 @@ class SerialConnection(itarget_connection.ITargetConnection):
         """
         Receive up to max_bytes data from the target.
 
-        :param max_bytes: Maximum number of bytes to receive.
-        :type max_bytes: int
+        Args:
+            max_bytes (int): Maximum number of bytes to receive.
 
-        :return: Received data.
+        Returns:
+            Received data.
         """
 
         self._connection.timeout = min(.001, self.message_separator_time, self.timeout)
@@ -119,10 +114,11 @@ class SerialConnection(itarget_connection.ITargetConnection):
         """
         Send data to the target. Only valid after calling open!
 
-        :param data: Data to send.
+        Args:
+            data: Data to send.
 
-        :rtype: int
-        :return: Number of bytes actually sent.
+        Returns:
+            int: Number of bytes actually sent.
         """
         bytes_sent = 0
         while bytes_sent < len(data):
