@@ -23,6 +23,14 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         tcp_connection = SocketConnection(host='127.0.0.1', port=17971)
         udp_connection = SocketConnection(host='127.0.0.1', port=17971, proto='udp')
+        udp_connection_2_way = SocketConnection(host='127.0.0.1', port=17971, proto='udp', bind=('127.0.0.1', 17972)
+        udp_broadcast = SocketConnection(host='127.0.0.1', port=17971, proto='udp', bind=('127.0.0.1', 17972),
+                                         udp_broadcast=True)
+        raw_layer_2 = (host='lo', proto='raw-l2')
+        raw_layer_2 = (host='lo', proto='raw-l2',
+                       l2_dst='\xFF\xFF\xFF\xFF\xFF\xFF', ethernet_proto=socket_connection.ETH_P_IP)
+        raw_layer_3 = (host='lo', proto='raw-l3')
+
 
     Args:
         host (str): Hostname or IP address of target system, or network interface string if using raw-l2 or raw-l3.
