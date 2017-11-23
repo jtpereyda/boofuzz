@@ -437,7 +437,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut = SocketConnection(host="lo", proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -493,7 +493,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut = SocketConnection(host="lo", proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -540,7 +540,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l2')
+        uut = SocketConnection(host="lo", proto='raw-l2')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -588,7 +588,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut = SocketConnection(host="lo", proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -641,7 +641,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut = SocketConnection(host="lo", proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -688,7 +688,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", port=socket_connection.ETH_P_IP, proto='raw-l3')
+        uut = SocketConnection(host="lo", proto='raw-l3')
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
