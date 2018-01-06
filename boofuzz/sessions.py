@@ -789,8 +789,8 @@ class Session(pgraph.Graph):
         Recursively iterates over fuzz nodes. Used by _fuzz_case_iterator.
 
         Args:
-            this_node (node.Node, optional): Current node that is being fuzzed. Default None.
-            path (list, optional): Nodes along the path to the current one being fuzzed. Default [].
+            this_node (node.Node): Current node that is being fuzzed. Default None.
+            path (list of Connection): Nodes along the path to the current one being fuzzed. Default [].
 
         :raise sex.SullyRuntimeError:
         """
@@ -809,16 +809,8 @@ class Session(pgraph.Graph):
 
             self._fuzz_data_logger.log_info("current fuzz path: %s" % current_path)
 
-            # Loop through and yield all possible mutations of the fuzz node.
-            # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
-            while self.fuzz_node.mutate():
-                self.total_mutant_index += 1
-                yield (path,)
-
-                if self._skip_after_cur_test_case:
-                    self._skip_after_cur_test_case = False
-                    break
-            self.fuzz_node.reset()
+            for x in self._fuzz_case_iterate_single_node(path):
+                yield x
 
             # recursively fuzz the remainder of the nodes in the session graph.
             for x in self._fuzz_case_iterator_recursive(self.fuzz_node, path):
@@ -828,13 +820,33 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
+    def _fuzz_case_iterate_single_node(self, path):
+        """Iterate fuzz cases for the last node in path.
+
+        Args:
+            path (list of Connection): Nodes along the path to the current one being fuzzed. Default [].
+
+        :raise sex.SullyRuntimeError:
+        """
+        # Loop through and yield all possible mutations of the fuzz node.
+        # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
+        while self.fuzz_node.mutate():
+            self.total_mutant_index += 1
+            yield (path,)
+
+            if self._skip_after_cur_test_case:
+                self._skip_after_cur_test_case = False
+                break
+        self.fuzz_node.reset()
+
     def _fuzz_current_case(self, path):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
 
-        :param path: Path to take to get to the target node.
-        :return:
+        Args:
+            path(list of Connection): Path to take to get to the target node.
+
         """
         target = self.targets[0]
 
