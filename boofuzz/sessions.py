@@ -813,7 +813,7 @@ class Session(pgraph.Graph):
             # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
             while self.fuzz_node.mutate():
                 self.total_mutant_index += 1
-                yield (edge, path)
+                yield (path,)
 
                 if self._skip_after_cur_test_case:
                     self._skip_after_cur_test_case = False
@@ -828,13 +828,12 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
-    def _fuzz_current_case(self, edge, path):
+    def _fuzz_current_case(self, path):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
 
-        :param edge: Edge pointing to node to fuzz.
-        :param path: Path to take to get to that node.
+        :param path: Path to take to get to the target node.
         :return:
         """
         target = self.targets[0]
@@ -873,7 +872,7 @@ class Session(pgraph.Graph):
             self.transmit(target, node, e)
 
         self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-        self.transmit(target, self.fuzz_node, edge)
+        self.transmit(target, self.fuzz_node, path[-1])
 
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
