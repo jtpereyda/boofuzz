@@ -764,14 +764,29 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
-    def _fuzz_case_iterator(self, this_node=None, path=()):
+    def _fuzz_case_iterator(self):
         """
         Iterates over fuzz cases and mutates appropriately.
         On each iteration, one may call fuzz_current_case to do the
         actual fuzzing.
 
-        No arguments are necessary as they are both utilized internally
-        during the recursive traversal of the session graph.
+        :raise sex.SullyRuntimeError:
+        """
+        # we can't fuzz if we don't have at least one target and one request.
+        if not self.targets:
+            raise sex.SullyRuntimeError("No targets specified in session")
+
+        if not self.edges_from(self.root.id):
+            raise sex.SullyRuntimeError("No requests specified in session")
+
+        self._reset_fuzz_state()
+
+        for x in self._fuzz_case_iterator_recursive(this_node=self.root, path=[]):
+            yield x
+
+    def _fuzz_case_iterator_recursive(self, this_node, path):
+        """
+        Recursively iterates over fuzz nodes. Used by _fuzz_case_iterator.
 
         Args:
             this_node (node.Node, optional): Current node that is being fuzzed. Default None.
@@ -779,22 +794,6 @@ class Session(pgraph.Graph):
 
         :raise sex.SullyRuntimeError:
         """
-        # if no node is specified, then we start from the root node..
-        if this_node is None:
-            # we can't fuzz if we don't have at least one target and one request.
-            if not self.targets:
-                raise sex.SullyRuntimeError("No targets specified in session")
-
-            if not self.edges_from(self.root.id):
-                raise sex.SullyRuntimeError("No requests specified in session")
-
-            self._reset_fuzz_state()
-
-            this_node = self.root
-
-        if isinstance(path, tuple):
-            path = list(path)
-
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
             # the destination node is the one actually being fuzzed.
@@ -822,7 +821,7 @@ class Session(pgraph.Graph):
             self.fuzz_node.reset()
 
             # recursively fuzz the remainder of the nodes in the session graph.
-            for x in self._fuzz_case_iterator(self.fuzz_node, path):
+            for x in self._fuzz_case_iterator_recursive(self.fuzz_node, path):
                 yield x
 
         # finished with the last node on the path, pop it off the path stack.
@@ -834,8 +833,8 @@ class Session(pgraph.Graph):
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
 
-        :param edge:
-        :param path:
+        :param edge: Edge pointing to node to fuzz.
+        :param path: Path to take to get to that node.
         :return:
         """
         target = self.targets[0]
