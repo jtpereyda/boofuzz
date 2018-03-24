@@ -91,8 +91,8 @@ class DebuggerThread:
     def stop_target(self):
         try:
             os.kill(self.pid, signal.SIGKILL)
-        except OSError:
-            return False
+        except OSError as e:
+            print e.errno
         else:
             self.alive = False
 
