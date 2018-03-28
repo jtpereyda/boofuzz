@@ -8,7 +8,7 @@ class FuzzLogger(IFuzzLogger):
     FuzzLogger also maintains summary failure and error data.
 
     Args:
-        fuzz_loggers (list(IFuzzLogger): List of IFuzzLogger objects to which
+        fuzz_loggers (:obj:`list` of :obj:`IFuzzLogger`): List of IFuzzLogger objects to which
                                          to send log data.
     """
 
