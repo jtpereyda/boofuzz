@@ -1,15 +1,15 @@
-import ifuzz_logger
+from ifuzz_logger import IFuzzLogger
 
 
-class FuzzLogger(ifuzz_logger.IFuzzLogger):
+class FuzzLogger(IFuzzLogger):
     """
-    Implementation for IFuzzLogger.
+    Takes a list of IFuzzLogger objects and multiplexes logged data to each one.
 
-    FuzzLogger takes logged data and directs it to the appropriate backends.
-    It aggregates an arbitrary number of logger backends, and functions like a
-    multiplexer.
+    FuzzLogger also maintains summary failure and error data.
 
-    FuzzLogger also maintains failure and error data.
+    Args:
+        fuzz_loggers (list(IFuzzLogger): List of IFuzzLogger objects to which
+                                         to send log data.
     """
 
     def __init__(self, fuzz_loggers=None):
