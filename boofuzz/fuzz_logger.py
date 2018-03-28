@@ -8,8 +8,8 @@ class FuzzLogger(IFuzzLogger):
     FuzzLogger also maintains summary failure and error data.
 
     Args:
-        fuzz_loggers (:obj:`list` of :obj:`IFuzzLogger`): List of IFuzzLogger objects to which
-                                         to send log data.
+        fuzz_loggers (:obj:`list` of :obj:`IFuzzLogger`): IFuzzLogger objects
+                                                          to which to send log data.
     """
 
     def __init__(self, fuzz_loggers=None):
