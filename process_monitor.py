@@ -97,7 +97,15 @@ class DebuggerThread(threading.Thread):
                     "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
                 self.watch()
             self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
-            self.dbg.attach(self.pid)
+            try:
+                self.dbg.attach(self.pid)
+            except pydbg.pdx as e:
+                self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
+                if "The request is not supported." in str(e):
+                    self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
+                                             " supports targeting 32-bit processes.")
+                elif "Access is denied." in str(e):
+                    self.process_monitor.log("It may be that your process died before it could be attached.")
             self.dbg.run()
             self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
