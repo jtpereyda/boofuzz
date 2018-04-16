@@ -400,7 +400,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop(self._fuzz_case_iterator())
+        self._main_fuzz_loop(self._iterate_protocol())
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -413,7 +413,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
 
-        self._main_fuzz_loop(self._fuzz_case_iterate_single_node(node_edges))
+        self._main_fuzz_loop(self._iterate_single_node(node_edges))
 
     def fuzz_by_name(self, name):
         """Fuzz a particular test case or node by name.
@@ -442,6 +442,11 @@ class Session(pgraph.Graph):
 
     def _main_fuzz_loop(self, fuzz_case_iterator):
         """Execute main fuzz logic; takes an iterator of test cases.
+
+        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
+
+        Args:
+            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases.
 
         Returns:
             None
@@ -792,7 +797,7 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
-    def _fuzz_case_iterator(self):
+    def _iterate_protocol(self):
         """
         Iterates over fuzz cases and mutates appropriately.
         On each iteration, one may call fuzz_current_case to do the
@@ -809,10 +814,10 @@ class Session(pgraph.Graph):
 
         self._reset_fuzz_state()
 
-        for x in self._fuzz_case_iterator_recursive(this_node=self.root, path=[]):
+        for x in self._iterate_protocol_recursive(this_node=self.root, path=[]):
             yield x
 
-    def _fuzz_case_iterator_recursive(self, this_node, path):
+    def _iterate_protocol_recursive(self, this_node, path):
         """
         Recursively iterates over fuzz nodes. Used by _fuzz_case_iterator.
 
@@ -829,18 +834,18 @@ class Session(pgraph.Graph):
             # given nodes we don't want any ambiguity.
             path.append(edge)
 
-            for x in self._fuzz_case_iterate_single_node(path):
+            for x in self._iterate_single_node(path):
                 yield x
 
             # recursively fuzz the remainder of the nodes in the session graph.
-            for x in self._fuzz_case_iterator_recursive(self.fuzz_node, path):
+            for x in self._iterate_protocol_recursive(self.fuzz_node, path):
                 yield x
 
         # finished with the last node on the path, pop it off the path stack.
         if path:
             path.pop()
 
-    def _fuzz_case_iterate_single_node(self, path):
+    def _iterate_single_node(self, path):
         """Iterate fuzz cases for the last node in path.
 
         Args:
@@ -863,7 +868,7 @@ class Session(pgraph.Graph):
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
-        for fuzz_args in self._fuzz_case_iterator():
+        for fuzz_args in self._iterate_protocol():
             if fuzz_index >= test_case_index:
                 self.total_mutant_index = 1
                 yield fuzz_args
