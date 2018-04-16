@@ -202,6 +202,7 @@ class Session(pgraph.Graph):
         logfile_level (int):    DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
                                 Was once used to set the log level for the logfile. Default logger.INFO.
     """
+
     def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
                  crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
                  check_data_received_each_request=True,
@@ -430,6 +431,15 @@ class Session(pgraph.Graph):
                 " This error may mean you have no restart method configured, or your error"
                 " detection is not working.")
             self.export_file()
+
+    def fuzz_single_node_by_path(self, node_names):
+        """Fuzz a particular node via the path in node_names.
+
+        Args:
+            node_names (list of str): List of node names leading to target.
+        """
+        for fuzz_args in self._fuzz_case_iterate_by_node_names(node_names=node_names):
+            self._fuzz_current_case(*fuzz_args)
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -789,25 +799,17 @@ class Session(pgraph.Graph):
         Recursively iterates over fuzz nodes. Used by _fuzz_case_iterator.
 
         Args:
-            this_node (node.Node): Current node that is being fuzzed. Default None.
-            path (list of Connection): Nodes along the path to the current one being fuzzed. Default [].
+            this_node (node.Node): Current node that is being fuzzed.
+            path (list of Connection): List of edges along the path to the current one being fuzzed.
 
         :raise sex.SullyRuntimeError:
         """
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
-            # the destination node is the one actually being fuzzed.
-            self.fuzz_node = self.nodes[edge.dst]
-
             # keep track of the path as we fuzz through it, don't count the root node.
             # we keep track of edges as opposed to nodes because if there is more then one path through a set of
             # given nodes we don't want any ambiguity.
             path.append(edge)
-
-            current_path = " -> ".join([self.nodes[e.src].name for e in path[1:]])
-            current_path += " -> %s" % self.fuzz_node.name
-
-            self._fuzz_data_logger.log_info("current fuzz path: %s" % current_path)
 
             for x in self._fuzz_case_iterate_single_node(path):
                 yield x
@@ -824,10 +826,12 @@ class Session(pgraph.Graph):
         """Iterate fuzz cases for the last node in path.
 
         Args:
-            path (list of Connection): Nodes along the path to the current one being fuzzed. Default [].
+            path (list of Connection): Nodes along the path to the current one being fuzzed.
 
-        :raise sex.SullyRuntimeError:
+        Raises:
+            sex.SullyRuntimeError:
         """
+        self.fuzz_node = self.nodes[path[-1].dst]
         # Loop through and yield all possible mutations of the fuzz node.
         # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
         while self.fuzz_node.mutate():
@@ -838,6 +842,39 @@ class Session(pgraph.Graph):
                 self._skip_after_cur_test_case = False
                 break
         self.fuzz_node.reset()
+
+    def _fuzz_case_iterate_by_node_names(self, node_names):
+        """Iterate fuzz cases for a node/path specified by a list of node name strings.
+
+        Args:
+            node_names (list of str): List of node names leading to target node.
+        """
+        for x in self._fuzz_case_iterate_single_node(self._path_names_to_edges(node_names=node_names)):
+            yield x
+
+    def _path_names_to_edges(self, node_names):
+        """Take a list of node names and return a list of edges describing that path.
+
+        Args:
+            node_names (list of str): List of node names describing a path.
+
+        Returns:
+            list of Connection: List of edges describing the path in node_names.
+        """
+        cur_node = self.root
+        edge_path = []
+        for node_name in node_names:
+            next_node = None
+            for edge in self.edges_from(cur_node.id):
+                if self.nodes[edge.dst].name == node_name:
+                    edge_path.append(edge)
+                    next_node = self.nodes[edge.dst]
+                    break
+            if next_node is None:
+                raise Exception("No edge found from {0} to {1}".format(cur_node.name, node_name))
+            else:
+                cur_node = next_node
+        return edge_path
 
     def _fuzz_current_case(self, path):
         """
@@ -852,21 +889,23 @@ class Session(pgraph.Graph):
 
         self.pause()  # only pauses conditionally
 
-        self._fuzz_data_logger.open_test_case(self.total_mutant_index)
-        if self.fuzz_node.mutant.name:
-            msg = "primitive name: \"%s\", " % self.fuzz_node.mutant.name
-        else:
-            msg = "primitive name: None, "
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
 
-        msg += "type: %s, default value: %s" % (
-            type(self.fuzz_node.mutant).__name__, self.fuzz_node.mutant.original_value
-        )
-        self._fuzz_data_logger.log_info(msg)
+        if self.fuzz_node.mutant.name:
+            primitive_under_test = self.fuzz_node.mutant.name
+        else:
+            primitive_under_test = 'no-name'
+
+        test_case_name = "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+
+        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name))
+
         self._fuzz_data_logger.log_info(
-            "Test case %d of %d for this node. %d of %d overall." % (self.fuzz_node.mutant_index,
-                                                                     self.fuzz_node.num_mutations(),
-                                                                     self.total_mutant_index,
-                                                                     self.total_num_mutations))
+            "Type: %s. Default value: %s. Case %d of %d overall." % (
+                type(self.fuzz_node.mutant).__name__,
+                self.fuzz_node.mutant.original_value,
+                self.total_mutant_index,
+                self.total_num_mutations))
 
         if target.procmon:
             target.procmon.pre_send(self.total_mutant_index)
