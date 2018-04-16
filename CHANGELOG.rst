@@ -1,3 +1,14 @@
+0.0.12
+======
+Features
+--------
+- Test cases now have descriptive names
+- Added Session methods to fuzz a test cae by name: `fuzz_by_name` and `fuzz_single_node_by_path`
+
+Fixes
+-----
+- Fixed test case numbers when using `fuzz_single_case`
+
 0.0.11
 ======
 Features
