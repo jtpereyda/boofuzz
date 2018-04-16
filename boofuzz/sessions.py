@@ -398,7 +398,38 @@ class Session(pgraph.Graph):
         """
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
+
         self._main_fuzz_loop(self._fuzz_case_iterator())
+
+    def fuzz_single_node_by_path(self, node_names):
+        """Fuzz a particular node via the path in node_names.
+
+        Args:
+            node_names (list of str): List of node names leading to target.
+        """
+        node_edges = self._path_names_to_edges(node_names=node_names)
+
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
+
+        self._main_fuzz_loop(self._fuzz_case_iterate_single_node(node_edges))
+
+    def fuzz_single_case(self, mutant_index):
+        """Fuzz a test case by mutant_index.
+
+        Args:
+            mutant_index (int): Positive non-zero integer.
+
+        Returns:
+            None
+
+        Raises:
+            sex.SulleyRuntimeError: If any error is encountered while executing the test case.
+        """
+        self.total_mutant_index = 0
+        self.total_num_mutations = 1
+
+        self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
 
     def _main_fuzz_loop(self, fuzz_case_iterator):
         """Execute main fuzz logic; takes an iterator of test cases.
@@ -441,39 +472,6 @@ class Session(pgraph.Graph):
                 " This error may mean you have no restart method configured, or your error"
                 " detection is not working.")
             self.export_file()
-
-    def fuzz_single_node_by_path(self, node_names):
-        """Fuzz a particular node via the path in node_names.
-
-        Args:
-            node_names (list of str): List of node names leading to target.
-        """
-        node_edges = self._path_names_to_edges(node_names=node_names)
-
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
-
-        self._main_fuzz_loop(self._fuzz_case_iterate_single_node(node_edges))
-
-    def fuzz_single_case(self, mutant_index):
-        """
-        Fuzz a test case by mutant_index.
-
-        Args:
-            mutant_index (int): Non-negative integer.
-
-        Returns:
-            None
-
-        Raises:
-            sex.SulleyRuntimeError: If any error is encountered while executing the test case.
-        """
-        fuzz_index = 1
-        for fuzz_args in self._fuzz_case_iterator():
-            if fuzz_index == mutant_index:
-                self._fuzz_current_case(*fuzz_args)
-                break
-            fuzz_index += 1
 
     def import_file(self):
         """
@@ -853,6 +851,15 @@ class Session(pgraph.Graph):
                 self._skip_after_cur_test_case = False
                 break
         self.fuzz_node.reset()
+
+    def _iterate_single_case_by_index(self, test_case_index):
+        fuzz_index = 1
+        for fuzz_args in self._fuzz_case_iterator():
+            if fuzz_index >= test_case_index:
+                self.total_mutant_index = 1
+                yield fuzz_args
+                break
+            fuzz_index += 1
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
