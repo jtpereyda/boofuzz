@@ -384,8 +384,8 @@ class Session(pgraph.Graph):
         fh.close()
 
     def fuzz(self):
-        """
-        Call this routine to get the ball rolling.
+        """Fuzz the entire protocol tree.
+
         Iterates through and fuzzes all fuzz cases, skipping according to
         self.skip and restarting based on self.restart_interval.
 
@@ -396,11 +396,21 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.num_mutations()
+        self._main_fuzz_loop(self._fuzz_case_iterator())
+
+    def _main_fuzz_loop(self, fuzz_case_iterator):
+        """Execute main fuzz logic; takes an iterator of test cases.
+
+        Returns:
+            None
+        """
         self.server_init()
 
         try:
             num_cases_actually_fuzzed = 0
-            for fuzz_args in self._fuzz_case_iterator():
+            for fuzz_args in fuzz_case_iterator:
                 # skip until we pass self.skip
                 if self.total_mutant_index <= self.skip:
                     continue
@@ -438,8 +448,12 @@ class Session(pgraph.Graph):
         Args:
             node_names (list of str): List of node names leading to target.
         """
-        for fuzz_args in self._fuzz_case_iterate_by_node_names(node_names=node_names):
-            self._fuzz_current_case(*fuzz_args)
+        node_edges = self._path_names_to_edges(node_names=node_names)
+
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
+
+        self._main_fuzz_loop(self._fuzz_case_iterate_single_node(node_edges))
 
     def fuzz_single_case(self, mutant_index):
         """
@@ -706,9 +720,6 @@ class Session(pgraph.Graph):
         """Called by fuzz() to initialize variables, web interface, etc.
         """
         if not self.web_interface_thread.isAlive():
-            self.total_mutant_index = 0
-            self.total_num_mutations = self.num_mutations()
-
             # spawn the web interface.
             self.web_interface_thread.start()
 
@@ -842,15 +853,6 @@ class Session(pgraph.Graph):
                 self._skip_after_cur_test_case = False
                 break
         self.fuzz_node.reset()
-
-    def _fuzz_case_iterate_by_node_names(self, node_names):
-        """Iterate fuzz cases for a node/path specified by a list of node name strings.
-
-        Args:
-            node_names (list of str): List of node names leading to target node.
-        """
-        for x in self._fuzz_case_iterate_single_node(self._path_names_to_edges(node_names=node_names)):
-            yield x
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
