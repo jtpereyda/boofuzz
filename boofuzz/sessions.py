@@ -1,24 +1,25 @@
 from __future__ import absolute_import
-import zlib
-import time
+
 import cPickle
-import threading
 import logging
-from tornado.wsgi import WSGIContainer
+import re
+import sys
+import threading
+import time
+import zlib
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-
-import sys
+from tornado.wsgi import WSGIContainer
 
 from . import blocks
-from . import pgraph
-from . import sex
-from . import primitives
-from . import ifuzz_logger
-from . import fuzz_logger
 from . import event_hook
+from . import fuzz_logger
 from . import fuzz_logger_text
-
+from . import ifuzz_logger
+from . import pgraph
+from . import primitives
+from . import sex
 from .web.app import app
 
 
@@ -413,6 +414,14 @@ class Session(pgraph.Graph):
         self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
 
         self._main_fuzz_loop(self._fuzz_case_iterate_single_node(node_edges))
+
+    def fuzz_by_name(self, name):
+        """Fuzz a particular test case or node by name.
+
+        Args:
+            name (str): Name of node.
+        """
+        self.fuzz_single_node_by_path(re.split('->', name))
 
     def fuzz_single_case(self, mutant_index):
         """Fuzz a test case by mutant_index.
