@@ -607,7 +607,7 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
-        crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self.total_mutant_index, [])
+        crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self._fuzz_data_logger.all_test_cases[-1], [])
         if len(crash_synopses) > 0:
             self._fuzz_data_logger.open_test_step("Failure summary")
 
