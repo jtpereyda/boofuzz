@@ -6,13 +6,14 @@ from ..ifuzzable import IFuzzable
 
 
 class Request(IFuzzable):
-    def __init__(self, name):
+    def __init__(self, name, *args):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
         essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
 
-        @type  name: str
-        @param name: Name of this request
+        Args:
+            name (str): Name of this request
+            args: Blocks and primitives that make up this request
         """
 
         self._name = name
@@ -26,6 +27,9 @@ class Request(IFuzzable):
         self._rendered = ""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self.mutant = None  # current primitive being mutated.
+
+        for arg in args:
+            self.push(arg)
 
     @property
     def name(self):
