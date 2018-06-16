@@ -1,3 +1,18 @@
+Upcoming
+========
+Features
+--------
+- Process monitor gives more helpful error messages when running 64-bit application (unsupported) or when a process is
+  killed before being attached
+
+Fixes
+-----
+- Fixed bug in which failures were not recognized
+
+Development
+-----------
+- Added a unit test to verify restart on failure behavior
+
 0.0.12
 ======
 Features
