@@ -1,6 +1,8 @@
 import unittest
 import re
 import StringIO
+
+import boofuzz.helpers
 from boofuzz import fuzz_logger_text
 
 LOGGER_PREAMBLE = ".*"
@@ -24,7 +26,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         Then: get_time_stamp() returns time stamp in proper format.
         """
         # When
-        s = fuzz_logger_text.get_time_stamp()
+        s = boofuzz.helpers.get_time_stamp()
 
         # Then
         self.assertRegexpMatches(s, '\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
@@ -37,7 +39,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         """
         given = "abc\n123\r\nA\n"
         expected = "61 62 63 0a 31 32 33 0d 0a 41 0a b'abc\\n123\\r\\nA\\n'"
-        self.assertEqual(expected, fuzz_logger_text.hex_to_hexstr(given))
+        self.assertEqual(expected, boofuzz.helpers.hex_to_hexstr(given))
 
     def test_hex_to_hexstr_all_bytes(self):
         """
@@ -117,7 +119,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         }
         for c in range(0, 255):
             self.assertEqual("{:02x} {}".format(c, expected_results[c]),
-                             fuzz_logger_text.hex_to_hexstr(chr(c)))
+                             boofuzz.helpers.hex_to_hexstr(chr(c)))
 
 
 class TestFuzzLoggerText(unittest.TestCase):

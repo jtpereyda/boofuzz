@@ -63,7 +63,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def log_info(self, description):
         self._print_log_msg(["info", "", "", description])
 
-    def open_test_case(self, test_case_id):
+    def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._print_log_msg(["open test case", "", "", "Test case " + str(test_case_id)])
 
     def log_fail(self, description=""):

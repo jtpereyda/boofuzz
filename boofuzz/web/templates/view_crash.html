@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 <div class="main-wrapper">
-  <table border=0 cellpadding=5 cellspacing=0 width=750>
+  <table border=0 cellpadding=5 cellspacing=0 >
     <tr>
       <td>
         <table border=0 cellpadding=5 cellspacing=0 width="100%">
@@ -12,9 +12,29 @@
           </tr>
           <tr bgcolor="#111111">
             <td colspan=2 align="center">
+              <h2>Crash Info</h2>
+              {% if crashinfo is none %}
+              <em>None</em>
+              {% else %}
               <pre>{{ crashinfo.decode('utf-8', errors='replace') }}</pre>
+              {% endif %}
             </td>
           </tr>
+        </table>
+        <h2>Test Case Log</h2>
+        <table class="test-steps">
+          <tr>
+            <td>
+              <pre>{{ test_case.text_render }}</pre>
+            </td>
+          </tr>
+          {% for step in test_case.steps %}
+          <tr>
+            <td>
+              <pre>{{ step.text_render }}</pre>
+            </td>
+          </tr>
+          {% endfor %}
         </table>
       </td>
     </tr>

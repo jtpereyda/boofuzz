@@ -8,6 +8,8 @@ import threading
 import time
 import zlib
 
+import attr
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
@@ -17,6 +19,7 @@ from . import event_hook
 from . import fuzz_logger
 from . import fuzz_logger_text
 from . import ifuzz_logger
+from . import fuzz_logger_db
 from . import pgraph
 from . import primitives
 from . import sex
@@ -205,7 +208,9 @@ class Session(pgraph.Graph):
     """
 
     def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=5, fuzz_data_logger=None,
+                 crash_threshold=3, restart_sleep_time=5,
+                 fuzz_data_logger=None,
+                 fuzz_loggers=None,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ignore_connection_reset=False,
@@ -227,10 +232,12 @@ class Session(pgraph.Graph):
         self.web_port = web_port
         self.crash_threshold = crash_threshold
         self.restart_sleep_time = restart_sleep_time
-        if fuzz_data_logger is None:
-            self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[fuzz_logger_text.FuzzLoggerText()])
-        else:
-            self._fuzz_data_logger = fuzz_data_logger
+        if fuzz_data_logger is not None:
+            raise sex.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
+        if fuzz_loggers is None:
+            fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
+        self._db_logger = fuzz_logger_db.FuzzLoggerDb()
+        self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger]+fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
@@ -921,7 +928,7 @@ class Session(pgraph.Graph):
 
         test_case_name = "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
 
-        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name))
+        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name), name=test_case_name, index=self.total_mutant_index)
 
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall." % (
@@ -975,3 +982,14 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         if self.fuzz_node:
             self.fuzz_node.reset()
+
+    def test_case_data(self, index):
+        """Return test case data object (for use by web server)
+
+        Args:
+            index (int): Test case index
+
+        Returns:
+            Test case data object
+        """
+        return self._db_logger.get_test_case_data(index=index)

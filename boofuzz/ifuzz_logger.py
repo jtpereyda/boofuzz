@@ -57,11 +57,14 @@ class IFuzzLogger(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def open_test_case(self, test_case_id):
+    def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         """
         Open a test case - i.e., a fuzzing mutation.
 
-        :param test_case_id: Test case name/number. Should be unique.
+        Args:
+            test_case_id: Test case name/number. Should be unique.
+            name (str): Human readable and unique name for test case.
+            index (int): Numeric index for test case
 
         :return: None
         """

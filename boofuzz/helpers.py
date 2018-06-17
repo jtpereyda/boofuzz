@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from builtins import bytes
 import ctypes
 import platform
 import re
@@ -10,6 +11,19 @@ import time
 import zlib
 
 from boofuzz import ip_constants
+
+
+test_step_info = {
+    'test_case' : {'indent': 0, 'title':'Test Case'},
+    'step' : {'indent': 1, 'title':'Test Step'},
+    'info' : {'indent': 2, 'title':'Info'},
+    'error' : {'indent': 2, 'title':'Error'},
+    'send' : {'indent': 2, 'title':'Transmitting'},
+    'receive' : {'indent': 2, 'title':'Received'},
+    'check' : {'indent': 2, 'title':'Check'},
+    'fail' : {'indent': 3, 'title':'Check Failed'},
+    'pass' : {'indent': 3, 'title':'Check OK'},
+}
 
 
 def ip_str_to_bytes(ip):
@@ -88,7 +102,7 @@ def crc16(string, value=0):
     for byte in range(256):
         crc = 0
 
-        for bit in range(8):
+        for _ in range(8):
             if (byte ^ crc) & 1:
                 crc = (crc >> 1) ^ 0xa001  # polly
             else:
@@ -273,3 +287,44 @@ def pause_for_signal():
         # signal.pause() is missing for Windows; wait 1ms and loop instead
         while True:
             time.sleep(0.001)
+
+
+def get_time_stamp():
+    t = time.time()
+    s = time.strftime("[%Y-%m-%d %H:%M:%S", time.localtime(t))
+    s += ",%03d]" % (t * 1000 % 1000)
+    return s
+
+
+def _indent_all_lines(lines, amount, ch=' '):
+    padding = amount * ch
+    return padding + ('\n' + padding).join(lines.split('\n'))
+
+
+def _indent_after_first_line(lines, amount, ch=' '):
+    padding = amount * ch
+    return ('\n' + padding).join(lines.split('\n'))
+
+def format_log_msg(type, msg, indent_size=2, timestamp=None):
+    print('in format_log_msg')
+    return format_msg(msg=msg, indent_level=test_step_info[type]['indent'], indent_size=indent_size, timestamp=timestamp)
+
+def format_msg(msg, indent_level, indent_size, timestamp=None):
+    msg = _indent_all_lines(msg, indent_level * indent_size)
+    if timestamp is None:
+        timestamp = get_time_stamp()
+    return timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+
+
+def hex_to_hexstr(input_bytes):
+    """
+    Render input_bytes as ASCII-encoded hex bytes, followed by a best effort
+    utf-8 rendering.
+
+    Args:
+        input_bytes (bytes): Arbitrary bytes
+
+    Returns:
+        str: Printable string
+    """
+    return hex_str(input_bytes) + " " + repr(bytes(input_bytes))

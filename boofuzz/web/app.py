@@ -23,7 +23,7 @@ def pause():
 
 @app.route('/view_crash/<int:crash_id>')
 def view_crash(crash_id):
-    return render_template("view_crash.html", crashinfo=app.session.procmon_results[crash_id])
+    return render_template("view_crash.html", crashinfo=app.session.procmon_results.get(crash_id, None), test_case=app.session.test_case_data(crash_id))
 
 
 @app.route("/")

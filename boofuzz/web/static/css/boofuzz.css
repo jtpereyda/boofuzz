@@ -42,5 +42,9 @@ td {
     margin-left: auto;
     margin-right: auto;
     display: block;
-    width: 750px;
+}
+
+table.test-steps pre {
+    white-space: pre-wrap;
+    margin: 0;
 }
