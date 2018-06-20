@@ -15,7 +15,7 @@ class TestCaseData(object):
     @property
     def text_render(self):
         s = helpers.format_log_msg(
-            type='test_case',
+            msg_type='test_case',
             msg="{title}: {index}: {name}".format(
                 title=helpers.test_step_info['test_case']['title'],
                 index=self.index,
@@ -28,7 +28,7 @@ class TestCaseData(object):
     @property
     def html_log_line(self):
         return helpers.format_log_msg(
-            type='test_case',
+            msg_type='test_case',
             msg=helpers.test_step_info['test_case']['html_format'].format(
                 msg='{index}: {name}'.format(index=self.index, name=self.name),
             ),

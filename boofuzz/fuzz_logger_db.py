@@ -1,7 +1,5 @@
 from __future__ import print_function
-import sys
 import datetime
-import csv
 import sqlite3
 
 from . import helpers
@@ -42,7 +40,8 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._databaes_connection = sqlite3.connect('boofuzz-run-{0}.db'.format(timestamp), check_same_thread=False)
         self._db_cursor = self._databaes_connection.cursor()
         self._db_cursor.execute('''CREATE TABLE cases (name text, number integer, timestamp TEXT)''')
-        self._db_cursor.execute('''CREATE TABLE steps (test_case_index integer, type text, description text, data blob, timestamp TEXT)''')
+        self._db_cursor.execute(
+            '''CREATE TABLE steps (test_case_index integer, type text, description text, data blob, timestamp TEXT)''')
 
         self._format_raw_bytes = bytes_to_str
         self._current_test_case_index = None
@@ -53,38 +52,48 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         rows = c.execute('''SELECT * FROM steps WHERE test_case_index=?''', [index])
         steps = []
         for row in rows:
-            steps.append(test_step_data.TestStepData(type=row[1], description=row[2], data=row[3], timestamp=row[4]))
-        return test_case_data.TestCaseData(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2], steps=steps)
+            data = row[3]
+            # Little hack since BLOB becomes type buffer in py2 and bytes in py3
+            # At the end, data will be equivalent types: bytes in py3 and str in py2
+            if 'buffer' in locals() or 'buffer' in globals():  # buffer does not exist in py3
+                if isinstance(data, buffer):
+                    data = str(data)
+            steps.append(test_step_data.TestStepData(type=row[1], description=row[2], data=data, timestamp=row[4]))
+        return test_case_data.TestCaseData(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
+                                           steps=steps)
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._db_cursor.execute('''INSERT INTO cases VALUES(?, ?, ?)''', [name, index, helpers.get_time_stamp()])
         self._current_test_case_index = index
 
-
     def open_test_step(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'step', description, b'', helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'step', description, b'', helpers.get_time_stamp()])
 
     def log_check(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'check', description, b'', helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'check', description, b'', helpers.get_time_stamp()])
 
     def log_error(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'error', description, b'', helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'error', description, b'', helpers.get_time_stamp()])
 
     def log_recv(self, data):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'receive', u'', buffer(data), helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'receive', u'', buffer(data), helpers.get_time_stamp()])
 
     def log_send(self, data):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'send', u'', buffer(data), helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'send', u'', buffer(data), helpers.get_time_stamp()])
 
     def log_info(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'info', description, b'', helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'info', description, b'', helpers.get_time_stamp()])
 
     def log_fail(self, description=""):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'fail', description, b'', helpers.get_time_stamp()])
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'fail', description, b'', helpers.get_time_stamp()])
 
     def log_pass(self, description=""):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''', [self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])
-
-    def _print_log_msg(self, msg):
-        time_stamp = get_time_stamp()
-        self._csv_handle.writerow([time_stamp] + msg)
+        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
+                                [self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])

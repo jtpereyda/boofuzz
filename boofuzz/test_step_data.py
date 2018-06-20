@@ -22,7 +22,7 @@ class TestStepData(object):
             msg = ''
 
         return helpers.format_log_msg(
-            type=self.type,
+            msg_type=self.type,
             msg="{title}: {msg}".format(
                 title=helpers.test_step_info[self.type]['title'],
                 msg=msg,
@@ -40,7 +40,7 @@ class TestStepData(object):
             msg = ''
 
         return helpers.format_log_msg(
-            type=self.type,
+            msg_type=self.type,
             msg=helpers.test_step_info[self.type]['html_format'].format(msg=msg, n=len(msg)),
             timestamp=self.timestamp,
         )

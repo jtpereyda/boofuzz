@@ -79,4 +79,4 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
                             msg_type='pass')
 
     def _print_log_msg(self, msg, msg_type):
-        print(helpers.format_log_msg(type=msg_type, msg=msg, indent_size=self.INDENT_SIZE), file=self._file_handle)
+        print(helpers.format_log_msg(msg_type=msg_type, msg=msg, indent_size=self.INDENT_SIZE), file=self._file_handle)

@@ -350,8 +350,8 @@ def _indent_after_first_line(lines, amount, ch=' '):
     return ('\n' + padding).join(lines.split('\n'))
 
 
-def format_log_msg(type, msg, indent_size=2, timestamp=None):
-    return format_msg(msg=msg, indent_level=test_step_info[type]['indent'], indent_size=indent_size,
+def format_log_msg(msg_type, msg, indent_size=2, timestamp=None):
+    return format_msg(msg=msg, indent_level=test_step_info[msg_type]['indent'], indent_size=indent_size,
                       timestamp=timestamp)
 
 
@@ -373,4 +373,4 @@ def hex_to_hexstr(input_bytes):
     Returns:
         str: Printable string
     """
-    return hex_str(input_bytes) + " " + repr(str(input_bytes))
+    return hex_str(input_bytes) + " " + repr(input_bytes)
