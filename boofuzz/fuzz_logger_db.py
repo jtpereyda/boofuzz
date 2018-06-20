@@ -55,9 +55,14 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
             data = row[3]
             # Little hack since BLOB becomes type buffer in py2 and bytes in py3
             # At the end, data will be equivalent types: bytes in py3 and str in py2
-            if 'buffer' in locals() or 'buffer' in globals():  # buffer does not exist in py3
+            try:
                 if isinstance(data, buffer):
                     data = str(data)
+            except NameError as e:
+                if 'buffer' in str(e):  # buffer type does not exist in py3
+                    pass
+                else:
+                    raise
             steps.append(test_step_data.TestStepData(type=row[1], description=row[2], data=data, timestamp=row[4]))
         return test_case_data.TestCaseData(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
                                            steps=steps)
