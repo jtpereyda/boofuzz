@@ -1,10 +1,9 @@
 from __future__ import print_function
 
-import sys
-
 import attr
-from . import test_step_data
+
 from . import helpers
+
 
 @attr.s
 class TestCaseData(object):
@@ -25,3 +24,17 @@ class TestCaseData(object):
             timestamp=self.timestamp,
         )
         return s
+
+    @property
+    def html_log_line(self):
+        return helpers.format_log_msg(
+            type='test_case',
+            msg=helpers.test_step_info['test_case']['html_format'].format(
+                msg='{index}: {name}'.format(index=self.index, name=self.name),
+            ),
+            timestamp=self.timestamp,
+        )
+
+    @property
+    def css_class(self):
+        return helpers.test_step_info['test_case']['css_class']

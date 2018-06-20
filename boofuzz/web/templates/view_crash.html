@@ -4,6 +4,7 @@
   <table border=0 cellpadding=5 cellspacing=0 >
     <tr>
       <td>
+      {% if crashinfo is not none %}
         <table border=0 cellpadding=5 cellspacing=0 width="100%">
           <tr bgcolor="#333333">
             <td>
@@ -21,18 +22,15 @@
             </td>
           </tr>
         </table>
+      {% endif %}
         <h2>Test Case Log</h2>
         <table class="test-steps">
           <tr>
-            <td>
-              <pre>{{ test_case.text_render }}</pre>
-            </td>
+            <td><span class="{{ test_case.css_class }}">{{ test_case.html_log_line }}</span></td>
           </tr>
           {% for step in test_case.steps %}
           <tr>
-            <td>
-              <pre>{{ step.text_render }}</pre>
-            </td>
+            <td><span class="{{ step.css_class }}">{{ step.html_log_line }}</span></td>
           </tr>
           {% endfor %}
         </table>

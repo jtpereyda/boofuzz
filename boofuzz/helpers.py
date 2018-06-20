@@ -12,17 +12,61 @@ import zlib
 
 from boofuzz import ip_constants
 
-
 test_step_info = {
-    'test_case' : {'indent': 0, 'title':'Test Case'},
-    'step' : {'indent': 1, 'title':'Test Step'},
-    'info' : {'indent': 2, 'title':'Info'},
-    'error' : {'indent': 2, 'title':'Error'},
-    'send' : {'indent': 2, 'title':'Transmitting'},
-    'receive' : {'indent': 2, 'title':'Received'},
-    'check' : {'indent': 2, 'title':'Check'},
-    'fail' : {'indent': 3, 'title':'Check Failed'},
-    'pass' : {'indent': 3, 'title':'Check OK'},
+    'test_case': {
+        'indent': 0,
+        'title': 'Test Case',
+        'html_format': 'Test Case: {msg}',
+        'css_class': 'log-case'
+    },
+    'step': {
+        'indent': 1,
+        'title': 'Test Step',
+        'html_format': ' Test Step: {msg}',
+        'css_class': 'log-step'
+    },
+    'info': {
+        'indent': 2,
+        'title': 'Info',
+        'html_format': 'Info: {msg}',
+        'css_class': 'log-info'
+    },
+    'error': {
+        'indent': 2,
+        'title': 'Error',
+        'html_format': 'Error!!!! {msg}',
+        'css_class': 'log-error'
+    },
+    'send': {
+        'indent': 2,
+        'title': 'Transmitting',
+        'html_format': 'Transmitting {n} bytes: {msg}',
+        'css_class': 'log-send'
+    },
+    'receive': {
+        'indent': 2,
+        'title': 'Received',
+        'html_format': 'Received: {msg}',
+        'css_class': 'log-receive'
+    },
+    'check': {
+        'indent': 2,
+        'title': 'Check',
+        'html_format': 'Check: {msg}',
+        'css_class': 'log-check'
+    },
+    'fail': {
+        'indent': 3,
+        'title': 'Check Failed',
+        'html_format': 'Check Failed: {msg}',
+        'css_class': 'log-fail'
+    },
+    'pass': {
+        'indent': 3,
+        'title': 'Check OK',
+        'html_format': 'Check OK: {msg}',
+        'css_class': 'log-pass'
+    },
 }
 
 
@@ -77,11 +121,11 @@ def get_max_udp_size():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     lib.getsockopt(
-            sock.fileno(),
-            sol_socket,
-            opt,
-            buf,
-            ctypes.pointer(bufsize)
+        sock.fileno(),
+        sol_socket,
+        opt,
+        buf,
+        ctypes.pointer(bufsize)
     )
 
     # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
@@ -252,8 +296,8 @@ def udp_checksum(msg, src_addr, dst_addr):
     msg = msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(
-            _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
-            msg)
+        _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
+        msg)
 
 
 def hex_str(s):
@@ -305,9 +349,11 @@ def _indent_after_first_line(lines, amount, ch=' '):
     padding = amount * ch
     return ('\n' + padding).join(lines.split('\n'))
 
+
 def format_log_msg(type, msg, indent_size=2, timestamp=None):
-    print('in format_log_msg')
-    return format_msg(msg=msg, indent_level=test_step_info[type]['indent'], indent_size=indent_size, timestamp=timestamp)
+    return format_msg(msg=msg, indent_level=test_step_info[type]['indent'], indent_size=indent_size,
+                      timestamp=timestamp)
+
 
 def format_msg(msg, indent_level, indent_size, timestamp=None):
     msg = _indent_all_lines(msg, indent_level * indent_size)

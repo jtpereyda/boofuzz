@@ -1,6 +1,5 @@
 from __future__ import print_function
 import sys
-import time
 from colorama import Fore, Back, Style, init
 
 from . import helpers
@@ -44,42 +43,40 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def open_test_step(self, description):
         self._print_log_msg(self.TEST_STEP_FORMAT.format(description),
-                            type='step')
+                            msg_type='step')
 
     def log_check(self, description):
         self._print_log_msg(self.LOG_CHECK_FORMAT.format(description),
-                            type='check')
+                            msg_type='check')
 
     def log_error(self, description):
         self._print_log_msg(self.LOG_ERROR_FORMAT.format(description),
-                            type='error')
+                            msg_type='error')
 
     def log_recv(self, data):
         self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)),
-                            type='receive')
+                            msg_type='receive')
 
     def log_send(self, data):
         self._print_log_msg(
             self.LOG_SEND_FORMAT.format(len(data), self._format_raw_bytes(data)),
-            type='send')
+            msg_type='send')
 
     def log_info(self, description):
         self._print_log_msg(self.LOG_INFO_FORMAT.format(description),
-                            type='info')
+                            msg_type='info')
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._print_log_msg(self.TEST_CASE_FORMAT.format(test_case_id),
-                            type='test_case')
+                            msg_type='test_case')
 
     def log_fail(self, description=""):
         self._print_log_msg(self.LOG_FAIL_FORMAT.format(description),
-                            type='fail')
+                            msg_type='fail')
 
     def log_pass(self, description=""):
         self._print_log_msg(self.LOG_PASS_FORMAT.format(description),
-                            type='pass')
+                            msg_type='pass')
 
-    def _print_log_msg(self, msg, type):
-        print(helpers.format_log_msg(type=type, msg=msg, indent_size=self.INDENT_SIZE), file=self._file_handle)
-
-
+    def _print_log_msg(self, msg, msg_type):
+        print(helpers.format_log_msg(type=msg_type, msg=msg, indent_size=self.INDENT_SIZE), file=self._file_handle)
