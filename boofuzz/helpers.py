@@ -373,4 +373,4 @@ def hex_to_hexstr(input_bytes):
     Returns:
         str: Printable string
     """
-    return hex_str(input_bytes) + " " + repr(bytes(input_bytes))
+    return hex_str(input_bytes) + " " + repr(str(input_bytes))
