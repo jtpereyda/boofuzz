@@ -325,7 +325,7 @@ def s_update(name, value):
     :param value: Updated value
     """
 
-    if name not in blocks.CURRENT:
+    if name not in map(lambda o: o.name, blocks.CURRENT.walk()):
         raise sex.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
 
     blocks.CURRENT.names[name].value = value
