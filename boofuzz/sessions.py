@@ -841,6 +841,9 @@ class Session(pgraph.Graph):
             # given nodes we don't want any ambiguity.
             path.append(edge)
 
+            message_path = "->".join([self.nodes[e.dst].name for e in path])
+            logging.debug('fuzzing: {0}'.format(message_path))
+
             for x in self._iterate_single_node(path):
                 yield x
 
