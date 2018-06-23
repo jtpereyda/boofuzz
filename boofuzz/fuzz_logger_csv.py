@@ -35,11 +35,9 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
-        :type file_handle: io.FileIO
-        :param file_handle: Open file handle for logging. Defaults to sys.stdout.
-
-        :type bytes_to_str: function
-        :param bytes_to_str: Function that converts sent/received bytes data to string for logging.
+        Args:
+            file_hanlde (io.TextIOBase): Open file handle for logging. Defaults to sys.stdout.
+            bytes_to_str (function): Function that converts sent/received bytes data to string for logging.
         """
         self._file_handle = file_handle
         self._format_raw_bytes = bytes_to_str
