@@ -191,9 +191,13 @@ class Session(pgraph.Graph):
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
+        receive_data_after_each_request (bool): If True, Session will attempt to receive a reply after transmitting
+                                                each node. Default True.
         check_data_received_each_request (bool): If True, Session will verify that some data has
                                                  been received after transmitting each node, and if not, register a
                                                  failure. If False, this check will not be performed. Default True.
+                                                 A receive attempt is still made unless receive_data_after_each_request
+                                                 is False.
         ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
                                 failures.
         ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
@@ -211,6 +215,7 @@ class Session(pgraph.Graph):
                  crash_threshold=3, restart_sleep_time=5,
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
+                 receive_data_after_each_request=True,
                  check_data_received_each_request=True,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ignore_connection_reset=False,
@@ -239,6 +244,7 @@ class Session(pgraph.Graph):
         self._db_logger = fuzz_logger_db.FuzzLoggerDb()
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
+        self._receive_data_after_each_request = receive_data_after_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
 
@@ -824,17 +830,18 @@ class Session(pgraph.Graph):
             self.targets[0].send(data)
             self.last_send = data
 
-            if self._check_data_received_each_request:
+            if self._receive_data_after_each_request:
                 # Receive data
                 # TODO: Remove magic number (10000)
                 self.last_recv = self.targets[0].recv(10000)
 
-                self._fuzz_data_logger.log_check("Verify some data was received from the target.")
-                if not self.last_recv:
-                    # Assume a crash?
-                    self._fuzz_data_logger.log_fail("Nothing received from target.")
-                else:
-                    self._fuzz_data_logger.log_pass("Some data received from target.")
+                if self._check_data_received_each_request:
+                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+                    if not self.last_recv:
+                        # Assume a crash?
+                        self._fuzz_data_logger.log_fail("Nothing received from target.")
+                    else:
+                        self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             if self._ignore_connection_reset:
                 self._fuzz_data_logger.log_info("Target connection reset.")
