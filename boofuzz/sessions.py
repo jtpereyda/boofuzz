@@ -1123,6 +1123,15 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
             self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+        except sex.BoofuzzTargetConnectionReset:
+            self._fuzz_data_logger.log_fail(
+                "Target connection reset -- considered a failure case when triggered from post_send")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                            "network issue, or an issue with firewalls or anti-virus. Try "
+                                            "disabling your firewall."
+                                            .format(e.socket_errno, e.socket_errmsg))
+            pass
         except Exception as e:
             raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
 
