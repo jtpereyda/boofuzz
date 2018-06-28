@@ -160,7 +160,7 @@ class Connection(pgraph.Edge):
         transmissions to implement functionality such as challenge response systems. The callback method must follow
         this prototype::
 
-            def callback(session, node, edge, sock)
+            def callback(target, fuzz_data_logger, session, node, edge, *args, **kwargs)
 
         Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
         is a pointer to the session instance which is useful for snagging data such as sesson.last_recv which contains
@@ -319,7 +319,7 @@ class Session(pgraph.Graph):
 
         If you register callback method, it must follow this prototype::
 
-            def callback(session, node, edge, sock)
+            def callback(target, fuzz_data_logger, session, node, edge, *args, **kwargs)
 
         Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
         is a pointer to the session instance which is useful for snagging data such as session.last_recv which contains
@@ -789,7 +789,22 @@ class Session(pgraph.Graph):
             # spawn the web interface.
             self.web_interface_thread.start()
 
-    def transmit(self, sock, node, edge):
+    def _callback_current_node(self, node, edge):
+        """Execute callback preceding current node.
+
+        Returns:
+            bytes: Data rendered by current node if any; otherwise None.
+        """
+        data = None
+
+        # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
+        if edge.callback:
+            self._fuzz_data_logger.open_test_step('Callback function')
+            data = edge.callback(self.targets[0], self._fuzz_data_logger, session=self, node=node, edge=edge)
+
+        return data
+
+    def transmit(self, sock, node, edge, callback_data):
         """
         Render and transmit a node, process callbacks accordingly.
 
@@ -797,16 +812,11 @@ class Session(pgraph.Graph):
             sock (Target, optional): Socket-like object on which to transmit node
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
+            callback_data (bytes): Data from previous callback.
         """
-
-        data = None
-
-        # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
-        if edge.callback:
-            data = edge.callback(self, node, edge, sock)
-
-        # if no data was returned by the callback, render the node here.
-        if not data:
+        if callback_data:
+            data = callback_data
+        else:
             data = node.render()
 
         try:
@@ -1034,11 +1044,13 @@ class Session(pgraph.Graph):
 
         for e in path[:-1]:
             node = self.nodes[e.dst]
+            callback_data = self._callback_current_node(node=node, edge=e)
             self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-            self.transmit(target, node, e)
+            self.transmit(target, node, e, callback_data=callback_data)
 
+        callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
         self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-        self.transmit(target, self.fuzz_node, path[-1])
+        self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
@@ -1114,11 +1126,13 @@ class Session(pgraph.Graph):
 
         for e in path[:-1]:
             node = self.nodes[e.dst]
+            callback_data = self._callback_current_node(node=node, edge=e)
             self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-            self.transmit(target, node, e)
+            self.transmit(target, node, e, callback_data=callback_data)
 
+        callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
         self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-        self.transmit(target, self.fuzz_node, path[-1])
+        self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
