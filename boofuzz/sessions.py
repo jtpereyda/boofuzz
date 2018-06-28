@@ -65,7 +65,9 @@ class Target(object):
 
         :return: None
         """
+        self._fuzz_data_logger.log_info('Closing target connection...')
         self._target_connection.close()
+        self._fuzz_data_logger.log_info('Connection closed.')
 
     def open(self):
         """
@@ -73,7 +75,9 @@ class Target(object):
 
         :return: None
         """
+        self._fuzz_data_logger.log_info('Opening target connection...')
         self._target_connection.open()
+        self._fuzz_data_logger.log_info('Connection opened.')
 
     def pedrpc_connect(self):
         """
