@@ -685,7 +685,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
-            if self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
+            if self.fuzz_node.mutant is not None and self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
                 # as long as we're not a group and not a repeat.
                 if not isinstance(self.fuzz_node.mutant, primitives.Group):
                     if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
@@ -1049,36 +1049,43 @@ class Session(pgraph.Graph):
         if target.netmon:
             target.netmon.pre_send(self.total_mutant_index)
 
-        target.open()
-
-        self.pre_send(target)
-
-        for e in path[:-1]:
-            node = self.nodes[e.dst]
-            callback_data = self._callback_current_node(node=node, edge=e)
-            self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-            self.transmit(target, node, e, callback_data=callback_data)
-
-        callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
-        self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-        self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
-
-        self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
-            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-        except sex.BoofuzzTargetConnectionReset:
-            self._fuzz_data_logger.log_fail(
-                "Target connection reset -- considered a failure case when triggered from post_send")
-        except sex.BoofuzzTargetConnectionAborted as e:
-            self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                            "network issue, or an issue with firewalls or anti-virus. Try "
-                                            "disabling your firewall."
-                                            .format(e.socket_errno, e.socket_errmsg))
-            pass
-        except Exception as e:
-            raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
+            target.open()
 
-        target.close()
+            self.pre_send(target)
+
+            for e in path[:-1]:
+                node = self.nodes[e.dst]
+                callback_data = self._callback_current_node(node=node, edge=e)
+                self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+                self.transmit(target, node, e, callback_data=callback_data)
+
+            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
+            self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
+
+            self._fuzz_data_logger.open_test_step("Calling post_send function:")
+            try:
+                self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+            except sex.BoofuzzTargetConnectionReset:
+                self._fuzz_data_logger.log_fail(
+                    "Target connection reset -- considered a failure case when triggered from post_send")
+            except sex.BoofuzzTargetConnectionAborted as e:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+                pass
+            except Exception as e:
+                raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
+
+            target.close()
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_fail(
+                "Cannot connect to target; target presumed down."
+                " Note: Normally a failure should be detected, and the target reset."
+                " This error may mean you have no restart method configured, or your error"
+                " detection is not working.")
 
         self._fuzz_data_logger.open_test_step("Sleep between tests.")
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
