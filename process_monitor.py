@@ -313,7 +313,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                         return False
 
                 self.log("done. target up and running, giving it 5 seconds to settle in.")
-                time.sleep(5)
+                time.sleep(5)  # Note: This action assumes the command is the process start itself and not a service command that exits upon completion
 
             if self._process is not None:
                 self.log("creating debugger thread", 5)
@@ -355,6 +355,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
+        self.log('Restarting target...')
         self.stop_target()
         return self.start_target()
 

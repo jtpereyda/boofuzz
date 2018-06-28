@@ -237,7 +237,7 @@ class Session(pgraph.Graph):
         if fuzz_loggers is None:
             fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
         self._db_logger = fuzz_logger_db.FuzzLoggerDb()
-        self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger]+fuzz_loggers)
+        self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         # Flag used to cancel fuzzing for a given primitive:
         self._skip_after_cur_test_case = False
@@ -391,6 +391,17 @@ class Session(pgraph.Graph):
         fh.write(zlib.compress(cPickle.dumps(data, protocol=2)))
         fh.close()
 
+    def feature_check(self):
+        """Check all messages/features.
+
+        Returns:
+            None
+        """
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.num_mutations()
+
+        self._message_check(self._iterate_messages())
+
     def fuzz(self):
         """Fuzz the entire protocol tree.
 
@@ -446,6 +457,39 @@ class Session(pgraph.Graph):
         self.total_num_mutations = 1
 
         self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
+
+    def _message_check(self, fuzz_case_iterator):
+        """Check messages for compatibility.
+
+        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
+
+        Args:
+            fuzz_case_iterator (Iterable): An iterator that walks through
+
+        Returns:
+            None
+        """
+        self.server_init()
+
+        try:
+            for fuzz_args in fuzz_case_iterator:
+                self._check_message(*fuzz_args)
+        except KeyboardInterrupt:
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            self.export_file()
+            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
+            raise
+        except sex.BoofuzzRestartFailedError:
+            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
+            self.export_file()
+            raise
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_error(
+                "Cannot connect to target; target presumed down."
+                " Note: Normally a failure should be detected, and the target reset."
+                " This error may mean you have no restart method configured, or your error"
+                " detection is not working.")
+            self.export_file()
 
     def _main_fuzz_loop(self, fuzz_case_iterator):
         """Execute main fuzz logic; takes an iterator of test cases.
@@ -598,7 +642,7 @@ class Session(pgraph.Graph):
                                                                            target.procmon.get_crash_synopsis()))
 
     def _process_failures(self, target):
-        """Process any failure sin self.crash_synopses.
+        """Process any failures in self.crash_synopses.
 
         If self.crash_synopses contains any entries, perform these failure-related actions:
          - log failure summary if needed
@@ -612,7 +656,7 @@ class Session(pgraph.Graph):
             target (Target): Target to restart if failure occurred.
 
         Returns:
-            None
+            bool: True if any failures were found; False otherwise.
         """
         crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self._fuzz_data_logger.all_test_cases[-1], [])
         if len(crash_synopses) > 0:
@@ -644,6 +688,9 @@ class Session(pgraph.Graph):
                         self.fuzz_node.mutant_index += skipped
 
             self.restart_target(target)
+            return True
+        else:
+            return False
 
     # noinspection PyUnusedLocal
     def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
@@ -804,6 +851,52 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
+    def _iterate_messages(self):
+        """Iterates over each message without mutations.
+
+        :raise sex.SullyRuntimeError:
+        """
+        if not self.targets:
+            raise sex.SullyRuntimeError("No targets specified in session")
+
+        if not self.edges_from(self.root.id):
+            raise sex.SullyRuntimeError("No requests specified in session")
+
+        self._reset_fuzz_state()
+
+        for x in self._iterate_messages_recursive(this_node=self.root, path=[]):
+            yield x
+
+    def _iterate_messages_recursive(self, this_node, path):
+        """Recursively iterates over messages. Used by _iterate_messages.
+
+        Args:
+            this_node (node.Node): Current node that is being fuzzed.
+            path (list of Connection): List of edges along the path to the current one being fuzzed.
+
+        :raise sex.SullyRuntimeError:
+        """
+        # step through every edge from the current node.
+        for edge in self.edges_from(this_node.id):
+            # keep track of the path as we walk through it
+            # we keep track of edges as opposed to nodes because if there is more then one path through a set of
+            # given nodes we don't want any ambiguity.
+            path.append(edge)
+
+            message_path = "->".join([self.nodes[e.dst].name for e in path])
+            logging.debug('checking: {0}'.format(message_path))
+
+            self.fuzz_node = self.nodes[path[-1].dst]
+            self.total_mutant_index += 1
+            yield (path,)
+
+            for x in self._iterate_messages_recursive(self.fuzz_node, path):
+                yield x
+
+        # finished with the last node on the path, pop it off the path stack.
+        if path:
+            path.pop()
+
     def _iterate_protocol(self):
         """
         Iterates over fuzz cases and mutates appropriately.
@@ -909,6 +1002,74 @@ class Session(pgraph.Graph):
                 cur_node = next_node
         return edge_path
 
+    def _check_message(self, path):
+        """
+        Fuzzes the current test case. Current test case is controlled by
+        fuzz_case_iterator().
+
+        Args:
+            path(list of Connection): Path to take to get to the target node.
+
+        """
+        target = self.targets[0]
+
+        self.pause()  # only pauses conditionally
+
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
+
+        test_case_name = "FEATURE-CHECK->{0}".format(message_path)
+
+        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
+                                              name=test_case_name, index=self.total_mutant_index)
+
+        if target.procmon:
+            target.procmon.pre_send(self.total_mutant_index)
+
+        if target.netmon:
+            target.netmon.pre_send(self.total_mutant_index)
+
+        target.open()
+
+        self.pre_send(target)
+
+        for e in path[:-1]:
+            node = self.nodes[e.dst]
+            self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+            self.transmit(target, node, e)
+
+        self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
+        self.transmit(target, self.fuzz_node, path[-1])
+
+        self._fuzz_data_logger.open_test_step("Calling post_send function:")
+        try:
+            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+        except sex.BoofuzzTargetConnectionReset:
+            self._fuzz_data_logger.log_fail(
+                "Target connection reset -- considered a failure case when triggered from post_send")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                            "network issue, or an issue with firewalls or anti-virus. Try "
+                                            "disabling your firewall."
+                                            .format(e.socket_errno, e.socket_errmsg))
+            pass
+        except Exception as e:
+            raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
+
+        target.close()
+
+        self._fuzz_data_logger.open_test_step("Sleep between tests.")
+        self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+        time.sleep(self.sleep_time)
+
+        self.poll_pedrpc(target)
+
+        if self._process_failures(target=target):
+            print("FAIL: {0}".format(test_case_name))
+        else:
+            print("PASS: {0}".format(test_case_name))
+
+        self.export_file()
+
     def _fuzz_current_case(self, path):
         """
         Fuzzes the current test case. Current test case is controlled by
@@ -931,7 +1092,8 @@ class Session(pgraph.Graph):
 
         test_case_name = "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
 
-        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name), name=test_case_name, index=self.total_mutant_index)
+        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
+                                              name=test_case_name, index=self.total_mutant_index)
 
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall." % (
