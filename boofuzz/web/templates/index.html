@@ -22,24 +22,12 @@
             <td colspan=2 align="center">
               <table border=0 cellpadding=0 cellspacing=5>
                 <tr bgcolor="#111111">
-                  <td>
-                    <b>Total:</b>
-                  </td>
-                  <td>
-                    {{ state.total_mutant_index }}
-                  </td>
-                  <td>
-                    of
-                  </td>
-                  <td>
-                    {{ state.total_num_mutations }}
-                  </td>
-                  <td class="fixed">
-                    {{ state.progress_total_bar | safe }}
-                  </td>
-                  <td>
-                    {{ state.progress_total }}
-                  </td>
+                  <td> <b>Total:</b> </td>
+                  <td> {{ state.total_mutant_index }} </td>
+                  <td> of </td>
+                  <td> {{ state.total_num_mutations }} </td>
+                  <td class="fixed"> {{ state.progress_total_bar | safe }} </td>
+                  <td> {{ state.progress_total }} </td>
                 </tr>
                 <tr bgcolor="#111111">
                   <td>

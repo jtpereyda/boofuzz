@@ -24,7 +24,7 @@ from .primitives import (BasePrimitive, Delim, Group,
                          RandomData, Static, String, BitField,
                          Byte, Word, DWord, QWord, FromFile)
 from .serial_connection import SerialConnection
-from .sessions import Session, Target
+from .sessions import Session, Target, open_test_run
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 

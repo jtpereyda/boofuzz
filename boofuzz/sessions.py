@@ -5,6 +5,7 @@ import logging
 import re
 import sys
 import threading
+import traceback
 import time
 import zlib
 
@@ -180,6 +181,84 @@ class Connection(pgraph.Edge):
         super(Connection, self).__init__(src, dst)
 
         self.callback = callback
+
+
+class SessionInfo(object):
+    def __init__(self, db_filename):
+        self._db_reader = fuzz_logger_db.FuzzLoggerDbReader(db_filename=db_filename)
+
+    @property
+    def procmon_results(self):
+        return {1: 'procmon results not saved in current database format'}
+
+    @property
+    def netmon_results(self):
+        return {1: 'netmon results not saved in current database format'}
+
+    @property
+    def fuzz_node(self):
+        return None
+
+    @property
+    def total_num_mutations(self):
+        return 100  # TODO upgrade database format to store this info
+
+    @property
+    def total_mutant_index(self):
+        return 100  # TODO SELECT COUNT(*) FROM cases -- But watch out for partially finished case
+
+    def test_case_data(self, index):
+        """Return test case data object (for use by web server)
+
+        Args:
+            index (int): Test case index
+
+        Returns:
+            Test case data object
+        """
+        return self._db_reader.get_test_case_data(index=index)
+
+    @property
+    def is_paused(self):
+        return False
+
+    @property
+    def state(self):
+        return 'finished'
+
+class WebApp(object):
+    """Serve fuzz data over HTTP.
+
+    Args:
+        session_info (SessionInfo): Object providing information on session
+        web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+    """
+    def __init__(self, session_info, web_port=26000):
+        self._session_info = session_info
+        self._web_interface_thread = self._build_webapp_thread(port=web_port)
+        pass
+
+    def _build_webapp_thread(self, port):
+        app.session = self._session_info
+        http_server = HTTPServer(WSGIContainer(app))
+        http_server.listen(port)
+        flask_thread = threading.Thread(target=IOLoop.instance().start)
+        flask_thread.daemon = True
+        return flask_thread
+
+    def server_init(self):
+        """Called by fuzz() to initialize variables, web interface, etc.
+        """
+        if not self._web_interface_thread.isAlive():
+            # spawn the web interface.
+            self._web_interface_thread.start()
+
+
+def open_test_run(db_filename, port=26000):
+    s = SessionInfo(db_filename=db_filename)
+    w = WebApp(session_info=s, web_port=port)
+    w.server_init()
+
 
 
 class Session(pgraph.Graph):
@@ -1076,8 +1155,15 @@ class Session(pgraph.Graph):
                                                 "disabling your firewall."
                                                 .format(e.socket_errno, e.socket_errmsg))
                 pass
-            except Exception as e:
-                raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
+            except sex.BoofuzzTargetConnectionFailedError:
+                self._fuzz_data_logger.log_fail(
+                    "Cannot connect to target; target presumed down."
+                    " Note: Normally a failure should be detected, and the target reset."
+                    " This error may mean you have no restart method configured, or your error"
+                    " detection is not working.")
+            except Exception:
+                self._fuzz_data_logger.log_fail(
+                    "Custom post_send method raised uncaught Exception." + traceback.format_exc())
 
             target.close()
         except sex.BoofuzzTargetConnectionFailedError:
@@ -1164,8 +1250,15 @@ class Session(pgraph.Graph):
                                             "disabling your firewall."
                                             .format(e.socket_errno, e.socket_errmsg))
             pass
-        except Exception as e:
-            raise sex.BoofuzzError("Custom post_send method raised uncaught Exception.", e), None, sys.exc_info()[2]
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_fail(
+                "Cannot connect to target; target presumed down."
+                " Note: Normally a failure should be detected, and the target reset."
+                " This error may mean you have no restart method configured, or your error"
+                " detection is not working.")
+        except Exception:
+            self._fuzz_data_logger.log_fail(
+                "Custom post_send method raised uncaught Exception." + traceback.format_exc())
 
         target.close()
 

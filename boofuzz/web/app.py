@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, render_template, redirect
 import re
 
@@ -47,22 +48,28 @@ def index():
         crashes.append(crash)
 
     # which node (request) are we currently fuzzing.
-    if app.session.fuzz_node.name:
+    if app.session.fuzz_node is not None and app.session.fuzz_node.name:
         current_name = app.session.fuzz_node.name
     else:
         current_name = "[N/A]"
 
     # render sweet progress bars.
-    mutant_index = float(app.session.fuzz_node.mutant_index)
-    num_mutations = float(app.session.fuzz_node.num_mutations())
+    if app.session.fuzz_node is not None:
+        mutant_index = float(app.session.fuzz_node.mutant_index)
+        num_mutations = float(app.session.fuzz_node.num_mutations())
 
-    try:
-        progress_current = mutant_index / num_mutations
-    except ZeroDivisionError:
+        try:
+            progress_current = mutant_index / num_mutations
+        except ZeroDivisionError:
+            progress_current = 0
+        num_bars = int(progress_current * 50)
+        progress_current_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
+        progress_current = "%.3f%%" % (progress_current * 100)
+    else:
         progress_current = 0
-    num_bars = int(progress_current * 50)
-    progress_current_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
-    progress_current = "%.3f%%" % (progress_current * 100)
+        progress_current_bar = ''
+        mutant_index = 0
+        num_mutations = 100 # TODO improve template instead of hard coding fake values
 
     total_mutant_index = float(app.session.total_mutant_index)
     total_num_mutations = float(app.session.total_num_mutations)
@@ -77,15 +84,15 @@ def index():
 
     state = {
         "session": app.session,
-        "current_mutant_index": commify(app.session.fuzz_node.mutant_index),
+        "current_mutant_index": commify(mutant_index),
         "current_name": current_name,
-        "current_num_mutations": commify(app.session.fuzz_node.num_mutations()),
+        "current_num_mutations": commify(num_mutations),
         "progress_current": progress_current,
         "progress_current_bar": progress_current_bar,
         "progress_total": progress_total,
         "progress_total_bar": progress_total_bar,
-        "total_mutant_index": commify(app.session.total_mutant_index),
-        "total_num_mutations": commify(app.session.total_num_mutations),
+        "total_mutant_index": commify(total_mutant_index),
+        "total_num_mutations": commify(total_num_mutations),
     }
 
     return render_template('index.html', state=state, crashes=crashes)
