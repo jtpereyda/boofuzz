@@ -43,7 +43,10 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def get_test_case_data(self, index):
         c = self._database_connection.cursor()
-        test_case_row = next(c.execute('''SELECT * FROM cases WHERE number=?''', [index]))
+        try:
+            test_case_row = next(c.execute('''SELECT * FROM cases WHERE number=?''', [index]))
+        except StopIteration:
+            return None
         rows = c.execute('''SELECT * FROM steps WHERE test_case_index=?''', [index])
         steps = []
         for row in rows:
