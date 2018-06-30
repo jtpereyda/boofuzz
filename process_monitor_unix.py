@@ -267,11 +267,11 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
             self.log("This process monitor does not accept > 1 start command")
             return
 
-        self.log("updating start commands to: %s" % start_commands)
+        self.log("updating start commands to: %s" % list(start_commands))
         self.start_commands = start_commands
 
     def set_stop_commands(self, stop_commands):
-        self.log("updating stop commands to: %s" % stop_commands)
+        self.log("updating stop commands to: %s" % list(stop_commands))
 
         self.stop_commands = stop_commands
 

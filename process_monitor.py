@@ -364,11 +364,11 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.proc_name = new_proc_name
 
     def set_start_commands(self, new_start_commands):
-        self.log("updating start commands to: %s" % new_start_commands)
+        self.log("updating start commands to: %s" % list(new_start_commands))
         self.start_commands = new_start_commands
 
     def set_stop_commands(self, new_stop_commands):
-        self.log("updating stop commands to: %s" % new_stop_commands)
+        self.log("updating stop commands to: %s" % list(new_stop_commands))
         self.stop_commands = new_stop_commands
 
 
