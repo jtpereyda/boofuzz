@@ -84,15 +84,15 @@ def index():
 
     state = {
         "session": app.session,
-        "current_mutant_index": commify(mutant_index),
+        "current_mutant_index": commify(int(mutant_index)),
         "current_name": current_name,
-        "current_num_mutations": commify(num_mutations),
+        "current_num_mutations": commify(int(num_mutations)),
         "progress_current": progress_current,
         "progress_current_bar": progress_current_bar,
         "progress_total": progress_total,
         "progress_total_bar": progress_total_bar,
-        "total_mutant_index": commify(total_mutant_index),
-        "total_num_mutations": commify(total_num_mutations),
+        "total_mutant_index": commify(int(total_mutant_index)),
+        "total_num_mutations": commify(int(total_num_mutations)),
     }
 
     return render_template('index.html', state=state, crashes=crashes)
