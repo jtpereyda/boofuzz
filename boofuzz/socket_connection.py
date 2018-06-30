@@ -1,5 +1,7 @@
 from __future__ import absolute_import
+import math
 import ssl
+import struct
 import sys
 import httplib
 import socket
@@ -12,6 +14,14 @@ from . import ip_constants
 from . import sex
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
+
+
+def _seconds_to_second_microsecond_struct(seconds):
+    """Convert floating point seconds value to second/useconds struct used by socket library."""
+    microseconds_per_second = 1000000
+    whole_seconds = math.floor(seconds)
+    whole_microseconds = math.floor((seconds % 1) * microseconds_per_second)
+    return struct.pack('ll', whole_seconds, whole_microseconds)
 
 
 class SocketConnection(itarget_connection.ITargetConnection):
@@ -39,7 +49,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             raw-l2: Send packets at layer 2. Must include link layer header (e.g. Ethernet frame).
             raw-l3: Send packets at layer 3. Must include network protocol header (e.g. IPv4).
         bind (tuple (host, port)): Socket bind address and port. Required if using recv() with 'udp' protocol.
-        timeout (float): Seconds to wait for a send/recv prior to timing out. Default 5.0.
+        send_timeout (float): Seconds to wait for send before timing out. Default 5.0.
+        recv_timeout (float): Seconds to wait for recv before timing out. Default 5.0.
         ethernet_proto (int): Ethernet protocol when using 'raw-l3'. 16 bit integer. Default ETH_P_IP (0x0800).
             See "if_ether.h" in Linux documentation for more options.
         l2_dst (str): Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
@@ -60,7 +71,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  port=None,
                  proto="tcp",
                  bind=None,
-                 timeout=5.0,
+                 send_timeout=5.0,
+                 recv_timeout=5.0,
                  ethernet_proto=ETH_P_IP,
                  l2_dst='\xFF' * 6,
                  udp_broadcast=False):
@@ -69,7 +81,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.host = host
         self.port = port
         self.bind = bind
-        self.timeout = timeout
+        self._recv_timeout = recv_timeout
+        self._send_timeout = send_timeout
         self.proto = proto.lower()
         self.ethernet_proto = ethernet_proto
         self.l2_dst = l2_dst
@@ -115,7 +128,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         else:
             raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
-        self._sock.settimeout(self.timeout)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_second_microsecond_struct(self._send_timeout))
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_second_microsecond_struct(self._recv_timeout))
 
         # Connect is needed only for TCP protocols
         if self.proto == "tcp" or self.proto == "ssl":
@@ -167,6 +181,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):
                 raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+            elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
+                data = bytes('')
             else:
                 raise
 
