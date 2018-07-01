@@ -908,23 +908,9 @@ class Session(pgraph.Graph):
         else:
             data = node.render()
 
-        try:
-            # Try to send payload down-range
+        try:  # send
             self.targets[0].send(data)
             self.last_send = data
-
-            if self._receive_data_after_each_request:
-                # Receive data
-                # TODO: Remove magic number (10000)
-                self.last_recv = self.targets[0].recv(10000)
-
-                if self._check_data_received_each_request:
-                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
-                    if not self.last_recv:
-                        # Assume a crash?
-                        self._fuzz_data_logger.log_fail("Nothing received from target.")
-                    else:
-                        self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             if self._ignore_connection_reset:
                 self._fuzz_data_logger.log_info("Target connection reset.")
@@ -938,6 +924,35 @@ class Session(pgraph.Graph):
                                                 .format(e.socket_errno, e.socket_errmsg))
             else:
                 self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+        try:  # recv
+            if self._receive_data_after_each_request:
+                self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
+
+                if self._check_data_received_each_request:
+                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+                    if not self.last_recv:
+                        # Assume a crash?
+                        self._fuzz_data_logger.log_fail("Nothing received from target.")
+                    else:
+                        self._fuzz_data_logger.log_pass("Some data received from target.")
+        except sex.BoofuzzTargetConnectionReset:
+            #if self._ignore_connection_reset:
+            if self._check_data_received_each_request:
+                self._fuzz_data_logger.log_fail("Target connection reset.")
+            else:
+                self._fuzz_data_logger.log_info("Target connection reset.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            #if self._ignore_connection_aborted:
+            if self._check_data_received_each_request:
+                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            else:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
                                                 "network issue, or an issue with firewalls or anti-virus. Try "
                                                 "disabling your firewall."
                                                 .format(e.socket_errno, e.socket_errmsg))

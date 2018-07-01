@@ -111,7 +111,7 @@ def s_render():
 
 def s_switch(name):
     """
-    Change the currect request to the one specified by "name".
+    Change the current request to the one specified by "name".
 
     :type  name: str
     :param name: Name of request
