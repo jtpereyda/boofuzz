@@ -278,7 +278,7 @@ class Session(pgraph.Graph):
                                                 each node. Default True.
         check_data_received_each_request (bool): If True, Session will verify that some data has
                                                  been received after transmitting each node, and if not, register a
-                                                 failure. If False, this check will not be performed. Default True.
+                                                 failure. If False, this check will not be performed. Default False.
                                                  A receive attempt is still made unless receive_data_after_each_request
                                                  is False.
         ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
@@ -299,7 +299,7 @@ class Session(pgraph.Graph):
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
                  receive_data_after_each_request=True,
-                 check_data_received_each_request=True,
+                 check_data_received_each_request=False,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ignore_connection_reset=False,
                  ignore_connection_aborted=False,

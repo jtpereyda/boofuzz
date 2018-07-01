@@ -92,7 +92,7 @@ class DebuggerThread:
         try:
             os.kill(self.pid, signal.SIGKILL)
         except OSError as e:
-            print e.errno
+            print e.errno  # TODO interpret some basic errors
         else:
             self.alive = False
 
