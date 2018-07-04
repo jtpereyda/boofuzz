@@ -40,8 +40,8 @@ Limitations
 '''
 
 USAGE = "USAGE: process_monitor_unix.py"\
-        "\n    -c|--crash_bin             File to record crash info too" \
-        "\n    [-P|--port PORT]             TCP port to bind this agent too"\
+        "\n    [-c|--crash_bin]             File to record crash info to" \
+        "\n    [-P|--port PORT]             TCP port to bind this agent to"\
         "\n    [-l|--log_level LEVEL]       log level (default 1), increase for more verbosity"\
         "\n    [-d|--coredump_dir dir]      directory where coredumps are moved to "\
         "\n                                 (you may need to adjust ulimits to create coredumps)"
@@ -314,7 +314,7 @@ if __name__ == "__main__":
             coredump_dir = arg
 
     if not crash_bin:
-        ERR(USAGE)
+        crash_bin = 'boofuzz-crash-bin'
 
     if not PORT:
         PORT = 26002

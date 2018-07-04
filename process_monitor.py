@@ -301,7 +301,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         # if we don't already have a debugger thread or process, start one now.
-        if (not self.debugger_thread or not self.debugger_thread.isAlive()) and (self._process is None or self._process.poll() is not None):
+        if (not self.debugger_thread or not self.debugger_thread.isAlive()) and (
+                self._process is None or self._process.poll() is not None):
             if len(self.start_commands) > 0:
                 self.log("starting target process")
 
@@ -313,7 +314,9 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                         return False
 
                 self.log("done. target up and running, giving it 5 seconds to settle in.")
-                time.sleep(5)  # Note: This action assumes the command is the process start itself and not a service command that exits upon completion
+                # This action assumes the command starts the process itself and not a service command that exits
+                # upon completion... could be improved.
+                time.sleep(5)
 
             if self._process is not None:
                 self.log("creating debugger thread", 5)
@@ -387,8 +390,8 @@ def main():
     with ProcessMonitorApp() as app:
         app.args.add_argument('-f', '--foo', action='store', metavar='STR',
                               help='the notorious foo option')
-        app.args.add_argument("-c", "--crash_bin", help='filename to serialize crash bin class to', default='crash-bin',
-                              metavar='FILENAME')
+        app.args.add_argument("-c", "--crash_bin", help='filename to serialize crash bin class to',
+                              default='boofuzz-crash-bin', metavar='FILENAME')
         app.args.add_argument("-i", "--ignore_pid", help='PID to ignore when searching for target process', type=int,
                               metavar='PID')
         app.args.add_argument("-l", "--log_level", help='log level: default 1, increase for more verbosity', type=int,
