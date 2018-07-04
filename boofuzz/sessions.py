@@ -23,7 +23,7 @@ from . import primitives
 from . import sex
 from .web.app import app
 
-DEFAULT_MAX_RECV=8192
+DEFAULT_MAX_RECV = 8192
 
 
 class Target(object):
@@ -225,6 +225,7 @@ class SessionInfo(object):
     def state(self):
         return 'finished'
 
+
 class WebApp(object):
     """Serve fuzz data over HTTP.
 
@@ -232,6 +233,7 @@ class WebApp(object):
         session_info (SessionInfo): Object providing information on session
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
     """
+
     def __init__(self, session_info, web_port=26000):
         self._session_info = session_info
         self._web_interface_thread = self._build_webapp_thread(port=web_port)
@@ -259,14 +261,14 @@ def open_test_run(db_filename, port=26000):
     w.server_init()
 
 
-
 class Session(pgraph.Graph):
     """
     Extends pgraph.graph and provides a container for architecting protocol dialogs.
 
     Args:
         session_filename (str): Filename to serialize persistent data to. Default None.
-        skip (int):             Number of test cases to skip. Default 0.
+        index_start (int);      First test case index to run
+        index_end (int);        Last test case index to run
         sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
         restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
         crash_threshold (int):  Maximum number of crashes allowed before a node is exhaust. Default 3.
@@ -293,8 +295,11 @@ class Session(pgraph.Graph):
                                 Was once used to set the log level for the logfile. Default logger.INFO.
     """
 
-    def __init__(self, session_filename=None, skip=0, sleep_time=0.0, restart_interval=0, web_port=26000,
-                 crash_threshold=3, restart_sleep_time=5,
+    def __init__(self, session_filename=None, index_start=1, index_end=None, sleep_time=0.0,
+                 restart_interval=0,
+                 web_port=26000,
+                 crash_threshold=3,
+                 restart_sleep_time=5,
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
                  receive_data_after_each_request=True,
@@ -313,7 +318,8 @@ class Session(pgraph.Graph):
         super(Session, self).__init__()
 
         self.session_filename = session_filename
-        self.skip = skip
+        self._index_start = max(index_start, 1)
+        self._index_end = index_end
         self.sleep_time = sleep_time
         self.restart_interval = restart_interval
         self.web_port = web_port
@@ -462,7 +468,7 @@ class Session(pgraph.Graph):
 
         data = {
             "session_filename": self.session_filename,
-            "skip": self.total_mutant_index,
+            "index_start": self.total_mutant_index,
             "sleep_time": self.sleep_time,
             "restart_sleep_time": self.restart_sleep_time,
             "restart_interval": self.restart_interval,
@@ -596,7 +602,7 @@ class Session(pgraph.Graph):
             num_cases_actually_fuzzed = 0
             for fuzz_args in fuzz_case_iterator:
                 # skip until we pass self.skip
-                if self.total_mutant_index <= self.skip:
+                if self.total_mutant_index < self._index_start:
                     continue
 
                 # Check restart interval
@@ -642,7 +648,7 @@ class Session(pgraph.Graph):
             return
 
         # update the skip variable to pick up fuzzing from last test case.
-        self.skip = data["total_mutant_index"]
+        self._index_start = data["total_mutant_index"]
         self.session_filename = data["session_filename"]
         self.sleep_time = data["sleep_time"]
         self.restart_sleep_time = data["restart_sleep_time"]
@@ -763,7 +769,8 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
             # if the user-supplied crash threshold is reached, exhaust this node.
-            if self.fuzz_node.mutant is not None and self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
+            if self.fuzz_node.mutant is not None and \
+                    self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
                 # as long as we're not a group and not a repeat.
                 if not isinstance(self.fuzz_node.mutant, primitives.Group):
                     if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
@@ -911,11 +918,13 @@ class Session(pgraph.Graph):
             self.targets[0].send(data)
             self.last_send = data
         except sex.BoofuzzTargetConnectionReset:
+            # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
             if self._ignore_connection_reset:
                 self._fuzz_data_logger.log_info("Target connection reset.")
             else:
                 self._fuzz_data_logger.log_fail("Target connection reset.")
         except sex.BoofuzzTargetConnectionAborted as e:
+            # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
             if self._ignore_connection_aborted:
                 self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
                                                 "network issue, or an issue with firewalls or anti-virus. Try "
@@ -938,13 +947,11 @@ class Session(pgraph.Graph):
                     else:
                         self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
-            #if self._ignore_connection_reset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail("Target connection reset.")
             else:
                 self._fuzz_data_logger.log_info("Target connection reset.")
         except sex.BoofuzzTargetConnectionAborted as e:
-            #if self._ignore_connection_aborted:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
                                                 "network issue, or an issue with firewalls or anti-virus. Try "
