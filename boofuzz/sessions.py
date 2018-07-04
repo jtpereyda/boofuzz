@@ -601,9 +601,10 @@ class Session(pgraph.Graph):
         try:
             num_cases_actually_fuzzed = 0
             for fuzz_args in fuzz_case_iterator:
-                # skip until we pass self.skip
                 if self.total_mutant_index < self._index_start:
                     continue
+                elif self.total_mutant_index > self._index_end:
+                    break
 
                 # Check restart interval
                 if num_cases_actually_fuzzed \
