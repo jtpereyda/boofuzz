@@ -30,6 +30,8 @@ from .socket_connection import SocketConnection
 
 __version__ = '0.0.12'
 
+DEFAULT_PROCMON_PORT = 26002
+
 
 # REQUEST MANAGEMENT
 def s_get(name=None):

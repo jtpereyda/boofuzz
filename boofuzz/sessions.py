@@ -603,7 +603,7 @@ class Session(pgraph.Graph):
             for fuzz_args in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
-                elif self.total_mutant_index > self._index_end:
+                elif self._index_end is not None and self.total_mutant_index > self._index_end:
                     break
 
                 # Check restart interval
