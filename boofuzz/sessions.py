@@ -271,7 +271,8 @@ class Session(pgraph.Graph):
         index_end (int);        Last test case index to run
         sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
         restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
-        crash_threshold (int):  Maximum number of crashes allowed before a node is exhaust. Default 3.
+        crash_threshold_request (int):  Maximum number of crashes allowed before a request is exhausted. Default 12.
+        crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
@@ -298,7 +299,8 @@ class Session(pgraph.Graph):
     def __init__(self, session_filename=None, index_start=1, index_end=None, sleep_time=0.0,
                  restart_interval=0,
                  web_port=26000,
-                 crash_threshold=3,
+                 crash_threshold_request=12,
+                 crash_threshold_element=3,
                  restart_sleep_time=5,
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
@@ -323,7 +325,8 @@ class Session(pgraph.Graph):
         self.sleep_time = sleep_time
         self.restart_interval = restart_interval
         self.web_port = web_port
-        self.crash_threshold = crash_threshold
+        self._crash_threshold_node = crash_threshold_request
+        self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
         if fuzz_data_logger is not None:
             raise sex.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
@@ -333,8 +336,8 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         self._receive_data_after_each_request = receive_data_after_each_request
-        # Flag used to cancel fuzzing for a given primitive:
-        self._skip_after_cur_test_case = False
+        self._skip_current_node_after_current_test_case = False
+        self._skip_current_element_after_current_test_case = False
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -473,7 +476,7 @@ class Session(pgraph.Graph):
             "restart_sleep_time": self.restart_sleep_time,
             "restart_interval": self.restart_interval,
             "web_port": self.web_port,
-            "crash_threshold": self.crash_threshold,
+            "crash_threshold": self._crash_threshold_node,
             "total_num_mutations": self.total_num_mutations,
             "total_mutant_index": self.total_mutant_index,
             "netmon_results": self.netmon_results,
@@ -655,7 +658,7 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = data["restart_sleep_time"]
         self.restart_interval = data["restart_interval"]
         self.web_port = data["web_port"]
-        self.crash_threshold = data["crash_threshold"]
+        self._crash_threshold_node = data["crash_threshold"]
         self.total_num_mutations = data["total_num_mutations"]
         self.total_mutant_index = data["total_mutant_index"]
         self.netmon_results = data["netmon_results"]
@@ -759,6 +762,7 @@ class Session(pgraph.Graph):
 
             # retrieve the primitive that caused the crash and increment it's individual crash count.
             self.crashing_primitives[self.fuzz_node.mutant] = self.crashing_primitives.get(self.fuzz_node.mutant, 0) + 1
+            self.crashing_primitives[self.fuzz_node] = self.crashing_primitives.get(self.fuzz_node, 0) + 1
 
             # print crash synopsis
             if len(crash_synopses) > 1:
@@ -769,19 +773,24 @@ class Session(pgraph.Graph):
             self.procmon_results[self.total_mutant_index] = synopsis
             self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
 
-            # if the user-supplied crash threshold is reached, exhaust this node.
             if self.fuzz_node.mutant is not None and \
-                    self.crashing_primitives[self.fuzz_node.mutant] >= self.crash_threshold:
-                # as long as we're not a group and not a repeat.
-                if not isinstance(self.fuzz_node.mutant, primitives.Group):
-                    if not isinstance(self.fuzz_node.mutant, blocks.Repeat):
-                        skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
-                        self._skip_after_cur_test_case = True
-                        self._fuzz_data_logger.open_test_step(
-                            "Crash threshold reached for this primitive, exhausting %d mutants." % skipped
-                        )
-                        self.total_mutant_index += skipped
-                        self.fuzz_node.mutant_index += skipped
+                    self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node:
+                skipped = self.fuzz_node.num_mutations() - self.fuzz_node.mutant_index
+                self._skip_current_node_after_current_test_case = True
+                self._fuzz_data_logger.open_test_step(
+                    "Crash threshold reached for this request, exhausting {0} mutants.".format(skipped))
+                self.total_mutant_index += skipped
+                self.fuzz_node.mutant_index += skipped
+            elif self.fuzz_node.mutant is not None and \
+                    self.crashing_primitives[self.fuzz_node.mutant] >= self._crash_threshold_element:
+                if not isinstance(self.fuzz_node.mutant, primitives.Group)\
+                        and not isinstance(self.fuzz_node.mutant, blocks.Repeat):
+                    skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
+                    self._skip_current_element_after_current_test_case = True
+                    self._fuzz_data_logger.open_test_step(
+                        "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped))
+                    self.total_mutant_index += skipped
+                    self.fuzz_node.mutant_index += skipped
 
             self.restart_target(target)
             return True
@@ -1086,9 +1095,12 @@ class Session(pgraph.Graph):
             self.total_mutant_index += 1
             yield (path,)
 
-            if self._skip_after_cur_test_case:
-                self._skip_after_cur_test_case = False
+            if self._skip_current_node_after_current_test_case:
+                self._skip_current_node_after_current_test_case = False
                 break
+            elif self._skip_current_element_after_current_test_case:
+                self._skip_current_element_after_current_test_case = False
+                self.fuzz_node.skip_element()
         self.fuzz_node.reset()
 
     def _iterate_single_case_by_index(self, test_case_index):

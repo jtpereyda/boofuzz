@@ -25,6 +25,7 @@ class Request(IFuzzable):
         self.names = {}  # dictionary of directly accessible primitives.
         self._rendered = ""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
+        self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.
 
     @property
@@ -64,19 +65,29 @@ class Request(IFuzzable):
         return self._rendered
 
     def mutate(self):
+        if self._element_mutant_index is None:
+            self._element_mutant_index = 0
+
         mutated = False
 
-        for item in self.stack:
+        while self._element_mutant_index < len(self.stack):
+            item = self.stack[self._element_mutant_index]
             if item.fuzzable and item.mutate():
                 mutated = True
                 if not isinstance(item, Block):
                     self.mutant = item
                 break
+            else:
+                self._element_mutant_index += 1
 
         if mutated:
             self._mutant_index += 1
 
         return mutated
+
+    def skip_element(self):
+        self.stack[self._element_mutant_index].reset()
+        self._element_mutant_index += 1
 
     def num_mutations(self):
         """
@@ -85,7 +96,6 @@ class Request(IFuzzable):
         @rtype:  int
         @return: Number of mutated forms this primitive can take.
         """
-
         num_mutations = 0
 
         for item in self.stack:
