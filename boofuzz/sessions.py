@@ -3,13 +3,10 @@ from __future__ import absolute_import
 import cPickle
 import logging
 import re
-import sys
 import threading
-import traceback
 import time
+import traceback
 import zlib
-
-import attr
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -18,13 +15,15 @@ from tornado.wsgi import WSGIContainer
 from . import blocks
 from . import event_hook
 from . import fuzz_logger
+from . import fuzz_logger_db
 from . import fuzz_logger_text
 from . import ifuzz_logger
-from . import fuzz_logger_db
 from . import pgraph
 from . import primitives
 from . import sex
 from .web.app import app
+
+DEFAULT_MAX_RECV=8192
 
 
 class Target(object):
@@ -108,7 +107,7 @@ class Target(object):
             for key in self.netmon_options.keys():
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
-    def recv(self, max_bytes):
+    def recv(self, max_bytes=DEFAULT_MAX_RECV):
         """
         Receive up to max_bytes data from the target.
 
