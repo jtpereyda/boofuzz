@@ -286,6 +286,9 @@ class Session(pgraph.Graph):
         ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
                                 failures.
         ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
+        ignore_connection_issues_when_sending_fuzz_data (bool): Ignore fuzz data transmission failures. Default True.
+                                This is usually a helpful setting to enable, as targets may drop connections once a
+                                message is clearly invalid.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
 
         log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
@@ -309,10 +312,12 @@ class Session(pgraph.Graph):
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ignore_connection_reset=False,
                  ignore_connection_aborted=False,
+                 ignore_connection_issues_when_sending_fuzz_data=True,
                  target=None,
                  ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
+        self._ignore_connection_issues_when_sending_fuzz_data = ignore_connection_issues_when_sending_fuzz_data
         _ = log_level
         _ = logfile
         _ = logfile_level
@@ -909,9 +914,8 @@ class Session(pgraph.Graph):
 
         return data
 
-    def transmit(self, sock, node, edge, callback_data):
-        """
-        Render and transmit a node, process callbacks accordingly.
+    def transmit_normal(self, sock, node, edge, callback_data):
+        """Render and transmit a non-fuzzed node, process callbacks accordingly.
 
         Args:
             sock (Target, optional): Socket-like object on which to transmit node
@@ -945,6 +949,69 @@ class Session(pgraph.Graph):
                                                 "network issue, or an issue with firewalls or anti-virus. Try "
                                                 "disabling your firewall."
                                                 .format(e.socket_errno, e.socket_errmsg))
+        try:  # recv
+            if self._receive_data_after_each_request:
+                self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
+
+                if self._check_data_received_each_request:
+                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+                    if not self.last_recv:
+                        # Assume a crash?
+                        self._fuzz_data_logger.log_fail("Nothing received from target.")
+                    else:
+                        self._fuzz_data_logger.log_pass("Some data received from target.")
+        except sex.BoofuzzTargetConnectionReset:
+            if self._check_data_received_each_request:
+                self._fuzz_data_logger.log_fail("Target connection reset.")
+            else:
+                self._fuzz_data_logger.log_info("Target connection reset.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            if self._check_data_received_each_request:
+                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            else:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            pass
+
+    def transmit_fuzz(self, sock, node, edge, callback_data):
+        """Render and transmit a fuzzed node, process callbacks accordingly.
+
+        Args:
+            sock (Target, optional): Socket-like object on which to transmit node
+            node (pgraph.node.node (Node), optional): Request/Node to transmit
+            edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
+            callback_data (bytes): Data from previous callback.
+        """
+        if callback_data:
+            data = callback_data
+        else:
+            data = node.render()
+
+        try:  # send
+            self.targets[0].send(data)
+            self.last_send = data
+        except sex.BoofuzzTargetConnectionReset:
+            if self._ignore_connection_issues_when_sending_fuzz_data:
+                self._fuzz_data_logger.log_info("Target connection reset.")
+            else:
+                self._fuzz_data_logger.log_fail("Target connection reset.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            if self._ignore_connection_issues_when_sending_fuzz_data:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            else:
+                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+
         try:  # recv
             if self._receive_data_after_each_request:
                 self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
@@ -1137,9 +1204,9 @@ class Session(pgraph.Graph):
         return edge_path
 
     def _check_message(self, path):
-        """
-        Fuzzes the current test case. Current test case is controlled by
-        fuzz_case_iterator().
+        """Sends the current message without fuzzing.
+
+        Current test case is controlled by fuzz_case_iterator().
 
         Args:
             path(list of Connection): Path to take to get to the target node.
@@ -1171,11 +1238,11 @@ class Session(pgraph.Graph):
                 node = self.nodes[e.dst]
                 callback_data = self._callback_current_node(node=node, edge=e)
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                self.transmit(target, node, e, callback_data=callback_data)
+                self.transmit_normal(target, node, e, callback_data=callback_data)
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-            self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
             self._fuzz_data_logger.open_test_step("Calling post_send function:")
             try:
@@ -1266,11 +1333,11 @@ class Session(pgraph.Graph):
             node = self.nodes[e.dst]
             callback_data = self._callback_current_node(node=node, edge=e)
             self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-            self.transmit(target, node, e, callback_data=callback_data)
+            self.transmit_normal(target, node, e, callback_data=callback_data)
 
         callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
         self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-        self.transmit(target, self.fuzz_node, path[-1], callback_data=callback_data)
+        self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:

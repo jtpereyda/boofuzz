@@ -227,7 +227,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                        None, sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
-                    (e.errno == errno.ETIMEDOUT):
+                    (e.errno == errno.ETIMEDOUT) or \
+                    (e.errno == errno.EPIPE):
                 raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
             else:
                 raise
