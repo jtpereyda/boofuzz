@@ -291,11 +291,6 @@ class String(BasePrimitive):
             if len(self._value) > self.size:
                 continue
 
-            # pad undersized library items.
-            if len(self._value) < self.size:
-                self._value += self.padding * (self.size - len(self._value))
-                break
-
         return True
 
     def num_mutations(self):
@@ -310,6 +305,10 @@ class String(BasePrimitive):
     def _render(self, value):
         """Render string value, properly encoded.
         """
+        # pad undersized library items.
+        if len(value) < self.size:
+            value += self.padding * (self.size - len(value))
+
         try:
             # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
             # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
