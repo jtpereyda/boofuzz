@@ -1315,7 +1315,7 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall." % (
                 type(self.fuzz_node.mutant).__name__,
-                self.fuzz_node.mutant.original_value,
+                repr(self.fuzz_node.mutant.original_value),
                 self.total_mutant_index,
                 self.total_num_mutations))
 
