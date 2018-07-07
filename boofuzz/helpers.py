@@ -101,7 +101,7 @@ def get_max_udp_size():
     if windows:
         sol_socket = ctypes.c_int(0xffff)
         sol_max_msg_size = 0x2003
-        lib = ctypes.WinDLL('Ws2_32.dll')
+        lib = ctypes.WinDLL('Ws2_32.dll'.encode('ascii'))
         opt = ctypes.c_int(sol_max_msg_size)
     elif linux or mac:
         if mac:
