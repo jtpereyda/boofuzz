@@ -59,7 +59,7 @@ def string_tests():
 
     req = s_get("STRING UNIT TEST 1")
 
-    assert (len(req.names["sized_string"].render()) == 3)
+    assert (len(req.names["sized_string"].render()) == 200)
 
     # check that string padding and truncation are working correctly.
     for i in xrange(0, 50):

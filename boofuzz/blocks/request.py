@@ -158,6 +158,7 @@ class Request(IFuzzable):
         Reset every block and primitives mutant state under this request.
         """
 
+        self._element_mutant_index = None
         self._mutant_index = 1
         self.closed_blocks = {}
 

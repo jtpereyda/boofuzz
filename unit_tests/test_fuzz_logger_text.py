@@ -1,3 +1,6 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from builtins import bytes, chr
 import unittest
 import re
 import StringIO
@@ -39,7 +42,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         """
         given = "abc\n123\r\nA\n"
         expected = "61 62 63 0a 31 32 33 0d 0a 41 0a b'abc\\n123\\r\\nA\\n'"
-        self.assertEqual(expected, boofuzz.helpers.hex_to_hexstr(given))
+        self.assertEqual(expected, boofuzz.helpers.hex_to_hexstr(bytes(given, 'latin-1')))
 
     def test_hex_to_hexstr_all_bytes(self):
         """
@@ -119,22 +122,26 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         }
         for c in range(0, 255):
             self.assertEqual("{:02x} {}".format(c, expected_results[c]),
-                             boofuzz.helpers.hex_to_hexstr(chr(c)))
+                             boofuzz.helpers.hex_to_hexstr(bytes(chr(c), 'latin-1'))
+                             )
 
 
 class TestFuzzLoggerText(unittest.TestCase):
     def setUp(self):
         self.virtual_file = StringIO.StringIO()
         self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file)
-        self.some_test_case_id = "some test case"
+        self.some_test_case_id = "some test case id"
+        self.some_test_case_name = "some test case name"
+        self.some_test_case_index = 3
         self.some_test_step_msg = "Test!!!"
         self.some_log_check_msg = "logging"
         self.some_log_info_msg = "information"
         self.some_log_fail_msg = "broken"
         self.some_log_pass_msg = "it works so far!"
         self.some_log_error_msg = "D:"
-        self.some_recv_data = bytes('A B C')
-        self.some_send_data = bytes('123')
+
+        self.some_recv_data = bytes('A B C', 'ascii')
+        self.some_send_data = bytes('123', 'ascii')
 
     def test_open_test_case(self):
         """
@@ -143,7 +150,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: open_test_case logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
 
         # Then
         self.virtual_file.seek(0)
@@ -159,7 +166,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: open_test_step logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.open_test_step(self.some_test_step_msg)
 
         # Then
@@ -178,7 +185,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_check logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_check(self.some_log_check_msg)
 
         # Then
@@ -197,7 +204,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_error logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_error(self.some_log_error_msg)
 
         # Then
@@ -216,7 +223,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_recv logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_recv(self.some_recv_data)
 
         # Then
@@ -236,7 +243,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_send logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_send(self.some_send_data)
 
         # Then
@@ -257,7 +264,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_info logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_info(self.some_log_info_msg)
 
         # Then
@@ -276,7 +283,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_fail logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_fail(self.some_log_fail_msg)
 
         # Then
@@ -295,7 +302,7 @@ class TestFuzzLoggerText(unittest.TestCase):
          and: log_pass logs as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_pass(self.some_log_pass_msg)
 
         # Then
@@ -312,7 +319,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: open_test_case logs with a zero-length test case id.
         """
         # When
-        self.logger.open_test_case('')
+        self.logger.open_test_case('', self.some_test_case_name, self.some_test_case_index)
 
         # Then
         self.virtual_file.seek(0)
@@ -327,7 +334,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: open_test_step logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.open_test_step('')
 
         # Then
@@ -345,7 +352,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_check logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_check('')
 
         # Then
@@ -363,7 +370,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_error logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_error('')
 
         # Then
@@ -381,8 +388,8 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_recv logs with zero-length data.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
-        self.logger.log_recv(bytes(''))
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
+        self.logger.log_recv(bytes('', 'ascii'))
 
         # Then
         self.virtual_file.seek(0)
@@ -390,7 +397,7 @@ class TestFuzzLoggerText(unittest.TestCase):
                                  LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOGGER_PREAMBLE + re.escape(
-                                     LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('')))))
+                                     LOG_RECV_FORMAT.format(fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('', 'ascii')))))
 
     def test_log_send_empty(self):
         """
@@ -400,16 +407,16 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_send logs with zero-length data.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
-        self.logger.log_send(bytes(''))
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
+        self.logger.log_send(bytes('', 'ascii'))
 
         # Then
         self.virtual_file.seek(0)
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOGGER_PREAMBLE + re.escape(TEST_CASE_FORMAT.format(self.some_test_case_id)))
         self.assertRegexpMatches(self.virtual_file.readline(),
-                                 LOGGER_PREAMBLE + re.escape(LOG_SEND_FORMAT.format(len(bytes('')),
-                                                             fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('')))))
+                                 LOGGER_PREAMBLE + re.escape(LOG_SEND_FORMAT.format(len(bytes('', 'ascii')),
+                                                             fuzz_logger_text.DEFAULT_HEX_TO_STR(bytes('', 'ascii')))))
 
     def test_log_info_empty(self):
         """
@@ -419,7 +426,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_info logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_info('')
 
         # Then
@@ -437,7 +444,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_fail logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_fail('')
 
         # Then
@@ -455,7 +462,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: log_pass logs with a zero-length description.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_pass('')
 
         # Then
@@ -482,7 +489,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: All methods log as expected.
         """
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.open_test_step(self.some_test_step_msg)
         self.logger.log_recv(self.some_recv_data)
         self.logger.log_send(self.some_send_data)
@@ -534,7 +541,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file,
                                                       bytes_to_str=hex_to_str)
         # When
-        self.logger.open_test_case(self.some_test_case_id)
+        self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_recv(self.some_recv_data)
 
         # Then

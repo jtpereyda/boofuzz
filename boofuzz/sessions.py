@@ -275,7 +275,8 @@ class Session(pgraph.Graph):
         crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
-        fuzz_data_logger (fuzz_logger.FuzzLogger): For saving test data and results.. Default Log to STDOUT.
+        fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
+        fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
         receive_data_after_each_request (bool): If True, Session will attempt to receive a reply after transmitting
                                                 each node. Default True.
         check_data_received_each_request (bool): If True, Session will verify that some data has

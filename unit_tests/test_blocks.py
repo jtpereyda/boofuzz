@@ -55,13 +55,13 @@ def groups_and_num_test_cases():
 
     # assert that the number of block mutations equals the sum of the number of mutations of its components.
     assert (req1.names["BLOCK"].num_mutations() == (
-        req1.names["delim"].num_mutations() +
-        req1.names["string"].num_mutations() +
-        req1.names["byte"].num_mutations() +
-        req1.names["word"].num_mutations() +
-        req1.names["dword"].num_mutations() +
-        req1.names["qword"].num_mutations() +
-        req1.names["random"].num_mutations()
+            req1.names["delim"].num_mutations() +
+            req1.names["string"].num_mutations() +
+            req1.names["byte"].num_mutations() +
+            req1.names["word"].num_mutations() +
+            req1.names["dword"].num_mutations() +
+            req1.names["qword"].num_mutations() +
+            req1.names["random"].num_mutations()
     ))
 
     s_initialize("UNIT TEST 2")
@@ -93,12 +93,12 @@ def dependencies():
         s_static("TWO" * 100)
         s_block_end()
 
-    assert(s_num_mutations() == 2)
-    assert(s_mutate() == True)
+    assert (s_num_mutations() == 2)
+    assert (s_mutate() == True)
     assert (s_render().find("TWO") == -1)
-    assert(s_mutate() == True)
+    assert (s_mutate() == True)
     assert (s_render().find("ONE") == -1)
-    assert(s_mutate() == False)
+    assert (s_mutate() == False)
 
 
 def repeaters():
@@ -157,13 +157,13 @@ def return_current_mutant():
     num_str_mutations = req1.names["foo"].num_mutations()
     num_int_mutations = req1.names["boss hog"].num_mutations()
 
-    for i in xrange(1, num_str_mutations + num_int_mutations - 10 + 1):
+    for i in xrange(num_str_mutations + num_int_mutations - 10):
         req1.mutate()
 
     assert (req1.mutant.name == "vagina")
     req1.reset()
 
-    for i in xrange(1, num_int_mutations + num_str_mutations + 1 + 1):
+    for i in xrange(num_int_mutations + num_str_mutations + 1):
         req1.mutate()
     assert (req1.mutant.name == "foo")
     req1.reset()
@@ -177,6 +177,7 @@ def return_current_mutant():
         req1.mutate()
     assert (req1.mutant.name == "uhntiss")
     req1.reset()
+
 
 def with_statements():
     s_initialize("WITH TEST")

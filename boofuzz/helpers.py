@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from builtins import bytes
 import ctypes
 import platform
 import re
@@ -303,13 +302,14 @@ def udp_checksum(msg, src_addr, dst_addr):
 def hex_str(s):
     """
     Returns a hex-formatted string based on s.
-    :param s: Some string.
-    :type s: str
 
-    :return: Hex-formatted string representing s.
-    :rtype: str
+    Args:
+        s (bytes): Some string.
+
+    Returns:
+        str: Hex-formatted string representing s.
     """
-    return ' '.join("{:02x}".format(ord(b)) for b in s)
+    return ' '.join("{:02x}".format(b) for b in bytearray(s))
 
 
 def pause_for_signal():

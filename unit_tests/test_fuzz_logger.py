@@ -13,6 +13,8 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self.mock_logger_1, self.mock_logger_2])
 
         self.some_text = "Some test text"
+        self.some_other_text = "More test text"
+        self.some_int = 1
         self.some_data = bytes('1234567890\0')
 
     def test_open_test_step(self):
@@ -106,10 +108,14 @@ class TestFuzzLogger(unittest.TestCase):
         Then: open_test_case() is called with that same text on each
               IFuzzLoggerBackend.
         """
-        self.logger.open_test_case(test_case_id=self.some_text)
+        self.logger.open_test_case(test_case_id=self.some_text, name=self.some_other_text, index=self.some_int)
 
-        self.mock_logger_1.open_test_case.assert_called_once_with(test_case_id=self.some_text)
-        self.mock_logger_2.open_test_case.assert_called_once_with(test_case_id=self.some_text)
+        self.mock_logger_1.open_test_case.assert_called_once_with(test_case_id=self.some_text,
+                                                                  name=self.some_other_text,
+                                                                  index=self.some_int)
+        self.mock_logger_2.open_test_case.assert_called_once_with(test_case_id=self.some_text,
+                                                                  name=self.some_other_text,
+                                                                  index=self.some_int)
 
     def test_log_send(self):
         """
@@ -138,11 +144,11 @@ class TestFuzzLogger(unittest.TestCase):
         """
         self.assertEqual(0, len(self.logger.failed_test_cases))
 
-        self.logger.open_test_case(test_case_id='!@#$%^&*()')
+        self.logger.open_test_case(test_case_id='!@#$%^&*()', name=self.some_other_text, index=self.some_int)
         self.logger.log_fail('FAILURE 1')
         self.assertEqual(['FAILURE 1'], self.logger.failed_test_cases['!@#$%^&*()'])
 
-        self.logger.open_test_case(test_case_id='haiku')
+        self.logger.open_test_case(test_case_id='haiku', name=self.some_other_text, index=self.some_int)
         self.logger.log_fail('010')
         self.logger.log_fail('11001')
         self.logger.log_fail('1110')
@@ -166,12 +172,12 @@ class TestFuzzLogger(unittest.TestCase):
         """
         self.assertEqual(0, len(self.logger.error_test_cases))
 
-        self.logger.open_test_case(test_case_id='a')
+        self.logger.open_test_case(test_case_id='a', name=self.some_other_text, index=self.some_int)
         self.logger.log_error('FAILURE 1')
         self.assertEqual(['FAILURE 1'], self.logger.error_test_cases['a'])
 
         # Use a number to verify that non-string keys can work
-        self.logger.open_test_case(test_case_id=5)
+        self.logger.open_test_case(test_case_id=5, name=self.some_other_text, index=self.some_int)
 
         line1 = 'Sit here and rot, high, fat, all day, you boys,'
         line2 = 'Far lengths hide pain, mother\'s sobs, children\'s bones'
@@ -199,11 +205,11 @@ class TestFuzzLogger(unittest.TestCase):
         """
         self.assertEqual(0, len(self.logger.passed_test_cases))
 
-        self.logger.open_test_case(test_case_id='a')
+        self.logger.open_test_case(test_case_id='a', name=self.some_other_text, index=self.some_int)
         self.logger.log_pass('Good to go')
         self.assertEqual(['Good to go'], self.logger.passed_test_cases['a'])
 
-        self.logger.open_test_case(test_case_id=-1)
+        self.logger.open_test_case(test_case_id=-1, name=self.some_other_text, index=self.some_int)
 
         line1 = 'Yes'
         line2 = 'Yes'
@@ -231,18 +237,18 @@ class TestFuzzLogger(unittest.TestCase):
         """
         self.assertEqual([], self.logger.all_test_cases)
 
-        self.logger.open_test_case(test_case_id='a')
+        self.logger.open_test_case(test_case_id='a', name=self.some_other_text, index=self.some_int)
         self.assertEqual(['a'], self.logger.all_test_cases)
 
-        self.logger.open_test_case(test_case_id='b')
+        self.logger.open_test_case(test_case_id='b', name=self.some_other_text, index=self.some_int)
         self.logger.log_pass()
         self.assertEqual(['a', 'b'], self.logger.all_test_cases)
 
-        self.logger.open_test_case(test_case_id='c')
+        self.logger.open_test_case(test_case_id='c', name=self.some_other_text, index=self.some_int)
         self.logger.log_fail()
         self.assertEqual(['a', 'b', 'c'], self.logger.all_test_cases)
 
-        self.logger.open_test_case(test_case_id='d')
+        self.logger.open_test_case(test_case_id='d', name=self.some_other_text, index=self.some_int)
         self.logger.log_error(description='uh oh!')
         self.assertEqual(['a', 'b', 'c', 'd'], self.logger.all_test_cases)
 
