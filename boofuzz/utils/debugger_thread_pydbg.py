@@ -1,6 +1,7 @@
 import threading
 import time
 
+import pydbg
 
 class DebuggerThreadPydbg(threading.Thread):
     def __init__(self, process_monitor, proc_name=None, ignore_pid=None, pid=None):
