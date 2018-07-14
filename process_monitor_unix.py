@@ -64,6 +64,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.stop_commands = []
         self.proc_name = None
         self.coredump_dir = coredump_dir
+        self.debugger_thread = None
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
@@ -72,6 +73,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        # TODO update this bit
         # if self._process is not None:
         #     self._process.kill()
         pass
@@ -99,29 +101,13 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         """
         This routine is called after the fuzzer transmits a test case and returns the status of the target.
 
-        @rtype:  bool
-        @return: Return True if the target is still active, False otherwise.
+        Returns:
+            bool: True if the target is still active, False otherwise.
         """
-
-        if not self.dbg.is_alive():
-            exit_status = self.dbg.get_exit_status()
+        if self.dbg.is_alive():
+            return True
+        else:
             rec_file = open(self.crash_bin, 'a')
-            if os.WCOREDUMP(exit_status):
-                reason = 'Segmentation fault'
-            elif os.WIFSTOPPED(exit_status):
-                reason = 'Stopped with signal ' + str(os.WTERMSIG(exit_status))
-            elif os.WIFSIGNALED(exit_status):
-                reason = 'Terminated with signal ' + str(os.WTERMSIG(exit_status))
-            elif os.WIFEXITED(exit_status):
-                reason = 'Exit with code - ' + str(os.WEXITSTATUS(exit_status))
-            else:
-                reason = 'Process died for unknown reason'
-
-            self.last_synopsis = '[%s] Crash : Test - %d Reason - %s\n' % (
-                time.strftime("%I:%M.%S"),
-                self.test_number,
-                reason
-            )
             rec_file.write(self.last_synopsis)
             rec_file.close()
 
@@ -132,8 +118,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
                 if src is not None:
                     self.log("moving core dump %s -> %s" % (src, dest))
                     os.rename(src, dest)
-
-        return self.dbg.is_alive()
+            return False
 
     def _get_coredump_path(self):
         """
@@ -166,24 +151,21 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful. No failure detection yet.
         """
-
-        self.log("starting target process")
-
-        self.dbg = DebuggerThreadSimple(self.start_commands[0])
+        self.log("creating debugger thread", 5)
+        self.dbg = DebuggerThreadSimple(self.start_commands, self, log_level=self.log_level)
         self.dbg.spawn_target()
         # prevent blocking by spawning off another thread to waitpid
-        t = threading.Thread(target=self.dbg.start_monitoring)
-        t.daemon = True
-        t.start()
-        self.log("done. target up and running, giving it 5 seconds to settle in.")
-        time.sleep(5)
+        self.debugger_thread = threading.Thread(target=self.dbg.start_monitoring)
+        self.debugger_thread.daemon = True
+        self.debugger_thread.start()
+        self.log("giving debugger thread 2 seconds to settle in", 5)
+        time.sleep(2)
         return True
 
     def stop_target(self):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
-
         # give the debugger thread a chance to exit.
         time.sleep(1)
 

@@ -1,3 +1,6 @@
+from __future__ import print_function
+import os
+import subprocess
 import threading
 import time
 
@@ -6,13 +9,14 @@ import pydbg.defines
 
 
 class DebuggerThreadPydbg(threading.Thread):
-    def __init__(self, process_monitor, proc_name=None, ignore_pid=None, pid=None):
+    def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None, pid=None, log_level=1):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
 
         threading.Thread.__init__(self)
 
+        self.start_commands = start_commands
         self.process_monitor = process_monitor
         self.proc_name = proc_name
         self.ignore_pid = ignore_pid
@@ -30,6 +34,19 @@ class DebuggerThreadPydbg(threading.Thread):
         # set the user callback which is response for checking if this thread has been killed.
         self.dbg.set_callback(pydbg.defines.USER_CALLBACK_DEBUG_EVENT, self._dbg_callback_user)
         self.dbg.set_callback(pydbg.defines.EXCEPTION_ACCESS_VIOLATION, self._dbg_callback_access_violation)
+        self.log_level = log_level
+        self._process = None
+
+    def log(self, msg="", level=1):
+        """
+        If the supplied message falls under the current log level, print the specified message to screen.
+
+        @type  msg: str
+        @param msg: Message to log
+        """
+
+        if self.log_level >= level:
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def _dbg_callback_access_violation(self, dbg):
         """
@@ -72,6 +89,20 @@ class DebuggerThreadPydbg(threading.Thread):
             dbg.detach()
 
         return pydbg.defines.DBG_CONTINUE
+
+    def spawn_target(self):
+        # TODO checks: debugger thread already active; process already started; no start_commands
+
+        self.log("starting target process")
+        for command in self.start_commands:
+            try:
+                self._process = subprocess.Popen(command)
+            except WindowsError as e:
+                print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
+                return False
+        self.log("done. target up and running, giving it 5 seconds to settle in.")
+        time.sleep(5)
+        self.pid = self._process.pid
 
     def run(self):
         """
@@ -118,3 +149,10 @@ class DebuggerThreadPydbg(threading.Thread):
                     break
 
         self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
+
+    def stop_target(self):
+        for (pid, name) in self.dbg.enumerate_processes():
+            if name.lower() == self.proc_name.lower():
+                os.system("taskkill /pid %d" % pid)
+                break
+

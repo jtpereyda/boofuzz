@@ -42,7 +42,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.stop_commands = []
         self.start_commands = []
-        self._process = None
         self.test_number = None
         self.debugger_thread = None
         self.crash_bin = utils.crash_binning.CrashBinning()
@@ -70,8 +69,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self._process is not None:
-            self._process.kill()
+        # TODO update this bit
+        # if self._process is not None:
+        #     self._process.kill()
+        pass
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -132,11 +133,9 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         This routine is called after the fuzzer transmits a test case and returns the status of the target.
 
-        @rtype:  bool
-        @return: Return True if the target is still active, False otherwise.
+        Returns:
+            bool: True if the target is still active, False otherwise.
         """
-
-        crashes = 0
         if self.debugger_thread is None:
             return True
         else:
@@ -153,10 +152,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
             # serialize the crash bin to disk.
             self.crash_bin.export_file(self.crash_filename)
-            # for binary in self.crash_bin.bins.keys():
-            # crashes += len(self.crash_bin.bins[binary])
-            for binary, crash_list in self.crash_bin.bins.items():
-                crashes += len(crash_list)
             return not av
 
     def pre_send(self, test_number):
@@ -184,33 +179,14 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        # if we don't already have a debugger thread or process, start one now.
-        if (not self.debugger_thread or not self.debugger_thread.isAlive()) and (
-                self._process is None or self._process.poll() is not None):
-            if len(self.start_commands) > 0:
-                self.log("starting target process")
-
-                for command in self.start_commands:
-                    try:
-                        self._process = subprocess.Popen(command)
-                    except WindowsError as e:
-                        print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
-                        return False
-
-                self.log("done. target up and running, giving it 5 seconds to settle in.")
-                # This action assumes the command starts the process itself and not a service command that exits
-                # upon completion... could be improved.
-                time.sleep(5)
-
-            if self._process is not None:
-                self.log("creating debugger thread", 5)
-                self.debugger_thread = DebuggerThreadPydbg(self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
-                                                           pid=self._process.pid)
-                self.debugger_thread.daemon = True
-                self.debugger_thread.start()
-                self.log("giving debugger thread 2 seconds to settle in", 5)
-                time.sleep(2)
-
+        self.log("creating debugger thread", 5)
+        self.debugger_thread = DebuggerThreadPydbg(self.start_commands, self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
+                                                   log_level=self.log_level)
+        self.debugger_thread.spawn_target()
+        self.debugger_thread.daemon = True
+        self.debugger_thread.start()
+        self.log("giving debugger thread 2 seconds to settle in", 5)
+        time.sleep(2)
         return True
 
     def stop_target(self):
@@ -224,15 +200,11 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("stopping target process")
 
         if len(self.stop_commands) < 1:
-            self._process.kill()
+            self.debugger_thread.stop_target()
         else:
             for command in self.stop_commands:
                 if command == "TERMINATE_PID":
-                    dbg = pydbg.pydbg()
-                    for (pid, name) in dbg.enumerate_processes():
-                        if name.lower() == self.proc_name.lower():
-                            os.system("taskkill /pid %d" % pid)
-                            break
+                    self.debugger_thread.stop_target()
                 else:
                     os.system(command)
 
