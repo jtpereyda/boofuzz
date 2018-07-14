@@ -38,13 +38,12 @@ class Target(object):
 
     Example:
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
+
+    Args:
+        connection (itarget_connection.ITargetConnection): Connection to system under test.
     """
 
     def __init__(self, connection, procmon=None, procmon_options=None, netmon=None):
-        """
-        Args:
-            connection (itarget_connection.ITargetConnection): Connection to system under test.
-        """
         self._fuzz_data_logger = None
 
         self._target_connection = connection
@@ -75,7 +74,7 @@ class Target(object):
 
         :return: None
         """
-        self._fuzz_data_logger.log_info('Opening target connection...')
+        self._fuzz_data_logger.log_info('Opening target connection ({0})...'.format(self._target_connection.info))
         self._target_connection.open()
         self._fuzz_data_logger.log_info('Connection opened.')
 

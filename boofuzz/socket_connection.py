@@ -233,3 +233,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             else:
                 raise
         return num_sent
+
+    @property
+    def info(self):
+        return '{0}:{1}'.format(self.host, self.port)
+
