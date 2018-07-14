@@ -7,6 +7,10 @@ import time
 import pydbg
 import pydbg.defines
 
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
+
 
 class DebuggerThreadPydbg(threading.Thread):
     def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None, pid=None, log_level=1):

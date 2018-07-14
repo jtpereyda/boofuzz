@@ -5,6 +5,10 @@ import subprocess
 import sys
 import time
 
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
+
 
 class DebuggerThreadSimple:
     def __init__(self, start_commands, process_monitor, log_level):
