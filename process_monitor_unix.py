@@ -68,6 +68,9 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
 
+    def __enter__(self):
+        return self
+
     def __exit__(self, exc_type, exc_value, traceback):
         # if self._process is not None:
         #     self._process.kill()
