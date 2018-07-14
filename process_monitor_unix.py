@@ -1,12 +1,13 @@
 import os
 import sys
-import getopt
-import signal
-import time
 import threading
-import subprocess
+import time
 
+import click
+
+from boofuzz import DEFAULT_PROCMON_PORT
 from boofuzz import pedrpc
+from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 
 '''
 By nnp
@@ -39,65 +40,7 @@ Limitations
       that caused the crash and the signal received by the program
 '''
 
-USAGE = "USAGE: process_monitor_unix.py"\
-        "\n    [-c|--crash_bin]             File to record crash info to" \
-        "\n    [-P|--port PORT]             TCP port to bind this agent to"\
-        "\n    [-l|--log_level LEVEL]       log level (default 1), increase for more verbosity"\
-        "\n    [-d|--coredump_dir dir]      directory where coredumps are moved to "\
-        "\n                                 (you may need to adjust ulimits to create coredumps)"
-
-ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
-
-
-class DebuggerThread:
-    def __init__(self, start_command):
-        """
-        This class isn't actually ran as a thread, only the start_monitoring
-        method is. It can spawn/stop a process, wait for it to exit and report on
-        the exit status/code.
-        """
-
-        self.start_command = start_command
-        if isinstance(start_command, basestring):
-            self.tokens = start_command.split(' ')
-        else:
-            self.tokens = start_command
-        self.cmd_args = []
-        self.pid = None
-        self.exit_status = None
-        self.alive = False
-
-    def spawn_target(self):
-        print self.tokens
-        self.pid = subprocess.Popen(self.tokens).pid
-        self.alive = True
-
-    def start_monitoring(self):
-        """
-        self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
-        while self.exit_status == (0, 0):
-            self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
-        """
-
-        self.exit_status = os.waitpid(self.pid, 0)
-        # [0] is the pid
-        self.exit_status = self.exit_status[1]
-
-        self.alive = False
-
-    def get_exit_status(self):
-        return self.exit_status
-
-    def stop_target(self):
-        try:
-            os.kill(self.pid, signal.SIGKILL)
-        except OSError as e:
-            print e.errno  # TODO interpret some basic errors
-        else:
-            self.alive = False
-
-    def is_alive(self):
-        return self.alive
+ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 
 
 class NIXProcessMonitorPedrpcServer(pedrpc.Server):
@@ -112,15 +55,15 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         pedrpc.Server.__init__(self, host, port)
-        self.crash_bin      = cbin
-        self.log_level      = level
-        self.dbg            = None
-        self.last_synopsis  = None
-        self.test_number    = 0
+        self.crash_bin = cbin
+        self.log_level = level
+        self.dbg = None
+        self.last_synopsis = None
+        self.test_number = 0
         self.start_commands = []
-        self.stop_commands  = []
-        self.proc_name      = None
-        self.coredump_dir   = coredump_dir
+        self.stop_commands = []
+        self.proc_name = None
+        self.coredump_dir = coredump_dir
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
@@ -142,7 +85,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def post_send(self):
         """
@@ -192,7 +135,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
             path = './core'
             if os.path.isfile(path):
                 return path
-                
+
         return None
 
     def pre_send(self, test_number):
@@ -216,10 +159,9 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful. No failure detection yet.
         """
 
-
         self.log("starting target process")
 
-        self.dbg = DebuggerThread(self.start_commands[0])
+        self.dbg = DebuggerThreadSimple(self.start_commands[0])
         self.dbg.spawn_target()
         # prevent blocking by spawning off another thread to waitpid
         t = threading.Thread(target=self.dbg.start_monitoring)
@@ -291,40 +233,36 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         return self.last_synopsis
 
 
-if __name__ == "__main__":
-    # parse command line options.
-    opts = None
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "c:P:l:d:", ["crash_bin=", "port=", "log_level=", "coredump_dir="])
-    except getopt.GetoptError:
-        ERR(USAGE)
+def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
+    with NIXProcessMonitorPedrpcServer(host="0.0.0.0", port=port, cbin=crash_bin, coredump_dir=coredump_dir,
+                                       level=log_level) as servlet:
+        servlet.serve_forever()
 
-    log_level = 1
-    PORT = None
-    crash_bin = None
-    coredump_dir = None
-    for opt, arg in opts:
-        if opt in ("-c", "--crash_bin"):
-            crash_bin  = arg
-        if opt in ("-P", "--port"):
-            PORT = int(arg)
-        if opt in ("-l", "--log_level"):
-            log_level  = int(arg)
-        if opt in ("-d", "--coredump_dir"):
-            coredump_dir = arg
 
-    if not crash_bin:
-        crash_bin = 'boofuzz-crash-bin'
-
-    if not PORT:
-        PORT = 26002
-
+@click.command()
+@click.option('--crash-bin', '--crash_bin', '-c', help='filename to serialize crash bin class to',
+              default='boofuzz-crash-bin', metavar='FILENAME')
+@click.option('--ignore-pid', '--ignore_pid', '-i', type=int, help='PID to ignore when searching for target process',
+              metavar='PID')
+@click.option('--log-level', '--log_level', '-l', help='log level: default 1, increase for more verbosity', type=int,
+              default=1, metavar='LEVEL')
+@click.option('--proc-name', '--proc_name', '-p', help='process name to search for and attach to', prompt=True,
+              metavar='NAME')
+@click.option('--port', '-P', help='TCP port to bind this agent to', type=int, default=DEFAULT_PROCMON_PORT)
+@click.option('--coredump-dir', '--coredump_dir', '-d',
+              help='directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)')
+def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir):
     if coredump_dir is not None and not os.path.isdir(coredump_dir):
         ERR("coredump_dir must be an existing directory")
 
-    # spawn the PED-RPC servlet.
+    serve_procmon(port=port,
+                  crash_bin=crash_bin,
+                  proc_name=proc_name,
+                  ignore_pid=ignore_pid,
+                  log_level=log_level,
+                  coredump_dir=coredump_dir
+                  )
 
-    servlet = NIXProcessMonitorPedrpcServer("0.0.0.0", PORT, crash_bin, coredump_dir, log_level)
-    servlet.serve_forever()
 
-
+if __name__ == "__main__":
+    go()
