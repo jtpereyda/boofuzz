@@ -246,7 +246,7 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_di
               metavar='PID')
 @click.option('--log-level', '--log_level', '-l', help='log level: default 1, increase for more verbosity', type=int,
               default=1, metavar='LEVEL')
-@click.option('--proc-name', '--proc_name', '-p', help='process name to search for and attach to', prompt=True,
+@click.option('--proc-name', '--proc_name', '-p', help='process name to search for and attach to',
               metavar='NAME')
 @click.option('--port', '-P', help='TCP port to bind this agent to', type=int, default=DEFAULT_PROCMON_PORT)
 @click.option('--coredump-dir', '--coredump_dir', '-d',
