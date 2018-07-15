@@ -27,7 +27,6 @@ class DebuggerThreadSimple:
         self.cmd_args = []
         self.pid = None
         self.exit_status = None
-        self.alive = False
         self.log_level = log_level
         self._process = None
 
@@ -66,8 +65,6 @@ class DebuggerThreadSimple:
         # [0] is the pid
         self.exit_status = self.exit_status[1]
 
-        self.alive = False
-
         if os.WCOREDUMP(self.exit_status):
             reason = 'Segmentation fault'
         elif os.WIFSTOPPED(self.exit_status):
@@ -89,8 +86,3 @@ class DebuggerThreadSimple:
             os.kill(self.pid, signal.SIGKILL)
         except OSError as e:
             print(e.errno)  # TODO interpret some basic errors
-        else:
-            self.alive = False
-
-    def is_alive(self):
-        return self.alive

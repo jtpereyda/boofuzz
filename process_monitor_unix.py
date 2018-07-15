@@ -74,8 +74,8 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
     def __exit__(self, exc_type, exc_value, traceback):
         # TODO update this bit
-        # if self._process is not None:
-        #     self._process.kill()
+        if self.debugger_thread.isAlive():
+            self.dbg.stop_target()
         pass
 
     # noinspection PyMethodMayBeStatic
@@ -104,7 +104,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        if self.dbg.is_alive():
+        if self.debugger_thread.isAlive():
             return True
         else:
             rec_file = open(self.crash_bin, 'a')
