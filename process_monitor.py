@@ -1,21 +1,17 @@
 #!c:\\python\\python.exe
 from __future__ import print_function
-import subprocess
 import time
-import sys
 import os
 
-import pydbg
-import pydbg.defines
 import click
 
 from boofuzz import DEFAULT_PROCMON_PORT
 from boofuzz import utils
-from boofuzz import pedrpc
 from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
+from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 
 
-class ProcessMonitorPedrpcServer(pedrpc.Server):
+class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
     def __init__(self, host, port, crash_filename, proc=None, pid_to_ignore=None, level=1):
         """
         @type  host:           str
@@ -31,9 +27,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @type  level:          int
         @param level:          (Optional, def=1) Log output level, increase for more verbosity
         """
-
-        # initialize the PED-RPC server.
-        pedrpc.Server.__init__(self, host, port)
+        super(ProcessMonitorPedrpcServerWindows, self).__init__(host, port, crash_filename, proc, pid_to_ignore, level)
 
         self.crash_filename = os.path.abspath(crash_filename)
         self.proc_name = proc
@@ -65,31 +59,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            self.debugger_thread.stop_target()
-
-    # noinspection PyMethodMayBeStatic
-    def alive(self):
-        """
-        Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
-        """
-
-        return True
-
-    def get_crash_synopsis(self):
-        """
-        Return the last recorded crash synopsis.
-
-        @rtype:  String
-        @return: Synopsis of last recorded crash.
-        """
-
-        return self.last_synopsis
-
     def get_bin_keys(self):
         """
         Return the crash bin keys, ie: the unique list of exception addresses.
@@ -115,17 +84,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             return False
 
         return self.crash_bin.bins[binary]
-
-    def log(self, msg="", level=1):
-        """
-        If the supplied message falls under the current log level, print the specified message to screen.
-
-        @type  msg: str
-        @param msg: Message to log
-        """
-
-        if self.log_level >= level:
-            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def post_send(self):
         """
@@ -206,32 +164,11 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         else:
             self.log("target already stopped")
 
-    def restart_target(self):
-        """
-        Stop and start the target process.
-
-        @returns True if successful.
-        """
-        self.log('Restarting target...')
-        self.stop_target()
-        return self.start_target()
-
-    def set_proc_name(self, new_proc_name):
-        self.log("updating target process name to '%s'" % new_proc_name)
-        self.proc_name = new_proc_name
-
-    def set_start_commands(self, new_start_commands):
-        self.log("updating start commands to: %s" % list(new_start_commands))
-        self.start_commands = new_start_commands
-
-    def set_stop_commands(self, new_stop_commands):
-        self.log("updating stop commands to: %s" % list(new_stop_commands))
-        self.stop_commands = new_stop_commands
 
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
-    with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin, proc=proc_name,
-                                    pid_to_ignore=ignore_pid, level=log_level) as servlet:
+    with ProcessMonitorPedrpcServerWindows(host="0.0.0.0", port=port, crash_filename=crash_bin, proc=proc_name,
+                                           pid_to_ignore=ignore_pid, level=log_level) as servlet:
         servlet.serve_forever()
 
 

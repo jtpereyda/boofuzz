@@ -6,8 +6,8 @@ import time
 import click
 
 from boofuzz import DEFAULT_PROCMON_PORT
-from boofuzz import pedrpc
 from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
+from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 
 '''
 By nnp
@@ -43,8 +43,8 @@ Limitations
 ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 
 
-class NIXProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, cbin, coredump_dir, level=1):
+class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
+    def __init__(self, host, port, cbin, coredump_dir, proc_name, ignore_pid, level=1):
         """
         @type host: str
         @param host: Hostname or IP address
@@ -53,8 +53,8 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         @type cbin: str
         @param cbin: Where to save monitored process crashes for analysis
         """
+        super(NIXProcessMonitorPedrpcServer, self).__init__(host, port, cbin, proc_name, ignore_pid, level)
 
-        pedrpc.Server.__init__(self, host, port)
         self.crash_bin = cbin
         self.log_level = level
         self.dbg = None
@@ -68,32 +68,6 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            self.dbg.stop_target()
-
-    # noinspection PyMethodMayBeStatic
-    def alive(self):
-        """
-        Returns True. Useful for PED-RPC clients who want to see if the PED-RPC connection is still alive.
-        """
-
-        return True
-
-    def log(self, msg="", level=1):
-        """
-        If the supplied message falls under the current log level, print the specified message to screen.
-
-        @type  msg: str
-        @param msg: Message to log
-        """
-
-        if self.log_level >= level:
-            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def post_send(self):
         """
@@ -132,7 +106,6 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
     def pre_send(self, test_number):
         """
         This routine is called before the fuzzer transmits a test case and ensure the debugger thread is operational.
-        (In this implementation do nothing for now)
 
         @type  test_number: Integer
         @param test_number: Test number to retrieve PCAP for.
@@ -181,53 +154,10 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         else:
             self.log("target already stopped")
 
-    def restart_target(self):
-        """
-        Stop and start the target process.
-
-        @returns True if successful.
-        """
-        self.log('Restarting target...')
-        self.stop_target()
-        return self.start_target()
-
-    def set_start_commands(self, start_commands):
-        """
-        We expect start_commands to be a list with one element for example
-        ['/usr/bin/program arg1 arg2 arg3']
-        """
-
-        if len(start_commands) > 1:
-            self.log("This process monitor does not accept > 1 start command")
-            return
-
-        self.log("updating start commands to: %s" % list(start_commands))
-        self.start_commands = start_commands
-
-    def set_stop_commands(self, stop_commands):
-        self.log("updating stop commands to: %s" % list(stop_commands))
-
-        self.stop_commands = stop_commands
-
-    def set_proc_name(self, proc_name):
-        self.log("updating target process name to '%s'" % proc_name)
-
-        self.proc_name = proc_name
-
-    def get_crash_synopsis(self):
-        """
-        Return the last recorded crash synopsis.
-
-        @rtype:  String
-        @return: Synopsis of last recorded crash.
-        """
-
-        return self.last_synopsis
-
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
     with NIXProcessMonitorPedrpcServer(host="0.0.0.0", port=port, cbin=crash_bin, coredump_dir=coredump_dir,
-                                       level=log_level) as servlet:
+                                       proc_name=proc_name, ignore_pid=ignore_pid, level=log_level) as servlet:
         servlet.serve_forever()
 
 
