@@ -976,7 +976,6 @@ class Session(pgraph.Graph):
                                                 "network issue, or an issue with firewalls or anti-virus. Try "
                                                 "disabling your firewall."
                                                 .format(e.socket_errno, e.socket_errmsg))
-            pass
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1234,13 +1233,33 @@ class Session(pgraph.Graph):
 
             self.pre_send(target)
 
-            for e in path[:-1]:
-                node = self.nodes[e.dst]
-                callback_data = self._callback_current_node(node=node, edge=e)
-                self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                self.transmit_normal(target, node, e, callback_data=callback_data)
+            try:
+                for e in path[:-1]:
+                    node = self.nodes[e.dst]
+                    callback_data = self._callback_current_node(node=node, edge=e)
+                    self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+                    self.transmit_normal(target, node, e, callback_data=callback_data)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+                callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            except sex.BoofuzzTargetConnectionReset:
+                # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
+                if self._ignore_connection_reset:
+                    self._fuzz_data_logger.log_info("Target connection reset.")
+                else:
+                    self._fuzz_data_logger.log_fail("Target connection reset.")
+            except sex.BoofuzzTargetConnectionAborted as e:
+                # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
+                if self._ignore_connection_aborted:
+                    self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                    "network issue, or an issue with firewalls or anti-virus. Try "
+                                                    "disabling your firewall."
+                                                    .format(e.socket_errno, e.socket_errmsg))
+                else:
+                    self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                    "network issue, or an issue with firewalls or anti-virus. Try "
+                                                    "disabling your firewall."
+                                                    .format(e.socket_errno, e.socket_errmsg))
+
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
@@ -1329,13 +1348,33 @@ class Session(pgraph.Graph):
 
         self.pre_send(target)
 
-        for e in path[:-1]:
-            node = self.nodes[e.dst]
-            callback_data = self._callback_current_node(node=node, edge=e)
-            self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-            self.transmit_normal(target, node, e, callback_data=callback_data)
+        try:
+            for e in path[:-1]:
+                node = self.nodes[e.dst]
+                callback_data = self._callback_current_node(node=node, edge=e)
+                self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
+                self.transmit_normal(target, node, e, callback_data=callback_data)
 
-        callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+        except sex.BoofuzzTargetConnectionReset:
+            # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
+            if self._ignore_connection_reset:
+                self._fuzz_data_logger.log_info("Target connection reset.")
+            else:
+                self._fuzz_data_logger.log_fail("Target connection reset.")
+        except sex.BoofuzzTargetConnectionAborted as e:
+            # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
+            if self._ignore_connection_aborted:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+            else:
+                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+
         self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
         self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
