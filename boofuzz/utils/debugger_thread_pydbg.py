@@ -113,6 +113,7 @@ class DebuggerThreadPydbg(threading.Thread):
         """
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
+        self.spawn_target()
 
         if self.proc_name is not None or self.pid is not None:
 

@@ -60,6 +60,7 @@ class DebuggerThreadSimple:
         while self.exit_status == (0, 0):
             self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
         """
+        self.spawn_target()
 
         self.exit_status = os.waitpid(self.pid, 0)
         # [0] is the pid
