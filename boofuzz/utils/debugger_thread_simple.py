@@ -58,7 +58,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
         self.pid = self._process.pid
-        self.process_monitor.log("attached to pid: %s".format(self.pid))
+        self.process_monitor.log("attached to pid: {0}".format(self.pid))
 
     def run(self):
         """
