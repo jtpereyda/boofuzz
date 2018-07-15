@@ -165,7 +165,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
         self.crash_bin.import_file(self.crash_filename)
 
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+        if self.debugger_thread is None or not self.debugger_thread.isAlive():
             self.start_target()
 
     def start_target(self):

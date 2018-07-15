@@ -140,7 +140,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("pre_send(%d)" % test_number, 10)
         self.test_number = test_number
 
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+        if self.debugger_thread is None or not self.debugger_thread.isAlive():
             self.start_target()
 
     def start_target(self):
