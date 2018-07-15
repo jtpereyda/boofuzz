@@ -95,6 +95,7 @@ class DebuggerThreadPydbg(threading.Thread):
         return pydbg.defines.DBG_CONTINUE
 
     def spawn_target(self):
+        # TODO move spawn_target into run to remove the half-initialized state between calling the two functions
         # TODO checks: debugger thread already active; process already started; no start_commands
 
         self.log("starting target process")
@@ -134,7 +135,7 @@ class DebuggerThreadPydbg(threading.Thread):
             self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
             # TODO: removing the following line appears to cause some concurrency issues.
-            del self.dbg
+            # del self.dbg
 
     def watch(self):
         """
