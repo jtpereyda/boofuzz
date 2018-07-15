@@ -157,8 +157,7 @@ class DebuggerThreadPydbg(threading.Thread):
         self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
 
     def stop_target(self):
-        for (pid, name) in self.dbg.enumerate_processes():
-            if name.lower() == self.proc_name.lower():
-                os.system("taskkill /pid %d" % pid)
-                break
-
+        try:
+            os.system("taskkill /pid %d" % self.pid)
+        except OSError as e:
+            print(e.errno)  # TODO interpret some basic errors
