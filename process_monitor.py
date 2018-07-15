@@ -59,32 +59,6 @@ class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
 
-    def get_bin_keys(self):
-        """
-        Return the crash bin keys, ie: the unique list of exception addresses.
-
-        @rtype:  List
-        @return: List of crash bin exception addresses (keys).
-        """
-
-        return self.crash_bin.bins.keys()
-
-    def get_bin(self, binary):
-        """
-        Return the crash entries from the specified bin or False if the bin key is invalid.
-
-        @type  binary: Integer (DWORD)
-        @param binary: Crash bin key (ie: exception address)
-
-        @rtype:  list
-        @return: List of crashes in specified bin.
-        """
-
-        if binary not in self.crash_bin.bins:
-            return False
-
-        return self.crash_bin.bins[binary]
-
     def post_send(self):
         """
         This routine is called after the fuzzer transmits a test case and returns the status of the target.
@@ -163,7 +137,6 @@ class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
             self.log("target stopped")
         else:
             self.log("target already stopped")
-
 
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):

@@ -83,32 +83,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         return self.last_synopsis
 
-    def get_bin_keys(self):
-        """
-        Return the crash bin keys, ie: the unique list of exception addresses.
-
-        @rtype:  List
-        @return: List of crash bin exception addresses (keys).
-        """
-
-        return self.crash_bin.bins.keys()
-
-    def get_bin(self, binary):
-        """
-        Return the crash entries from the specified bin or False if the bin key is invalid.
-
-        @type  binary: Integer (DWORD)
-        @param binary: Crash bin key (ie: exception address)
-
-        @rtype:  list
-        @return: List of crashes in specified bin.
-        """
-
-        if binary not in self.crash_bin.bins:
-            return False
-
-        return self.crash_bin.bins[binary]
-
     def log(self, msg="", level=1):
         """
         If the supplied message falls under the current log level, print the specified message to screen.
