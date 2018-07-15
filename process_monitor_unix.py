@@ -53,7 +53,7 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         @type cbin: str
         @param cbin: Where to save monitored process crashes for analysis
         """
-        super(NIXProcessMonitorPedrpcServer, self).__init__(host, port, cbin, proc_name, ignore_pid, level)
+        super(NIXProcessMonitorPedrpcServer, self).__init__(host, port, cbin,DebuggerThreadSimple, proc_name, ignore_pid, level)
 
         self.crash_bin = cbin
         self.log_level = level

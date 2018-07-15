@@ -5,11 +5,10 @@ import os
 
 from boofuzz import utils
 from boofuzz import pedrpc
-from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, crash_filename, proc=None, pid_to_ignore=None, level=1):
+    def __init__(self, host, port, crash_filename, debugger_class, proc=None, pid_to_ignore=None, level=1):
         """
         @type  host:           str
         @param host:           Hostname or IP address
@@ -29,6 +28,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         pedrpc.Server.__init__(self, host, port)
 
         self.crash_filename = os.path.abspath(crash_filename)
+        self.debugger_class = debugger_class
         self.proc_name = proc
         self.ignore_pid = pid_to_ignore
         self.log_level = level
@@ -168,7 +168,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         self.log("creating debugger thread", 5)
-        self.debugger_thread = DebuggerThreadPydbg(self.start_commands, self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
+        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
                                                    log_level=self.log_level)
         self.debugger_thread.spawn_target()
         self.debugger_thread.daemon = True

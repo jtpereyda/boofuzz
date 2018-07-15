@@ -1,10 +1,10 @@
 #!c:\\python\\python.exe
 from __future__ import print_function
-import time
+
 import os
+import time
 
 import click
-
 from boofuzz import DEFAULT_PROCMON_PORT
 from boofuzz import utils
 from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
@@ -27,7 +27,7 @@ class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
         @type  level:          int
         @param level:          (Optional, def=1) Log output level, increase for more verbosity
         """
-        super(ProcessMonitorPedrpcServerWindows, self).__init__(host, port, crash_filename, proc, pid_to_ignore, level)
+        super(ProcessMonitorPedrpcServerWindows, self).__init__(host, port, crash_filename, DebuggerThreadPydbg, proc, pid_to_ignore, level)
 
         self.crash_filename = os.path.abspath(crash_filename)
         self.proc_name = proc
