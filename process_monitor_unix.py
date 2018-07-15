@@ -123,8 +123,7 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         @returns True if successful. No failure detection yet.
         """
         self.log("creating debugger thread", 5)
-        self.dbg = DebuggerThreadSimple(self.start_commands, self, log_level=self.log_level)
-        self.debugger_thread = threading.Thread(target=self.dbg.start_monitoring)
+        self.debugger_thread = DebuggerThreadSimple(self.start_commands, self, log_level=self.log_level)
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
         self.log("giving debugger thread 2 seconds to settle in", 5)

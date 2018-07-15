@@ -3,6 +3,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 import time
 
 if not getattr(__builtins__, "WindowsError", None):
@@ -10,13 +11,14 @@ if not getattr(__builtins__, "WindowsError", None):
         pass
 
 
-class DebuggerThreadSimple:
+class DebuggerThreadSimple(threading.Thread):
     def __init__(self, start_commands, process_monitor, log_level):
         """
         This class isn't actually ran as a thread, only the start_monitoring
         method is. It can spawn/stop a process, wait for it to exit and report on
         the exit status/code.
         """
+        threading.Thread.__init__(self)
 
         self.start_commands = start_commands
         self.process_monitor = process_monitor
@@ -54,7 +56,7 @@ class DebuggerThreadSimple:
         time.sleep(5)
         self.pid = self._process.pid
 
-    def start_monitoring(self):
+    def run(self):
         """
         self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
         while self.exit_status == (0, 0):

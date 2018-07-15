@@ -3,6 +3,7 @@ import os
 import subprocess
 import threading
 import time
+import sys
 
 import pydbg
 import pydbg.defines
@@ -17,7 +18,6 @@ class DebuggerThreadPydbg(threading.Thread):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
-
         threading.Thread.__init__(self)
 
         self.start_commands = start_commands
