@@ -184,6 +184,7 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
+        self.log('Restarting target...')
         self.stop_target()
         return self.start_target()
 
