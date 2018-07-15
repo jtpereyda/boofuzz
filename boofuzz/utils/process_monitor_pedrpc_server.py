@@ -142,8 +142,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         self.log("creating debugger thread", 5)
-        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
-                                                   log_level=self.log_level)
+        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name,
+                                                   ignore_pid=self.ignore_pid, log_level=self.log_level)
         self.debugger_thread.spawn_target()
         self.debugger_thread.daemon = True
         self.debugger_thread.start()

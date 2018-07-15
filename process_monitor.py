@@ -100,21 +100,6 @@ class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
         if self.debugger_thread is None or not self.debugger_thread.isAlive():
             self.start_target()
 
-    def start_target(self):
-        """
-        Start up the target process by issuing the commands in self.start_commands.
-
-        @returns True if successful.
-        """
-        self.log("creating debugger thread", 5)
-        self.debugger_thread = DebuggerThreadPydbg(self.start_commands, self, proc_name=self.proc_name, ignore_pid=self.ignore_pid,
-                                                   log_level=self.log_level)
-        self.debugger_thread.daemon = True
-        self.debugger_thread.start()
-        self.log("giving debugger thread 2 seconds to settle in", 5)
-        time.sleep(2)
-        return True
-
     def stop_target(self):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.

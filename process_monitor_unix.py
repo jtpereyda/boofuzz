@@ -57,7 +57,6 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
 
         self.crash_bin = cbin
         self.log_level = level
-        self.dbg = None
         self.last_synopsis = None
         self.test_number = 0
         self.start_commands = []
@@ -116,20 +115,6 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         if self.debugger_thread is None or not self.debugger_thread.isAlive():
             self.start_target()
 
-    def start_target(self):
-        """
-        Start up the target process by issuing the commands in self.start_commands.
-
-        @returns True if successful. No failure detection yet.
-        """
-        self.log("creating debugger thread", 5)
-        self.debugger_thread = DebuggerThreadSimple(self.start_commands, self, log_level=self.log_level)
-        self.debugger_thread.daemon = True
-        self.debugger_thread.start()
-        self.log("giving debugger thread 2 seconds to settle in", 5)
-        time.sleep(2)
-        return True
-
     def stop_target(self):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
@@ -140,11 +125,11 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         self.log("stopping target process")
         if self.debugger_thread is not None and self.debugger_thread.isAlive():
             if len(self.stop_commands) < 1:
-                self.dbg.stop_target()
+                self.debugger_thread.stop_target()
             else:
                 for command in self.stop_commands:
                     if command == "TERMINATE_PID":
-                        self.dbg.stop_target()
+                        self.debugger_thread.stop_target()
                     else:
                         os.system(command)
             self.log("target stopped")
