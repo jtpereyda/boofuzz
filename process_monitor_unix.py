@@ -73,10 +73,8 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        # TODO update this bit
-        if self.debugger_thread.isAlive():
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
             self.dbg.stop_target()
-        pass
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -139,11 +137,11 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         @type  test_number: Integer
         @param test_number: Test number to retrieve PCAP for.
         """
-        if not self.dbg:
-            self.start_target()
-
         self.log("pre_send(%d)" % test_number, 10)
         self.test_number = test_number
+
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+            self.start_target()
 
     def start_target(self):
         """

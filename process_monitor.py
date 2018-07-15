@@ -69,10 +69,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        # TODO update this bit
-        # if self._process is not None:
-        #     self._process.kill()
-        pass
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+            self.debugger_thread.stop_target()
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -161,17 +159,14 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @type  test_number: Integer
         @param test_number: Test number to retrieve PCAP for.
         """
-
         self.log("pre_send(%d)" % test_number, 10)
         self.test_number = test_number
 
         # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
-        try:
-            self.crash_bin.import_file(self.crash_filename)
-        except Exception:
-            pass
+        self.crash_bin.import_file(self.crash_filename)
 
-        self.start_target()
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+            self.start_target()
 
     def start_target(self):
         """
