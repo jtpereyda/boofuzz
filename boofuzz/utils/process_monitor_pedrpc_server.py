@@ -157,7 +157,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
-
         # give the debugger thread a chance to exit.
         time.sleep(1)
 

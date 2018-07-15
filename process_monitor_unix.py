@@ -115,27 +115,6 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         if self.debugger_thread is None or not self.debugger_thread.isAlive():
             self.start_target()
 
-    def stop_target(self):
-        """
-        Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
-        """
-        # give the debugger thread a chance to exit.
-        time.sleep(1)
-
-        self.log("stopping target process")
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            if len(self.stop_commands) < 1:
-                self.debugger_thread.stop_target()
-            else:
-                for command in self.stop_commands:
-                    if command == "TERMINATE_PID":
-                        self.debugger_thread.stop_target()
-                    else:
-                        os.system(command)
-            self.log("target stopped")
-        else:
-            self.log("target already stopped")
-
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
     with NIXProcessMonitorPedrpcServer(host="0.0.0.0", port=port, cbin=crash_bin, coredump_dir=coredump_dir,
