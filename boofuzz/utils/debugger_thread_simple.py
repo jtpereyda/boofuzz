@@ -12,7 +12,7 @@ if not getattr(__builtins__, "WindowsError", None):
 
 
 class DebuggerThreadSimple(threading.Thread):
-    def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None,  log_level=1):
+    def __init__(self, start_commands, process_monitor, finished_starting, proc_name=None, ignore_pid=None,  log_level=1):
         """
         This class isn't actually ran as a thread, only the start_monitoring
         method is. It can spawn/stop a process, wait for it to exit and report on
@@ -24,6 +24,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.ignore_pid = ignore_pid
         self.start_commands = start_commands
         self.process_monitor = process_monitor
+        self.finished_starting = finished_starting
         # if isinstance(start_commands, basestring):
         #     self.tokens = start_commands.split(' ')
         # else:
@@ -57,6 +58,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
         self.pid = self._process.pid
+        self.process_monitor.log("attached to pid: %s".format(self.pid))
 
     def run(self):
         """
@@ -66,6 +68,7 @@ class DebuggerThreadSimple(threading.Thread):
         """
         self.spawn_target()
 
+        self.finished_starting.set()
         self.exit_status = os.waitpid(self.pid, 0)
         # [0] is the pid
         self.exit_status = self.exit_status[1]

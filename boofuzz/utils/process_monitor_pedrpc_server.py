@@ -1,4 +1,5 @@
 from __future__ import print_function
+from threading import Event
 import time
 import os
 
@@ -142,10 +143,12 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         self.log("creating debugger thread", 5)
-        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name,
+        finished_starting = Event()
+        self.debugger_thread = self.debugger_class(self.start_commands, self, finished_starting, proc_name=self.proc_name,
                                                    ignore_pid=self.ignore_pid, log_level=self.log_level)
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
+        finished_starting.wait()
         self.log("giving debugger thread 2 seconds to settle in", 5)
         time.sleep(2)
         return True

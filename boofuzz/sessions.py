@@ -1223,9 +1223,11 @@ class Session(pgraph.Graph):
                                               name=test_case_name, index=self.total_mutant_index)
 
         if target.procmon:
+            self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
             target.procmon.pre_send(self.total_mutant_index)
 
         if target.netmon:
+            self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
             target.netmon.pre_send(self.total_mutant_index)
 
         try:
@@ -1339,9 +1341,11 @@ class Session(pgraph.Graph):
                 self.total_num_mutations))
 
         if target.procmon:
+            self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
             target.procmon.pre_send(self.total_mutant_index)
 
         if target.netmon:
+            self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
             target.netmon.pre_send(self.total_mutant_index)
 
         target.open()

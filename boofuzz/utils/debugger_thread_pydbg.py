@@ -14,7 +14,7 @@ if not getattr(__builtins__, "WindowsError", None):
 
 
 class DebuggerThreadPydbg(threading.Thread):
-    def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None, pid=None, log_level=1):
+    def __init__(self, start_commands, process_monitor, finished_starting, proc_name=None, ignore_pid=None, pid=None, log_level=1):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
@@ -22,6 +22,7 @@ class DebuggerThreadPydbg(threading.Thread):
 
         self.start_commands = start_commands
         self.process_monitor = process_monitor
+        self.finished_starting = finished_starting
         self.proc_name = proc_name
         self.ignore_pid = ignore_pid
 
@@ -132,6 +133,7 @@ class DebuggerThreadPydbg(threading.Thread):
                                              " supports targeting 32-bit processes.")
                 elif "Access is denied." in str(e):
                     self.process_monitor.log("It may be that your process died before it could be attached.")
+            self.finished_starting.set()
             self.dbg.run()
             self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
