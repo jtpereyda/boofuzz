@@ -168,15 +168,18 @@ class NIXProcessMonitorPedrpcServer(pedrpc.Server):
         time.sleep(1)
 
         self.log("stopping target process")
-
-        if len(self.stop_commands) < 1:
-            self.dbg.stop_target()
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+            if len(self.stop_commands) < 1:
+                self.dbg.stop_target()
+            else:
+                for command in self.stop_commands:
+                    if command == "TERMINATE_PID":
+                        self.dbg.stop_target()
+                    else:
+                        os.system(command)
+            self.log("target stopped")
         else:
-            for command in self.stop_commands:
-                if command == "TERMINATE_PID":
-                    self.dbg.stop_target()
-                else:
-                    os.system(command)
+            self.log("target already stopped")
 
     def restart_target(self):
         """
