@@ -55,7 +55,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("\t proc name:     %s" % self.proc_name)
         self.log("\t log level:     %d" % self.log_level)
         self.log("awaiting requests...")
-        self.log("awaiting requests...")
 
     def __enter__(self):
         return self
@@ -125,6 +124,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
+        self.log('Starting target...')
         self.log("creating debugger thread", 5)
         finished_starting = Event()
         self.debugger_thread = self.debugger_class(self.start_commands, self, finished_starting, proc_name=self.proc_name,
@@ -140,10 +140,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
+        self.log('Stopping target...')
         # give the debugger thread a chance to exit.
         time.sleep(1)
 
-        self.log("stopping target process")
         if self.debugger_thread is not None and self.debugger_thread.isAlive():
             if len(self.stop_commands) < 1:
                 self.debugger_thread.stop_target()
