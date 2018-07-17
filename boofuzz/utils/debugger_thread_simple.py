@@ -94,3 +94,38 @@ class DebuggerThreadSimple(threading.Thread):
             os.kill(self.pid, signal.SIGKILL)
         except OSError as e:
             print(e.errno)  # TODO interpret some basic errors
+
+    def pre_send(self):
+        pass
+
+    def post_send(self):
+        """
+        This routine is called after the fuzzer transmits a test case and returns the status of the target.
+
+        Returns:
+            bool: True if the target is still active, False otherwise.
+        """
+        rec_file = open(self.process_monitor.crash_bin, 'a')
+        rec_file.write(self.process_monitor.last_synopsis)
+        rec_file.close()
+
+        if self.process_monitor.coredump_dir is not None:
+            dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))
+            src = _get_coredump_path()
+
+            if src is not None:
+                self.log("moving core dump %s -> %s" % (src, dest))
+                os.rename(src, dest)
+        return False
+
+
+def _get_coredump_path():
+    """
+    This method returns the path to the coredump file if one was created
+    """
+    if sys.platform == 'linux' or sys.platform == 'linux2':
+        path = './core'
+        if os.path.isfile(path):
+            return path
+
+    return None

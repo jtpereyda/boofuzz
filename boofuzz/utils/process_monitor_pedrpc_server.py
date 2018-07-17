@@ -102,23 +102,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        if self.debugger_thread is None:
+        if self.debugger_thread is not None and self.debugger_thread.isAlive():
             return True
         else:
-            av = self.debugger_thread.access_violation
-
-            # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
-            # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
-            # uncovering the details of the access violation.
-            if av:
-                while self.debugger_thread.isAlive():
-                    time.sleep(1)
-
-                self.debugger_thread = None
-
-            # serialize the crash bin to disk.
-            self.crash_bin.export_file(self.crash_filename)
-            return not av
+            return self.debugger_thread.post_send()
 
     def pre_send(self, test_number):
         """
@@ -130,10 +117,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("pre_send(%d)" % test_number, 10)
         self.test_number = test_number
 
-        # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
-        self.crash_bin.import_file(self.crash_filename)
-
         if self.debugger_thread is None or not self.debugger_thread.isAlive():
+            self.debugger_thread.pre_send()
             self.start_target()
 
     def start_target(self):

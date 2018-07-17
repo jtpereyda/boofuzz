@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import os
-import time
 
 import click
 from boofuzz import DEFAULT_PROCMON_PORT
@@ -58,48 +57,6 @@ class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
         self.log("\t proc name:   %s" % self.proc_name)
         self.log("\t log level:   %d" % self.log_level)
         self.log("awaiting requests...")
-
-    def post_send(self):
-        """
-        This routine is called after the fuzzer transmits a test case and returns the status of the target.
-
-        Returns:
-            bool: True if the target is still active, False otherwise.
-        """
-        if self.debugger_thread is None:
-            return True
-        else:
-            av = self.debugger_thread.access_violation
-
-            # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
-            # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
-            # uncovering the details of the access violation.
-            if av:
-                while self.debugger_thread.isAlive():
-                    time.sleep(1)
-
-                self.debugger_thread = None
-
-            # serialize the crash bin to disk.
-            self.crash_bin.export_file(self.crash_filename)
-            return not av
-
-    def pre_send(self, test_number):
-        """
-        This routine is called before the fuzzer transmits a test case and ensure the debugger thread is operational.
-
-        @type  test_number: Integer
-        @param test_number: Test number to retrieve PCAP for.
-        """
-        self.log("pre_send(%d)" % test_number, 10)
-        self.test_number = test_number
-
-        # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
-        self.crash_bin.import_file(self.crash_filename)
-
-        if self.debugger_thread is None or not self.debugger_thread.isAlive():
-            self.start_target()
-
 
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):

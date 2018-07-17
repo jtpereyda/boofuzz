@@ -163,3 +163,27 @@ class DebuggerThreadPydbg(threading.Thread):
             os.system("taskkill /pid %d" % self.pid)
         except OSError as e:
             print(e.errno)  # TODO interpret some basic errors
+
+    def pre_send(self):
+        # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
+        self.process_monitor.crash_bin.import_file(self.process_monitor.crash_filename)
+
+    def post_send(self):
+        """
+        This routine is called after the fuzzer transmits a test case and returns the status of the target.
+
+        Returns:
+            bool: True if the target is still active, False otherwise.
+        """
+        av = self.access_violation
+
+        # if there was an access violation, wait for the debugger thread to finish then kill thread handle.
+        # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
+        # uncovering the details of the access violation.
+        if av:
+            while self.isAlive():
+                time.sleep(1)
+
+        # serialize the crash bin to disk.
+        self.process_monitor.crash_bin.export_file(self.process_monitor.crash_filename)
+        return not av

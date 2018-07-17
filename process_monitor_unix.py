@@ -1,7 +1,5 @@
 import os
 import sys
-import threading
-import time
 
 import click
 
@@ -67,53 +65,6 @@ class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("Listening on %s:%s" % (host, port))
         self.log("awaiting requests...")
-
-    def post_send(self):
-        """
-        This routine is called after the fuzzer transmits a test case and returns the status of the target.
-
-        Returns:
-            bool: True if the target is still active, False otherwise.
-        """
-        if self.debugger_thread.isAlive():
-            return True
-        else:
-            rec_file = open(self.crash_bin, 'a')
-            rec_file.write(self.last_synopsis)
-            rec_file.close()
-
-            if self.coredump_dir is not None:
-                dest = os.path.join(self.coredump_dir, str(self.test_number))
-                src = self._get_coredump_path()
-
-                if src is not None:
-                    self.log("moving core dump %s -> %s" % (src, dest))
-                    os.rename(src, dest)
-            return False
-
-    def _get_coredump_path(self):
-        """
-        This method returns the path to the coredump file if one was created
-        """
-        if sys.platform == 'linux' or sys.platform == 'linux2':
-            path = './core'
-            if os.path.isfile(path):
-                return path
-
-        return None
-
-    def pre_send(self, test_number):
-        """
-        This routine is called before the fuzzer transmits a test case and ensure the debugger thread is operational.
-
-        @type  test_number: Integer
-        @param test_number: Test number to retrieve PCAP for.
-        """
-        self.log("pre_send(%d)" % test_number, 10)
-        self.test_number = test_number
-
-        if self.debugger_thread is None or not self.debugger_thread.isAlive():
-            self.start_target()
 
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
