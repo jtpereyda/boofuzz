@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import os
 import signal
 import subprocess
@@ -6,9 +7,28 @@ import sys
 import threading
 import time
 
+import psutil
+
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):
         pass
+
+
+def _enumerate_processes():
+    for pid in psutil.pids():
+        yield (pid, psutil.Process(pid).name())
+
+
+def _get_coredump_path():
+    """
+    This method returns the path to the coredump file if one was created
+    """
+    if sys.platform == 'linux' or sys.platform == 'linux2':
+        path = './core'
+        if os.path.isfile(path):
+            return path
+
+    return None
 
 
 class DebuggerThreadSimple(threading.Thread):
@@ -55,9 +75,17 @@ class DebuggerThreadSimple(threading.Thread):
             except WindowsError as e:
                 print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
                 return False
-        self.log("done. target up and running, giving it 5 seconds to settle in.")
-        time.sleep(5)
-        self.pid = self._process.pid
+        if self.proc_name:
+            self.log("done. waiting for start command to terminate.")
+            os.waitpid(self._process.pid, 0)
+            self.log('searching for process by name "{0}"'.format(self.proc_name))
+            self.watch()
+            self._psutil_proc = psutil.Process(pid=self.pid)
+            self.process_monitor.log("found match on pid %d".format(self.pid))
+        else:
+            self.log("done. target up and running, giving it 5 seconds to settle in.")
+            time.sleep(5)
+            self.pid = self._process.pid
         self.process_monitor.log("attached to pid: {0}".format(self.pid))
 
     def run(self):
@@ -69,9 +97,12 @@ class DebuggerThreadSimple(threading.Thread):
         self.spawn_target()
 
         self.finished_starting.set()
-        self.exit_status = os.waitpid(self.pid, 0)
-        # [0] is the pid
-        self.exit_status = self.exit_status[1]
+        if self.proc_name:
+            gone, _ = psutil.wait_procs([self._psutil_proc])
+            self.exit_status = gone[0].returncode
+        else:
+            exit_info = os.waitpid(self.pid, 0)
+            self.exit_status = exit_info[1]  # [0] is the pid
 
         if os.WCOREDUMP(self.exit_status):
             reason = 'Segmentation fault'
@@ -84,7 +115,23 @@ class DebuggerThreadSimple(threading.Thread):
         else:
             reason = 'Process died for unknown reason'
 
-        self.process_monitor.last_synopsis = '[{0}] Crash : Reason - {1}\n'.format(time.strftime("%I:%M.%S"), reason)
+        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code {1}. Reason - {1}\n'.format(time.strftime("%I:%M.%S"), self.exit_status, reason)
+
+    def watch(self):
+        """
+        Continuously loop, watching for the target process. This routine "blocks" until the target process is found.
+        Update self.pid when found and return.
+        """
+        self.pid = None
+        while not self.pid:
+            for (pid, name) in _enumerate_processes():
+                # ignore the optionally specified PID.
+                if pid == self.ignore_pid:
+                    continue
+
+                if name.lower() == self.proc_name.lower():
+                    self.pid = pid
+                    break
 
     def get_exit_status(self):
         return self.exit_status
@@ -120,15 +167,3 @@ class DebuggerThreadSimple(threading.Thread):
                     self.log("moving core dump %s -> %s" % (src, dest))
                     os.rename(src, dest)
             return False
-
-
-def _get_coredump_path():
-    """
-    This method returns the path to the coredump file if one was created
-    """
-    if sys.platform == 'linux' or sys.platform == 'linux2':
-        path = './core'
-        if os.path.isfile(path):
-            return path
-
-    return None

@@ -39,6 +39,10 @@ Limitations
 '''
 
 
+def err(msg):
+    sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
+
+
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
     with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin,
                                     debugger_class=DebuggerThreadSimple, proc_name=proc_name, pid_to_ignore=ignore_pid,
@@ -60,7 +64,7 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_di
               help='directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)')
 def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir):
     if coredump_dir is not None and not os.path.isdir(coredump_dir):
-        ERR("coredump_dir must be an existing directory")
+        err("coredump_dir must be an existing directory")
 
     serve_procmon(port=port,
                   crash_bin=crash_bin,
