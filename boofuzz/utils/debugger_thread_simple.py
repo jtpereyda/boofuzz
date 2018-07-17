@@ -105,18 +105,21 @@ class DebuggerThreadSimple(threading.Thread):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        rec_file = open(self.process_monitor.crash_filename, 'a')
-        rec_file.write(self.process_monitor.last_synopsis)
-        rec_file.close()
+        if self.isAlive():
+            return True
+        else:
+            rec_file = open(self.process_monitor.crash_filename, 'a')
+            rec_file.write(self.process_monitor.last_synopsis)
+            rec_file.close()
 
-        if self.process_monitor.coredump_dir is not None:
-            dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))
-            src = _get_coredump_path()
+            if self.process_monitor.coredump_dir is not None:
+                dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))
+                src = _get_coredump_path()
 
-            if src is not None:
-                self.log("moving core dump %s -> %s" % (src, dest))
-                os.rename(src, dest)
-        return False
+                if src is not None:
+                    self.log("moving core dump %s -> %s" % (src, dest))
+                    os.rename(src, dest)
+            return False
 
 
 def _get_coredump_path():

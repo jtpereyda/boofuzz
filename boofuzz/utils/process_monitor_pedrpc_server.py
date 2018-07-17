@@ -100,10 +100,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            return True
-        else:
+        if self.debugger_thread is not None:
             return self.debugger_thread.post_send()
+        else:
+            raise Exception("post_send called before pre_send!")
 
     def pre_send(self, test_number):
         """
