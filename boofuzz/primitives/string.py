@@ -7,7 +7,7 @@ class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+    def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -25,15 +25,22 @@ class String(BasePrimitive):
         @type  fuzzable: bool
         @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  max_len:  int
-        @param max_len:  (Optional, def=0) Maximum string length
+        @param max_len:  (Optional, def=-1) Maximum string length
         @type  name:     str
         @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
         super(String, self).__init__()
 
-        self._value = self._original_value = value
+        if isinstance(value, bytes):
+            self._original_value = value
+        else:
+            self._original_value = value.encode(encoding=encoding)
+        self._value = self._original_value
         self.size = size
+        self.max_len = max_len
+        if self.size > -1:
+            self.max_len = self.size
         self.padding = padding
         self.encoding = encoding
         self._fuzzable = fuzzable
@@ -46,9 +53,9 @@ class String(BasePrimitive):
 
                 # UTF-8
                 # TODO: This can't actually convert these to unicode strings...
-                self._value * 2 + "\xfe",
-                self._value * 10 + "\xfe",
-                self._value * 100 + "\xfe",
+                self._value * 2 + b"\xfe",
+                self._value * 10 + b"\xfe",
+                self._value * 100 + b"\xfe",
             ]
         if not self._fuzz_library:
             self._fuzz_library = \
@@ -220,15 +227,14 @@ class String(BasePrimitive):
 
                 # TODO: Add easy and sane string injection from external file/s
 
-        # TODO: Make this more clear
-        if max_len > 0:
-            # If any of our strings are over max_len
-            if any(len(s) > max_len for s in self.this_library):
-                # Pull out only the ones that aren't
-                self.this_library = list(set([s[:max_len] for s in self.this_library]))
-            # Same thing here
-            if any(len(s) > max_len for s in self._fuzz_library):
-                self._fuzz_library = list(set([s[:max_len] for s in self._fuzz_library]))
+        # Remove any fuzz items greater than self.max_len
+        if self.max_len > 0:
+            if any(len(s) > self.max_len for s in self.this_library):
+                # Pull out the bad string(s):
+                self.this_library = list(set([s[:self.max_len] for s in self.this_library]))
+            if any(len(s) > self.max_len for s in self._fuzz_library):
+                # Pull out the bad string(s):
+                self._fuzz_library = list(set([s[:self.max_len] for s in self._fuzz_library]))
 
     @property
     def name(self):
@@ -282,16 +288,16 @@ class String(BasePrimitive):
             # increment the mutation count.
             self._mutant_index += 1
 
-            # if the size parameter is disabled, break out of the loop right now.
+            # if the size parameter is disabled, done.
             if self.size == -1:
-                break
+                return True
 
             # ignore library items greater then user-supplied length.
             # TODO: might want to make this smarter.
             if len(self._value) > self.size:
                 continue
-
-        return True
+            else:
+                return True
 
     def num_mutations(self):
         """
