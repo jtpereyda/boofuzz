@@ -1,67 +1,16 @@
 #!c:\\python\\python.exe
 from __future__ import print_function
 
-import os
-
 import click
 from boofuzz import DEFAULT_PROCMON_PORT
-from boofuzz import utils
 from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 
 
-class ProcessMonitorPedrpcServerWindows(ProcessMonitorPedrpcServer):
-    def __init__(self, host, port, crash_filename, proc=None, pid_to_ignore=None, level=1):
-        """
-        @type  host:           str
-        @param host:           Hostname or IP address
-        @type  port:           int
-        @param port:           Port to bind server to
-        @type  crash_filename: str
-        @param crash_filename: Name of file to (un)serialize crash bin to/from
-        @type  proc:           str
-        @param proc:           (Optional, def=None) Process name to search for and attach to
-        @type  pid_to_ignore:  int
-        @param pid_to_ignore:  (Optional, def=None) Ignore this PID when searching for the target process
-        @type  level:          int
-        @param level:          (Optional, def=1) Log output level, increase for more verbosity
-        """
-        super(ProcessMonitorPedrpcServerWindows, self).__init__(host, port, crash_filename, DebuggerThreadPydbg, proc, pid_to_ignore, level)
-
-        self.crash_filename = os.path.abspath(crash_filename)
-        self.proc_name = proc
-        self.ignore_pid = pid_to_ignore
-        self.log_level = level
-
-        self.stop_commands = []
-        self.start_commands = []
-        self.test_number = None
-        self.debugger_thread = None
-        self.crash_bin = utils.crash_binning.CrashBinning()
-
-        self.last_synopsis = ""
-
-        if not os.access(os.path.dirname(self.crash_filename), os.X_OK):
-            self.log("invalid path specified for crash bin: %s" % self.crash_filename)
-            raise Exception
-
-        # restore any previously recorded crashes.
-        try:
-            self.crash_bin.import_file(self.crash_filename)
-        except Exception:
-            pass
-
-        self.log("Process Monitor PED-RPC server initialized:")
-        self.log("\t crash file:  %s" % self.crash_filename)
-        self.log("\t # records:   %d" % len(self.crash_bin.bins))
-        self.log("\t proc name:   %s" % self.proc_name)
-        self.log("\t log level:   %d" % self.log_level)
-        self.log("awaiting requests...")
-
-
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
-    with ProcessMonitorPedrpcServerWindows(host="0.0.0.0", port=port, crash_filename=crash_bin, proc=proc_name,
-                                           pid_to_ignore=ignore_pid, level=log_level) as servlet:
+    with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin,
+                                    debugger_class=DebuggerThreadPydbg, proc_name=proc_name, pid_to_ignore=ignore_pid,
+                                    level=log_level, coredump_dir=None) as servlet:
         servlet.serve_forever()
 
 

@@ -38,38 +38,11 @@ Limitations
       that caused the crash and the signal received by the program
 '''
 
-ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
-
-
-class NIXProcessMonitorPedrpcServer(ProcessMonitorPedrpcServer):
-    def __init__(self, host, port, cbin, coredump_dir, proc_name, ignore_pid, level=1):
-        """
-        @type host: str
-        @param host: Hostname or IP address
-        @type port: int
-        @param port: Port to bind server to
-        @type cbin: str
-        @param cbin: Where to save monitored process crashes for analysis
-        """
-        super(NIXProcessMonitorPedrpcServer, self).__init__(host, port, cbin,DebuggerThreadSimple, proc_name, ignore_pid, level)
-
-        self.crash_bin = cbin
-        self.log_level = level
-        self.last_synopsis = None
-        self.test_number = 0
-        self.start_commands = []
-        self.stop_commands = []
-        self.proc_name = None
-        self.coredump_dir = coredump_dir
-        self.debugger_thread = None
-        self.log("Process Monitor PED-RPC server initialized:")
-        self.log("Listening on %s:%s" % (host, port))
-        self.log("awaiting requests...")
-
 
 def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
-    with NIXProcessMonitorPedrpcServer(host="0.0.0.0", port=port, cbin=crash_bin, coredump_dir=coredump_dir,
-                                       proc_name=proc_name, ignore_pid=ignore_pid, level=log_level) as servlet:
+    with ProcessMonitorPedrpcServer(host="0.0.0.0", port=port, crash_filename=crash_bin,
+                                    debugger_class=DebuggerThreadSimple, proc_name=proc_name, pid_to_ignore=ignore_pid,
+                                    level=log_level, coredump_dir=coredump_dir) as servlet:
         servlet.serve_forever()
 
 

@@ -9,7 +9,7 @@ from boofuzz import pedrpc
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, crash_filename, debugger_class, proc=None, pid_to_ignore=None, level=1):
+    def __init__(self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None):
         """
         @type  host:           str
         @param host:           Hostname or IP address
@@ -17,8 +17,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @param port:           Port to bind server to
         @type  crash_filename: str
         @param crash_filename: Name of file to (un)serialize crash bin to/from
-        @type  proc:           str
-        @param proc:           (Optional, def=None) Process name to search for and attach to
+        @type  proc_name:           str
+        @param proc_name:           (Optional, def=None) Process name to search for and attach to
         @type  pid_to_ignore:  int
         @param pid_to_ignore:  (Optional, def=None) Ignore this PID when searching for the target process
         @type  level:          int
@@ -30,7 +30,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         self.crash_filename = os.path.abspath(crash_filename)
         self.debugger_class = debugger_class
-        self.proc_name = proc
+        self.proc_name = proc_name
         self.ignore_pid = pid_to_ignore
         self.log_level = level
 
@@ -38,25 +38,23 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.start_commands = []
         self.test_number = None
         self.debugger_thread = None
-        self.crash_bin = utils.crash_binning.CrashBinning()
+        self.crash_bin_filename = utils.crash_binning.CrashBinning()
 
         self.last_synopsis = ""
+
+        self.coredump_dir = coredump_dir
 
         if not os.access(os.path.dirname(self.crash_filename), os.X_OK):
             self.log("invalid path specified for crash bin: %s" % self.crash_filename)
             raise Exception
 
-        # restore any previously recorded crashes.
-        try:
-            self.crash_bin.import_file(self.crash_filename)
-        except Exception:
-            pass
-
         self.log("Process Monitor PED-RPC server initialized:")
-        self.log("\t crash file:  %s" % self.crash_filename)
-        self.log("\t # records:   %d" % len(self.crash_bin.bins))
-        self.log("\t proc name:   %s" % self.proc_name)
-        self.log("\t log level:   %d" % self.log_level)
+        self.log("\t listening on:  %s:%s" % (host, port))
+        self.log("\t crash file:    %s" % self.crash_filename)
+        self.log("\t # records:     %d" % len(self.crash_bin_filename.bins))
+        self.log("\t proc name:     %s" % self.proc_name)
+        self.log("\t log level:     %d" % self.log_level)
+        self.log("awaiting requests...")
         self.log("awaiting requests...")
 
     def __enter__(self):

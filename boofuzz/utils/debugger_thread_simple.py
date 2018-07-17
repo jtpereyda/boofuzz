@@ -105,7 +105,7 @@ class DebuggerThreadSimple(threading.Thread):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        rec_file = open(self.process_monitor.crash_bin, 'a')
+        rec_file = open(self.process_monitor.crash_filename, 'a')
         rec_file.write(self.process_monitor.last_synopsis)
         rec_file.close()
 
