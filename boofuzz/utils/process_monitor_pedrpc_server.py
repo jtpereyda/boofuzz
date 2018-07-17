@@ -118,8 +118,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.test_number = test_number
 
         if self.debugger_thread is None or not self.debugger_thread.isAlive():
-            self.debugger_thread.pre_send()
             self.start_target()
+            self.debugger_thread.pre_send()
 
     def start_target(self):
         """
