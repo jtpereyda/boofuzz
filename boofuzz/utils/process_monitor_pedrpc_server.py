@@ -38,7 +38,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.start_commands = []
         self.test_number = None
         self.debugger_thread = None
-        self.crash_bin_filename = utils.crash_binning.CrashBinning()
+        self.crash_bin = utils.crash_binning.CrashBinning()
 
         self.last_synopsis = ""
 
@@ -51,7 +51,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Process Monitor PED-RPC server initialized:")
         self.log("\t listening on:  %s:%s" % (host, port))
         self.log("\t crash file:    %s" % self.crash_filename)
-        self.log("\t # records:     %d" % len(self.crash_bin_filename.bins))
+        self.log("\t # records:     %d" % len(self.crash_bin.bins))
         self.log("\t proc name:     %s" % self.proc_name)
         self.log("\t log level:     %d" % self.log_level)
         self.log("awaiting requests...")
