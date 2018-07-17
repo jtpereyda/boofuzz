@@ -104,18 +104,25 @@ class DebuggerThreadSimple(threading.Thread):
             exit_info = os.waitpid(self.pid, 0)
             self.exit_status = exit_info[1]  # [0] is the pid
 
-        if os.WCOREDUMP(self.exit_status):
-            reason = 'Segmentation fault'
-        elif os.WIFSTOPPED(self.exit_status):
-            reason = 'Stopped with signal ' + str(os.WTERMSIG(self.exit_status))
-        elif os.WIFSIGNALED(self.exit_status):
-            reason = 'Terminated with signal ' + str(os.WTERMSIG(self.exit_status))
-        elif os.WIFEXITED(self.exit_status):
-            reason = 'Exit with code - ' + str(os.WEXITSTATUS(self.exit_status))
+        default_reason = 'Process died for unknown reason'
+        if self.exit_status is not None:
+            if os.WCOREDUMP(self.exit_status):
+                reason = 'Segmentation fault'
+            elif os.WIFSTOPPED(self.exit_status):
+                reason = 'Stopped with signal ' + str(os.WTERMSIG(self.exit_status))
+            elif os.WIFSIGNALED(self.exit_status):
+                reason = 'Terminated with signal ' + str(os.WTERMSIG(self.exit_status))
+            elif os.WIFEXITED(self.exit_status):
+                reason = 'Exit with code - ' + str(os.WEXITSTATUS(self.exit_status))
+            else:
+                reason = default_reason
         else:
-            reason = 'Process died for unknown reason'
+            reason = default_reason
 
-        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code {1}. Reason - {2}\n'.format(time.strftime("%I:%M.%S"), self.exit_status, reason)
+        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code: {1}. Reason - {2}\n'.format(
+            time.strftime("%I:%M.%S"),
+            self.exit_status if self.exit_status is not None else '<unknown>',
+            reason)
 
     def watch(self):
         """
