@@ -115,7 +115,7 @@ class DebuggerThreadSimple(threading.Thread):
         else:
             reason = 'Process died for unknown reason'
 
-        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code {1}. Reason - {1}\n'.format(time.strftime("%I:%M.%S"), self.exit_status, reason)
+        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code {1}. Reason - {2}\n'.format(time.strftime("%I:%M.%S"), self.exit_status, reason)
 
     def watch(self):
         """
