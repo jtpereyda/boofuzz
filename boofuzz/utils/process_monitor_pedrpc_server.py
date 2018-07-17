@@ -152,6 +152,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                     if command == "TERMINATE_PID":
                         self.debugger_thread.stop_target()
                     else:
+                        self.log("Executing stop command: '{0}'".format(command), 2)
                         os.system(command)
             self.log("target stopped")
         else:
