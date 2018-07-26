@@ -14,35 +14,22 @@ class TestStepData(object):
 
     @property
     def text_render(self):
-        if self.description is not None and self.description != '':
-            msg = self.description
-        elif self.data is not None and len(self.data) > 0:
-            msg = helpers.hex_to_hexstr(input_bytes=self.data)
-        else:
-            msg = ''
-
         return helpers.format_log_msg(
             msg_type=self.type,
-            msg="{title}: {msg}".format(
-                title=helpers.test_step_info[self.type]['title'],
-                msg=msg,
-            ),
+            description=self.description,
+            data=self.data,
             timestamp=self.timestamp,
+            format_type='terminal',
         )
 
     @property
     def html_log_line(self):
-        if self.description is not None and self.description != '':
-            msg = self.description
-        elif self.data is not None and len(self.data) > 0:
-            msg = helpers.hex_to_hexstr(input_bytes=self.data)
-        else:
-            msg = ''
-
         return helpers.format_log_msg(
             msg_type=self.type,
-            msg=helpers.test_step_info[self.type]['html_format'].format(msg=msg, n=len(msg)),
+            description=self.description,
+            data=self.data,
             timestamp=self.timestamp,
+            format_type='html',
         )
 
     @property

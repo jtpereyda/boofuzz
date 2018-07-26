@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
 import ctypes
 import platform
 import re
@@ -10,60 +11,70 @@ import time
 import zlib
 
 from boofuzz import ip_constants
+from colorama import Fore, Back, Style
 
 test_step_info = {
     'test_case': {
         'indent': 0,
         'title': 'Test Case',
-        'html_format': 'Test Case: {msg}',
+        'html': 'Test Case: {msg}',
+        'terminal': Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
         'css_class': 'log-case'
     },
     'step': {
         'indent': 1,
         'title': 'Test Step',
-        'html_format': ' Test Step: {msg}',
+        'html': ' Test Step: {msg}',
+        'terminal': Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
         'css_class': 'log-step'
     },
     'info': {
         'indent': 2,
         'title': 'Info',
-        'html_format': 'Info: {msg}',
+        'html': 'Info: {msg}',
+        'terminal': "Info: {msg}",
         'css_class': 'log-info'
     },
     'error': {
         'indent': 2,
         'title': 'Error',
-        'html_format': 'Error!!!! {msg}',
+        'html': 'Error!!!! {msg}',
+        'terminal': Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
         'css_class': 'log-error'
     },
     'send': {
         'indent': 2,
         'title': 'Transmitting',
-        'html_format': 'Transmitting {n} bytes: {msg}',
+        'html': 'Transmitting {n} bytes: {msg}',
+        'terminal': Fore.CYAN + "Transmitting {n} bytes: {msg}" + Style.RESET_ALL,
         'css_class': 'log-send'
     },
     'receive': {
         'indent': 2,
         'title': 'Received',
-        'html_format': 'Received: {msg}',
+        'html': 'Received: {msg}',
+        'terminal': Fore.CYAN + "Received: {msg}" + Style.RESET_ALL,
         'css_class': 'log-receive'
     },
     'check': {
         'indent': 2,
         'title': 'Check',
-        'html_format': 'Check: {msg}',
+        'html': 'Check: {msg}',
+        'terminal': "Check: {msg}",
         'css_class': 'log-check'
     },
     'fail': {
         'indent': 3,
         'title': 'Check Failed',
-        'html_format': 'Check Failed: {msg}',
+        'html': 'Check Failed: {msg}',
+        'terminal': Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
         'css_class': 'log-fail'
     },
     'pass': {
         'indent': 3,
         'title': 'Check OK',
-        'html_format': 'Check OK: {msg}',
+        'html': 'Check OK: {msg}',
+        'terminal': Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
         'css_class': 'log-pass'
     },
 }
@@ -350,9 +361,24 @@ def _indent_after_first_line(lines, amount, ch=' '):
     return ('\n' + padding).join(lines.split('\n'))
 
 
-def format_log_msg(msg_type, msg, indent_size=2, timestamp=None):
-    return format_msg(msg=msg, indent_level=test_step_info[msg_type]['indent'], indent_size=indent_size,
-                      timestamp=timestamp)
+def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, format_type='terminal'):
+    if data is None:
+        data = b''
+    if timestamp is None:
+        timestamp = get_time_stamp()
+
+    if description is not None and description != '':
+        msg = description
+    elif data is not None and len(data) > 0:
+        msg = hex_to_hexstr(input_bytes=data)
+    else:
+        msg = ''
+
+    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data))
+    msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
+    msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+
+    return msg
 
 
 def format_msg(msg, indent_level, indent_size, timestamp=None):
