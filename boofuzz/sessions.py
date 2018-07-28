@@ -726,14 +726,23 @@ class Session(pgraph.Graph):
         Args:
             target (Target): Session target whose PED-RPC services we are polling
         """
-        # kill the pcap thread and see how many bytes the sniffer recorded.
+        self._stop_netmon(target)
+
+        self._check_procmon_failures(target)
+
+    def _stop_netmon(self, target):
         if target.netmon:
             captured_bytes = target.netmon.post_send()
             self._fuzz_data_logger.log_info(
                 "netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index))
             self.netmon_results[self.total_mutant_index] = captured_bytes
 
-        # check if our fuzz crashed the target. procmon.post_send() returns False if the target crashes.
+    def _check_procmon_failures(self, target):
+        """Check for and log any failures from the procmon. Return True if any found.
+
+        Returns:
+            bool: True if failures were found. False otherwise.
+        """
         if target.procmon:
             self._fuzz_data_logger.open_test_step("Contact process monitor")
             self._fuzz_data_logger.log_check("procmon.post_send()")
@@ -743,6 +752,16 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_fail(
                     "procmon detected crash on test case #{0}: {1}".format(self.total_mutant_index,
                                                                            target.procmon.get_crash_synopsis()))
+                return True
+        return False
+
+    def _check_for_passively_detected_failures(self, target):
+        """Check for and log passively detected failures. Return True if any found.
+
+        Returns:
+            bool: True if falures were found. False otherwise.
+        """
+        return self._check_procmon_failures(target=target)
 
     def _process_failures(self, target):
         """Process any failures in self.crash_synopses.
@@ -1381,38 +1400,41 @@ class Session(pgraph.Graph):
 
         self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
         self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
-
-        self._fuzz_data_logger.open_test_step("Calling post_send function:")
-        try:
-            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-        except sex.BoofuzzTargetConnectionReset:
-            self._fuzz_data_logger.log_fail(
-                "Target connection reset -- considered a failure case when triggered from post_send")
-        except sex.BoofuzzTargetConnectionAborted as e:
-            self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                            "network issue, or an issue with firewalls or anti-virus. Try "
-                                            "disabling your firewall."
-                                            .format(e.socket_errno, e.socket_errmsg))
-            pass
-        except sex.BoofuzzTargetConnectionFailedError:
-            self._fuzz_data_logger.log_fail(
-                "Cannot connect to target; target presumed down."
-                " Note: Normally a failure should be detected, and the target reset."
-                " This error may mean you have no restart method configured, or your error"
-                " detection is not working.")
-        except Exception:
-            self._fuzz_data_logger.log_fail(
-                "Custom post_send method raised uncaught Exception." + traceback.format_exc())
-
         target.close()
+
+        if not self._check_for_passively_detected_failures(target=target):
+            self._fuzz_data_logger.open_test_step("Calling post_send function:")
+            try:
+                self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+            except sex.BoofuzzTargetConnectionReset:
+                self._fuzz_data_logger.log_fail(
+                    "Target connection reset -- considered a failure case when triggered from post_send")
+            except sex.BoofuzzTargetConnectionAborted as e:
+                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
+                                                "network issue, or an issue with firewalls or anti-virus. Try "
+                                                "disabling your firewall."
+                                                .format(e.socket_errno, e.socket_errmsg))
+                pass
+            except sex.BoofuzzTargetConnectionFailedError:
+                self._fuzz_data_logger.log_fail(
+                    "Cannot connect to target; target presumed down."
+                    " Note: Normally a failure should be detected, and the target reset."
+                    " This error may mean you have no restart method configured, or your error"
+                    " detection is not working.")
+            except Exception:
+                self._fuzz_data_logger.log_fail(
+                    "Custom post_send method raised uncaught Exception." + traceback.format_exc())
+            finally:
+                target.close()
+            self._check_procmon_failures(target=target)
 
         self._fuzz_data_logger.open_test_step("Sleep between tests.")
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
         time.sleep(self.sleep_time)
 
-        self.poll_pedrpc(target)
-
         self._process_failures(target=target)
+
+        self._stop_netmon(target=target)
 
         self.export_file()
 
