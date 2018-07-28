@@ -8,6 +8,7 @@ Features
 Fixes
 -----
 - Fixed bug in which failures were not recognized
+- BitField blocks with ASCII format reported incorrect sizes
 
 Development
 -----------
