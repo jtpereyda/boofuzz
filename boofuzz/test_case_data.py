@@ -17,7 +17,6 @@ class TestCaseData(object):
         s = helpers.format_log_msg(
             msg_type='test_case',
             description=self.description,
-            data=self.data,
             timestamp=self.timestamp,
             format_type='terminal',
         )
@@ -28,7 +27,6 @@ class TestCaseData(object):
         return helpers.format_log_msg(
             msg_type='test_case',
             description=self.description,
-            data=self.data,
             timestamp=self.timestamp,
             format_type='html',
         )
