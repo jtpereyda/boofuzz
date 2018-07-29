@@ -60,11 +60,11 @@ class FuzzLogger(IFuzzLogger):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_check(description=description)
 
-    def open_test_case(self, test_case_id):
+    def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._cur_test_case_id = test_case_id
         self.all_test_cases.append(test_case_id)
         for fuzz_logger in self._fuzz_loggers:
-            fuzz_logger.open_test_case(test_case_id=test_case_id)
+            fuzz_logger.open_test_case(test_case_id=test_case_id, name=name, index=index)
 
     def log_send(self, data):
         for fuzz_logger in self._fuzz_loggers:

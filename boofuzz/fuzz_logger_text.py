@@ -1,7 +1,5 @@
 from __future__ import print_function
-from builtins import bytes
 import sys
-import time
 from colorama import Fore, Back, Style, init
 
 from . import helpers
@@ -9,27 +7,7 @@ from . import ifuzz_logger_backend
 
 init()
 
-
-def hex_to_hexstr(input_bytes):
-    """
-    Render input_bytes as ASCII-encoded hex bytes, followed by a best effort
-    utf-8 rendering.
-
-    :param input_bytes: Arbitrary bytes.
-
-    :return: Printable string.
-    """
-    return helpers.hex_str(input_bytes) + " " + repr(bytes(input_bytes))
-
-
-DEFAULT_HEX_TO_STR = hex_to_hexstr
-
-
-def get_time_stamp():
-    t = time.time()
-    s = time.strftime("[%Y-%m-%d %H:%M:%S", time.localtime(t))
-    s += ",%03d]" % (t * 1000 % 1000)
-    return s
+DEFAULT_HEX_TO_STR = helpers.hex_to_hexstr
 
 
 class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
@@ -65,52 +43,41 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def open_test_step(self, description):
         self._print_log_msg(self.TEST_STEP_FORMAT.format(description),
-                            indent_level=1)
+                            msg_type='step')
 
     def log_check(self, description):
         self._print_log_msg(self.LOG_CHECK_FORMAT.format(description),
-                            indent_level=2)
+                            msg_type='check')
 
     def log_error(self, description):
         self._print_log_msg(self.LOG_ERROR_FORMAT.format(description),
-                            indent_level=2)
+                            msg_type='error')
 
     def log_recv(self, data):
         self._print_log_msg(self.LOG_RECV_FORMAT.format(self._format_raw_bytes(data)),
-                            indent_level=2)
+                            msg_type='receive')
 
     def log_send(self, data):
         self._print_log_msg(
             self.LOG_SEND_FORMAT.format(len(data), self._format_raw_bytes(data)),
-            indent_level=2)
+            msg_type='send')
 
     def log_info(self, description):
         self._print_log_msg(self.LOG_INFO_FORMAT.format(description),
-                            indent_level=2)
+                            msg_type='info')
 
-    def open_test_case(self, test_case_id):
+    def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._print_log_msg(self.TEST_CASE_FORMAT.format(test_case_id),
-                            indent_level=0)
+                            msg_type='test_case')
 
     def log_fail(self, description=""):
         self._print_log_msg(self.LOG_FAIL_FORMAT.format(description),
-                            indent_level=3)
+                            msg_type='fail')
 
     def log_pass(self, description=""):
         self._print_log_msg(self.LOG_PASS_FORMAT.format(description),
-                            indent_level=3)
+                            msg_type='pass')
 
-    def _print_log_msg(self, msg, indent_level=0):
-        msg = _indent_all_lines(msg, indent_level * self.INDENT_SIZE)
-        time_stamp = get_time_stamp()
-        print(time_stamp + ' ' + _indent_after_first_line(msg, len(time_stamp) + 1), file=self._file_handle)
-
-
-def _indent_all_lines(lines, amount, ch=' '):
-    padding = amount * ch
-    return padding + ('\n' + padding).join(lines.split('\n'))
-
-
-def _indent_after_first_line(lines, amount, ch=' '):
-    padding = amount * ch
-    return ('\n' + padding).join(lines.split('\n'))
+    def _print_log_msg(self, msg, msg_type):
+        print(helpers.format_log_msg(msg_type=msg_type, description=msg, indent_size=self.INDENT_SIZE),
+              file=self._file_handle)

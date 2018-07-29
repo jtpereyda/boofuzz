@@ -9,8 +9,8 @@ Built-in logging classes are detailed below.
 
 To use multiple loggers at once, see :class:`FuzzLogger <boofuzz.FuzzLogger>`.
 
-Logging Interface
-=================
+Logging Interface (IFuzzLogger)
+===============================
 .. autoclass:: boofuzz.IFuzzLogger
     :members:
     :undoc-members:

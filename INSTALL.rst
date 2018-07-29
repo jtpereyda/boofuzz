@@ -72,12 +72,12 @@ If you want to use process\_monitor.py, follow these additional steps:
    1. Make sure to install and run pydbg using a 32-bit Python interpreter, not 64-bit!
    2. The OpenRCE repository doesn’t have a setup.py. Use Fitblip’s
       `fork`_.
-   3. ``C:\Users\IEUser\Downloads\pydbg-master>pip install ./pydbg-master``
+   3. ``C:\Users\IEUser\Downloads\pydbg>pip install .``
 
 2. Download and install `pydasm`_.
 
-   1. ``C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py build_ext``\ \*\*
-   2. ``C:\Users\IEUser\Downloads\libdasm-master\libdasm-master\pydasm>python setup.py install``
+   1. ``C:\Users\IEUser\Downloads\libdasm\pydasm>python setup.py build_ext``\ \*\*
+   2. ``C:\Users\IEUser\Downloads\libdasm\pydasm>python setup.py install``
 
 3. Verify that process\_monitor.py runs:
 

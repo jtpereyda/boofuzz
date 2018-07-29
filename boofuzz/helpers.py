@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
+
 import ctypes
 import platform
 import re
@@ -10,6 +11,73 @@ import time
 import zlib
 
 from boofuzz import ip_constants
+from colorama import Fore, Back, Style
+
+test_step_info = {
+    'test_case': {
+        'indent': 0,
+        'title': 'Test Case',
+        'html': 'Test Case: {msg}',
+        'terminal': Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-case'
+    },
+    'step': {
+        'indent': 1,
+        'title': 'Test Step',
+        'html': ' Test Step: {msg}',
+        'terminal': Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-step'
+    },
+    'info': {
+        'indent': 2,
+        'title': 'Info',
+        'html': 'Info: {msg}',
+        'terminal': "Info: {msg}",
+        'css_class': 'log-info'
+    },
+    'error': {
+        'indent': 2,
+        'title': 'Error',
+        'html': 'Error!!!! {msg}',
+        'terminal': Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
+        'css_class': 'log-error'
+    },
+    'send': {
+        'indent': 2,
+        'title': 'Transmitting',
+        'html': 'Transmitting {n} bytes: {msg}',
+        'terminal': Fore.CYAN + "Transmitting {n} bytes: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-send'
+    },
+    'receive': {
+        'indent': 2,
+        'title': 'Received',
+        'html': 'Received: {msg}',
+        'terminal': Fore.CYAN + "Received: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-receive'
+    },
+    'check': {
+        'indent': 2,
+        'title': 'Check',
+        'html': 'Check: {msg}',
+        'terminal': "Check: {msg}",
+        'css_class': 'log-check'
+    },
+    'fail': {
+        'indent': 3,
+        'title': 'Check Failed',
+        'html': 'Check Failed: {msg}',
+        'terminal': Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-fail'
+    },
+    'pass': {
+        'indent': 3,
+        'title': 'Check OK',
+        'html': 'Check OK: {msg}',
+        'terminal': Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
+        'css_class': 'log-pass'
+    },
+}
 
 
 def ip_str_to_bytes(ip):
@@ -43,7 +111,7 @@ def get_max_udp_size():
     if windows:
         sol_socket = ctypes.c_int(0xffff)
         sol_max_msg_size = 0x2003
-        lib = ctypes.WinDLL('Ws2_32.dll')
+        lib = ctypes.WinDLL('Ws2_32.dll'.encode('ascii'))
         opt = ctypes.c_int(sol_max_msg_size)
     elif linux or mac:
         if mac:
@@ -63,11 +131,11 @@ def get_max_udp_size():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     lib.getsockopt(
-            sock.fileno(),
-            sol_socket,
-            opt,
-            buf,
-            ctypes.pointer(bufsize)
+        sock.fileno(),
+        sol_socket,
+        opt,
+        buf,
+        ctypes.pointer(bufsize)
     )
 
     # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
@@ -88,7 +156,7 @@ def crc16(string, value=0):
     for byte in range(256):
         crc = 0
 
-        for bit in range(8):
+        for _ in range(8):
             if (byte ^ crc) & 1:
                 crc = (crc >> 1) ^ 0xa001  # polly
             else:
@@ -238,20 +306,21 @@ def udp_checksum(msg, src_addr, dst_addr):
     msg = msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(
-            _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
-            msg)
+        _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
+        msg)
 
 
 def hex_str(s):
     """
     Returns a hex-formatted string based on s.
-    :param s: Some string.
-    :type s: str
 
-    :return: Hex-formatted string representing s.
-    :rtype: str
+    Args:
+        s (bytes): Some string.
+
+    Returns:
+        str: Hex-formatted string representing s.
     """
-    return ' '.join("{:02x}".format(ord(b)) for b in s)
+    return ' '.join("{:02x}".format(b) for b in bytearray(s))
 
 
 def pause_for_signal():
@@ -273,3 +342,61 @@ def pause_for_signal():
         # signal.pause() is missing for Windows; wait 1ms and loop instead
         while True:
             time.sleep(0.001)
+
+
+def get_time_stamp():
+    t = time.time()
+    s = time.strftime("[%Y-%m-%d %H:%M:%S", time.localtime(t))
+    s += ",%03d]" % (t * 1000 % 1000)
+    return s
+
+
+def _indent_all_lines(lines, amount, ch=' '):
+    padding = amount * ch
+    return padding + ('\n' + padding).join(lines.split('\n'))
+
+
+def _indent_after_first_line(lines, amount, ch=' '):
+    padding = amount * ch
+    return ('\n' + padding).join(lines.split('\n'))
+
+
+def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, format_type='terminal'):
+    if data is None:
+        data = b''
+    if timestamp is None:
+        timestamp = get_time_stamp()
+
+    if description is not None and description != '':
+        msg = description
+    elif data is not None and len(data) > 0:
+        msg = hex_to_hexstr(input_bytes=data)
+    else:
+        msg = ''
+
+    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data))
+    msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
+    msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+
+    return msg
+
+
+def format_msg(msg, indent_level, indent_size, timestamp=None):
+    msg = _indent_all_lines(msg, indent_level * indent_size)
+    if timestamp is None:
+        timestamp = get_time_stamp()
+    return timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+
+
+def hex_to_hexstr(input_bytes):
+    """
+    Render input_bytes as ASCII-encoded hex bytes, followed by a best effort
+    utf-8 rendering.
+
+    Args:
+        input_bytes (bytes): Arbitrary bytes
+
+    Returns:
+        str: Printable string
+    """
+    return hex_str(input_bytes) + " " + repr(input_bytes)

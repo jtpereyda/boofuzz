@@ -48,7 +48,7 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
             else:
                 raise
 
-    def open_test_case(self, test_case_id):
+    def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         """
         Open a test case - i.e., a fuzzing mutation.
 

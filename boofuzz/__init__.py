@@ -24,11 +24,13 @@ from .primitives import (BasePrimitive, Delim, Group,
                          RandomData, Static, String, BitField,
                          Byte, Word, DWord, QWord, FromFile)
 from .serial_connection import SerialConnection
-from .sessions import Session, Target
+from .sessions import Session, Target, open_test_run
 from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 
-__version__ = '0.0.12'
+__version__ = '0.0.13'
+
+DEFAULT_PROCMON_PORT = 26002
 
 
 # REQUEST MANAGEMENT
@@ -111,7 +113,7 @@ def s_render():
 
 def s_switch(name):
     """
-    Change the currect request to the one specified by "name".
+    Change the current request to the one specified by "name".
 
     :type  name: str
     :param name: Name of request

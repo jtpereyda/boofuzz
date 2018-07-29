@@ -161,7 +161,8 @@ class TestNoResponseFailure(unittest.TestCase):
             target=Target(
                 connection=SocketConnection('localhost', server.active_port, proto='tcp'),
             ),
-            fuzz_data_logger=FuzzLogger(fuzz_loggers=[]),  # log to nothing
+            fuzz_loggers=[],  # log to nothing
+            check_data_received_each_request=True,
         )
         session.restart_target = self._mock_restart_target()
 

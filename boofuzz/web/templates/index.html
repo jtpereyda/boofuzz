@@ -2,7 +2,7 @@
 {% block body %}
 <!--suppress HtmlUnknownTarget -->
 <div class="main-wrapper">
-  <table border=0 cellpadding=5 cellspacing=0 width=750>
+  <table border=0 cellpadding=5 cellspacing=0 >
     <tr>
       <td>
         <table border=0 cellpadding=5 cellspacing=0 width="100%">
@@ -22,24 +22,12 @@
             <td colspan=2 align="center">
               <table border=0 cellpadding=0 cellspacing=5>
                 <tr bgcolor="#111111">
-                  <td>
-                    <b>Total:</b>
-                  </td>
-                  <td>
-                    {{ state.total_mutant_index }}
-                  </td>
-                  <td>
-                    of
-                  </td>
-                  <td>
-                    {{ state.total_num_mutations }}
-                  </td>
-                  <td class="fixed">
-                    {{ state.progress_total_bar | safe }}
-                  </td>
-                  <td>
-                    {{ state.progress_total }}
-                  </td>
+                  <td> <b>Total:</b> </td>
+                  <td> {{ state.total_mutant_index }} </td>
+                  <td> of </td>
+                  <td> {{ state.total_num_mutations }} </td>
+                  <td class="fixed"> {{ state.progress_total_bar | safe }} </td>
+                  <td> {{ state.progress_total }} </td>
                 </tr>
                 <tr bgcolor="#111111">
                   <td>
@@ -84,7 +72,7 @@
           {% for crash in crashes %}
             <tr>
               <td class="fixed">
-                <a href="/view_crash/{{crash.key}}">
+                <a href="/test-case/{{crash.key}}">
                   {{crash.key}}
                 </a>
               </td>

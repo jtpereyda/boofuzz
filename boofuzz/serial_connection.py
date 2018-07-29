@@ -44,6 +44,8 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
     def __init__(self, port=0, baudrate=9600, timeout=5, message_separator_time=0.300, content_checker=None):
         self._connection = serial_connection_low_level.SerialConnectionLowLevel(port=port, baudrate=baudrate)
+        self._port = port
+        self._baudrate = baudrate
         self.timeout = timeout
         self.message_separator_time = message_separator_time
         self.content_checker = content_checker
@@ -126,3 +128,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
             if bytes_sent_this_round is not None:
                 bytes_sent += bytes_sent_this_round
         return bytes_sent
+
+    @property
+    def info(self):
+        return 'port: {port}, baudrate: {baudrate}'.format(port=self._port, baudrate=self._baudrate)

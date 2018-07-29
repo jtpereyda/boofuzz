@@ -50,3 +50,14 @@ class ITargetConnection(object):
         :return: Number of bytes actually sent.
         """
         raise NotImplementedError
+
+    @abc.abstractproperty
+    def info(self):
+        """Return description of connection info.
+
+        E.g., "127.0.0.1:2121"
+
+        Returns:
+            str: Connection info descrption
+        """
+        raise NotImplementedError
