@@ -1,13 +1,11 @@
 from __future__ import print_function
 
-import shlex
-from threading import Event
-import time
 import os
+import shlex
+import time
 
-
-from boofuzz import utils
 from boofuzz import pedrpc
+from boofuzz import utils
 
 
 def _split_command_if_str(command):
@@ -148,12 +146,11 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         self.log('Starting target...')
         self.log("creating debugger thread", 5)
-        finished_starting = Event()
-        self.debugger_thread = self.debugger_class(self.start_commands, self, finished_starting, proc_name=self.proc_name,
+        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name,
                                                    ignore_pid=self.ignore_pid, log_level=self.log_level)
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
-        finished_starting.wait()
+        self.debugger_thread.finished_starting.wait()
         self.log("giving debugger thread 2 seconds to settle in", 5)
         time.sleep(2)
         return True
