@@ -822,7 +822,7 @@ class Session(pgraph.Graph):
             return False
 
     # noinspection PyUnusedLocal
-    def post_send(self, target, fuzz_data_logger, session, sock, *args, **kwargs):
+    def post_send(self, target, fuzz_data_logger, session, *args, **kwargs):
         """
         Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
         as follows::
