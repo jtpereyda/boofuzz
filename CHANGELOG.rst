@@ -2,13 +2,53 @@ Upcoming
 ========
 Features
 --------
-- Process monitor gives more helpful error messages when running 64-bit application (unsupported) or when a process is
+- Web UI
+    - Test case numbers are now clickable and link to test case detail view.
+    - Test case details now in color!
+- `FuzzLoggerDB`
+    - Added FuzzLoggerDB to allow querying of test results during and after test run. Saves results in a SQLite file.
+    - Added `Session.open_test_run()` to read test results database from previous test run.
+- New `Session.feature_check()` method to verify protocol functionality before fuzzing.
+- Process Monitor
+    - Unify process monitor command line interface between Unix and Windows.
+    - Added procmon option `proc_name` to support asynchronously started target processes.
+    - procmon is now checked for errors before user `post_send()` is called, reducing redundant error messages.
+    - Improved procmon logging.
+    - Process monitor gives more helpful error messages when running 64-bit application (unsupported) or when a process is
   killed before being attached
+- Logging Improvements
+    - `Target` `open()` and `close()` operations are now logged.
+    - Added some optional debug output from boofuzz runtime.
+    - Improve capability and logging of messages' `callback` methods.
+- New `Session` & Connection Options
+    - Add `Session` `receive_data_after_each_request` option to enable disabling of data receipt after messages are sent.
+    - `Session` `skip` argument replaced with `index_start` and `index_end`.
+    - `Session` now has separate crash thresholds for elements/blocks and nodes/messages.
+    - Give `SocketConnection` separate timeouts for `send()`/`recv()`.
+- Ease of Use
+    - `Target.recv()` now has a default `max_bytes` value.
+    - Added `DEFAULT_PROCMON_PORT` constant.
+    - `Session.post_send()`'s `sock` parameter now deprecated (use `target` instead).
+
 
 Fixes
 -----
-- Fixed bug in which failures were not recognized
-- BitField blocks with ASCII format reported incorrect sizes
+- Fixed bug in which failures were not recognized.
+- `BitField` blocks with ASCII format reported incorrect sizes.
+- Fixed bug in `s_update`.
+- Handle socket errors that were getting missed.
+- Fixed process monitor logging when providing more or less than 1 stop/start commands.
+- Show graceful error on web requests for non-existent test cases.
+- `get_max_udp_size()` was crashing in Windows.
+- `String` padding was not always being applied.
+- `String` was not accepting unicode strings in `value` parameter.
+- `String` was skipping valid mutations and reporting wrong `num_mutations()` when `size` parameter was used.
+- Unix and Windows process monitors now share much more code.
+
+Development
+-----------
+- Added unit tests for `BitField`.
+- Cleaned up CSS on web pages.
 
 Development
 -----------
