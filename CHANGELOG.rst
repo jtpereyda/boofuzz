@@ -5,49 +5,49 @@ Features
 - Web UI
     - Test case numbers are now clickable and link to test case detail view.
     - Test case details now in color!
-- `FuzzLoggerDB`
+- ``FuzzLoggerDB``
     - Added FuzzLoggerDB to allow querying of test results during and after test run. Saves results in a SQLite file.
-    - Added `Session.open_test_run()` to read test results database from previous test run.
-- New `Session.feature_check()` method to verify protocol functionality before fuzzing.
+    - Added ``Session.open_test_run()`` to read test results database from previous test run.
+- New ``Session.feature_check()`` method to verify protocol functionality before fuzzing.
 - Process Monitor
     - Unify process monitor command line interface between Unix and Windows.
-    - Added procmon option `proc_name` to support asynchronously started target processes.
-    - procmon is now checked for errors before user `post_send()` is called, reducing redundant error messages.
+    - Added procmon option ``proc_name`` to support asynchronously started target processes.
+    - procmon is now checked for errors before user ``post_send()`` is called, reducing redundant error messages.
     - Improved procmon logging.
     - Process monitor gives more helpful error messages when running 64-bit application (unsupported) or when a process is
   killed before being attached
 - Logging Improvements
-    - `Target` `open()` and `close()` operations are now logged.
+    - ``Target`` ``open()`` and ``close()`` operations are now logged.
     - Added some optional debug output from boofuzz runtime.
-    - Improve capability and logging of messages' `callback` methods.
-- New `Session` & Connection Options
-    - Add `Session` `receive_data_after_each_request` option to enable disabling of data receipt after messages are sent.
-    - `Session` `skip` argument replaced with `index_start` and `index_end`.
-    - `Session` now has separate crash thresholds for elements/blocks and nodes/messages.
-    - Give `SocketConnection` separate timeouts for `send()`/`recv()`.
+    - Improve capability and logging of messages' ``callback`` methods.
+- New ``Session`` & Connection Options
+    - Add ``Session`` ``receive_data_after_each_request`` option to enable disabling of data receipt after messages are sent.
+    - ``Session`` ``skip`` argument replaced with ``index_start`` and ``index_end``.
+    - ``Session`` now has separate crash thresholds for elements/blocks and nodes/messages.
+    - Give ``SocketConnection`` separate timeouts for ``send()``/``recv()``.
 - Ease of Use
-    - `Target.recv()` now has a default `max_bytes` value.
-    - Added `DEFAULT_PROCMON_PORT` constant.
-    - `Session.post_send()`'s `sock` parameter now deprecated (use `target` instead).
+    - ``Target.recv()`` now has a default ``max_bytes`` value.
+    - Added ``DEFAULT_PROCMON_PORT`` constant.
+    - ``Session.post_send()``'s ``sock`` parameter now deprecated (use ``target`` instead).
 
 
 Fixes
 -----
 - Fixed bug in which failures were not recognized.
-- `BitField` blocks with ASCII format reported incorrect sizes.
-- Fixed bug in `s_update`.
+- ``BitField`` blocks with ASCII format reported incorrect sizes.
+- Fixed bug in ``s_update``.
 - Handle socket errors that were getting missed.
 - Fixed process monitor logging when providing more or less than 1 stop/start commands.
 - Show graceful error on web requests for non-existent test cases.
-- `get_max_udp_size()` was crashing in Windows.
-- `String` padding was not always being applied.
-- `String` was not accepting unicode strings in `value` parameter.
-- `String` was skipping valid mutations and reporting wrong `num_mutations()` when `size` parameter was used.
+- ``get_max_udp_size()`` was crashing in Windows.
+- ``String`` padding was not always being applied.
+- ``String`` was not accepting unicode strings in ``value`` parameter.
+- ``String`` was skipping valid mutations and reporting wrong ``num_mutations()`` when ``size`` parameter was used.
 - Unix and Windows process monitors now share much more code.
 
 Development
 -----------
-- Added unit tests for `BitField`.
+- Added unit tests for ``BitField``.
 - Cleaned up CSS on web pages.
 
 Development
@@ -59,17 +59,17 @@ Development
 Features
 --------
 - Test cases now have descriptive names
-- Added Session methods to fuzz a test cae by name: `fuzz_by_name` and `fuzz_single_node_by_path`
+- Added Session methods to fuzz a test cae by name: ``fuzz_by_name`` and ``fuzz_single_node_by_path``
 
 Fixes
 -----
-- Fixed test case numbers when using `fuzz_single_case`
+- Fixed test case numbers when using ``fuzz_single_case``
 
 0.0.11
 ======
 Features
 --------
--  Set Session `check_data_received_each_request` to False to disable receive after send.
+-  Set Session ``check_data_received_each_request`` to False to disable receive after send.
 
 Fixes
 -----
@@ -90,7 +90,7 @@ Fixes
 =====
 Features
 --------
--  `s_size` is now fuzzable by default.
+-  ``s_size`` is now fuzzable by default.
 -  Add new s_fuzz_list primitive to read fuzz value from files.
 -  Add new FuzzLoggerCsv to write log in CSV format 
 
@@ -110,15 +110,15 @@ Features
 -  Made Unix procmon more compatible with Windows.
 -  Improved procmon debugger error handling, e.g., when running 64-bit apps.
 -  Windows procmon now runs even if pydbg fails.
--  Added `--help` parameter to process monitor.
--  Target class now takes `procmon` and `procmon_options` in constructor.
+-  Added ``--help`` parameter to process monitor.
+-  Target class now takes ``procmon`` and ``procmon_options`` in constructor.
 -  Added example fuzz scripts.
 
 Fixes
 -----
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 -  Fixed: The pedrpc module was not being properly included in imports.
--  Made process_monitor.py `--crash_bin` optional (as documented).
+-  Made process_monitor.py ``--crash_bin`` optional (as documented).
 -  Improved procmon behavior when certain parameters aren't given.
 -  Improved procmon error handling.
 -  Fixed a bug in which the procmon would not properly restart a target that had failed without crashing.
@@ -128,7 +128,7 @@ Fixes
 Features
 --------
 -  Added several command injection strings from fuzzdb.
--  Blocks can now be created and nested using `with s_block("my-block"):`
+-  Blocks can now be created and nested using ``with s_block("my-block"):``
 
 Fixes
 -----
