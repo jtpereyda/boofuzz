@@ -49,9 +49,6 @@ Development
 -----------
 - Added unit tests for ``BitField``.
 - Cleaned up CSS on web pages.
-
-Development
------------
 - Added a unit test to verify restart on failure behavior
 
 0.0.12
