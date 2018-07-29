@@ -1,4 +1,6 @@
 from __future__ import print_function
+
+import shlex
 from threading import Event
 import time
 import os
@@ -6,6 +8,26 @@ import os
 
 from boofuzz import utils
 from boofuzz import pedrpc
+
+
+def _split_command_if_str(command):
+    """Splits a shell command string into a list of arguments.
+
+    If any individual item is not a string, item is returned unchanged.
+
+    Designed for use with subprocess.Popen.
+
+    Args:
+        command (Union[basestring, :obj:`list` of :obj:`basestring`]): List of commands. Each command
+        should be a string or a list of strings.
+
+    Returns:
+        (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
+    """
+    if isinstance(command, basestring):
+        return shlex.split(command)
+    else:
+        return command
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
@@ -173,9 +195,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.proc_name = new_proc_name
 
     def set_start_commands(self, new_start_commands):
-        self.log("updating start commands to: %s" % list(new_start_commands))
-        self.start_commands = new_start_commands
+        self.log("updating start commands to: {0}".format(list(new_start_commands)))
+        self.start_commands = map(_split_command_if_str, new_start_commands)
 
     def set_stop_commands(self, new_stop_commands):
-        self.log("updating stop commands to: %s" % list(new_stop_commands))
+        self.log("updating stop commands to: {0}".format(list(new_stop_commands)))
         self.stop_commands = new_stop_commands
+        self.stop_commands = map(_split_command_if_str, new_stop_commands)
