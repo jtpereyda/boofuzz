@@ -239,7 +239,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue(len(self.some_send_data) in self.virtual_file.readline())
+        self.assertTrue(str(len(self.some_send_data)) in self.virtual_file.readline())
 
     def test_log_info(self):
         """
@@ -431,7 +431,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('pass' in self.virtual_file.readline().lower())
+        assert 'ok' in self.virtual_file.readline().lower()
 
     def test_several(self):
         """
@@ -497,7 +497,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertRegexpMatches(hex_to_str(self.some_recv_data) in self.virtual_file.readline())
+        self.assertTrue(hex_to_str(self.some_recv_data) in self.virtual_file.readline())
 
 
 if __name__ == '__main__':
