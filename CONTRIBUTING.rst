@@ -26,9 +26,7 @@ Pull Request Checklist
 
 3. Modify CHANGELOG.rst to say what you changed.
 
-4. If adding a new module, re-run sphinx-apidoc: ::
-
-      sphinx-apidoc --separate -o source ..\boofuzz
+4. If adding a new module, consider adding it to the Sphinx docs (see `docs` folder).
 
 Maintainers
 ===========
