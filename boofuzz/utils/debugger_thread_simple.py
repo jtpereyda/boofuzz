@@ -11,6 +11,10 @@ import psutil
 
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):
+        """Mock WindowsError since Linux Python lacks WindowsError"""
+        @property
+        def winerror(self):
+            return self.errno
         pass
 
 
@@ -73,7 +77,12 @@ class DebuggerThreadSimple(threading.Thread):
             try:
                 self._process = subprocess.Popen(command)
             except WindowsError as e:
-                print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
+                print('WindowsError {errno}: "{strerror} while starting "{cmd}"'
+                      .format(errno=e.winerror, strerror=e.strerror, cmd=command), file=sys.stderr)
+                return False
+            except OSError as e:
+                print('OSError {errno}: "{strerror} while starting "{cmd}"'
+                      .format(errno=e.errno, strerror=e.strerror, cmd=command), file=sys.stderr)
                 return False
         if self.proc_name:
             self.log("done. waiting for start command to terminate.")
