@@ -26,16 +26,34 @@ body {
 
 .running {
     color: green;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .paused {
     color: red;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .main-wrapper {
     margin-left: auto;
     margin-right: auto;
     display: block;
+}
+
+.summary-header {
+    background-color: #333333;
+}
+
+.summary-content {
+    background-color: #111111;
+}
+
+.summary-content-row-header-text {
+    font-weight: bold;
 }
 
 table.test-steps td {

@@ -24,28 +24,30 @@ def pause():
 
 @app.route('/test-case/<int:crash_id>')
 def test_case(crash_id):
-    return render_template("test-case.html", crashinfo=app.session.procmon_results.get(crash_id, None), test_case=app.session.test_case_data(crash_id))
+    return render_template("test-case.html", crashinfo=app.session.procmon_results.get(crash_id, None),
+                           test_case=app.session.test_case_data(crash_id))
+
+
+@app.route('/api/current-run')
+def index_update():
+    data = {
+        'session_info': {
+            'is_paused': app.session.is_paused,
+            'current_index': app.session.total_mutant_index,
+            'num_mutations': app.session.total_num_mutations,
+            'current_index_element': app.session.fuzz_node.mutant_index,
+            'num_mutations_element': app.session.fuzz_node.num_mutations(),
+            'current_element': app.session.fuzz_node.name,
+            'crashes': _crash_summary_info(),
+        },
+    }
+
+    return flask.jsonify(data)
 
 
 @app.route("/")
 def index():
-    crashes = []
-    procmon_result_keys = app.session.procmon_results.keys()
-    procmon_result_keys.sort()
-
-    for key in procmon_result_keys:
-        val = app.session.procmon_results[key]
-        status_bytes = "&nbsp;"
-
-        if key in app.session.netmon_results:
-            status_bytes = commify(app.session.netmon_results[key])
-
-        crash = {
-            "key": key,
-            "value": val.split("\n")[0],
-            "status_bytes": status_bytes
-        }
-        crashes.append(crash)
+    crashes = _crash_summary_info()
 
     # which node (request) are we currently fuzzing.
     if app.session.fuzz_node is not None and app.session.fuzz_node.name:
@@ -69,7 +71,7 @@ def index():
         progress_current = 0
         progress_current_bar = ''
         mutant_index = 0
-        num_mutations = 100 # TODO improve template instead of hard coding fake values
+        num_mutations = 100  # TODO improve template instead of hard coding fake values
 
     total_mutant_index = float(app.session.total_mutant_index)
     total_num_mutations = float(app.session.total_num_mutations)
@@ -96,3 +98,23 @@ def index():
     }
 
     return render_template('index.html', state=state, crashes=crashes)
+
+
+def _crash_summary_info():
+    crashes = []
+    procmon_result_keys = app.session.procmon_results.keys()
+    procmon_result_keys.sort()
+    for key in procmon_result_keys:
+        val = app.session.procmon_results[key]
+        status_bytes = "&nbsp;"
+
+        if key in app.session.netmon_results:
+            status_bytes = commify(app.session.netmon_results[key])
+
+        crash = {
+            "key": key,
+            "reasons": val,
+            "status_bytes": status_bytes
+        }
+        crashes.append(crash)
+    return crashes

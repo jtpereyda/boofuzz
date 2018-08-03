@@ -794,8 +794,8 @@ class Session(pgraph.Graph):
                 synopsis = "({0} reports) {1}".format(len(crash_synopses), "\n".join(crash_synopses))
             else:
                 synopsis = "\n".join(crash_synopses)
-            self.procmon_results[self.total_mutant_index] = synopsis
-            self._fuzz_data_logger.log_info(self.procmon_results[self.total_mutant_index].split("\n")[0])
+            self.procmon_results[self.total_mutant_index] = crash_synopses
+            self._fuzz_data_logger.log_info(synopsis)
 
             if self.fuzz_node.mutant is not None and \
                     self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node:

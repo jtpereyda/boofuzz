@@ -12,7 +12,9 @@
               {% if crashinfo is none %}
               <em>None</em>
               {% else %}
-              <pre>{{ crashinfo.decode('utf-8', errors='replace') }}</pre>
+                {% for reason in crashinfo %}
+                  <pre>{{ reason.decode('utf-8', errors='replace') }}</pre>
+                {% endfor %}
               {% endif %}
             </td>
           </tr>
