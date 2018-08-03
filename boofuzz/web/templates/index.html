@@ -3,13 +3,10 @@
 <script src="/static/js/index.js"></script>
 <!--suppress HtmlUnknownTarget -->
 <div class="main-wrapper">
-  <table border=0 cellpadding=5 cellspacing=0 >
-    <tr>
-      <td>
-        <table border=0 cellpadding=5 cellspacing=0 width="100%">
+        <table class="summary" >
           <tr class="summary-header">
             <td>
-              <div style="font-size: 20px;">boofuzz Fuzz Control</div>
+              <div class="main-title">boofuzz Fuzz Control</div>
             </td>
             <td align=right>
               {% if state.session.is_paused %}
@@ -21,7 +18,7 @@
           </tr>
           <tr class="summary-content">
             <td colspan=2 align="center">
-              <table border=0 cellpadding=0 cellspacing=5>
+              <table >
                 <tr>
                   <td class="summary-content-row-header-text">Total:</td>
                   <td id="current_index"> {{ state.total_mutant_index }} </td>
@@ -39,7 +36,6 @@
                   <td id="progress_percentage_element"> {{ state.progress_current }} </td>
                 </tr>
               </table>
-            </td>
           </tr>
           <tr>
             <td>
@@ -50,7 +46,7 @@
           </tr>
         </table>
 
-        <table id="crash-summary-table" border=0 cellpadding=5 cellspacing=0 width="100%%">
+        <table class="summary" id="crash-summary-table"  width="100%%">
           <tr class="summary-header">
             <td nowrap>Test Case #</td>
             <td>Crash Synopsis</td>
@@ -64,8 +60,5 @@
             </tr>
           {% endfor %}
         </table>
-      </td>
-    </tr>
-  </table>
 </div>
 {% endblock %}
