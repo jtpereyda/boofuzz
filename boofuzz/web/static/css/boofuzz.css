@@ -63,6 +63,23 @@ body {
     font-size: 20px;
 }
 
+header.test-case-log-header {
+    border-bottom: 1px solid #000;
+    display: table;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.test-case-log-title {
+    display: table-cell;
+    width: 40%;
+}
+
+.test-case-log-index-input {
+    display: table-cell;
+    width: 60%;
+}
+
 table.summary {
     border: 0;
     border-spacing: 0;

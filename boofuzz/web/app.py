@@ -36,7 +36,15 @@ def current_test_case_update():
         'index': app.session.total_mutant_index,
         'log_data': _get_log_data(app.session.total_mutant_index),
     }
+    return flask.jsonify(data)
 
+
+@app.route('/api/test-case/<int:test_case_index>')
+def api_test_case(test_case_index):
+    data = {
+        'index': test_case_index,
+        'log_data': _get_log_data(test_case_id=test_case_index),
+    }
     return flask.jsonify(data)
 
 

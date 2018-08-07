@@ -1,5 +1,6 @@
 nbsp = '\xa0';
 let failure_map = {};
+let test_case_log_snap = true;
 
 const StringUtilities = {
     repeat: function (str, times) {
@@ -104,21 +105,41 @@ function continually_update_current_run_info()
         .then(update_repeat)
         .catch(_repeat_only);
 }
+
 function continually_update_current_test_case_log()
 {
     function update_repeat(response)
     {
-        update_current_test_case_log(response);
+        if (test_case_log_snap) {
+            update_current_test_case_log(response);
+        }
         setTimeout(continually_update_current_test_case_log, 100);
     }
     function _repeat_only()
     {
         setTimeout(continually_update_current_test_case_log, 100);
     }
-    fetch(new Request('/api/current-test-case'), {method: 'GET'})
-    .then(function(response) { return response.json() })
-    .then(update_repeat)
-    .catch(_repeat_only);
+    if (test_case_log_snap) {
+        fetch(new Request('/api/current-test-case'), {method: 'GET'})
+            .then(function(response) { return response.json() })
+            .then(update_repeat)
+            .catch(_repeat_only);
+    }
+    else {
+        setTimeout(continually_update_current_test_case_log, 100);
+    }
+}
+
+function updateTestCaseLog(index){
+    // function tryAgain()
+    // {
+    //     setTimeout(function(){updateTestCaseLog(document.getElementById('test-case-log-index-input').textContent.trim())}, 100);
+    // }
+    fetch(new Request('/api/test-case/' + index), {method: 'GET'})
+        .then(function(response) { return response.json() })
+        .then(function(response) {update_current_test_case_log(response);})
+        // .catch(tryAgain)
+    ;
 }
 
 function progress_bars(fraction){
@@ -150,4 +171,25 @@ function initialize_state(){
     read_failure_map_from_dom();
 }
 
-document.addEventListener('DOMContentLoaded', start_live_update, false);
+function logInputChangeHandler(event){
+    document.getElementById('test-case-log-snap').checked = false;
+    test_case_log_snap = false;
+    let new_index = event.target.value;
+    updateTestCaseLog(new_index);
+}
+
+function logSnapChangeHandler(event){
+    test_case_log_snap = event.target.checked;
+    if (test_case_log_snap) {
+        document.getElementById('test-case-log-index-input').value = '';
+    }
+}
+
+function initPage(){
+    test_case_log_snap = document.getElementById('test-case-log-snap').checked;
+    document.getElementById('test-case-log-index-input').addEventListener('change', logInputChangeHandler, false);
+    document.getElementById('test-case-log-snap').addEventListener('click', logSnapChangeHandler, false);
+    start_live_update();
+}
+
+document.addEventListener('DOMContentLoaded', initPage, false);

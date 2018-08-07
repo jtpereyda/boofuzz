@@ -53,9 +53,13 @@
                 </tr>
             {% endfor %}
         </table>
+        <header class="test-case-log-header">
+            <h2 class="test-case-log-title">Test Case Log: <span id="test-case-log-title-index"></span></h2>
+            <input type="text" class="test-case-log-index-input" id="test-case-log-index-input"/>
+            <label><input type="checkbox" checked id="test-case-log-snap"/>snap to current test case</label>
+        </header>
     </div>
     <div class="log-wrapper">
-        <h2 class="test-case-log-title">Test Case Log: <span id="test-case-log-title-index"></span></h2>
         <table class="test-steps" id="test-steps-table"> </table>
     </div>
 </div>
