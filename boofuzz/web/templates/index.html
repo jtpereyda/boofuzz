@@ -3,63 +3,60 @@
 <script src="/static/js/index.js"></script>
 <!--suppress HtmlUnknownTarget -->
 <div class="main-wrapper">
+    <div class="fixed-width-wrapper">
         <table class="summary" >
-          <tr class="summary-header">
-            <td>
-              <div class="main-title">boofuzz Fuzz Control</div>
-            </td>
-            <td align=right>
-              {% if state.session.is_paused %}
-                <div id="is_paused_indicator" class="paused" >paused</div>
-              {% else %}
-                <div id="is_paused_indicator" class="running" >running</div>
-              {% endif %}
-            </td>
-          </tr>
-          <tr class="summary-content">
-            <td colspan=2 align="center">
-              <table >
+            <tr class="summary-header">
+                <td> <div class="main-title">boofuzz Fuzz Control</div> </td>
+                <td align=right>
+                    {% if state.session.is_paused %}
+                        <div id="is_paused_indicator" class="paused" >paused</div>
+                    {% else %}
+                        <div id="is_paused_indicator" class="running" >running</div>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="summary-content"> <td colspan=2 align="center"> <table>
                 <tr>
-                  <td class="summary-content-row-header-text">Total:</td>
-                  <td id="current_index"> {{ state.total_mutant_index }} </td>
-                  <td> of </td>
-                  <td id="num_mutations"> {{ state.total_num_mutations }} </td>
-                  <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
-                  <td id="progress_percentage_total"> {{ state.progress_total }} </td>
+                    <td class="summary-content-row-header-text">Total:</td>
+                    <td id="current_index"> {{ state.total_mutant_index }} </td>
+                    <td> of </td>
+                    <td id="num_mutations"> {{ state.total_num_mutations }} </td>
+                    <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
+                    <td id="progress_percentage_total"> {{ state.progress_total }} </td>
                 </tr>
                 <tr>
-                  <td id="current_element" class="summary-content-row-header-text"> {{ state.current_name }}: </td>
-                  <td id="current_index_element"> {{ state.current_mutant_index }} </td>
-                  <td> of </td>
-                  <td id="num_mutations_element"> {{ state.current_num_mutations }} </td>
-                  <td id="progress_bar_element" class="fixed"> {{ state.progress_current_bar | safe }} </td>
-                  <td id="progress_percentage_element"> {{ state.progress_current }} </td>
+                    <td id="current_element" class="summary-content-row-header-text"> {{ state.current_name }}: </td>
+                    <td id="current_index_element"> {{ state.current_mutant_index }} </td>
+                    <td> of </td>
+                    <td id="num_mutations_element"> {{ state.current_num_mutations }} </td>
+                    <td id="progress_bar_element" class="fixed"> {{ state.progress_current_bar | safe }} </td>
+                    <td id="progress_percentage_element"> {{ state.progress_current }} </td>
                 </tr>
-              </table>
-          </tr>
-          <tr>
-            <td>
-              <form method=get action="/togglepause">
-                <input class="input" type="submit" value="Pause">
-              </form>
-            </td>
-          </tr>
+            </table> </td> </tr>
+            <tr> <td>
+                <form method=get action="/togglepause">
+                    <input class="input" type="submit" value="Pause">
+                </form>
+            </td> </tr>
         </table>
 
         <table class="summary" id="crash-summary-table"  width="100%">
-          <tr class="summary-header">
-            <td nowrap>Test Case #</td>
-            <td>Crash Synopsis</td>
-          </tr>
-          {% for crash in crashes %}
-            <tr>
-              <td class="fixed"> <a href="/test-case/{{crash.key}}"> {{crash.key}} </a> </td>
-              <td> {% for reason in crash.reasons %} <div>{{reason}}</div> {% endfor %} </td>
-              <!--<td align=right> {{crash.status_bytes}} </td>-->
+            <tr class="summary-header">
+                <td nowrap>Test Case #</td>
+                <td>Crash Synopsis</td>
             </tr>
-          {% endfor %}
+            {% for crash in crashes %}
+                <tr>
+                    <td class="fixed"> <a href="/test-case/{{crash.key}}"> {{crash.key}} </a> </td>
+                    <td> {% for reason in crash.reasons %} <div>{{reason}}</div> {% endfor %} </td>
+                    <!--<td align=right> {{crash.status_bytes}} </td>-->
+                </tr>
+            {% endfor %}
         </table>
-  <h2 class="test-case-log-title">Test Case Log: <span id="test-case-log-title-index"></span></h2>
-  <table class="test-steps" id="test-steps-table"> </table>
+    </div>
+    <div class="log-wrapper">
+        <h2 class="test-case-log-title">Test Case Log: <span id="test-case-log-title-index"></span></h2>
+        <table class="test-steps" id="test-steps-table"> </table>
+    </div>
 </div>
 {% endblock %}
