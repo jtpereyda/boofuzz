@@ -50,7 +50,6 @@ body {
 }
 
 table.summary {
-    display: table-row;
     border: 0;
     border-spacing: 0;
 }
