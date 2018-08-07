@@ -54,7 +54,7 @@ body {
 
 .log-wrapper {
     display: table;
-    float: left;
+    clear: both;
     margin-left: auto;
     margin-right: auto;
 }
