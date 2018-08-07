@@ -5,7 +5,6 @@ const StringUtilities = {
     repeat: function (str, times) {
         return (new Array(times + 1)).join(str);
     }
-    //other related string functions...
 };
 
 function update_current_run_info(response) {
@@ -64,6 +63,31 @@ function update_current_run_info(response) {
     }
 }
 
+function update_current_test_case_log(response) {
+    let test_case_log_title_index = document.getElementById('test-case-log-title-index');
+    test_case_log_title_index.textContent = response.index;
+
+    // Create log table entries
+    let new_entries = document.createElement('tbody');
+    response.log_data.forEach(function(log_entry) {
+        let new_span = document.createElement('span');
+        new_span.setAttribute('class', log_entry.css_class);
+        new_span.textContent = log_entry.log_line;
+        let new_td = document.createElement('td');
+        let new_tr = document.createElement('tr');
+        new_td.appendChild(new_span);
+        new_tr.appendChild(new_td);
+        new_entries.appendChild(new_tr);
+    });
+
+    // Insert log table entries
+    let test_cases_table = document.getElementById('test-steps-table');
+    while (test_cases_table.firstChild){
+        test_cases_table.removeChild(test_cases_table.firstChild);
+    }
+    test_cases_table.appendChild(new_entries);
+}
+
 function continually_update_current_run_info()
 {
     function update_repeat(response)
@@ -76,6 +100,22 @@ function continually_update_current_run_info()
         setTimeout(continually_update_current_run_info, 100);
     }
     fetch(new Request('/api/current-run'), {method: 'GET'})
+        .then(function(response) { return response.json() })
+        .then(update_repeat)
+        .catch(_repeat_only);
+}
+function continually_update_current_test_case_log()
+{
+    function update_repeat(response)
+    {
+        update_current_test_case_log(response);
+        setTimeout(continually_update_current_test_case_log, 100);
+    }
+    function _repeat_only()
+    {
+        setTimeout(continually_update_current_test_case_log, 100);
+    }
+    fetch(new Request('/api/current-test-case'), {method: 'GET'})
     .then(function(response) { return response.json() })
     .then(update_repeat)
     .catch(_repeat_only);
@@ -94,6 +134,7 @@ function progress_percentage(fraction){
 function start_live_update() {
     initialize_state();
     continually_update_current_run_info();
+    continually_update_current_test_case_log();
 }
 
 function read_failure_map_from_dom() {

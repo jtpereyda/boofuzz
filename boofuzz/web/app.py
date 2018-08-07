@@ -2,6 +2,8 @@ import flask
 from flask import Flask, render_template, redirect
 import re
 
+MAX_LOG_LINE_LEN = 3000
+
 app = Flask(__name__)
 app.session = None
 
@@ -26,6 +28,29 @@ def pause():
 def test_case(crash_id):
     return render_template("test-case.html", crashinfo=app.session.procmon_results.get(crash_id, None),
                            test_case=app.session.test_case_data(crash_id))
+
+
+@app.route('/api/current-test-case')
+def current_test_case_update():
+    data = {
+        'index': app.session.total_mutant_index,
+        'log_data': _get_log_data(app.session.total_mutant_index),
+    }
+
+    return flask.jsonify(data)
+
+
+def _get_log_data(test_case_id):
+    results = []
+    case = app.session.test_case_data(test_case_id)
+    if case is not None:
+        results.append({'css_class': case.css_class, 'log_line': case.html_log_line})
+        for step in case.steps:
+            line = step.html_log_line
+            if len(line) > MAX_LOG_LINE_LEN:
+                line = line[:MAX_LOG_LINE_LEN] + ' (truncated)'
+            results.append({'css_class':step.css_class, 'log_line': line})
+    return results
 
 
 @app.route('/api/current-run')

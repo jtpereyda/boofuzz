@@ -1,0 +1,12 @@
+{% if test_case is not none %}
+<h2 class="test-case-log-title">Test Case Log</h2>
+<table class="test-steps">
+    <tr><td><span class="{{ test_case.css_class }}">{{ test_case.html_log_line }}</span></td></tr>
+    {% for step in test_case.steps %}
+    <tr><td><span class="{{ step.css_class }}">{{ step.html_log_line }}</span></td></tr>
+    {% endfor %}
+</table>
+{% else %}
+<h2>Test Case Not Found</h2>
+<p>No record found. This test case does not exist, was not executed, or was not executed yet.</p>
+{% endif %}
