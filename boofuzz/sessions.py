@@ -1455,6 +1455,6 @@ class Session(pgraph.Graph):
             index (int): Test case index
 
         Returns:
-            TestCaseData: Test case data object
+            DataTestCase: Test case data object
         """
         return self._db_logger.get_test_case_data(index=index)

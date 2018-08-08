@@ -6,7 +6,7 @@ from . import helpers
 
 
 @attr.s
-class TestCaseData(object):
+class DataTestCase(object):
     name = attr.ib()
     index = attr.ib()
     timestamp = attr.ib()
