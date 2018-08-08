@@ -16,6 +16,9 @@ Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility.
 The goal: fuzz everything.
 
+.. figure:: _static/boofuzz-screenshot.png
+    :alt: boofuzz screenshot
+
 Why?
 ----
 
