@@ -1,18 +1,25 @@
+:root {
+    --foreground-color:#A0B0B0;
+}
 a:link    {color: #FF8200; text-decoration: none;}
 a:visited {color: #FF8200; text-decoration: none;}
 a:hover   {color: #C5C5C5; text-decoration: none;}
+
+.link {
+    cursor: pointer;
+    color: #FF8200;
+}
 
 body {
     background-color: #000000;
     font-family:      Arial, Helvetica, sans-serif;
     font-size:        12px;
-    color:            #A0B0B0;
+    color:            var(--foreground-color);
 }
 
 .fixed {
     font-family:      Courier New, sans-serif;
     font-size:        12px;
-    color:            #A0B0B0;
 }
 
 .input {
@@ -24,22 +31,134 @@ body {
     height:           20px;
 }
 
+button.input {
+    padding: 7px;
+    border: 2px;
+    text-align: center;
+}
+button.input div {
+}
+.input i {
+    border: solid;
+    border-color: var(--foreground-color);
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+    margin: auto;
+}
+
+.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}
+
+
 .running {
     color: green;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .paused {
     color: red;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
 }
 
 .main-wrapper {
+    display: table;
+    float: left;
     margin-left: auto;
     margin-right: auto;
-    display: block;
+}
+
+.fixed-width-wrapper {
+    display: table;
+    float: left;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.log-wrapper {
+    display: table;
+    clear: both;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main-title {
+    font-size: 20px;
+}
+
+header.test-case-log-header {
+    border-bottom: 1px solid #000;
+    display: table;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.test-case-log-title {
+    display: table-cell;
+    width: 40%;
+}
+
+.test-case-log-input-area {
+    display: table-cell;
+    width: 60%;
+}
+
+.test-case-log-input-center {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.test-case-log-input-center span {
+    /*vertical-align: top;*/
+    /*float: left;*/
+}
+
+table.summary {
+    border: 0;
+    border-spacing: 0;
+}
+table.summary  td {
+    padding: 5px;
+}
+
+.summary-header {
+    background-color: #333333;
+}
+
+.summary-content {
+    background-color: #111111;
+}
+
+.summary-content-row-header-text {
+    font-weight: bold;
 }
 
 table.test-steps td {
     white-space: pre-wrap;
+    word-break: break-word;
     font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
     margin: 0;
 }

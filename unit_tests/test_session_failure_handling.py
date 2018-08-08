@@ -145,7 +145,7 @@ class TestNoResponseFailure(unittest.TestCase):
     def test_no_response_causes_restart(self):
         """
         Given: A listening server which will give no response
-          and: A Session ready to fuzz that server
+          and: A Session ready to fuzz that server, including two messages in sequence
         When: Calling fuzz_single_case()
         Then: The restart_target method is called.
         """
@@ -166,14 +166,19 @@ class TestNoResponseFailure(unittest.TestCase):
         )
         session.restart_target = self._mock_restart_target()
 
-        s_initialize("test-msg")
+        s_initialize("test-msg-a")
         s_string("test-str-value")
         s_static("\r\n")
 
-        session.connect(s_get("test-msg"))
+        s_initialize("test-msg-b")
+        s_string("test-str-value")
+        s_static("\r\n")
+
+        session.connect(s_get("test-msg-a"))
+        session.connect(s_get("test-msg-a"), s_get("test-msg-b"))
 
         # When
-        session.fuzz_single_case(1)
+        session.fuzz_single_case(s_get("test-msg-a").num_mutations() + 1)
 
         # Then
         t.join(THREAD_WAIT_TIMEOUT)

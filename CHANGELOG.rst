@@ -1,3 +1,19 @@
+v0.1.0
+======
+Features
+--------
+- Web UI
+    - Statistics now auto-update.
+    - Test case logs now stream on the main page.
+    - Cool left & right arrow buttons to move through test case
+- New ``Session`` parameter ``receive_data_after_fuzz``. Controls whether to execute a receive step after sending
+  fuzz messages. Defaults to False. This significantly speeds up tests in which the target tends not to respond to
+  invalid messages.
+
+Fixes
+-----
+- Text log output would include double titles, e.g. "Test Step: Test Step: ..."
+
 v0.0.13
 =======
 Features

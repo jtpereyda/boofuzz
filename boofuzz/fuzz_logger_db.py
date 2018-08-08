@@ -4,8 +4,8 @@ import sqlite3
 
 from . import helpers
 from . import ifuzz_logger_backend
-from . import test_case_data
-from . import test_step_data
+from . import data_test_case
+from . import data_test_step
 
 
 def hex_to_hexstr(input_bytes):
@@ -61,8 +61,8 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
                     pass
                 else:
                     raise
-            steps.append(test_step_data.TestStepData(type=row[1], description=row[2], data=data, timestamp=row[4]))
-        return test_case_data.TestCaseData(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
+            steps.append(data_test_step.DataTestStep(type=row[1], description=row[2], data=data, timestamp=row[4]))
+        return data_test_case.DataTestCase(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
                                            steps=steps)
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
@@ -139,6 +139,6 @@ class FuzzLoggerDbReader(object):
                     pass
                 else:
                     raise
-            steps.append(test_step_data.TestStepData(type=row[1], description=row[2], data=data, timestamp=row[4]))
-        return test_case_data.TestCaseData(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
+            steps.append(data_test_step.DataTestStep(type=row[1], description=row[2], data=data, timestamp=row[4]))
+        return data_test_case.DataTestCase(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
                                            steps=steps)
