@@ -36,7 +36,12 @@ setup(
             'Flask==0.10.1', 'impacket', 'colorama', 'attrs', 'click', 'psutil'],
         extras_require={
             # This list is duplicated in tox.ini. Make sure to change both!
-            'dev': ['check-manifest', 'mock', 'pytest', 'pytest-bdd', 'netifaces', 'ipaddress'],
+            'dev': ['check-manifest',
+                    'mock',
+                    'pytest==3.6.4',  # temporary measure -- 3.7 was causing pytest-bdd failures
+                    'pytest-bdd',
+                    'netifaces',
+                    'ipaddress'],
         },
         classifiers=[
             'Development Status :: 4 - Beta',
