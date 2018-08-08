@@ -1,3 +1,16 @@
+v0.1.0
+======
+Features
+--------
+- Web UI
+    - Statistics now auto-update.
+    - Test case logs now stream on the main page.
+    - Cool left & right arrow buttons to move through test case
+
+Fixes
+-----
+- Text log output would include double titles, e.g. "Test Step: Test Step: ..."
+
 v0.0.13
 =======
 Features
