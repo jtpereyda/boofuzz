@@ -277,12 +277,14 @@ class Session(pgraph.Graph):
         fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
         receive_data_after_each_request (bool): If True, Session will attempt to receive a reply after transmitting
-                                                each node. Default True.
+                                                each non-fuzzed node. Default True.
         check_data_received_each_request (bool): If True, Session will verify that some data has
-                                                 been received after transmitting each node, and if not, register a
-                                                 failure. If False, this check will not be performed. Default False.
-                                                 A receive attempt is still made unless receive_data_after_each_request
-                                                 is False.
+                                                 been received after transmitting each non-fuzzed node, and if not,
+                                                 register a failure. If False, this check will not be performed. Default
+                                                 False. A receive attempt is still made unless
+                                                 receive_data_after_each_request is False.
+        receive_data_after_fuzz (bool): If True, Session will attempt to receive a reply after transmitting
+                                        a fuzzed message. Default False.
         ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
                                 failures.
         ignore_connection_aborted (bool): Log ECONNABORTED errors as "info" instead of failures.
@@ -309,6 +311,7 @@ class Session(pgraph.Graph):
                  fuzz_loggers=None,
                  receive_data_after_each_request=True,
                  check_data_received_each_request=False,
+                 receive_data_after_fuzz=False,
                  log_level=logging.INFO, logfile=None, logfile_level=logging.DEBUG,
                  ignore_connection_reset=False,
                  ignore_connection_aborted=False,
@@ -341,6 +344,7 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         self._receive_data_after_each_request = receive_data_after_each_request
+        self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
 
@@ -1031,16 +1035,8 @@ class Session(pgraph.Graph):
                                                 .format(e.socket_errno, e.socket_errmsg))
 
         try:  # recv
-            if self._receive_data_after_each_request:
+            if self._receive_data_after_fuzz:
                 self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
-
-                if self._check_data_received_each_request:
-                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
-                    if not self.last_recv:
-                        # Assume a crash?
-                        self._fuzz_data_logger.log_fail("Nothing received from target.")
-                    else:
-                        self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail("Target connection reset.")
