@@ -1,6 +1,7 @@
 nbsp = '\xa0';
 let failure_map = {};
 let test_case_log_snap = true;
+let test_case_log_index = 0;
 
 const StringUtilities = {
     repeat: function (str, times) {
@@ -65,8 +66,7 @@ function update_current_run_info(response) {
 }
 
 function update_current_test_case_log(response) {
-    let test_case_log_title_index = document.getElementById('test-case-log-title-index');
-    test_case_log_title_index.textContent = response.index;
+    logUpdateIndex(response.index);
 
     // Create log table entries
     let new_entries = document.createElement('tbody');
@@ -172,8 +172,7 @@ function initialize_state(){
 }
 
 function logInputChangeHandler(event){
-    document.getElementById('test-case-log-snap').checked = false;
-    test_case_log_snap = false;
+    logUpdateSnap(false);
     let new_index = event.target.value;
     updateTestCaseLog(new_index);
 }
@@ -185,10 +184,40 @@ function logSnapChangeHandler(event){
     }
 }
 
+function logNavMove(num){
+    let new_index = test_case_log_index + num;
+    logUpdateSnap(false);
+    logUpdateIndex(new_index);
+    logUpdateLogBody(new_index);
+}
+
+function logUpdateIndex(num){
+    test_case_log_index = num;
+
+    let test_case_log_title_index = document.getElementById('test-case-log-title-index');
+    test_case_log_title_index.textContent = num;
+
+    let index_input = document.getElementById('test-case-log-index-input');
+    if (document.activeElement !== index_input){
+        index_input.value = num;
+    }
+}
+
+function logUpdateLogBody(num){
+    updateTestCaseLog(num);
+}
+
+function logUpdateSnap(on){
+    test_case_log_snap = on;
+    document.getElementById('test-case-log-snap').checked = on;
+}
+
 function initPage(){
     test_case_log_snap = document.getElementById('test-case-log-snap').checked;
     document.getElementById('test-case-log-index-input').addEventListener('change', logInputChangeHandler, false);
     document.getElementById('test-case-log-snap').addEventListener('click', logSnapChangeHandler, false);
+    document.getElementById('test-case-log-left').addEventListener('click', function(){logNavMove(-1)}, false);
+    document.getElementById('test-case-log-right').addEventListener('click', function(){logNavMove(1)} , false);
     start_live_update();
 }
 

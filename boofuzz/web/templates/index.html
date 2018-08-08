@@ -55,8 +55,14 @@
         </table>
         <header class="test-case-log-header">
             <h2 class="test-case-log-title">Test Case Log: <span id="test-case-log-title-index"></span></h2>
-            <input type="text" class="test-case-log-index-input" id="test-case-log-index-input"/>
-            <label><input type="checkbox" checked id="test-case-log-snap"/>snap to current test case</label>
+            <div class="test-case-log-input-area">
+                <div class="test-case-log-input-center">
+                    <span><button id="test-case-log-left" class="input"> <div> <i class="arrow left"></i> </div> </button></span>
+                    <span><input type="text" class="test-case-log-index-input" id="test-case-log-index-input"/></span>
+                    <span><button  id="test-case-log-right" class="input"> <i class="arrow right"></i> </button></span>
+                    <span><label><input type="checkbox" checked id="test-case-log-snap"/>snap to current test case</label></span>
+                </div>
+            </div>
         </header>
     </div>
     <div class="log-wrapper">

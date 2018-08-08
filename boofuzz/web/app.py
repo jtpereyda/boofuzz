@@ -2,7 +2,7 @@ import flask
 from flask import Flask, render_template, redirect
 import re
 
-MAX_LOG_LINE_LEN = 3000
+MAX_LOG_LINE_LEN = 1500
 
 app = Flask(__name__)
 app.session = None
