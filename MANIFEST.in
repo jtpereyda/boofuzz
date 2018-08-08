@@ -3,6 +3,7 @@ include *.rst
 include *.txt
 recursive-include boofuzz *.md
 recursive-include boofuzz *.py
+recursive-include boofuzz *.js
 recursive-include examples *.py
 recursive-include examples *.md
 recursive-include requests *.html
