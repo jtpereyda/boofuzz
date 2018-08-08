@@ -50,8 +50,9 @@ function update_current_run_info(response) {
                 id_cell.className = 'fixed';
 
                 let failure_id_link = document.createElement('a');
-                failure_id_link.setAttribute('href', '/test-case/' + key);
                 failure_id_link.textContent = key;
+                failure_id_link.classList.add('link');
+                failure_id_link.addEventListener('click', function(){logNavGoTo(key)}, false);
                 id_cell.appendChild(failure_id_link);
 
                 let reasons_cell = new_row.insertCell();
@@ -167,6 +168,15 @@ function read_failure_map_from_dom() {
     });
 }
 
+function set_failure_link_event_handlers() {
+    let failures_table = document.getElementById('crash-summary-table');
+    let failure_rows = Array.from(failures_table.rows).slice(1);
+    failure_rows.forEach(function (row) {
+        let key = row.cells[0].textContent.trim();
+        row.cells[0].getElementsByClassName('link')[0].addEventListener('click', function(){logNavGoTo(Number(key))}, false);
+    });
+}
+
 function initialize_state(){
     read_failure_map_from_dom();
 }
@@ -185,10 +195,13 @@ function logSnapChangeHandler(event){
 }
 
 function logNavMove(num){
-    let new_index = test_case_log_index + num;
+    logNavGoTo(test_case_log_index + num);
+}
+
+function logNavGoTo(num){
     logUpdateSnap(false);
-    logUpdateIndex(new_index);
-    logUpdateLogBody(new_index);
+    logUpdateIndex(num);
+    logUpdateLogBody(num);
 }
 
 function logUpdateIndex(num){
@@ -218,6 +231,7 @@ function initPage(){
     document.getElementById('test-case-log-snap').addEventListener('click', logSnapChangeHandler, false);
     document.getElementById('test-case-log-left').addEventListener('click', function(){logNavMove(-1)}, false);
     document.getElementById('test-case-log-right').addEventListener('click', function(){logNavMove(1)} , false);
+    set_failure_link_event_handlers();
     start_live_update();
 }
 

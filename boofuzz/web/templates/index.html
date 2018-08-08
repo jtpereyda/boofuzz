@@ -47,7 +47,7 @@
             </tr>
             {% for crash in crashes %}
                 <tr>
-                    <td class="fixed"> <a href="/test-case/{{crash.key}}"> {{crash.key}} </a> </td>
+                    <td class="fixed"> <span class="link"> {{crash.key}} </span> </td>
                     <td> {% for reason in crash.reasons %} <div>{{reason}}</div> {% endfor %} </td>
                     <!--<td align=right> {{crash.status_bytes}} </td>-->
                 </tr>

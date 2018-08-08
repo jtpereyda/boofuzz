@@ -5,6 +5,11 @@ a:link    {color: #FF8200; text-decoration: none;}
 a:visited {color: #FF8200; text-decoration: none;}
 a:hover   {color: #C5C5C5; text-decoration: none;}
 
+.link {
+    cursor: pointer;
+    color: #FF8200;
+}
+
 body {
     background-color: #000000;
     font-family:      Arial, Helvetica, sans-serif;
