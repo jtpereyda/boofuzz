@@ -94,7 +94,7 @@ For updates, follow `@b00fuzz`_ on Twitter.
 .. _Sulley: https://github.com/OpenRCE/sulley
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
-.. _@b00fuzz:: https://twitter.com/b00fuzz
+.. _@b00fuzz: https://twitter.com/b00fuzz
 .. _documentation: http://boofuzz.readthedocs.io/
 .. _INSTALL.rst: INSTALL.rst
 .. _CONTRIBUTING.rst: CONTRIBUTING.rst
