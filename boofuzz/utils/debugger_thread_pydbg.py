@@ -166,7 +166,10 @@ class DebuggerThreadPydbg(threading.Thread):
 
     def pre_send(self):
         # un-serialize the crash bin from disk. this ensures we have the latest copy (ie: vmware image is cycling).
-        self.process_monitor.crash_bin.import_file(self.process_monitor.crash_filename)
+        try:
+            self.process_monitor.crash_bin.import_file(self.process_monitor.crash_filename)
+        except IOError:
+            pass # ignore missing file, etc.
 
     def post_send(self):
         """
