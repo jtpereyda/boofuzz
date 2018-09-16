@@ -262,10 +262,10 @@ class Block(IFuzzable):
         return "<%s %s>" % (self.__class__.__name__, self.name)
 
     def __len__(self):
-        length = 0
-        for item in self.stack:
-            length += len(item)
-        return length
+        if self.encoder is not None:
+            return len(self.render())
+        else:
+            return sum(len(item) for item in self.stack)
 
     def __nonzero__(self):
         """
