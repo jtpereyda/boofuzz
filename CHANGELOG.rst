@@ -1,3 +1,10 @@
+Upcoming
+========
+Fixes
+-----
+- Handle exceptions when opening crash bin files in process monitor.
+- Fix Block.__len__ to account for custom encoder.
+
 v0.1.0
 ======
 Features
