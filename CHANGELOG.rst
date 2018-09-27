@@ -1,5 +1,9 @@
 Upcoming
 ========
+Features
+--------
+- Improved "Cannot connect to target" error message
+
 Fixes
 -----
 - Handle exceptions when opening crash bin files in process monitor.
