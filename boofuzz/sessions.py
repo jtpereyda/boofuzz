@@ -1250,23 +1250,9 @@ class Session(pgraph.Graph):
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
-
-            self._fuzz_data_logger.open_test_step("Calling post_send function:")
-            try:
-                self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except sex.BoofuzzTargetConnectionReset:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-            except sex.BoofuzzTargetConnectionAborted as e:
-                self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
-                                                                                  socket_errmsg=e.socket_errmsg))
-                pass
-            except sex.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
-            except Exception:
-                self._fuzz_data_logger.log_fail(
-                    "Custom post_send method raised uncaught Exception." + traceback.format_exc())
-
             target.close()
+
+            self._post_send(target)
 
             self._fuzz_data_logger.open_test_step("Sleep between tests.")
             self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
@@ -1340,23 +1326,7 @@ class Session(pgraph.Graph):
             target.close()
 
             if not self._check_for_passively_detected_failures(target=target):
-                self._fuzz_data_logger.open_test_step("Calling post_send function:")
-                try:
-                    self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-                except sex.BoofuzzTargetConnectionReset:
-                    self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-                except sex.BoofuzzTargetConnectionAborted as e:
-                    self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
-                                                                                      socket_errmsg=e.socket_errmsg))
-                    pass
-                except sex.BoofuzzTargetConnectionFailedError:
-                    self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
-                except Exception:
-                    self._fuzz_data_logger.log_fail(
-                        "Custom post_send method raised uncaught Exception." + traceback.format_exc())
-                finally:
-                    target.close()
-                self._check_procmon_failures(target=target)
+                self._post_send(target)
 
             self._fuzz_data_logger.open_test_step("Sleep between tests.")
             self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
@@ -1365,6 +1335,25 @@ class Session(pgraph.Graph):
             self._process_failures(target=target)
             self._stop_netmon(target=target)
             self.export_file()
+
+    def _post_send(self, target):
+        self._fuzz_data_logger.open_test_step("Calling post_send function:")
+        try:
+            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+        except sex.BoofuzzTargetConnectionReset:
+            self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
+        except sex.BoofuzzTargetConnectionAborted as e:
+            self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                                              socket_errmsg=e.socket_errmsg))
+            pass
+        except sex.BoofuzzTargetConnectionFailedError:
+            self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
+        except Exception:
+            self._fuzz_data_logger.log_fail(
+                "Custom post_send method raised uncaught Exception." + traceback.format_exc())
+        finally:
+            target.close()
+        self._check_procmon_failures(target=target)
 
     def _reset_fuzz_state(self):
         """
