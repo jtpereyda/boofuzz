@@ -1267,7 +1267,7 @@ class Session(pgraph.Graph):
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name(path, self.fuzz_node.mutant.name)
+        test_case_name = self._test_case_name(path, self.fuzz_node.mutant)
 
         self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
                                               name=test_case_name, index=self.total_mutant_index)
