@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import functools
 
 from . import blocks
@@ -6,17 +7,17 @@ from . import legos
 from . import pedrpc
 from . import primitives
 from . import sex
-
-from .blocks.request import Request
+from .blocks import REQUESTS
 from .blocks.block import Block
 from .blocks.checksum import Checksum
 from .blocks.repeat import Repeat
+from .blocks.request import Request
 from .blocks.size import Size
 from .constants import BIG_ENDIAN, LITTLE_ENDIAN
 from .event_hook import EventHook
 from .fuzz_logger import FuzzLogger
-from .fuzz_logger_text import FuzzLoggerText
 from .fuzz_logger_csv import FuzzLoggerCsv
+from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
