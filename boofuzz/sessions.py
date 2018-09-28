@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import cPickle
+import itertools
 import logging
 import re
 import threading
@@ -347,6 +348,7 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
+        self._post_test_case_methods = []
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -816,19 +818,28 @@ class Session(pgraph.Graph):
         else:
             return False
 
-    # noinspection PyUnusedLocal
-    def post_send(self, target, fuzz_data_logger, session, *args, **kwargs):
-        """
-        Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
-        as follows::
+    def register_post_test_case_callback(self, method):
+        """Register a post- test case method.
 
-            pre_send() - req - callback ... req - callback - post_send()
+        The registered method will be called after each fuzz test case.
 
         Potential uses:
          * Closing down a connection.
          * Checking for expected responses.
 
-        @see: pre_send()
+        The order of callback events is as follows::
+
+            pre_send() - req - callback ... req - callback - post-test-case-callback
+
+        Args:
+            method (function): A method with the same parameters as :func:`~Session.post_send`
+            """
+        self._post_test_case_methods.append(method)
+
+    # noinspection PyUnusedLocal
+    def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
+        """
+        Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
 
         Args:
             target (Target): Target with sock-like interface.
@@ -842,7 +853,6 @@ class Session(pgraph.Graph):
             args: Implementations should include \*args and \**kwargs for forward-compatibility.
             kwargs: Implementations should include \*args and \**kwargs for forward-compatibility.
         """
-
         # default to doing nothing.
         self._fuzz_data_logger.log_info("No post_send callback registered.")
 
@@ -1332,9 +1342,14 @@ class Session(pgraph.Graph):
         return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
 
     def _post_send(self, target):
-        self._fuzz_data_logger.open_test_step("Calling post_send function:")
         try:
-            self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+            try:
+                deprecated_callbacks = [self.post_send]
+            except AttributeError:
+                deprecated_callbacks = []
+            for f in itertools.chain(self._post_test_case_methods, deprecated_callbacks):
+                self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
+                f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
         except sex.BoofuzzTargetConnectionReset:
             self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
         except sex.BoofuzzTargetConnectionAborted as e:
