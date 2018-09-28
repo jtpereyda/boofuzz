@@ -715,7 +715,7 @@ class Session(pgraph.Graph):
 
         return self.total_num_mutations
 
-    def pause(self):
+    def _pause_if_pause_flag_is_set(self):
         """
         If that pause flag is raised, enter an endless loop until it is lowered.
         """
@@ -724,17 +724,6 @@ class Session(pgraph.Graph):
                 time.sleep(1)
             else:
                 break
-
-    def poll_pedrpc(self, target):
-        """
-        Poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
-
-        Args:
-            target (Target): Session target whose PED-RPC services we are polling
-        """
-        self._stop_netmon(target)
-
-        self._check_procmon_failures(target)
 
     def _stop_netmon(self, target):
         if target.netmon:
@@ -1214,7 +1203,7 @@ class Session(pgraph.Graph):
         """
         target = self.targets[0]
 
-        self.pause()  # only pauses conditionally
+        self._pause_if_pause_flag_is_set()
 
         test_case_name = self._test_case_name_feature_check(path)
 
@@ -1222,15 +1211,15 @@ class Session(pgraph.Graph):
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
             name=test_case_name, index=self.total_mutant_index)
 
-        if target.procmon:
-            self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
-            target.procmon.pre_send(self.total_mutant_index)
-
-        if target.netmon:
-            self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
-            target.netmon.pre_send(self.total_mutant_index)
-
         try:
+            if target.procmon:
+                self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
+                target.procmon.pre_send(self.total_mutant_index)
+
+            if target.netmon:
+                self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
+                target.netmon.pre_send(self.total_mutant_index)
+
             try:
                 target.open()
             except sex.BoofuzzTargetConnectionFailedError:
@@ -1241,8 +1230,8 @@ class Session(pgraph.Graph):
 
             for e in path[:-1]:
                 node = self.nodes[e.dst]
-                callback_data = self._callback_current_node(node=node, edge=e)
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+                callback_data = self._callback_current_node(node=node, edge=e)
                 self.transmit_normal(target, node, e, callback_data=callback_data)
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
@@ -1252,16 +1241,17 @@ class Session(pgraph.Graph):
             target.close()
 
             self._post_send(target)
+            self._check_procmon_failures(target)
 
             self._fuzz_data_logger.open_test_step("Sleep between tests.")
             self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
             time.sleep(self.sleep_time)
         finally:
-            self.poll_pedrpc(target)
             if self._process_failures(target=target):
                 print("FAIL: {0}".format(test_case_name))
             else:
                 print("PASS: {0}".format(test_case_name))
+            self._stop_netmon(target)
             self.export_file()
 
     def _fuzz_current_case(self, path):
@@ -1275,7 +1265,7 @@ class Session(pgraph.Graph):
         """
         target = self.targets[0]
 
-        self.pause()  # only pauses conditionally
+        self._pause_if_pause_flag_is_set()
 
         test_case_name = self._test_case_name(path, self.fuzz_node.mutant.name)
 
@@ -1319,6 +1309,7 @@ class Session(pgraph.Graph):
 
             if not self._check_for_passively_detected_failures(target=target):
                 self._post_send(target)
+                self._check_procmon_failures(target=target)
 
             self._fuzz_data_logger.open_test_step("Sleep between tests.")
             self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
@@ -1357,7 +1348,6 @@ class Session(pgraph.Graph):
                 "Custom post_send method raised uncaught Exception." + traceback.format_exc())
         finally:
             target.close()
-        self._check_procmon_failures(target=target)
 
     def _reset_fuzz_state(self):
         """
