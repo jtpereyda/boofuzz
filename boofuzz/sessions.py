@@ -813,7 +813,7 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant_index += skipped
             elif self.fuzz_node.mutant is not None and \
                     self.crashing_primitives[self.fuzz_node.mutant] >= self._crash_threshold_element:
-                if not isinstance(self.fuzz_node.mutant, primitives.Group)\
+                if not isinstance(self.fuzz_node.mutant, primitives.Group) \
                         and not isinstance(self.fuzz_node.mutant, blocks.Repeat):
                     skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
                     self._skip_current_element_after_current_test_case = True
@@ -1216,12 +1216,11 @@ class Session(pgraph.Graph):
 
         self.pause()  # only pauses conditionally
 
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        test_case_name = self._test_case_name_feature_check(path)
 
-        test_case_name = "FEATURE-CHECK->{0}".format(message_path)
-
-        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
-                                              name=test_case_name, index=self.total_mutant_index)
+        self._fuzz_data_logger.open_test_case(
+            "{0}: {1}".format(self.total_mutant_index, test_case_name),
+            name=test_case_name, index=self.total_mutant_index)
 
         if target.procmon:
             self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
@@ -1278,14 +1277,7 @@ class Session(pgraph.Graph):
 
         self.pause()  # only pauses conditionally
 
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
-
-        if self.fuzz_node.mutant.name:
-            primitive_under_test = self.fuzz_node.mutant.name
-        else:
-            primitive_under_test = 'no-name'
-
-        test_case_name = "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+        test_case_name = self._test_case_name(path, self.fuzz_node.mutant.name)
 
         self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
                                               name=test_case_name, index=self.total_mutant_index)
@@ -1335,6 +1327,18 @@ class Session(pgraph.Graph):
             self._process_failures(target=target)
             self._stop_netmon(target=target)
             self.export_file()
+
+    def _test_case_name_feature_check(self, path):
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        return "FEATURE-CHECK->{0}".format(message_path)
+
+    def _test_case_name(self, path, mutated_element):
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        if mutated_element.name:
+            primitive_under_test = mutated_element.name
+        else:
+            primitive_under_test = 'no-name'
+        return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
 
     def _post_send(self, target):
         self._fuzz_data_logger.open_test_step("Calling post_send function:")
