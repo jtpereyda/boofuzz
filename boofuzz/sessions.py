@@ -1343,26 +1343,28 @@ class Session(pgraph.Graph):
 
     def _post_send(self, target):
         try:
+            deprecated_callbacks = [self.post_send]
+        except AttributeError:
+            deprecated_callbacks = []
+        if len(self._post_test_case_methods) + len(deprecated_callbacks) > 0:
             try:
-                deprecated_callbacks = [self.post_send]
-            except AttributeError:
-                deprecated_callbacks = []
-            for f in itertools.chain(self._post_test_case_methods, deprecated_callbacks):
-                self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
-                f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-        except sex.BoofuzzTargetConnectionReset:
-            self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-        except sex.BoofuzzTargetConnectionAborted as e:
-            self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
-                                                                              socket_errmsg=e.socket_errmsg))
-            pass
-        except sex.BoofuzzTargetConnectionFailedError:
-            self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
-        except Exception:
-            self._fuzz_data_logger.log_fail(
-                "Custom post_send method raised uncaught Exception." + traceback.format_exc())
-        finally:
-            target.close()
+                for f in itertools.chain(self._post_test_case_methods, deprecated_callbacks):
+                    self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
+                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+            except sex.BoofuzzTargetConnectionReset:
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
+            except sex.BoofuzzTargetConnectionAborted as e:
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                                                  socket_errmsg=e.socket_errmsg))
+                pass
+            except sex.BoofuzzTargetConnectionFailedError:
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
+            except Exception:
+                self._fuzz_data_logger.log_fail(
+                    "Custom post_send method raised uncaught Exception." + traceback.format_exc())
+            finally:
+                self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
+                target.close()
 
     def _reset_fuzz_state(self):
         """
