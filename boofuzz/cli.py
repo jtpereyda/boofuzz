@@ -17,7 +17,7 @@ def cli():
 @click.option('--debug', help='Print debug info to console', is_flag=True)
 @click.option('--ui-port',
               help='Port on which to serve the web interface (default {0})'.format(constants.DEFAULT_PROCMON_PORT),
-              type=int, default=constants.DEFAULT_PROCMON_PORT)
+              type=int, default=constants.DEFAULT_WEB_UI_PORT)
 @click.option('--ui-addr', help='Address on which to serve the web interface (default localhost). Set to empty '
                                 'string to serve on all interfaces.', type=str, default='localhost')
 @click.argument('filename')
