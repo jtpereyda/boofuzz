@@ -69,7 +69,7 @@ def index_update():
         'num_mutations': app.session.total_num_mutations,
         'current_index_element': app.session.fuzz_node.mutant_index if app.session.fuzz_node is not None else None,
         'num_mutations_element': app.session.fuzz_node.num_mutations() if app.session.fuzz_node is not None else None,
-        'current_element': app.session.fuzz_node.name,
+        'current_element': app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
         'crashes': _crash_summary_info(),
     }}
 

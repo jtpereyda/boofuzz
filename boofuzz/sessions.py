@@ -234,7 +234,7 @@ class WebApp(object):
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
     """
 
-    def __init__(self, session_info, web_port=26000, web_addr='localhost'):
+    def __init__(self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_addr='localhost'):
         self._session_info = session_info
         self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_addr)
         pass
@@ -255,7 +255,7 @@ class WebApp(object):
             self._web_interface_thread.start()
 
 
-def open_test_run(db_filename, port=26000, address='localhost'):
+def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address='localhost'):
     s = SessionInfo(db_filename=db_filename)
     w = WebApp(session_info=s, web_port=port, web_addr=address)
     w.server_init()
@@ -304,7 +304,7 @@ class Session(pgraph.Graph):
 
     def __init__(self, session_filename=None, index_start=1, index_end=None, sleep_time=0.0,
                  restart_interval=0,
-                 web_port=26000,
+                 web_port=constants.DEFAULT_WEB_UI_PORT,
                  crash_threshold_request=12,
                  crash_threshold_element=3,
                  restart_sleep_time=5,
@@ -1040,7 +1040,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             pass
 
-    def build_webapp_thread(self, port=26000):
+    def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
         http_server = HTTPServer(WSGIContainer(app))
         http_server.listen(port)
