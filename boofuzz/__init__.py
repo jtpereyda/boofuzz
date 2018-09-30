@@ -13,7 +13,7 @@ from .blocks.checksum import Checksum
 from .blocks.repeat import Repeat
 from .blocks.request import Request
 from .blocks.size import Size
-from .constants import BIG_ENDIAN, LITTLE_ENDIAN
+from .constants import BIG_ENDIAN, LITTLE_ENDIAN, DEFAULT_PROCMON_PORT
 from .event_hook import EventHook
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
@@ -30,8 +30,6 @@ from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementExceptio
 from .socket_connection import SocketConnection
 
 __version__ = '0.1.0'
-
-DEFAULT_PROCMON_PORT = 26002
 
 
 # REQUEST MANAGEMENT

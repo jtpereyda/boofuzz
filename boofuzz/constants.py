@@ -1,6 +1,8 @@
 BIG_ENDIAN = ">"
 LITTLE_ENDIAN = "<"
 
+DEFAULT_PROCMON_PORT = 26002
+
 ERR_CONN_FAILED_TERMINAL = "Cannot connect to target; target presumed down. Stopping test run. Note: This likely " \
                            "indicates a failure caused by the previous test case. "
 

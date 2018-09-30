@@ -3,7 +3,7 @@ import sys
 
 import click
 
-from boofuzz import DEFAULT_PROCMON_PORT
+from boofuzz.constants import DEFAULT_PROCMON_PORT
 from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 

@@ -4,6 +4,7 @@ import logging
 import time
 
 import click
+from . import constants
 from . import sessions
 
 
@@ -14,13 +15,13 @@ def cli():
 
 @cli.command(name='open')
 @click.option('--debug', help='Print debug info to console', is_flag=True)
-@click.option('--web-app-port', help='Port on which to serve the web interface', type=int)
-@click.option('--web-app-addr', help='Address on which to serve the web interface (default localhost). Set to "*" to '
-                                     'serve on all interfaces.', type=str, default='localhost')
+@click.option('--ui-port',
+              help='Port on which to serve the web interface (default {0})'.format(constants.DEFAULT_PROCMON_PORT),
+              type=int, default=constants.DEFAULT_PROCMON_PORT)
+@click.option('--ui-addr', help='Address on which to serve the web interface (default localhost). Set to empty '
+                                'string to serve on all interfaces.', type=str, default='localhost')
 @click.argument('filename')
 def open_file(debug, filename, web_app_port, web_app_addr):
-    if web_app_addr == '*':
-        web_app_addr = None
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
