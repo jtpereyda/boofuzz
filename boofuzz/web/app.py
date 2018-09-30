@@ -57,23 +57,21 @@ def _get_log_data(test_case_id):
             line = step.html_log_line
             if len(line) > MAX_LOG_LINE_LEN:
                 line = line[:MAX_LOG_LINE_LEN] + ' (truncated)'
-            results.append({'css_class':step.css_class, 'log_line': line})
+            results.append({'css_class': step.css_class, 'log_line': line})
     return results
 
 
 @app.route('/api/current-run')
 def index_update():
-    data = {
-        'session_info': {
-            'is_paused': app.session.is_paused,
-            'current_index': app.session.total_mutant_index,
-            'num_mutations': app.session.total_num_mutations,
-            'current_index_element': app.session.fuzz_node.mutant_index,
-            'num_mutations_element': app.session.fuzz_node.num_mutations(),
-            'current_element': app.session.fuzz_node.name,
-            'crashes': _crash_summary_info(),
-        },
-    }
+    data = {'session_info': {
+        'is_paused': app.session.is_paused,
+        'current_index': app.session.total_mutant_index,
+        'num_mutations': app.session.total_num_mutations,
+        'current_index_element': app.session.fuzz_node.mutant_index if app.session.fuzz_node is not None else None,
+        'num_mutations_element': app.session.fuzz_node.num_mutations() if app.session.fuzz_node is not None else None,
+        'current_element': app.session.fuzz_node.name,
+        'crashes': _crash_summary_info(),
+    }}
 
     return flask.jsonify(data)
 
