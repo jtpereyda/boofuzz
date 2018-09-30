@@ -43,6 +43,9 @@ setup(
                     'netifaces',
                     'ipaddress'],
         },
+        entry_points={
+            'console_scripts': ['boo=boofuzz.cli:main'],
+        },
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',

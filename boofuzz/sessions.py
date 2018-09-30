@@ -234,15 +234,15 @@ class WebApp(object):
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
     """
 
-    def __init__(self, session_info, web_port=26000):
+    def __init__(self, session_info, web_port=26000, web_addr='localhost'):
         self._session_info = session_info
-        self._web_interface_thread = self._build_webapp_thread(port=web_port)
+        self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_addr)
         pass
 
-    def _build_webapp_thread(self, port):
+    def _build_webapp_thread(self, port, address):
         app.session = self._session_info
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(port)
+        http_server.listen(port, address=address)
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True
         return flask_thread
@@ -255,9 +255,9 @@ class WebApp(object):
             self._web_interface_thread.start()
 
 
-def open_test_run(db_filename, port=26000):
+def open_test_run(db_filename, port=26000, address='localhost'):
     s = SessionInfo(db_filename=db_filename)
-    w = WebApp(session_info=s, web_port=port)
+    w = WebApp(session_info=s, web_port=port, web_addr=address)
     w.server_init()
 
 
