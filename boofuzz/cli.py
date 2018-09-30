@@ -21,13 +21,13 @@ def cli():
 @click.option('--ui-addr', help='Address on which to serve the web interface (default localhost). Set to empty '
                                 'string to serve on all interfaces.', type=str, default='localhost')
 @click.argument('filename')
-def open_file(debug, filename, web_app_port, web_app_addr):
+def open_file(debug, filename, ui_port, ui_addr):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
-    sessions.open_test_run(db_filename=filename, port=web_app_port, address=web_app_addr)
+    sessions.open_test_run(db_filename=filename, port=ui_port, address=ui_addr)
 
-    print('Serving web page at http://{0}:{1}. Hit Ctrl+C to quit.'.format(web_app_addr, web_app_port))
+    print('Serving web page at http://{0}:{1}. Hit Ctrl+C to quit.'.format(ui_addr, ui_port))
     while True:
         time.sleep(.001)
 
