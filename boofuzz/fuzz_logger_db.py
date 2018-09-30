@@ -1,4 +1,5 @@
 from __future__ import print_function
+import collections
 import datetime
 import sqlite3
 
@@ -142,3 +143,13 @@ class FuzzLoggerDbReader(object):
             steps.append(data_test_step.DataTestStep(type=row[1], description=row[2], data=data, timestamp=row[4]))
         return data_test_case.DataTestCase(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
                                            steps=steps)
+
+    @property
+    def failure_map(self):
+        c = self._database_connection.cursor()
+        failure_steps = c.execute('''SELECT * FROM steps WHERE type="fail"''')
+
+        failure_map = collections.defaultdict(list)
+        for step in failure_steps:
+            failure_map[step[0]].append(step[2])
+        return failure_map

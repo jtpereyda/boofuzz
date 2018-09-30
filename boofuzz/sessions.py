@@ -188,7 +188,7 @@ class SessionInfo(object):
 
     @property
     def procmon_results(self):
-        return {1: 'procmon results not saved in current database format'}
+        return self._db_reader.failure_map
 
     @property
     def netmon_results(self):
@@ -357,7 +357,7 @@ class Session(pgraph.Graph):
         self.fuzz_node = None
         self.targets = []
         self.netmon_results = {}
-        self.procmon_results = {}
+        self.procmon_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
