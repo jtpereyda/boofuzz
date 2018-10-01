@@ -1,6 +1,13 @@
 from __future__ import print_function
 
 import os
+try:
+    import resource  # Linux only
+    resource.setrlimit(  # Equivalent to: ulimit -c unlimited
+        resource.RLIMIT_CORE,
+        (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+except ImportError:
+    pass
 import signal
 import subprocess
 import sys
@@ -36,7 +43,8 @@ def _get_coredump_path():
 
 
 class DebuggerThreadSimple(threading.Thread):
-    def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None,  log_level=1):
+    def __init__(self,
+                 start_commands, process_monitor, proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1):
         """
         This class isn't actually ran as a thread, only the start_monitoring
         method is. It can spawn/stop a process, wait for it to exit and report on
@@ -48,6 +56,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.ignore_pid = ignore_pid
         self.start_commands = start_commands
         self.process_monitor = process_monitor
+        self.coredump_dir = coredump_dir
         self.finished_starting = threading.Event()
         # if isinstance(start_commands, basestring):
         #     self.tokens = start_commands.split(' ')

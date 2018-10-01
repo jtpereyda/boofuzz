@@ -1,3 +1,4 @@
+import errno
 import os
 import sys
 
@@ -63,8 +64,12 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_di
 @click.option('--coredump-dir', '--coredump_dir', '-d',
               help='directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)')
 def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir):
-    if coredump_dir is not None and not os.path.isdir(coredump_dir):
-        err("coredump_dir must be an existing directory")
+    if coredump_dir is not None:
+        try:  # make directory safely (in case it already exists)
+            os.makedirs(coredump_dir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
 
     serve_procmon(port=port,
                   crash_bin=crash_bin,
