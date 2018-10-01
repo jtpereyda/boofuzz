@@ -1,5 +1,3 @@
-import errno
-import os
 import sys
 
 import click
@@ -7,6 +5,7 @@ import click
 from boofuzz.constants import DEFAULT_PROCMON_PORT
 from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
+from boofuzz import helpers
 
 '''
 By nnp
@@ -62,14 +61,11 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_di
               metavar='NAME')
 @click.option('--port', '-P', help='TCP port to bind this agent to', type=int, default=DEFAULT_PROCMON_PORT)
 @click.option('--coredump-dir', '--coredump_dir', '-d',
-              help='directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)')
+              help='directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)',
+              default='coredumps')
 def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir):
     if coredump_dir is not None:
-        try:  # make directory safely (in case it already exists)
-            os.makedirs(coredump_dir)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
+        helpers.mkdir_safe(coredump_dir)
 
     serve_procmon(port=port,
                   crash_bin=crash_bin,

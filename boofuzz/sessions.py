@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 
 import cPickle
+import datetime
 import itertools
 import logging
+import os
 import re
 import threading
 import time
@@ -13,6 +15,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
+from boofuzz import helpers
 from . import blocks, constants
 from . import event_hook
 from . import fuzz_logger
@@ -341,7 +344,12 @@ class Session(pgraph.Graph):
             raise sex.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
             fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
-        self._db_logger = fuzz_logger_db.FuzzLoggerDb()
+
+        helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
+        self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
+        self._db_filename = os.path.join(constants.RESULTS_DIR, 'run-{0}.db'.format(self._run_id))
+        self._db_logger = fuzz_logger_db.FuzzLoggerDb(self._db_filename)
+
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         self._receive_data_after_each_request = receive_data_after_each_request

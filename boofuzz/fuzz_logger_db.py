@@ -3,6 +3,7 @@ import collections
 import datetime
 import sqlite3
 
+from . import constants
 from . import helpers
 from . import ifuzz_logger_backend
 from . import data_test_case
@@ -32,9 +33,8 @@ def get_time_stamp():
 class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
     """Log fuzz data in a sqlite database file."""
 
-    def __init__(self):
-        timestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
-        self._database_connection = sqlite3.connect('boofuzz-run-{0}.db'.format(timestamp), check_same_thread=False)
+    def __init__(self, db_filename):
+        self._database_connection = sqlite3.connect(db_filename, check_same_thread=False)
         self._db_cursor = self._database_connection.cursor()
         self._db_cursor.execute('''CREATE TABLE cases (name text, number integer, timestamp TEXT)''')
         self._db_cursor.execute(
