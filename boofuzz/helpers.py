@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import ctypes
+import errno
+import os
 import platform
 import re
 import signal
@@ -400,3 +402,11 @@ def hex_to_hexstr(input_bytes):
         str: Printable string
     """
     return hex_str(input_bytes) + " " + repr(input_bytes)
+
+
+def mkdir_safe(directory_name):
+    try:
+        os.makedirs(directory_name)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise

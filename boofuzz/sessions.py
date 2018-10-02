@@ -1,7 +1,10 @@
 from __future__ import absolute_import
 
 import cPickle
+import datetime
+import itertools
 import logging
+import os
 import re
 import threading
 import time
@@ -12,7 +15,8 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
-from . import blocks
+from boofuzz import helpers
+from . import blocks, constants
 from . import event_hook
 from . import fuzz_logger
 from . import fuzz_logger_db
@@ -187,7 +191,7 @@ class SessionInfo(object):
 
     @property
     def procmon_results(self):
-        return {1: 'procmon results not saved in current database format'}
+        return self._db_reader.failure_map
 
     @property
     def netmon_results(self):
@@ -233,15 +237,15 @@ class WebApp(object):
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
     """
 
-    def __init__(self, session_info, web_port=26000):
+    def __init__(self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_addr='localhost'):
         self._session_info = session_info
-        self._web_interface_thread = self._build_webapp_thread(port=web_port)
+        self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_addr)
         pass
 
-    def _build_webapp_thread(self, port):
+    def _build_webapp_thread(self, port, address):
         app.session = self._session_info
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(port)
+        http_server.listen(port, address=address)
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True
         return flask_thread
@@ -254,9 +258,9 @@ class WebApp(object):
             self._web_interface_thread.start()
 
 
-def open_test_run(db_filename, port=26000):
+def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address='localhost'):
     s = SessionInfo(db_filename=db_filename)
-    w = WebApp(session_info=s, web_port=port)
+    w = WebApp(session_info=s, web_port=port, web_addr=address)
     w.server_init()
 
 
@@ -303,7 +307,7 @@ class Session(pgraph.Graph):
 
     def __init__(self, session_filename=None, index_start=1, index_end=None, sleep_time=0.0,
                  restart_interval=0,
-                 web_port=26000,
+                 web_port=constants.DEFAULT_WEB_UI_PORT,
                  crash_threshold_request=12,
                  crash_threshold_element=3,
                  restart_sleep_time=5,
@@ -340,13 +344,19 @@ class Session(pgraph.Graph):
             raise sex.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
             fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
-        self._db_logger = fuzz_logger_db.FuzzLoggerDb()
+
+        helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
+        self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
+        self._db_filename = os.path.join(constants.RESULTS_DIR, 'run-{0}.db'.format(self._run_id))
+        self._db_logger = fuzz_logger_db.FuzzLoggerDb(self._db_filename)
+
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         self._receive_data_after_each_request = receive_data_after_each_request
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
+        self._post_test_case_methods = []
 
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -355,7 +365,7 @@ class Session(pgraph.Graph):
         self.fuzz_node = None
         self.targets = []
         self.netmon_results = {}
-        self.procmon_results = {}
+        self.procmon_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
@@ -590,12 +600,13 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
         except sex.BoofuzzTargetConnectionFailedError:
+            # exception should have already been handled but rethrown in order to escape test run
+            pass
+        except Exception:
             self._fuzz_data_logger.log_error(
-                "Cannot connect to target; target presumed down."
-                " Note: Normally a failure should be detected, and the target reset."
-                " This error may mean you have no restart method configured, or your error"
-                " detection is not working.")
+                "Unexpected exception! {0}".format(traceback.format_exc()))
             self.export_file()
+            raise
 
     def _main_fuzz_loop(self, fuzz_case_iterator):
         """Execute main fuzz logic; takes an iterator of test cases.
@@ -638,12 +649,13 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
         except sex.BoofuzzTargetConnectionFailedError:
+            # exception should have already been handled but rethrown in order to escape test run
+            pass
+        except Exception:
             self._fuzz_data_logger.log_error(
-                "Cannot connect to target; target presumed down."
-                " Note: Normally a failure should be detected, and the target reset."
-                " This error may mean you have no restart method configured, or your error"
-                " detection is not working.")
+                "Unexpected exception! {0}".format(traceback.format_exc()))
             self.export_file()
+            raise
 
     def import_file(self):
         """
@@ -713,7 +725,7 @@ class Session(pgraph.Graph):
 
         return self.total_num_mutations
 
-    def pause(self):
+    def _pause_if_pause_flag_is_set(self):
         """
         If that pause flag is raised, enter an endless loop until it is lowered.
         """
@@ -722,17 +734,6 @@ class Session(pgraph.Graph):
                 time.sleep(1)
             else:
                 break
-
-    def poll_pedrpc(self, target):
-        """
-        Poll the PED-RPC endpoints (netmon, procmon etc...) for the target.
-
-        Args:
-            target (Target): Session target whose PED-RPC services we are polling
-        """
-        self._stop_netmon(target)
-
-        self._check_procmon_failures(target)
 
     def _stop_netmon(self, target):
         if target.netmon:
@@ -811,7 +812,7 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant_index += skipped
             elif self.fuzz_node.mutant is not None and \
                     self.crashing_primitives[self.fuzz_node.mutant] >= self._crash_threshold_element:
-                if not isinstance(self.fuzz_node.mutant, primitives.Group)\
+                if not isinstance(self.fuzz_node.mutant, primitives.Group) \
                         and not isinstance(self.fuzz_node.mutant, blocks.Repeat):
                     skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
                     self._skip_current_element_after_current_test_case = True
@@ -825,19 +826,28 @@ class Session(pgraph.Graph):
         else:
             return False
 
-    # noinspection PyUnusedLocal
-    def post_send(self, target, fuzz_data_logger, session, *args, **kwargs):
-        """
-        Overload or replace this routine to specify actions to run after to each fuzz request. The order of events is
-        as follows::
+    def register_post_test_case_callback(self, method):
+        """Register a post- test case method.
 
-            pre_send() - req - callback ... req - callback - post_send()
+        The registered method will be called after each fuzz test case.
 
         Potential uses:
          * Closing down a connection.
          * Checking for expected responses.
 
-        @see: pre_send()
+        The order of callback events is as follows::
+
+            pre_send() - req - callback ... req - callback - post-test-case-callback
+
+        Args:
+            method (function): A method with the same parameters as :func:`~Session.post_send`
+            """
+        self._post_test_case_methods.append(method)
+
+    # noinspection PyUnusedLocal
+    def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
+        """
+        Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
 
         Args:
             target (Target): Target with sock-like interface.
@@ -851,7 +861,6 @@ class Session(pgraph.Graph):
             args: Implementations should include \*args and \**kwargs for forward-compatibility.
             kwargs: Implementations should include \*args and \**kwargs for forward-compatibility.
         """
-
         # default to doing nothing.
         self._fuzz_data_logger.log_info("No post_send callback registered.")
 
@@ -957,21 +966,17 @@ class Session(pgraph.Graph):
         except sex.BoofuzzTargetConnectionReset:
             # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
             if self._ignore_connection_reset:
-                self._fuzz_data_logger.log_info("Target connection reset.")
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_fail("Target connection reset.")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
         except sex.BoofuzzTargetConnectionAborted as e:
             # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
+            msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                    socket_errmsg=e.socket_errmsg)
             if self._ignore_connection_aborted:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_fail(msg)
         try:  # recv
             if self._receive_data_after_each_request:
                 self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
@@ -985,20 +990,16 @@ class Session(pgraph.Graph):
                         self._fuzz_data_logger.log_pass("Some data received from target.")
         except sex.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail("Target connection reset.")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_info("Target connection reset.")
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
         except sex.BoofuzzTargetConnectionAborted as e:
+            msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                    socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_fail(msg)
             else:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_info(msg)
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1019,43 +1020,35 @@ class Session(pgraph.Graph):
             self.last_send = data
         except sex.BoofuzzTargetConnectionReset:
             if self._ignore_connection_issues_when_sending_fuzz_data:
-                self._fuzz_data_logger.log_info("Target connection reset.")
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_fail("Target connection reset.")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
         except sex.BoofuzzTargetConnectionAborted as e:
+            msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                    socket_errmsg=e.socket_errmsg)
             if self._ignore_connection_issues_when_sending_fuzz_data:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_fail(msg)
 
         try:  # recv
             if self._receive_data_after_fuzz:
                 self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
         except sex.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail("Target connection reset.")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_info("Target connection reset.")
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
         except sex.BoofuzzTargetConnectionAborted as e:
+            msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                    socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_fail(msg)
             else:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_info(msg)
             pass
 
-    def build_webapp_thread(self, port=26000):
+    def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
         http_server = HTTPServer(WSGIContainer(app))
         http_server.listen(port)
@@ -1228,100 +1221,56 @@ class Session(pgraph.Graph):
         """
         target = self.targets[0]
 
-        self.pause()  # only pauses conditionally
+        self._pause_if_pause_flag_is_set()
 
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        test_case_name = self._test_case_name_feature_check(path)
 
-        test_case_name = "FEATURE-CHECK->{0}".format(message_path)
-
-        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
-                                              name=test_case_name, index=self.total_mutant_index)
-
-        if target.procmon:
-            self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
-            target.procmon.pre_send(self.total_mutant_index)
-
-        if target.netmon:
-            self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
-            target.netmon.pre_send(self.total_mutant_index)
+        self._fuzz_data_logger.open_test_case(
+            "{0}: {1}".format(self.total_mutant_index, test_case_name),
+            name=test_case_name, index=self.total_mutant_index)
 
         try:
-            target.open()
+            if target.procmon:
+                self._fuzz_data_logger.open_test_step('Calling procmon pre_send()')
+                target.procmon.pre_send(self.total_mutant_index)
+
+            if target.netmon:
+                self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
+                target.netmon.pre_send(self.total_mutant_index)
+
+            try:
+                target.open()
+            except sex.BoofuzzTargetConnectionFailedError:
+                self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
+                raise
 
             self.pre_send(target)
 
-            try:
-                for e in path[:-1]:
-                    node = self.nodes[e.dst]
-                    callback_data = self._callback_current_node(node=node, edge=e)
-                    self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                    self.transmit_normal(target, node, e, callback_data=callback_data)
+            for e in path[:-1]:
+                node = self.nodes[e.dst]
+                self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
+                callback_data = self._callback_current_node(node=node, edge=e)
+                self.transmit_normal(target, node, e, callback_data=callback_data)
 
-                callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
-            except sex.BoofuzzTargetConnectionReset:
-                # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
-                if self._ignore_connection_reset:
-                    self._fuzz_data_logger.log_info("Target connection reset.")
-                else:
-                    self._fuzz_data_logger.log_fail("Target connection reset.")
-            except sex.BoofuzzTargetConnectionAborted as e:
-                # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
-                if self._ignore_connection_aborted:
-                    self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                    "network issue, or an issue with firewalls or anti-virus. Try "
-                                                    "disabling your firewall."
-                                                    .format(e.socket_errno, e.socket_errmsg))
-                else:
-                    self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                    "network issue, or an issue with firewalls or anti-virus. Try "
-                                                    "disabling your firewall."
-                                                    .format(e.socket_errno, e.socket_errmsg))
+            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
-
-            self._fuzz_data_logger.open_test_step("Calling post_send function:")
-            try:
-                self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except sex.BoofuzzTargetConnectionReset:
-                self._fuzz_data_logger.log_fail(
-                    "Target connection reset -- considered a failure case when triggered from post_send")
-            except sex.BoofuzzTargetConnectionAborted as e:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
-                pass
-            except sex.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_fail(
-                    "Cannot connect to target; target presumed down."
-                    " Note: Normally a failure should be detected, and the target reset."
-                    " This error may mean you have no restart method configured, or your error"
-                    " detection is not working.")
-            except Exception:
-                self._fuzz_data_logger.log_fail(
-                    "Custom post_send method raised uncaught Exception." + traceback.format_exc())
-
             target.close()
-        except sex.BoofuzzTargetConnectionFailedError:
-            self._fuzz_data_logger.log_fail(
-                "Cannot connect to target; target presumed down."
-                " Note: Normally a failure should be detected, and the target reset."
-                " This error may mean you have no restart method configured, or your error"
-                " detection is not working.")
 
-        self._fuzz_data_logger.open_test_step("Sleep between tests.")
-        self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-        time.sleep(self.sleep_time)
+            self._post_send(target)
+            self._check_procmon_failures(target)
 
-        self.poll_pedrpc(target)
-
-        if self._process_failures(target=target):
-            print("FAIL: {0}".format(test_case_name))
-        else:
-            print("PASS: {0}".format(test_case_name))
-
-        self.export_file()
+            self._fuzz_data_logger.open_test_step("Sleep between tests.")
+            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+            time.sleep(self.sleep_time)
+        finally:
+            if self._process_failures(target=target):
+                print("FAIL: {0}".format(test_case_name))
+            else:
+                print("PASS: {0}".format(test_case_name))
+            self._stop_netmon(target)
+            self.export_file()
 
     def _fuzz_current_case(self, path):
         """
@@ -1334,16 +1283,9 @@ class Session(pgraph.Graph):
         """
         target = self.targets[0]
 
-        self.pause()  # only pauses conditionally
+        self._pause_if_pause_flag_is_set()
 
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
-
-        if self.fuzz_node.mutant.name:
-            primitive_under_test = self.fuzz_node.mutant.name
-        else:
-            primitive_under_test = 'no-name'
-
-        test_case_name = "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+        test_case_name = self._test_case_name(path, self.fuzz_node.mutant)
 
         self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
                                               name=test_case_name, index=self.total_mutant_index)
@@ -1363,11 +1305,15 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
             target.netmon.pre_send(self.total_mutant_index)
 
-        target.open()
-
-        self.pre_send(target)
-
         try:
+            try:
+                target.open()
+            except sex.BoofuzzTargetConnectionFailedError:
+                self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
+                raise
+
+            self.pre_send(target)
+
             for e in path[:-1]:
                 node = self.nodes[e.dst]
                 callback_data = self._callback_current_node(node=node, edge=e)
@@ -1375,64 +1321,58 @@ class Session(pgraph.Graph):
                 self.transmit_normal(target, node, e, callback_data=callback_data)
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
-        except sex.BoofuzzTargetConnectionReset:
-            # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
-            if self._ignore_connection_reset:
-                self._fuzz_data_logger.log_info("Target connection reset.")
-            else:
-                self._fuzz_data_logger.log_fail("Target connection reset.")
-        except sex.BoofuzzTargetConnectionAborted as e:
-            # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
-            if self._ignore_connection_aborted:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
-            else:
-                self._fuzz_data_logger.log_fail("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+            self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
+            self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            target.close()
 
-        self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-        self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
-        target.close()
+            if not self._check_for_passively_detected_failures(target=target):
+                self._post_send(target)
+                self._check_procmon_failures(target=target)
 
-        if not self._check_for_passively_detected_failures(target=target):
-            self._fuzz_data_logger.open_test_step("Calling post_send function:")
+            self._fuzz_data_logger.open_test_step("Sleep between tests.")
+            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+            time.sleep(self.sleep_time)
+        finally:
+            self._process_failures(target=target)
+            self._stop_netmon(target=target)
+            self.export_file()
+
+    def _test_case_name_feature_check(self, path):
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        return "FEATURE-CHECK->{0}".format(message_path)
+
+    def _test_case_name(self, path, mutated_element):
+        message_path = "->".join([self.nodes[e.dst].name for e in path])
+        if mutated_element.name:
+            primitive_under_test = mutated_element.name
+        else:
+            primitive_under_test = 'no-name'
+        return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+
+    def _post_send(self, target):
+        try:
+            deprecated_callbacks = [self.post_send]
+        except AttributeError:
+            deprecated_callbacks = []
+        if len(self._post_test_case_methods) + len(deprecated_callbacks) > 0:
             try:
-                self.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                for f in itertools.chain(self._post_test_case_methods, deprecated_callbacks):
+                    self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
+                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
             except sex.BoofuzzTargetConnectionReset:
-                self._fuzz_data_logger.log_fail(
-                    "Target connection reset -- considered a failure case when triggered from post_send")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
             except sex.BoofuzzTargetConnectionAborted as e:
-                self._fuzz_data_logger.log_info("Target connection lost (socket error: {0} {1}): You may have a "
-                                                "network issue, or an issue with firewalls or anti-virus. Try "
-                                                "disabling your firewall."
-                                                .format(e.socket_errno, e.socket_errmsg))
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
+                                                                                  socket_errmsg=e.socket_errmsg))
                 pass
             except sex.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_fail(
-                    "Cannot connect to target; target presumed down."
-                    " Note: Normally a failure should be detected, and the target reset."
-                    " This error may mean you have no restart method configured, or your error"
-                    " detection is not working.")
+                self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
             except Exception:
                 self._fuzz_data_logger.log_fail(
                     "Custom post_send method raised uncaught Exception." + traceback.format_exc())
             finally:
+                self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
                 target.close()
-            self._check_procmon_failures(target=target)
-
-        self._fuzz_data_logger.open_test_step("Sleep between tests.")
-        self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-        time.sleep(self.sleep_time)
-
-        self._process_failures(target=target)
-
-        self._stop_netmon(target=target)
-
-        self.export_file()
 
     def _reset_fuzz_state(self):
         """

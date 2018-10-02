@@ -1,7 +1,9 @@
 from __future__ import print_function
+import collections
 import datetime
 import sqlite3
 
+from . import constants
 from . import helpers
 from . import ifuzz_logger_backend
 from . import data_test_case
@@ -31,9 +33,8 @@ def get_time_stamp():
 class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
     """Log fuzz data in a sqlite database file."""
 
-    def __init__(self):
-        timestamp = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
-        self._database_connection = sqlite3.connect('boofuzz-run-{0}.db'.format(timestamp), check_same_thread=False)
+    def __init__(self, db_filename):
+        self._database_connection = sqlite3.connect(db_filename, check_same_thread=False)
         self._db_cursor = self._database_connection.cursor()
         self._db_cursor.execute('''CREATE TABLE cases (name text, number integer, timestamp TEXT)''')
         self._db_cursor.execute(
@@ -142,3 +143,13 @@ class FuzzLoggerDbReader(object):
             steps.append(data_test_step.DataTestStep(type=row[1], description=row[2], data=data, timestamp=row[4]))
         return data_test_case.DataTestCase(name=test_case_row[0], index=test_case_row[1], timestamp=test_case_row[2],
                                            steps=steps)
+
+    @property
+    def failure_map(self):
+        c = self._database_connection.cursor()
+        failure_steps = c.execute('''SELECT * FROM steps WHERE type="fail"''')
+
+        failure_map = collections.defaultdict(list)
+        for step in failure_steps:
+            failure_map[step[0]].append(step[2])
+        return failure_map

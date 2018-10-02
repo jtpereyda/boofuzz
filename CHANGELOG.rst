@@ -1,5 +1,13 @@
-Upcoming
-========
+v0.1.1
+======
+Features
+--------
+- New `boo open` command can open and inspect saved database log files.
+- Unix procmon now saves coredumps by default.
+- Improved "Cannot connect to target" error message.
+- Improved API for registering callbacks.
+- Made the global `REQUESTS` map available in top level boofuzz package.
+
 Fixes
 -----
 - Handle exceptions when opening crash bin files in process monitor.
