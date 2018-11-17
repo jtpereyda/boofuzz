@@ -43,8 +43,8 @@ def _get_coredump_path():
 
 
 class DebuggerThreadSimple(threading.Thread):
-    def __init__(self,
-                 start_commands, process_monitor, proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1):
+    def __init__(self, start_commands, process_monitor,
+                 proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1, **kwargs):
         """
         This class isn't actually ran as a thread, only the start_monitoring
         method is. It can spawn/stop a process, wait for it to exit and report on
