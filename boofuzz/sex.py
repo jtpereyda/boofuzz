@@ -27,6 +27,10 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     socket_errmsg = attr.ib()
 
 
+class BoofuzzRpcError(BoofuzzError):
+    pass
+
+
 class SullyRuntimeError(Exception):
     pass
 

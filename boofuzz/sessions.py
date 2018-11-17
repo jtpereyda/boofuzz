@@ -384,7 +384,11 @@ class Session(pgraph.Graph):
         self.add_node(self.root)
 
         if target is not None:
-            self.add_target(target=target)
+            try:
+                self.add_target(target=target)
+            except sex.BoofuzzRpcError as e:
+                self._fuzz_data_logger.log_error(str(e))
+                raise
 
     def add_node(self, node):
         """
