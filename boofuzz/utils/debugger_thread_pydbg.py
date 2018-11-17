@@ -14,7 +14,8 @@ if not getattr(__builtins__, "WindowsError", None):
 
 
 class DebuggerThreadPydbg(threading.Thread):
-    def __init__(self, start_commands, process_monitor, proc_name=None, ignore_pid=None, pid=None, log_level=1):
+    def __init__(self, start_commands, process_monitor,
+                 proc_name=None, ignore_pid=None, pid=None, log_level=1, **kwargs):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
