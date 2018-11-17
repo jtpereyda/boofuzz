@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import struct
 
-from .. import blocks, primitives, sex
+from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
 
 
@@ -24,7 +24,7 @@ class String(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.xdr_string DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.xdr_string DEFAULT VALUE")
 
         self.push(primitives.String(self.value))
 

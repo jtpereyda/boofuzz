@@ -11,7 +11,7 @@ from future.utils import raise_
 from . import helpers
 from . import itarget_connection
 from . import ip_constants
-from . import sex
+from . import exception
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
 
@@ -91,7 +91,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self._sock = None
 
         if self.proto not in self._PROTOCOLS:
-            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+            raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         if self.proto in self._PROTOCOLS_PORT_REQUIRED and self.port is None:
             raise ValueError("__init__() argument port required for protocol {0}".format(self.proto))
@@ -126,7 +126,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         elif self.proto == "raw-l3":
             self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM)
         else:
-            raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+            raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_second_microsecond_struct(self._send_timeout))
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_second_microsecond_struct(self._recv_timeout))
@@ -137,7 +137,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 self._sock.connect((self.host, self.port))
             except socket.error as e:
                 if e.errno == errno.ECONNREFUSED:
-                    raise sex.BoofuzzTargetConnectionFailedError(e.message)
+                    raise exception.BoofuzzTargetConnectionFailedError(e.message)
                 else:
                     raise
 
@@ -163,7 +163,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 if self.bind:
                     data, _ = self._sock.recvfrom(max_bytes)
                 else:
-                    raise sex.SullyRuntimeError(
+                    raise exception.SullyRuntimeError(
                         "SocketConnection.recv() for UDP requires a bind address/port."
                         " Current value: {}".format(self.bind))
             elif self.proto in ['raw-l2', 'raw-l3']:
@@ -171,16 +171,16 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 # dump everything off the interface anyway, which is probably not what the user wants.
                 data = bytes('')
             else:
-                raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+                raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
             data = bytes('')
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(sex.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror), None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror), None, sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):
-                raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
                 data = bytes('')
             else:
@@ -220,16 +220,16 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 # See man 7 packet for more details.
                 num_sent = self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
             else:
-                raise sex.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+                raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(sex.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
+                raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
                        None, sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT) or \
                     (e.errno == errno.EPIPE):
-                raise_(sex.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
             else:
                 raise
         return num_sent

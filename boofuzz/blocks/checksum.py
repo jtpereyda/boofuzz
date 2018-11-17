@@ -5,7 +5,7 @@ from functools import wraps
 
 from .. import primitives
 from ..constants import LITTLE_ENDIAN
-from .. import sex
+from .. import exception
 from .. import helpers
 
 
@@ -84,9 +84,9 @@ class Checksum(primitives.BasePrimitive):
 
         if self._algorithm == 'udp':
             if not self._ipv4_src_block_name:
-                raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_src_block_name")
+                raise exception.SullyRuntimeError("'udp' checksum algorithm requires ipv4_src_block_name")
             if not self._ipv4_dst_block_name:
-                raise sex.SullyRuntimeError("'udp' checksum algorithm requires ipv4_dst_block_name")
+                raise exception.SullyRuntimeError("'udp' checksum algorithm requires ipv4_dst_block_name")
 
         self._rendered = self._get_dummy_value()
 
@@ -172,7 +172,7 @@ class Checksum(primitives.BasePrimitive):
                 check = digest
 
             else:
-                raise sex.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self._algorithm)
+                raise exception.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self._algorithm)
         else:
             check = self._algorithm(data)
 
