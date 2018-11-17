@@ -111,9 +111,14 @@ function continually_update_current_test_case_log()
 {
     function update_repeat(response)
     {
-        if (test_case_log_snap) {
+        if (test_case_log_snap) { // This check is important as one may un-check the box before the response arrives
             update_current_test_case_log(response);
         }
+        setTimeout(continually_update_current_test_case_log, 100);
+    }
+    function update_same_case_repeat(response)
+    {
+        update_current_test_case_log(response);
         setTimeout(continually_update_current_test_case_log, 100);
     }
     function _repeat_only()
@@ -127,7 +132,10 @@ function continually_update_current_test_case_log()
             .catch(_repeat_only);
     }
     else {
-        setTimeout(continually_update_current_test_case_log, 100);
+        fetch(new Request(`/api/test-case/${test_case_log_index}`), {method: 'GET'})
+            .then(function(response) { return response.json() })
+            .then(update_same_case_repeat)
+            .catch(_repeat_only);
     }
 }
 
