@@ -104,13 +104,7 @@ class Client:
         self.__connect()
 
         # transmit the method name and arguments.
-        while 1:
-            try:
-                self.__pickle_send((method_name, (args, kwargs)))
-                break
-            except Exception:
-                # re-connect to the PED-RPC server if the sock died.
-                self.__connect()
+        self.__pickle_send((method_name, (args, kwargs)))
 
         # snag the return value.
         ret = self.__pickle_recv()
@@ -145,9 +139,9 @@ class Client:
                 chunk     = self.__server_sock.recv(length)
                 received += chunk
                 length   -= len(chunk)
-        except Exception:
-            sys.stderr.write("PED-RPC> connection to server severed during recv()\n")
-            raise
+        except socket.error as e:
+            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
+                self.__host, self.__port, e))
 
         return cPickle.loads(received)
 
@@ -169,9 +163,9 @@ class Client:
         try:
             self.__server_sock.send(struct.pack("<L", len(data)))
             self.__server_sock.send(data)
-        except Exception:
-            sys.stderr.write("PED-RPC> connection to server severed during send()\n")
-            raise
+        except socket.error as e:
+            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
+                self.__host, self.__port, e))
 
 
 class Server(object):
