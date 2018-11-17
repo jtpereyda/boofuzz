@@ -165,7 +165,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 else:
                     raise sex.SullyRuntimeError(
                         "SocketConnection.recv() for UDP requires a bind address/port."
-                        " Current value:".format(self.bind))
+                        " Current value: {}".format(self.bind))
             elif self.proto in ['raw-l2', 'raw-l3']:
                 # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
                 # dump everything off the interface anyway, which is probably not what the user wants.
