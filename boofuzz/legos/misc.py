@@ -1,7 +1,7 @@
 # Misc Types
 
 from __future__ import absolute_import
-from .. import blocks, primitives, sex
+from .. import blocks, primitives, exception
 
 
 class DNSHostname(blocks.Block):
@@ -15,7 +15,7 @@ class DNSHostname(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.String(self.value))
 
@@ -50,7 +50,7 @@ class Tag(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         # <example>
         # [delim][string][delim]

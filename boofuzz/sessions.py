@@ -24,7 +24,7 @@ from . import fuzz_logger_text
 from . import ifuzz_logger
 from . import pgraph
 from . import primitives
-from . import sex
+from . import exception
 from .web.app import app
 
 DEFAULT_MAX_RECV = 8192
@@ -341,7 +341,7 @@ class Session(pgraph.Graph):
         self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
         if fuzz_data_logger is not None:
-            raise sex.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
+            raise exception.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
             fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
@@ -386,7 +386,7 @@ class Session(pgraph.Graph):
         if target is not None:
             try:
                 self.add_target(target=target)
-            except sex.BoofuzzRpcError as e:
+            except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
 
@@ -599,11 +599,11 @@ class Session(pgraph.Graph):
             self.export_file()
             self._fuzz_data_logger.log_error("SIGINT received ... exiting")
             raise
-        except sex.BoofuzzRestartFailedError:
+        except exception.BoofuzzRestartFailedError:
             self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
             self.export_file()
             raise
-        except sex.BoofuzzTargetConnectionFailedError:
+        except exception.BoofuzzTargetConnectionFailedError:
             # exception should have already been handled but rethrown in order to escape test run
             pass
         except Exception:
@@ -648,11 +648,11 @@ class Session(pgraph.Graph):
             self.export_file()
             self._fuzz_data_logger.log_error("SIGINT received ... exiting")
             raise
-        except sex.BoofuzzRestartFailedError:
+        except exception.BoofuzzRestartFailedError:
             self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
             self.export_file()
             raise
-        except sex.BoofuzzTargetConnectionFailedError:
+        except exception.BoofuzzTargetConnectionFailedError:
             # exception should have already been handled but rethrown in order to escape test run
             pass
         except Exception:
@@ -913,7 +913,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_info("restarting target process")
 
             if not target.procmon.restart_target():
-                raise sex.BoofuzzRestartFailedError()
+                raise exception.BoofuzzRestartFailedError()
 
             self._fuzz_data_logger.log_info("giving the process 3 seconds to settle in ")
             time.sleep(3)
@@ -967,13 +967,13 @@ class Session(pgraph.Graph):
         try:  # send
             self.targets[0].send(data)
             self.last_send = data
-        except sex.BoofuzzTargetConnectionReset:
+        except exception.BoofuzzTargetConnectionReset:
             # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
             if self._ignore_connection_reset:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
-        except sex.BoofuzzTargetConnectionAborted as e:
+        except exception.BoofuzzTargetConnectionAborted as e:
             # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                     socket_errmsg=e.socket_errmsg)
@@ -992,12 +992,12 @@ class Session(pgraph.Graph):
                         self._fuzz_data_logger.log_fail("Nothing received from target.")
                     else:
                         self._fuzz_data_logger.log_pass("Some data received from target.")
-        except sex.BoofuzzTargetConnectionReset:
+        except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
-        except sex.BoofuzzTargetConnectionAborted as e:
+        except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                     socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
@@ -1022,12 +1022,12 @@ class Session(pgraph.Graph):
         try:  # send
             self.targets[0].send(data)
             self.last_send = data
-        except sex.BoofuzzTargetConnectionReset:
+        except exception.BoofuzzTargetConnectionReset:
             if self._ignore_connection_issues_when_sending_fuzz_data:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
-        except sex.BoofuzzTargetConnectionAborted as e:
+        except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                     socket_errmsg=e.socket_errmsg)
             if self._ignore_connection_issues_when_sending_fuzz_data:
@@ -1038,12 +1038,12 @@ class Session(pgraph.Graph):
         try:  # recv
             if self._receive_data_after_fuzz:
                 self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
-        except sex.BoofuzzTargetConnectionReset:
+        except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
-        except sex.BoofuzzTargetConnectionAborted as e:
+        except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                     socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
@@ -1066,10 +1066,10 @@ class Session(pgraph.Graph):
         :raise sex.SullyRuntimeError:
         """
         if not self.targets:
-            raise sex.SullyRuntimeError("No targets specified in session")
+            raise exception.SullyRuntimeError("No targets specified in session")
 
         if not self.edges_from(self.root.id):
-            raise sex.SullyRuntimeError("No requests specified in session")
+            raise exception.SullyRuntimeError("No requests specified in session")
 
         self._reset_fuzz_state()
 
@@ -1116,10 +1116,10 @@ class Session(pgraph.Graph):
         """
         # we can't fuzz if we don't have at least one target and one request.
         if not self.targets:
-            raise sex.SullyRuntimeError("No targets specified in session")
+            raise exception.SullyRuntimeError("No targets specified in session")
 
         if not self.edges_from(self.root.id):
-            raise sex.SullyRuntimeError("No requests specified in session")
+            raise exception.SullyRuntimeError("No requests specified in session")
 
         self._reset_fuzz_state()
 
@@ -1244,7 +1244,7 @@ class Session(pgraph.Graph):
 
             try:
                 target.open()
-            except sex.BoofuzzTargetConnectionFailedError:
+            except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
 
@@ -1312,7 +1312,7 @@ class Session(pgraph.Graph):
         try:
             try:
                 target.open()
-            except sex.BoofuzzTargetConnectionFailedError:
+            except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
 
@@ -1363,13 +1363,13 @@ class Session(pgraph.Graph):
                 for f in itertools.chain(self._post_test_case_methods, deprecated_callbacks):
                     self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
                     f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except sex.BoofuzzTargetConnectionReset:
+            except exception.BoofuzzTargetConnectionReset:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-            except sex.BoofuzzTargetConnectionAborted as e:
+            except exception.BoofuzzTargetConnectionAborted as e:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                                                   socket_errmsg=e.socket_errmsg))
                 pass
-            except sex.BoofuzzTargetConnectionFailedError:
+            except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
             except Exception:
                 self._fuzz_data_logger.log_fail(

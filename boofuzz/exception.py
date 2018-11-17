@@ -1,5 +1,4 @@
 import attr
-# Sulley EXception Class
 
 
 class BoofuzzError(Exception):

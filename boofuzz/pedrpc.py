@@ -6,7 +6,7 @@ import cPickle
 
 import select
 
-from . import sex
+from . import exception
 
 
 class Client:
@@ -53,7 +53,7 @@ class Client:
                 time.sleep(5)
                 self.__connect()
             else:
-                raise sex.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
+                raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
                     self.__host, self.__port, e))
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
