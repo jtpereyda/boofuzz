@@ -32,8 +32,8 @@ setup(
         packages=find_packages(exclude=['unit_tests', 'requests', 'examples', 'utils', 'web', 'new_examples']),
         package_data={'boofuzz': ['web/templates/*', 'web/static/css/*']},
         install_requires=[
-            'future', 'pyserial', 'pydot', 'tornado==4.0.2',
-            'Flask==0.10.1', 'impacket', 'colorama', 'attrs', 'click', 'psutil'],
+            'future', 'pyserial', 'pydot', 'tornado~=4.0',
+            'Flask~=1.0', 'impacket', 'colorama', 'attrs', 'click', 'psutil'],
         extras_require={
             # This list is duplicated in tox.ini. Make sure to change both!
             'dev': ['check-manifest',
