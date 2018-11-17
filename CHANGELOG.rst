@@ -1,3 +1,16 @@
+v0.1.2
+======
+Features
+--------
+- Clearer error message when procmon is unavailable at fuzz start.
+- Web UI now refreshes current case even when snap-to-current-test-case is disabled.
+
+Fixes
+-----
+- Web UI no longer permits negative test cases.
+- Fix Windows procmon regression.
+- Minor fixes and UI tweaks.
+
 v0.1.1
 ======
 Features
