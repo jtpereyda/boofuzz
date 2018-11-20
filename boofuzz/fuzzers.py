@@ -1,4 +1,4 @@
-from .sex import MustImplementException
+from .exception import MustImplementException
 
 
 class Fuzzer(object):

@@ -1,5 +1,4 @@
 import attr
-# Sulley EXception Class
 
 
 class BoofuzzError(Exception):
@@ -25,6 +24,10 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     """
     socket_errno = attr.ib()
     socket_errmsg = attr.ib()
+
+
+class BoofuzzRpcError(BoofuzzError):
+    pass
 
 
 class SullyRuntimeError(Exception):

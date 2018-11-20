@@ -35,7 +35,11 @@
             </table> </td> </tr>
             <tr> <td>
                 <form method=get action="/togglepause">
-                    <input class="input" type="submit" value="Pause">
+                    {% if state.session.is_paused %}
+                        <input class="input" type="submit" value="Resume">
+                    {% else %}
+                        <input class="input" type="submit" value="Pause">
+                    {% endif %}
                 </form>
             </td> </tr>
         </table>

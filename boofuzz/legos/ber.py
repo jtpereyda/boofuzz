@@ -1,7 +1,7 @@
 # ASN.1 / BER TYPES (http://luca.ntop.org/Teaching/Appunti/asn1.html)
 
 from __future__ import absolute_import
-from .. import blocks, primitives, sex
+from .. import blocks, primitives, exception
 from ..constants import BIG_ENDIAN
 
 
@@ -26,7 +26,7 @@ class String(blocks.Block):
         self.prefix = options.get("prefix", "\x04")
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
 
         str_block = blocks.Block(name + "_STR", request)
         str_block.push(primitives.String(self.value))
@@ -64,7 +64,7 @@ class Integer(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.ber_integer DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.ber_integer DEFAULT VALUE")
 
         self.push(primitives.DWord(self.value, endian=BIG_ENDIAN))
 

@@ -1,4 +1,4 @@
-from .. import sex
+from .. import exception
 from .. import ifuzzable
 from ..primitives.bit_field import BitField
 
@@ -52,20 +52,20 @@ class Repeat(ifuzzable.IFuzzable):
 
         # ensure the target block exists.
         if self.block_name not in self.request.names:
-            raise sex.SullyRuntimeError(
+            raise exception.SullyRuntimeError(
                     "Can't add repeater for non-existent block: %s!" % self.block_name
             )
 
         # ensure the user specified either a variable to tie this repeater to or a min/max val.
         if self.variable is None and self.max_reps is None:
-            raise sex.SullyRuntimeError(
+            raise exception.SullyRuntimeError(
                     "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
             )
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, BitField):
             print self.variable
-            raise sex.SullyRuntimeError(
+            raise exception.SullyRuntimeError(
                     "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
             )
 
@@ -107,7 +107,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
-            raise sex.SullyRuntimeError(
+            raise exception.SullyRuntimeError(
                     "Can't apply repeater to unclosed block: %s" % self.block_name
             )
 
@@ -152,7 +152,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
-            raise sex.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
+            raise exception.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
 
         # if a variable-bounding was specified then set the value appropriately.
         if self.variable:

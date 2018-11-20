@@ -6,7 +6,7 @@ from . import blocks
 from . import legos
 from . import pedrpc
 from . import primitives
-from . import sex
+from . import exception
 from .blocks import REQUESTS
 from .blocks.block import Block
 from .blocks.checksum import Checksum
@@ -26,10 +26,10 @@ from .primitives import (BasePrimitive, Delim, Group,
                          Byte, Word, DWord, QWord, FromFile)
 from .serial_connection import SerialConnection
 from .sessions import Session, Target, open_test_run
-from .sex import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
+from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 # REQUEST MANAGEMENT
@@ -57,7 +57,7 @@ def s_get(name=None):
     s_switch(name)
 
     if name not in blocks.REQUESTS:
-        raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
+        raise exception.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     return blocks.REQUESTS[name]
 
@@ -71,7 +71,7 @@ def s_initialize(name):
     :param name: Name of request
     """
     if name in blocks.REQUESTS:
-        raise sex.SullyRuntimeError("blocks.REQUESTS ALREADY EXISTS: %s" % name)
+        raise exception.SullyRuntimeError("blocks.REQUESTS ALREADY EXISTS: %s" % name)
 
     blocks.REQUESTS[name] = Request(name)
     blocks.CURRENT = blocks.REQUESTS[name]
@@ -119,7 +119,7 @@ def s_switch(name):
     """
 
     if name not in blocks.REQUESTS:
-        raise sex.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
+        raise exception.SullyRuntimeError("blocks.REQUESTS NOT FOUND: %s" % name)
 
     blocks.CURRENT = blocks.REQUESTS[name]
 
@@ -240,7 +240,7 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
 
     # you can't add a checksum for a block currently in the stack.
     if block_name in blocks.CURRENT.block_stack:
-        raise sex.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
+        raise exception.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
     checksum = Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
                         ipv4_src_block_name=ipv4_src_block_name,
@@ -308,7 +308,7 @@ def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="
 
     # you can't add a size for a block currently in the stack.
     if block_name in blocks.CURRENT.block_stack:
-        raise sex.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
+        raise exception.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
 
     size = Size(
         block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable, name
@@ -327,7 +327,7 @@ def s_update(name, value):
     """
 
     if name not in map(lambda o: o.name, blocks.CURRENT.walk()):
-        raise sex.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
+        raise exception.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
 
     blocks.CURRENT.names[name].value = value
 
@@ -416,7 +416,7 @@ def s_lego(lego_type, value=None, options=()):
     name = "LEGO_%08x" % len(blocks.CURRENT.names)
 
     if lego_type not in legos.BIN:
-        raise sex.SullyRuntimeError("INVALID LEGO TYPE SPECIFIED: %s" % lego_type)
+        raise exception.SullyRuntimeError("INVALID LEGO TYPE SPECIFIED: %s" % lego_type)
     lego = legos.BIN[lego_type](name, blocks.CURRENT, value, options)
 
     # push the lego onto the stack and immediately pop to close the block.
@@ -702,7 +702,7 @@ s_xdr_string = functools.partial(not_impl, "s_xdr_string")
 
 def no_sizer(*args, **kwargs):
     _ = kwargs  # just making the function univesral
-    raise sex.SizerNotUtilizedError("Use the s_size primitive for including sizes. Args -> %s" % args)
+    raise exception.SizerNotUtilizedError("Use the s_size primitive for including sizes. Args -> %s" % args)
 
 
 # A bunch of un-defined primitives from SPIKE

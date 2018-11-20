@@ -1,6 +1,6 @@
 import collections
 
-from .. import sex
+from .. import exception
 from .block import Block
 from ..ifuzzable import IFuzzable
 
@@ -55,7 +55,7 @@ class Request(IFuzzable):
     def original_value(self):
         # ensure there are no open blocks lingering.
         if self.block_stack:
-            raise sex.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
         self._rendered = ""
 
@@ -110,7 +110,7 @@ class Request(IFuzzable):
         """
 
         if not self.block_stack:
-            raise sex.SullyRuntimeError("BLOCK STACK OUT OF SYNC")
+            raise exception.SullyRuntimeError("BLOCK STACK OUT OF SYNC")
 
         self.block_stack.pop()
 
@@ -126,7 +126,7 @@ class Request(IFuzzable):
         if hasattr(item, "name") and item.name:
             # ensure the name doesn't already exist.
             if item.name in self.names.keys():
-                raise sex.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
+                raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
 
             self.names[item.name] = item
 
@@ -144,7 +144,7 @@ class Request(IFuzzable):
     def render(self):
         # ensure there are no open blocks lingering.
         if self.block_stack:
-            raise sex.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
         self._rendered = b""
 

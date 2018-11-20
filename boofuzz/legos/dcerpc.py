@@ -1,7 +1,7 @@
 # MSRPC NDR TYPES
 
 import struct
-from .. import blocks, primitives, sex
+from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
 
 
@@ -21,7 +21,7 @@ class NdrConformantArray(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
 
         self.push(primitives.String(self.value))
 
@@ -61,7 +61,7 @@ class NdrString(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.String(self.value))
 
@@ -110,7 +110,7 @@ class NdrWString(blocks.Block):
         self.options = options
 
         if not self.value:
-            raise sex.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
+            raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
         self.push(primitives.String(self.value))
 

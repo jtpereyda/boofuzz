@@ -111,9 +111,14 @@ function continually_update_current_test_case_log()
 {
     function update_repeat(response)
     {
-        if (test_case_log_snap) {
+        if (test_case_log_snap) { // This check is important as one may un-check the box before the response arrives
             update_current_test_case_log(response);
         }
+        setTimeout(continually_update_current_test_case_log, 100);
+    }
+    function update_same_case_repeat(response)
+    {
+        update_current_test_case_log(response);
         setTimeout(continually_update_current_test_case_log, 100);
     }
     function _repeat_only()
@@ -127,7 +132,10 @@ function continually_update_current_test_case_log()
             .catch(_repeat_only);
     }
     else {
-        setTimeout(continually_update_current_test_case_log, 100);
+        fetch(new Request(`/api/test-case/${test_case_log_index}`), {method: 'GET'})
+            .then(function(response) { return response.json() })
+            .then(update_same_case_repeat)
+            .catch(_repeat_only);
     }
 }
 
@@ -181,17 +189,15 @@ function initialize_state(){
     read_failure_map_from_dom();
 }
 
-function logInputChangeHandler(event){
-    logUpdateSnap(false);
-    let new_index = event.target.value;
-    updateTestCaseLog(new_index);
-}
-
 function logSnapChangeHandler(event){
     test_case_log_snap = event.target.checked;
     if (test_case_log_snap) {
         document.getElementById('test-case-log-index-input').value = '';
     }
+}
+
+function logInputChangeHandler(event){
+    logNavGoTo(event.target.value);
 }
 
 function logNavMove(num){
@@ -200,8 +206,15 @@ function logNavMove(num){
 
 function logNavGoTo(num){
     logUpdateSnap(false);
-    logUpdateIndex(num);
-    logUpdateLogBody(num);
+    if (num > 0) {
+        logUpdateIndex(num);
+        logUpdateLogBody(num);
+    }
+}
+
+function logUpdateSnap(on){
+    test_case_log_snap = on;
+    document.getElementById('test-case-log-snap').checked = on;
 }
 
 function logUpdateIndex(num){
@@ -218,11 +231,6 @@ function logUpdateIndex(num){
 
 function logUpdateLogBody(num){
     updateTestCaseLog(num);
-}
-
-function logUpdateSnap(on){
-    test_case_log_snap = on;
-    document.getElementById('test-case-log-snap').checked = on;
 }
 
 function initPage(){
