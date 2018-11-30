@@ -23,7 +23,7 @@ from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
 from .primitives import (BasePrimitive, Delim, Group,
                          RandomData, Static, String, BitField,
-                         Byte, Word, DWord, QWord, FromFile)
+                         Byte, Word, DWord, QWord, FromFile, Mirror)
 from .serial_connection import SerialConnection
 from .sessions import Session, Target, open_test_run
 from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
@@ -465,6 +465,22 @@ def s_static(value, name=None):
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)
+
+
+def s_mirror(primitive_name, name=None):
+    """
+    Push a mirror of another primitive onto the current block stack.
+    
+    :type primitive_name:   str
+    :param primitive_name:  Name of target primitive
+    :type name:             str
+    :param name:            (Optional, def=None) Name of current primitive
+    """
+    if primitive_name not in blocks.CURRENT.names:
+        raise sex.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
+
+    mirror = primitives.Mirror(primitive_name, blocks.CURRENT, name)
+    blocks.CURRENT.push(mirror)
 
 
 def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
