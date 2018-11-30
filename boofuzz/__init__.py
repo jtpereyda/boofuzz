@@ -382,19 +382,21 @@ def s_delim(value, fuzzable=True, name=None):
     blocks.CURRENT.push(delim)
 
 
-def s_group(name, values):
+def s_group(name, values, default_value=None):
     """
     This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
     to a group primitive to specify that the block should cycle through all possible mutations for *each* value
     within the group. The group primitive is useful for example for representing a list of valid opcodes.
 
-    :type  name:   str
-    :param name:   Name of group
-    :type  values: List or raw data
-    :param values: List of possible raw values this group can take.
+    :type  name:            str
+    :param name:            Name of group
+    :type  values:          List or raw data
+    :param values:          List of possible raw values this group can take.
+
+    :param default_value:   (Optional, def=None) Specifying a value when fuzzing() is complete
     """
 
-    group = primitives.Group(name, values)
+    group = primitives.Group(name, values, default_value)
     blocks.CURRENT.push(group)
 
 
