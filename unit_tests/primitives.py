@@ -4,6 +4,7 @@ from boofuzz import *
 def run():
     signed_tests()
     string_tests()
+    s_mirror_tests()
     # fuzz_extension_tests()
 
     # clear out the requests.
@@ -65,6 +66,23 @@ def string_tests():
     for i in xrange(0, 50):
         s_mutate()
         assert (len(req.names["sized_string"].render()) == 200)
+
+
+def s_mirror_tests():
+    TEST_GROUP_VALUES = ['aaa', 'bbb', 'ccc', 'ddd']
+    s_initialize('test_s_mirror')
+    s_static('<')
+    s_group('group_start', values=TEST_GROUP_VALUES)
+    s_static('>')
+    s_static('hello')
+    s_static('<')
+    s_mirror('group_start', name='group_end')
+    s_static('/>')
+
+    req = s_get('test_s_mirror')
+    for _ in xrange(len(TEST_GROUP_VALUES)):
+        s_mutate()
+        assert (req.names['group_end'].render() == req.names['group_start'].render())
 
 
 def fuzz_extension_tests():
