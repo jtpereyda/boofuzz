@@ -32,15 +32,32 @@ class DocStringInheritor(type):
 class IFuzzable(object):
     """Describes a fuzzable message element or message.
 
-    Design Notes:
-     - mutate and reset pretty much form an iterator. Future design goal is
-       to eliminate them and add a generator function in their place.
+    The core functionality on which boofuzz runs:
+
+    1. mutations() -- iterate mutations.
+    2. mutant_index, render(), reset() are an older interface used to simulate mutations().
+    3. render() returns either the normal value or the currently-being-mutated value.
+    3. name() -- gets the specific element's name; may be replaced in the future.
+    4. fuzzable() -- indicates whether an element should be fuzzed.
+    5. original_value() -- used to get the default value of the element.
+    6. num_mutations() -- Number of mutations that an element yields.
+    7. __len__() -- an element should describe its own size when rendered.
+    8. __repr__() -- for nice readable user interfaces
+    9. __nonzero__() -- Allows one to use `if someFuzzableObject` to check for null. Questionable practice.
+
+    The mutation and original_value functions are the most fundamental.
+
     """
     __metaclass__ = DocStringInheritor
 
     @abc.abstractproperty
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
+        return
+
+    @abc.abstractproperty
+    def mutations(self):
+        """Yields mutations."""
         return
 
     @abc.abstractproperty

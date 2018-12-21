@@ -35,6 +35,10 @@ class BasePrimitive(IFuzzable):
         self._rendered = ""  # rendered value of primitive.
         self._value = None  # current value of primitive.
 
+    def mutations(self):
+        for val in self._fuzz_library:
+            yield self._render(val)
+
     def mutate(self):
         fuzz_complete = False
         # if we've ran out of mutations, raise the completion flag.

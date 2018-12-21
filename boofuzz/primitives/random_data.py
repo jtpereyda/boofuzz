@@ -1,6 +1,7 @@
 import random
 
 from .base_primitive import BasePrimitive
+from past.builtins import xrange
 
 
 class RandomData(BasePrimitive):
@@ -42,6 +43,29 @@ class RandomData(BasePrimitive):
     @property
     def name(self):
         return self._name
+
+    def mutations(self):
+        """
+        Mutate the primitive value returning False on completion.
+
+        @rtype:  bool
+        @return: True on success, False otherwise.
+        """
+        if not self._fuzzable:
+            return
+
+        for i in range(0, self.num_mutations()):
+            # select a random length for this string.
+            if not self.step:
+                length = random.randint(self.min_length, self.max_length)
+            # select a length function of the mutant index and the step.
+            else:
+                length = self.min_length + i * self.step
+
+            value = ""
+            for _ in xrange(length):
+                value += chr(random.randint(0, 255))
+            yield value
 
     def mutate(self):
         """

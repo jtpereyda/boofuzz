@@ -34,6 +34,15 @@ class Group(BasePrimitive):
     def name(self):
         return self._name
 
+    def mutations(self):
+        """
+        """
+        if not self._fuzzable:
+            return
+
+        for v in self.values:
+            yield self._render(v)
+
     def mutate(self):
         """
         Move to the next item in the values list.

@@ -262,6 +262,21 @@ class String(BasePrimitive):
         for string in strings:
             self._fuzz_library.append(string)
 
+    def mutations(self):
+        """
+        Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
+        completion.
+
+        @rtype:  bool
+        @return: True on success, False otherwise.
+        """
+        if not self._fuzzable:
+            return
+
+        for v in self._fuzz_library + self.this_library:
+            if self.size < 0 or len(v) <= self.size:
+                yield self._render(v)
+
     def mutate(self):
         """
         Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on

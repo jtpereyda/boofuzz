@@ -29,6 +29,9 @@ class Static(BasePrimitive):
         """
         return False
 
+    def mutations(self):
+        return iter(())  # empty generator
+
     def num_mutations(self):
         """
         We have no mutations
