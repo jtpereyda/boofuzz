@@ -1,3 +1,9 @@
+Upcoming
+======
+Features
+--------
+- Enhanced Socket Connection to allow server side fuzzing.
+
 v0.1.2
 ======
 Features
