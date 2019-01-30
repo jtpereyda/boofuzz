@@ -57,6 +57,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
             Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast).
         udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send() to
             work, and '' for bind host for recv() to work.
+        server (bool): Set to True to enable server side fuzzing.
+        keyfile (str): The file to use for the SSL key when server side fuzzing with proto ssl.
+        certfile (str): The file to use for the SSL certificate when server side fuzzing with proto ssl.
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
@@ -75,7 +78,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  recv_timeout=5.0,
                  ethernet_proto=ETH_P_IP,
                  l2_dst='\xFF' * 6,
-                 udp_broadcast=False):
+                 udp_broadcast=False,
+                 server=False,
+                 keyfile=None,
+                 certfile=None):
         self.MAX_PAYLOADS["udp"] = helpers.get_max_udp_size()
 
         self.host = host
@@ -87,8 +93,12 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.ethernet_proto = ethernet_proto
         self.l2_dst = l2_dst
         self._udp_broadcast = udp_broadcast
+        self.server = server
+        self.keyfile = keyfile
+        self.certfile = certfile
 
         self._sock = None
+        self._udp_client_port = None
 
         if self.proto not in self._PROTOCOLS:
             raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
@@ -104,6 +114,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             None
         """
         self._sock.close()
+        if self.server and (self.proto == "tcp" or self.proto == "ssl"):
+            self._serverSock.close()
 
     def open(self):
         """
@@ -131,8 +143,17 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_second_microsecond_struct(self._send_timeout))
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_second_microsecond_struct(self._recv_timeout))
 
+        if self.server:
+            self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self._sock.bind((self.host, self.port))
+
+            if self.proto == "tcp" or self.proto == "ssl":
+                self._serverSock = self._sock
+                self._serverSock.listen(1)
+                self._sock, addr = self._serverSock.accept()
+
         # Connect is needed only for TCP protocols
-        if self.proto == "tcp" or self.proto == "ssl":
+        elif self.proto == "tcp" or self.proto == "ssl":
             try:
                 self._sock.connect((self.host, self.port))
             except socket.error as e:
@@ -143,8 +164,12 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
-            ssl_sock = ssl.wrap_socket(self._sock)
-            self._sock = httplib.FakeSocket(self._sock, ssl_sock)
+            if self.server:
+                ssl_sock = ssl.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile, server_side=True)
+                self._sock = httplib.FakeSocket(self._sock, ssl_sock)
+            else:
+                ssl_sock = ssl.wrap_socket(self._sock)
+                self._sock = httplib.FakeSocket(self._sock, ssl_sock)
 
     def recv(self, max_bytes):
         """
@@ -160,8 +185,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             if self.proto in ['tcp', 'ssl']:
                 data = self._sock.recv(max_bytes)
             elif self.proto == 'udp':
-                if self.bind:
-                    data, _ = self._sock.recvfrom(max_bytes)
+                if self.bind or self.server:
+                    data, self._udp_client_port = self._sock.recvfrom(max_bytes)
                 else:
                     raise exception.SullyRuntimeError(
                         "SocketConnection.recv() for UDP requires a bind address/port."
@@ -205,10 +230,20 @@ class SocketConnection(itarget_connection.ITargetConnection):
             pass  # data = data
 
         try:
-            if self.proto in ["tcp", "ssl"]:
+            if self.proto == "tcp":
                 num_sent = self._sock.send(data)
+            elif self.proto == "ssl":
+                if len(data) > 0:
+                    num_sent = self._sock.send(data)
+                else:
+                    num_sent = 0
             elif self.proto == "udp":
-                num_sent = self._sock.sendto(data, (self.host, self.port))
+                if self.server:
+                    if self._udp_client_port is None:
+                        raise exception.BoofuzzError("recv must be called before send with udp fuzzing servers.")
+                    num_sent = self._sock.sendto(data, self._udp_client_port)
+                else:
+                    num_sent = self._sock.sendto(data, (self.host, self.port))
             elif self.proto == "raw-l2":
                 num_sent = self._sock.sendto(data, (self.host, 0))
             elif self.proto == "raw-l3":
