@@ -140,10 +140,10 @@ class Target(object):
         Returns:
             None
         """
-        if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.log_send(data)
+        num_sent, data_sent = self._target_connection.send(data=data)
 
-        num_sent = self._target_connection.send(data=data)
+        if self._fuzz_data_logger is not None:
+            self._fuzz_data_logger.log_send(data_sent)
 
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_info("{0} bytes sent".format(num_sent))

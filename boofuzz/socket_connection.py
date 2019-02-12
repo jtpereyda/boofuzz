@@ -267,7 +267,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
             else:
                 raise
-        return num_sent
+        return num_sent, data
 
     @property
     def info(self):
