@@ -2,6 +2,7 @@ Upcoming
 ======
 Features
 --------
+- Log only sent data when ``MAX_PAYLOADS`` is in effect. This should also help to reduce the db size when fuzzing layer 2 or 3.
 - Enhanced Socket Connection to allow server side fuzzing.
 
 v0.1.2

@@ -141,12 +141,12 @@ class Target(object):
             None
         """
         if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.log_send(data)
+            self._fuzz_data_logger.log_info("Sending {0} bytes...".format(len(data)))
 
         num_sent = self._target_connection.send(data=data)
 
         if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.log_info("{0} bytes sent".format(num_sent))
+            self._fuzz_data_logger.log_send(data[:num_sent])
 
     def set_fuzz_data_logger(self, fuzz_data_logger):
         """
