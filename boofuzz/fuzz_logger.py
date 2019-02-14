@@ -87,3 +87,6 @@ class FuzzLogger(IFuzzLogger):
             summary += "{0}".format('\n'.join(map(str, self.error_test_cases.iterkeys())))
 
         return summary
+
+    def write_log(self, force=False):
+        self._fuzz_loggers[0].write_log(force=force)
