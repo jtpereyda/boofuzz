@@ -284,7 +284,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=data_to_send)[0]
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -319,7 +319,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=data_to_send)[0]
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -356,7 +356,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=data_to_send)[0]
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -401,7 +401,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=data_to_send)[0]
+        send_result = uut.send(data=data_to_send)
         received = uut.recv(10000)
         uut.close()
 
@@ -459,7 +459,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -506,7 +506,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -553,7 +553,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -607,7 +607,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -654,7 +654,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
@@ -702,7 +702,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)[0]
+        send_result = uut.send(data=raw_packet)
         received = uut.recv(10000)
         uut.close()
 
