@@ -30,7 +30,7 @@ setup(
         url='https://github.com/jtpereyda/boofuzz',
         license='GPL',
         packages=find_packages(exclude=['unit_tests', 'requests', 'examples', 'utils', 'web', 'new_examples']),
-        package_data={'boofuzz': ['web/templates/*', 'web/static/css/*']},
+        package_data={'boofuzz': ['web/templates/*', 'web/static/css/*', 'web/static/js/*']},
         install_requires=[
             'future', 'pyserial', 'pydot', 'tornado~=4.0',
             'Flask~=1.0', 'impacket', 'colorama', 'attrs', 'click', 'psutil'],
