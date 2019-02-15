@@ -2,8 +2,9 @@ v0.1.3
 ======
 Features
 --------
-- Log only the data actually sent, when sending is truncated. Helps reduce database size, especially when fuzzing layer 2 or 3.
 - Socket Connections now allow client fuzzing.
+- Log only the data actually sent, when sending is truncated. Helps reduce database size, especially when fuzzing layer 2 or 3.
+- `Target` `recv` function now accepts a `max_recv_bytes` argument.
 
 Fixes
 -----
