@@ -1,9 +1,13 @@
-Upcoming
+v0.1.3
 ======
 Features
 --------
-- Log only sent data when ``MAX_PAYLOADS`` is in effect. This should also help to reduce the db size when fuzzing layer 2 or 3.
-- Enhanced Socket Connection to allow server side fuzzing.
+- Log only the data actually sent, when sending is truncated. Helps reduce database size, especially when fuzzing layer 2 or 3.
+- Socket Connections now allow client fuzzing.
+
+Fixes
+-----
+- Fixed install package -- now includes JavaScript files.
 
 v0.1.2
 ======
