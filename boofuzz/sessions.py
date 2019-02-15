@@ -27,8 +27,6 @@ from . import primitives
 from . import exception
 from .web.app import app
 
-DEFAULT_MAX_RECV = 8192
-
 
 class Target(object):
     """Target descriptor container.
@@ -47,12 +45,13 @@ class Target(object):
         connection (itarget_connection.ITargetConnection): Connection to system under test.
     """
 
-    def __init__(self, connection, procmon=None, procmon_options=None, netmon=None):
+    def __init__(self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
         self.procmon = procmon
         self.netmon = netmon
+        self.max_recv_bytes = max_recv_bytes
 
         # set these manually once target is instantiated.
         self.vmcontrol = None
@@ -110,7 +109,7 @@ class Target(object):
             for key in self.netmon_options.keys():
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
-    def recv(self, max_bytes=DEFAULT_MAX_RECV):
+    def recv(self, max_bytes=None):
         """
         Receive up to max_bytes data from the target.
 
@@ -120,6 +119,9 @@ class Target(object):
         Returns:
             Received data.
         """
+        if max_bytes == None:
+            max_bytes = self.max_recv_bytes
+        
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_info("Receiving...")
 
@@ -983,7 +985,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_fail(msg)
         try:  # recv
             if self._receive_data_after_each_request:
-                self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
+                self.last_recv = self.targets[0].recv()
 
                 if self._check_data_received_each_request:
                     self._fuzz_data_logger.log_check("Verify some data was received from the target.")
@@ -1037,7 +1039,7 @@ class Session(pgraph.Graph):
 
         try:  # recv
             if self._receive_data_after_fuzz:
-                self.last_recv = self.targets[0].recv(10000)  # TODO: Remove magic number (10000)
+                self.last_recv = self.targets[0].recv()
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
