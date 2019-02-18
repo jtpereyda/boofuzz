@@ -96,10 +96,8 @@ class DebuggerThreadPydbg(threading.Thread):
 
         return pydbg.defines.DBG_CONTINUE
 
-    def spawn_target(self):
-        # TODO move spawn_target into run to remove the half-initialized state between calling the two functions
-        # TODO checks: debugger thread already active; process already started; no start_commands
-
+    def spwan_target(self):
+        # TODO checks: debugger thread already active; process already started
         self.log("starting target process")
         for command in self.start_commands:
             try:
@@ -115,47 +113,47 @@ class DebuggerThreadPydbg(threading.Thread):
         """
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
-        self.spawn_target()
+        if len(self.start_commands) > 0 and self.proc_name is not None:
+            self.spwan_target()
+            self.watch()
+        elif len(self.start_commands) > 0:
+            self.spwan_target()
+        elif self.proc_name is not None:
+            self.watch()
+        else:
+            self.process_monitor.log("error: procmon has no start command or process name to attach to!")
+            return False
 
-        if self.proc_name is not None or self.pid is not None:
-
-            # watch for and try attaching to the process.
-            if self.pid is None and self.proc_name is not None:
-                self.process_monitor.log(
-                    "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
-                self.watch()
-            self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
-            try:
-                self.dbg.attach(self.pid)
-            except pydbg.pdx as e:
-                self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
-                if "The request is not supported." in str(e):
-                    self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
-                                             " supports targeting 32-bit processes.")
-                elif "Access is denied." in str(e):
-                    self.process_monitor.log("It may be that your process died before it could be attached.")
-            self.finished_starting.set()
-            self.dbg.run()
-            self.process_monitor.log("debugger thread-%s exiting" % self.getName())
-
-            # TODO: removing the following line appears to cause some concurrency issues.
-            # del self.dbg
+        self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
+        try:
+            self.dbg.attach(self.pid)
+        except pydbg.pdx as e:
+            self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
+            if "The request is not supported." in str(e):
+                self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
+                                         " supports targeting 32-bit processes.")
+            elif "Access is denied." in str(e):
+                self.process_monitor.log("It may be that your process died before it could be attached.")
+        self.finished_starting.set()
+        self.dbg.run()
+        self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
     def watch(self):
         """
         Continuously loop, watching for the target process. This routine "blocks" until the target process is found.
         Update self.pid when found and return.
         """
+        self.process_monitor.log(
+            "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
 
-        while not self.pid:
-            for (pid, name) in self.dbg.enumerate_processes():
-                # ignore the optionally specified PID.
-                if pid == self.ignore_pid:
-                    continue
+        for (pid, name) in self.dbg.enumerate_processes():
+            # ignore the optionally specified PID.
+            if pid == self.ignore_pid:
+                continue
 
-                if name.lower() == self.proc_name.lower():
-                    self.pid = pid
-                    break
+            if name.lower() == self.proc_name.lower():
+                self.pid = pid
+                break
 
         self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
 
