@@ -30,6 +30,12 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
     def log_check(self, description):
         raise Exception("FuzzLoggerFile does not support log_check()!")
 
+    def end_test_case(self):
+        pass
+
+    def end_test(self):
+        pass
+
     def __init__(self, path):
         """
         :param path: Directory in which to save fuzz data.

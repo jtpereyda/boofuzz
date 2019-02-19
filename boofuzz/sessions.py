@@ -280,9 +280,9 @@ class Session(pgraph.Graph):
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
-        fuzz_loggers_keep_num_log_cases (int): Number of most recent test cases to save to db in case of an error or
-                                               failure. Set to 0 to save after every test step (high disk I/O!)
-                                               Default 0
+        fuzz_db_keep_only_n_pass_cases (int): Minimize disk usage by only saving passing test cases
+                                              if they are in the n test cases preceding a failure or error.
+                                              Set to 0 to save after every test case (high disk I/O!). Default 0.
         receive_data_after_each_request (bool): If True, Session will attempt to receive a reply after transmitting
                                                 each non-fuzzed node. Default True.
         check_data_received_each_request (bool): If True, Session will verify that some data has
@@ -316,7 +316,7 @@ class Session(pgraph.Graph):
                  restart_sleep_time=5,
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
-                 fuzz_loggers_keep_num_log_cases=0,
+                 fuzz_db_keep_only_n_pass_cases=0,
                  receive_data_after_each_request=True,
                  check_data_received_each_request=False,
                  receive_data_after_fuzz=False,
@@ -353,7 +353,7 @@ class Session(pgraph.Graph):
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
         self._db_filename = os.path.join(constants.RESULTS_DIR, 'run-{0}.db'.format(self._run_id))
         self._db_logger = fuzz_logger_db.FuzzLoggerDb(db_filename=self._db_filename,
-                                                      num_log_cases=fuzz_loggers_keep_num_log_cases)
+                                                      num_log_cases=fuzz_db_keep_only_n_pass_cases)
 
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
@@ -648,7 +648,7 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(*fuzz_args)
 
                 num_cases_actually_fuzzed += 1
-            self._fuzz_data_logger.write_log(force=True)
+            self._fuzz_data_logger.end_test()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -1345,7 +1345,7 @@ class Session(pgraph.Graph):
         finally:
             self._process_failures(target=target)
             self._stop_netmon(target=target)
-            self._fuzz_data_logger.write_log()
+            self._fuzz_data_logger.end_test_case()
             self.export_file()
 
     def _test_case_name_feature_check(self, path):

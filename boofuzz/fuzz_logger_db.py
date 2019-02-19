@@ -3,7 +3,6 @@ import collections
 import datetime
 import sqlite3
 
-#from . import constants
 from . import helpers
 from . import ifuzz_logger_backend
 from . import data_test_case
@@ -86,7 +85,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
             self._current_test_case_index, 'error', description, b'', helpers.get_time_stamp()])
         self._fail_detected = True
-        self.write_log()
+        self._write_log()
 
     def log_recv(self, data):
         self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
@@ -109,7 +108,13 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
             self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])
 
-    def write_log(self, force=False):
+    def end_test_case(self):
+        self._write_log(force=False)
+
+    def end_test(self):
+        self._write_log(force=True)
+
+    def _write_log(self, force=False):
 
         if self._queue_max_len > 0:
             while (self._current_test_case_index - next(
@@ -119,9 +124,9 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
             force=True
 
         if force or self._fail_detected or self._log_first_case:
-            for i in range(len(self._queue)):
-                self._db_cursor.execute(self._queue[0][0], self._queue[0][1:])
-                self._queue.popleft()
+            for query in self._queue:
+                self._db_cursor.execute(query[0], query[1:])
+            self._queue.clear()
             self._database_connection.commit()
             self._log_first_case = False
             self._fail_detected = False
