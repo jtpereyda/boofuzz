@@ -650,7 +650,7 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(*fuzz_args)
 
                 num_cases_actually_fuzzed += 1
-            self._fuzz_data_logger.end_test()
+            self._fuzz_data_logger.close_test()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -1347,7 +1347,7 @@ class Session(pgraph.Graph):
         finally:
             self._process_failures(target=target)
             self._stop_netmon(target=target)
-            self._fuzz_data_logger.end_test_case()
+            self._fuzz_data_logger.close_test_case()
             self.export_file()
 
     def _test_case_name_feature_check(self, path):

@@ -70,10 +70,10 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def log_pass(self, description=""):
         self._print_log_msg(["pass", "", "", description])
 
-    def end_test_case(self):
+    def close_test_case(self):
         pass
 
-    def end_test(self):
+    def close_test(self):
         pass
 
     def _print_log_msg(self, msg):

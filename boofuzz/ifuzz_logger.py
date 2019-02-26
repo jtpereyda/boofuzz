@@ -175,7 +175,7 @@ class IFuzzLogger(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def end_test_case(self):
+    def close_test_case(self):
         """
         Called after a test case has been completed. Can be used to inform the operator
         or save the test case log.
@@ -189,9 +189,9 @@ class IFuzzLogger(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def end_test(self):
+    def close_test(self):
         """
-        Called after a test case has been completed. Can be used to inform the operator
+        Called after a test has been completed. Can be used to inform the operator
         or save the test log.
 
         :param None

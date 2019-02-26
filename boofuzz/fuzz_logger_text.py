@@ -67,10 +67,10 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(msg=description,
                             msg_type='pass')
 
-    def end_test_case(self):
+    def close_test_case(self):
         pass
 
-    def end_test(self):
+    def close_test(self):
         pass
 
     def _print_log_msg(self, msg_type, msg=None, data=None):

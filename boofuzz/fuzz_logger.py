@@ -70,13 +70,13 @@ class FuzzLogger(IFuzzLogger):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_send(data=data)
 
-    def end_test_case(self):
+    def close_test_case(self):
         for fuzz_logger in self._fuzz_loggers:
-            fuzz_logger.end_test_case()
+            fuzz_logger.close_test_case()
 
-    def end_test(self):
+    def close_test(self):
         for fuzz_logger in self._fuzz_loggers:
-            fuzz_logger.end_test()
+            fuzz_logger.close_test()
 
     def failure_summary(self):
         """Return test summary string based on fuzz logger results.

@@ -108,10 +108,10 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
             self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])
 
-    def end_test_case(self):
+    def close_test_case(self):
         self._write_log(force=False)
 
-    def end_test(self):
+    def close_test(self):
         self._write_log(force=True)
 
     def _write_log(self, force=False):
