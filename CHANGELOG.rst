@@ -1,3 +1,10 @@
+Upcoming
+========
+Fixes
+=====
+- Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
+- Windows process monitor handles certain errors more gracefully
+
 v0.1.3
 ======
 Features
