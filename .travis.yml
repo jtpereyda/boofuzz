@@ -10,11 +10,11 @@ install:
 
 jobs:
   include:
-    - stage: unit tests
+    - stage: Tests
       script: tox --recreate
-    - stage: docs test
       script: make -C ./docs dummy
-    - stage: deploy
+    - stage: Deploy
+      if: branch = master AND repo = 'jtpereyda/boofuzz'
       script: skip
       deploy:
         provider: pypi
