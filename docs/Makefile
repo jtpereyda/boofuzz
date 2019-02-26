@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -T # -nW optional for more harsh checking
+SPHINXOPTS    = -TW # -nW optional for more harsh checking
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = boofuzz
 SOURCEDIR     = .
