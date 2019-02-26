@@ -8,13 +8,17 @@ install:
   - pip install tox sphinx
   - pip install .
 
+stages:
+  - Test
+  - name: Deploy
+    if: branch = master AND repo = 'jtpereyda/boofuzz'
+
 jobs:
   include:
-    - stage: Tests
+    - stage: Test
       script: tox --recreate
       script: make -C ./docs dummy
     - stage: Deploy
-      if: branch = master AND repo = 'jtpereyda/boofuzz'
       script: skip
       deploy:
         provider: pypi
