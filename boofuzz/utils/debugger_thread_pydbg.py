@@ -8,10 +8,6 @@ import sys
 import pydbg
 import pydbg.defines
 
-if not getattr(__builtins__, "WindowsError", None):
-    class WindowsError(OSError):
-        pass
-
 
 class DebuggerThreadPydbg(threading.Thread):
     def __init__(self, start_commands, process_monitor,
@@ -97,16 +93,14 @@ class DebuggerThreadPydbg(threading.Thread):
         return pydbg.defines.DBG_CONTINUE
 
     def spawn_target(self):
-        # TODO move spawn_target into run to remove the half-initialized state between calling the two functions
-        # TODO checks: debugger thread already active; process already started; no start_commands
-
+        # TODO checks: debugger thread already active; process already started
         self.log("starting target process")
         for command in self.start_commands:
             try:
                 self._process = subprocess.Popen(command)
-            except WindowsError as e:
-                print('WindowsError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
-                return False
+            except OSError as e:
+                print('OSError "{0}" while starting "{1}"'.format(e.strerror, command), file=sys.stderr)
+                raise
         self.log("done. target up and running, giving it 5 seconds to settle in.")
         time.sleep(5)
         self.pid = self._process.pid
@@ -115,49 +109,55 @@ class DebuggerThreadPydbg(threading.Thread):
         """
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
-        self.spawn_target()
-
-        if self.proc_name is not None or self.pid is not None:
-
-            # watch for and try attaching to the process.
-            if self.pid is None and self.proc_name is not None:
-                self.process_monitor.log(
-                    "debugger thread-%s looking for process name: %s" % (self.getName(), self.proc_name))
+        try:
+            if len(self.start_commands) > 0 and self.proc_name is not None:
+                self.spawn_target()
                 self.watch()
-            self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
-            try:
-                self.dbg.attach(self.pid)
-            except pydbg.pdx as e:
-                self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
-                if "The request is not supported." in str(e):
-                    self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
-                                             " supports targeting 32-bit processes.")
-                elif "Access is denied." in str(e):
-                    self.process_monitor.log("It may be that your process died before it could be attached.")
-            self.finished_starting.set()
-            self.dbg.run()
-            self.process_monitor.log("debugger thread-%s exiting" % self.getName())
+            elif len(self.start_commands) > 0:
+                self.spawn_target()
+            elif self.proc_name is not None:
+                self.watch()
+            else:
+                self.process_monitor.log("error: procmon has no start command or process name to attach to!")
+                return False
 
-            # TODO: removing the following line appears to cause some concurrency issues.
-            # del self.dbg
+            self.process_monitor.log("debugger thread-%s attaching to pid: %s" % (self.getName(), self.pid))
+            self.dbg.attach(self.pid)
+        except pydbg.pdx as e:
+            self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
+            if "The request is not supported." in str(e):
+                self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
+                                         " supports targeting 32-bit processes.")
+            elif "Access is denied." in str(e):
+                self.process_monitor.log("It may be that your process died before it could be attached.")
+        finally:
+            self.finished_starting.set()
+        self.dbg.run()
+        self.process_monitor.log("debugger thread-%s exiting" % self.getName())
 
     def watch(self):
         """
         Continuously loop, watching for the target process. This routine "blocks" until the target process is found.
         Update self.pid when found and return.
         """
+        self.process_monitor.log(
+            "debugger thread-{0} looking for process name: {1}".format(self.getName(), self.proc_name))
 
-        while not self.pid:
-            for (pid, name) in self.dbg.enumerate_processes():
-                # ignore the optionally specified PID.
-                if pid == self.ignore_pid:
-                    continue
+        self.pid = self._scan_proc_names_blocking()
 
-                if name.lower() == self.proc_name.lower():
-                    self.pid = pid
-                    break
+        self.process_monitor.log("debugger thread-{0} match on pid {1}".format(self.getName(), self.pid))
 
-        self.process_monitor.log("debugger thread-%s found match on pid %d" % (self.getName(), self.pid))
+    def _scan_proc_names_blocking(self):
+        pid = None
+        while pid is None:
+            pid = self._scan_proc_names_once()
+        return pid
+
+    def _scan_proc_names_once(self):
+        for (pid, name) in self.dbg.enumerate_processes():
+            if name.lower() == self.proc_name.lower() and pid != self.ignore_pid:
+                return pid
+        return None
 
     def stop_target(self):
         try:

@@ -1,8 +1,15 @@
 Upcoming
-======
+========
+
 Features
 --------
 - New Session option `fuzz_db_keep_only_n_pass_cases`. This allowes saving only n test cases preceding a failure or error to the database.
+
+Fixes
+-----
+- Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
+- Windows process monitor handles certain errors more gracefully
+
 
 v0.1.3
 ======
