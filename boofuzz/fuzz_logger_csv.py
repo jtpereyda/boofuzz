@@ -36,7 +36,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
         Args:
-            file_hanlde (io.TextIOBase): Open file handle for logging. Defaults to sys.stdout.
+            file_handle (io.TextIOBase): Open file handle for logging. Defaults to sys.stdout.
             bytes_to_str (function): Function that converts sent/received bytes data to string for logging.
         """
         self._file_handle = file_handle
@@ -69,6 +69,12 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def log_pass(self, description=""):
         self._print_log_msg(["pass", "", "", description])
+
+    def close_test_case(self):
+        pass
+
+    def close_test(self):
+        pass
 
     def _print_log_msg(self, msg):
         time_stamp = get_time_stamp()

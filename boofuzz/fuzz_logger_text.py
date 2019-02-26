@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys
-from colorama import Fore, Back, Style, init
+from colorama import init
 
 from . import helpers
 from . import ifuzz_logger_backend
@@ -48,9 +48,8 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
                             msg_type='receive')
 
     def log_send(self, data):
-        self._print_log_msg(
-            data=data,
-            msg_type='send')
+        self._print_log_msg(data=data,
+                            msg_type='send')
 
     def log_info(self, description):
         self._print_log_msg(msg=description,
@@ -67,6 +66,12 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     def log_pass(self, description=""):
         self._print_log_msg(msg=description,
                             msg_type='pass')
+
+    def close_test_case(self):
+        pass
+
+    def close_test(self):
+        pass
 
     def _print_log_msg(self, msg_type, msg=None, data=None):
         print(helpers.format_log_msg(msg_type=msg_type, description=msg, data=data, indent_size=self.INDENT_SIZE),
