@@ -11,7 +11,7 @@ install:
 stages:
   - Test
   - name: Deploy
-    if: branch = master AND repo = 'jtpereyda/boofuzz'
+    if: (branch = master) AND (repo = jtpereyda/boofuzz) AND (tag IS present)
 
 jobs:
   include:
