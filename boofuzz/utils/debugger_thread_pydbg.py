@@ -96,7 +96,7 @@ class DebuggerThreadPydbg(threading.Thread):
 
         return pydbg.defines.DBG_CONTINUE
 
-    def spwan_target(self):
+    def spawn_target(self):
         # TODO checks: debugger thread already active; process already started
         self.log("starting target process")
         for command in self.start_commands:
@@ -114,10 +114,10 @@ class DebuggerThreadPydbg(threading.Thread):
         Main thread routine, called on thread.start(). Thread exits when this routine returns.
         """
         if len(self.start_commands) > 0 and self.proc_name is not None:
-            self.spwan_target()
+            self.spawn_target()
             self.watch()
         elif len(self.start_commands) > 0:
-            self.spwan_target()
+            self.spawn_target()
         elif self.proc_name is not None:
             self.watch()
         else:
