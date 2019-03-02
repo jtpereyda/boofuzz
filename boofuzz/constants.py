@@ -19,3 +19,5 @@ ERR_CONN_ABORTED = "Target connection lost (socket error: {socket_errno} {socket
 ERR_CONN_RESET = "Target connection reset."
 
 ERR_CONN_RESET_FAIL = "Target connection reset -- considered a failure case when triggered from post_send"
+
+ERR_CALLBACK_FUNC = "A custom {func_name} callback function raised an uncought error. Stopping test run.\n"

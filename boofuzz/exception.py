@@ -9,6 +9,10 @@ class BoofuzzRestartFailedError(BoofuzzError):
     pass
 
 
+class BoofuzzCallbackError(BoofuzzError):
+    pass
+
+
 class BoofuzzTargetConnectionFailedError(BoofuzzError):
     pass
 

@@ -3,6 +3,7 @@ Upcoming
 
 Features
 --------
+- New Session options `restart_callback`, `pre_send_callback`, and `post_test_case_callback` to hand over custom callback functions.
 - New Session option `fuzz_db_keep_only_n_pass_cases`. This allowes saving only n test cases preceding a failure or error to the database.
 
 Fixes
