@@ -38,7 +38,7 @@ setup(
             # This list is duplicated in tox.ini. Make sure to change both!
             'dev': ['check-manifest',
                     'mock',
-                    'pytest==3.6.4',  # temporary measure -- 3.7 was causing pytest-bdd failures
+                    'pytest',
                     'pytest-bdd',
                     'netifaces',
                     'ipaddress'],
