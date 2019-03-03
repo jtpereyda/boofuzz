@@ -4,10 +4,6 @@ sudo: required
 
 before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 
-install:
-  - pip install tox sphinx
-  - pip install .
-
 stages:
   - Test
   - name: Deploy
@@ -16,8 +12,12 @@ stages:
 jobs:
   include:
     - stage: Test
+      install: pip install tox .
+      script: tox --recreate
+    - # Same stage name
+      install: pip install sphinx
       script:
-        - tox --recreate
+        - python setup.py install --force
         - make -C ./docs dummy
     - stage: Deploy
       script: skip
