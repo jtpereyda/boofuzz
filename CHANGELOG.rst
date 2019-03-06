@@ -5,6 +5,7 @@ Features
 --------
 - New Session option `fuzz_db_keep_only_n_pass_cases`. This allowes saving only n test cases preceding a failure or error to the database.
 - Added logic to find next available port for web interface or disable the web interface.
+- Removed sleep logs when sleep time is zero.
 
 Fixes
 -----

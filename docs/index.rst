@@ -71,6 +71,7 @@ User Guide
 
     user/install
     user/quickstart
+    user/contributing
 
 Public Protocol Libraries
 -------------------------
@@ -94,6 +95,7 @@ API Documentation
     user/connections
     user/logging
     user/static-protocol-definition
+    user/other-modules
 
 Contributions
 -------------
