@@ -11,6 +11,7 @@ import time
 import traceback
 import zlib
 import socket
+import errno
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -1071,7 +1072,7 @@ class Session(pgraph.Graph):
                 http_server.listen(port)
             except socket.error as exc:
                 # Only handle "Address already in use"
-                if exc.args[0] != 98:
+                if exc.errno != errno.EADDRINUSE:
                     raise
                 port += 1
             else:
