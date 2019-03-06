@@ -1273,9 +1273,10 @@ class Session(pgraph.Graph):
             self._post_send(target)
             self._check_procmon_failures(target)
 
-            self._fuzz_data_logger.open_test_step("Sleep between tests.")
-            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-            time.sleep(self.sleep_time)
+            if self.sleep_time > 0:
+                self._fuzz_data_logger.open_test_step("Sleep between tests.")
+                self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+                time.sleep(self.sleep_time)
         finally:
             if self._process_failures(target=target):
                 print("FAIL: {0}".format(test_case_name))
@@ -1341,9 +1342,10 @@ class Session(pgraph.Graph):
                 self._post_send(target)
                 self._check_procmon_failures(target=target)
 
-            self._fuzz_data_logger.open_test_step("Sleep between tests.")
-            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-            time.sleep(self.sleep_time)
+            if self.sleep_time > 0:
+                self._fuzz_data_logger.open_test_step("Sleep between tests.")
+                self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+                time.sleep(self.sleep_time)
         finally:
             self._process_failures(target=target)
             self._stop_netmon(target=target)
