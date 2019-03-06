@@ -39,7 +39,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._db_cursor.execute(
             '''CREATE TABLE steps (test_case_index integer, type text, description text, data blob, timestamp TEXT)''')
 
-        self._current_test_case_index = None
+        self._current_test_case_index = 0
 
         self._queue = collections.deque([])  # Queue that holds last n test cases before commiting
         self._queue_max_len = num_log_cases

@@ -9,6 +9,8 @@ import threading
 import time
 import traceback
 import zlib
+import socket
+import errno
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -371,7 +373,11 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
-        self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
+
+        self._post_test_case_methods = []
+
+        if self.web_port is not None:
+            self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
         if pre_send_callbacks is None:
             self._pre_send_methods = []
@@ -651,7 +657,8 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
-        self.server_init()
+        if self.web_port is not None:
+            self.server_init()
 
         try:
             num_cases_actually_fuzzed = 0
@@ -1109,7 +1116,17 @@ class Session(pgraph.Graph):
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(port)
+        while True:
+            try:
+                http_server.listen(port)
+            except socket.error as exc:
+                # Only handle "Address already in use"
+                if exc.errno != errno.EADDRINUSE:
+                    raise
+                port += 1
+            else:
+                self._fuzz_data_logger.log_info("Web interface can be found at http://localhost:%d"%port)
+                break
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True
         return flask_thread
@@ -1319,9 +1336,10 @@ class Session(pgraph.Graph):
             self._post_send(target)
             self._check_procmon_failures(target)
 
-            self._fuzz_data_logger.open_test_step("Sleep between tests.")
-            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-            time.sleep(self.sleep_time)
+            if self.sleep_time > 0:
+                self._fuzz_data_logger.open_test_step("Sleep between tests.")
+                self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+                time.sleep(self.sleep_time)
         finally:
             if self._process_failures(target=target):
                 print("FAIL: {0}".format(test_case_name))
@@ -1387,9 +1405,10 @@ class Session(pgraph.Graph):
                 self._post_send(target)
                 self._check_procmon_failures(target=target)
 
-            self._fuzz_data_logger.open_test_step("Sleep between tests.")
-            self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-            time.sleep(self.sleep_time)
+            if self.sleep_time > 0:
+                self._fuzz_data_logger.open_test_step("Sleep between tests.")
+                self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
+                time.sleep(self.sleep_time)
         finally:
             self._process_failures(target=target)
             self._stop_netmon(target=target)
