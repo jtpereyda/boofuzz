@@ -278,11 +278,11 @@ class Session(pgraph.Graph):
         crash_threshold_request (int):  Maximum number of crashes allowed before a request is exhausted. Default 12.
         crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
-        restart_callback (list of method): The registered method will be called after a failed post_test_case_callback
+        restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
                                            Default None.
-        pre_send_callback (list of method): The registered method will be called prior to each fuzz request.
+        pre_send_callbacks (list of method): The registered method will be called prior to each fuzz request.
                                             Default None.
-        post_test_case_callback (list of method): The registered method will be called after each fuzz test case.
+        post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
                                                   Default None.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
@@ -321,9 +321,9 @@ class Session(pgraph.Graph):
                  crash_threshold_request=12,
                  crash_threshold_element=3,
                  restart_sleep_time=5,
-                 restart_callback=None,
-                 pre_send_callback=None,
-                 post_test_case_callback=None,
+                 restart_callbacks=None,
+                 pre_send_callbacks=None,
+                 post_test_case_callbacks=None,
                  fuzz_data_logger=None,
                  fuzz_loggers=None,
                  fuzz_db_keep_only_n_pass_cases=0,
@@ -371,11 +371,22 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
-        self._pre_send_methods = pre_send_callback
-        self._post_test_case_methods = post_test_case_callback
-        self._restart_methods = restart_callback
-
         self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
+
+        if pre_send_callbacks is None:
+            self._pre_send_methods = []
+        else:
+            self._pre_send_methods = pre_send_callbacks
+
+        if post_test_case_callbacks is None:
+            self._post_test_case_methods = []
+        else:
+            self._post_test_case_methods = post_test_case_callbacks
+
+        if restart_callbacks is None:
+            self._restart_methods = []
+        else:
+            self._restart_methods = restart_callbacks
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
@@ -671,7 +682,7 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
         except exception.BoofuzzCallbackError:
-            self._fuzz_data_logger.log_error("Custom callback function raised uncaught exception, exiting.")
+            self._fuzz_data_logger.log_error("A custom callback function raised an uncaught exception, exiting.")
             self.export_file()
         except exception.BoofuzzTargetConnectionFailedError:
             # exception should have already been handled but rethrown in order to escape test run
@@ -867,9 +878,6 @@ class Session(pgraph.Graph):
         Args:
             method (function): A method with the same parameters as :func:`~Session.post_send`
             """
-        if self._post_test_case_methods is None:
-            self._post_test_case_methods = []
-
         self._post_test_case_methods.append(method)
 
     # noinspection PyUnusedLocal
@@ -906,7 +914,7 @@ class Session(pgraph.Graph):
             target (session.target): Target we are sending data to
         """
 
-        if self._pre_send_methods is not None:
+        if len(self._pre_send_methods) > 0:
             try:
                 for f in self._pre_send_methods:
                     self._fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
@@ -914,12 +922,8 @@ class Session(pgraph.Graph):
             except Exception:
                 self._fuzz_data_logger.log_error(constants.ERR_CALLBACK_FUNC.format(func_name="pre_send")
                                                  + traceback.format_exc())
-                raise exception.BoofuzzCallbackError()
-            finally:
-                self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
                 target.close()
-        else:
-            pass
+                raise exception.BoofuzzCallbackError()
 
     def restart_target(self, target):
         """
@@ -953,7 +957,7 @@ class Session(pgraph.Graph):
             time.sleep(3)
 
         # if we have custom restart methods, execute them
-        elif self._restart_methods is not None:
+        elif len(self._restart_methods) > 0:
             try:
                 for f in self._restart_methods:
                     self._fuzz_data_logger.open_test_step('Target restart callback: "{0}"'.format(f.__name__))
@@ -1405,7 +1409,7 @@ class Session(pgraph.Graph):
         return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
 
     def _post_send(self, target):
-        if self._post_test_case_methods is not None:
+        if len(self._post_test_case_methods) > 0:
             try:
                 for f in self._post_test_case_methods:
                     self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
@@ -1421,7 +1425,6 @@ class Session(pgraph.Graph):
             except Exception:
                 self._fuzz_data_logger.log_error(constants.ERR_CALLBACK_FUNC.format(func_name="post_send")
                                                  + traceback.format_exc())
-                raise exception.BoofuzzCallbackError()
             finally:
                 self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
                 target.close()
