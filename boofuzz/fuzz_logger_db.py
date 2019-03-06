@@ -131,8 +131,6 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
                 self._database_connection.commit()
                 self._log_first_case = False
                 self._fail_detected = False
-        else:
-            pass
 
 
 class FuzzLoggerDbReader(object):
