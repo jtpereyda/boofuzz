@@ -10,6 +10,8 @@ import threading
 import time
 import traceback
 import zlib
+import socket
+import errno
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -365,7 +367,8 @@ class Session(pgraph.Graph):
         self._skip_current_element_after_current_test_case = False
         self._post_test_case_methods = []
 
-        self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
+        if self.web_port is not None:
+            self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
@@ -630,7 +633,8 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
-        self.server_init()
+        if self.web_port is not None:
+            self.server_init()
 
         try:
             num_cases_actually_fuzzed = 0
@@ -1063,7 +1067,17 @@ class Session(pgraph.Graph):
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(port)
+        while True:
+            try:
+                http_server.listen(port)
+            except socket.error as exc:
+                # Only handle "Address already in use"
+                if exc.errno != errno.EADDRINUSE:
+                    raise
+                port += 1
+            else:
+                self._fuzz_data_logger.log_info("Web interface can be found at http://localhost:%d"%port)
+                break
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True
         return flask_thread
