@@ -164,7 +164,7 @@ class TestNoResponseFailure(unittest.TestCase):
             fuzz_loggers=[],  # log to nothing
             check_data_received_each_request=True,
         )
-        session.restart_target = self._mock_restart_target()
+        session._restart_target = self._mock_restart_target()
 
         s_initialize("test-msg-a")
         s_string("test-str-value")
