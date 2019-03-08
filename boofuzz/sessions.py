@@ -1282,10 +1282,10 @@ class Session(pgraph.Graph):
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
-            target.close()
 
             self._post_send(target)
             self._check_procmon_failures(target)
+            target.close()
 
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
@@ -1350,11 +1350,11 @@ class Session(pgraph.Graph):
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
-            target.close()
 
             if not self._check_for_passively_detected_failures(target=target):
                 self._post_send(target)
                 self._check_procmon_failures(target=target)
+            target.close()
 
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
@@ -1401,7 +1401,6 @@ class Session(pgraph.Graph):
                     "Custom post_send method raised uncaught Exception." + traceback.format_exc())
             finally:
                 self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
-                target.close()
 
     def _reset_fuzz_state(self):
         """
