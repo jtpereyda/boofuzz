@@ -374,8 +374,6 @@ class Session(pgraph.Graph):
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
 
-        self._post_test_case_methods = []
-
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
@@ -673,7 +671,7 @@ class Session(pgraph.Graph):
                         and self.restart_interval \
                         and num_cases_actually_fuzzed % self.restart_interval == 0:
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                    self.restart_target(self.targets[0])
+                    self._restart_target(self.targets[0])
 
                 self._fuzz_current_case(*fuzz_args)
 
@@ -688,9 +686,6 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
             self.export_file()
             raise
-        except exception.BoofuzzCallbackError:
-            self._fuzz_data_logger.log_error("A custom callback function raised an uncaught exception, exiting.")
-            self.export_file()
         except exception.BoofuzzTargetConnectionFailedError:
             # exception should have already been handled but rethrown in order to escape test run
             pass
@@ -864,7 +859,7 @@ class Session(pgraph.Graph):
                     self.total_mutant_index += skipped
                     self.fuzz_node.mutant_index += skipped
 
-            self.restart_target(target)
+            self._restart_target(target)
             return True
         else:
             return False
@@ -907,7 +902,7 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info("No post_send callback registered.")
 
     # noinspection PyMethodMayBeStatic
-    def pre_send(self, target):
+    def _pre_send(self, target):
         """
         Execute custom methods to run prior to each fuzz request. The order of events is as follows::
 
@@ -930,9 +925,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_error(constants.ERR_CALLBACK_FUNC.format(func_name="pre_send")
                                                  + traceback.format_exc())
                 target.close()
-                raise exception.BoofuzzCallbackError()
 
-    def restart_target(self, target):
+    def _restart_target(self, target):
         """
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
         restart the target process. If custom restart methods are registered, execute them. Otherwise, do nothing.
@@ -974,7 +968,6 @@ class Session(pgraph.Graph):
             except Exception:
                 self._fuzz_data_logger.log_error(constants.ERR_CALLBACK_FUNC.format(func_name="restart_target")
                                                  + traceback.format_exc())
-                raise exception.BoofuzzCallbackError()
             finally:
                 self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
                 target.close()
@@ -1319,7 +1312,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
 
-            self.pre_send(target)
+            self._pre_send(target)
 
             for e in path[:-1]:
                 node = self.nodes[e.dst]
@@ -1388,7 +1381,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
 
-            self.pre_send(target)
+            self._pre_send(target)
 
             for e in path[:-1]:
                 node = self.nodes[e.dst]
@@ -1438,7 +1431,6 @@ class Session(pgraph.Graph):
             except exception.BoofuzzTargetConnectionAborted as e:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno,
                                                                                   socket_errmsg=e.socket_errmsg))
-                pass
             except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
             except Exception:
