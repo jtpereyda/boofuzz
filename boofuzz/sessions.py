@@ -924,7 +924,6 @@ class Session(pgraph.Graph):
             except Exception:
                 self._fuzz_data_logger.log_error(constants.ERR_CALLBACK_FUNC.format(func_name="pre_send")
                                                  + traceback.format_exc())
-                target.close()
 
     def _restart_target(self, target):
         """
