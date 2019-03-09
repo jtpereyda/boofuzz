@@ -20,6 +20,7 @@ def hex_to_hexstr(input_bytes):
     """
     return helpers.hex_str(input_bytes)
 
+
 DEFAULT_HEX_TO_STR = hex_to_hexstr
 
 
@@ -74,39 +75,39 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._current_test_case_index = index
 
     def open_test_step(self, description):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'step', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'step',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_check(self, description):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'check', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'check',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_error(self, description):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'error', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'error',
+                            description, b'', helpers.get_time_stamp()])
         self._fail_detected = True
         self._write_log()
 
     def log_recv(self, data):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'receive', u'', buffer(data), helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'receive',
+                            u'', buffer(data), helpers.get_time_stamp()])
 
     def log_send(self, data):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'send', u'', buffer(data), helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'send',
+                            u'', buffer(data), helpers.get_time_stamp()])
 
     def log_info(self, description):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'info', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'info',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_fail(self, description=""):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'fail', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'fail',
+                            description, b'', helpers.get_time_stamp()])
         self._fail_detected = True
 
     def log_pass(self, description=""):
-        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n",
-            self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'pass',
+                            description, b'', helpers.get_time_stamp()])
 
     def close_test_case(self):
         self._write_log(force=False)
@@ -115,21 +116,21 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._write_log(force=True)
 
     def _write_log(self, force=False):
+        if len(self._queue) > 0:
+            if self._queue_max_len > 0:
+                while (self._current_test_case_index - next(
+                        x for x in self._queue[0] if isinstance(x, (int, long)))) >= self._queue_max_len:
+                    self._queue.popleft()
+            else:
+                force = True
 
-        if self._queue_max_len > 0:
-            while (self._current_test_case_index - next(
-                    x for x in self._queue[0] if isinstance(x, (int, long)))) >= self._queue_max_len:
-                self._queue.popleft()
-        else:
-            force=True
-
-        if force or self._fail_detected or self._log_first_case:
-            for query in self._queue:
-                self._db_cursor.execute(query[0], query[1:])
-            self._queue.clear()
-            self._database_connection.commit()
-            self._log_first_case = False
-            self._fail_detected = False
+            if force or self._fail_detected or self._log_first_case:
+                for query in self._queue:
+                    self._db_cursor.execute(query[0], query[1:])
+                self._queue.clear()
+                self._database_connection.commit()
+                self._log_first_case = False
+                self._fail_detected = False
 
 
 class FuzzLoggerDbReader(object):
