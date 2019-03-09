@@ -33,12 +33,12 @@ setup(
         package_data={'boofuzz': ['web/templates/*', 'web/static/css/*', 'web/static/js/*']},
         install_requires=[
             'future', 'pyserial', 'pydot', 'tornado~=4.0',
-            'Flask~=1.0', 'impacket', 'colorama', 'attrs', 'click', 'psutil'],
+            'Flask~=1.0', 'impacket', 'colorama', 'attrs', 'click', 'psutil', 'ldap3==2.5.1'],
         extras_require={
             # This list is duplicated in tox.ini. Make sure to change both!
             'dev': ['check-manifest',
                     'mock',
-                    'pytest==3.6.4',  # temporary measure -- 3.7 was causing pytest-bdd failures
+                    'pytest',
                     'pytest-bdd',
                     'netifaces',
                     'ipaddress'],
