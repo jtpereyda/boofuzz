@@ -11,6 +11,7 @@ Fixes
 -----
 - Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
 - Windows process monitor handles certain errors more gracefully
+- Fixed target close behavior so post send callbacks can use the target.
 
 
 v0.1.3
