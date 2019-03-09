@@ -12,12 +12,10 @@ stages:
 jobs:
   include:
     - stage: Test
-      install: pip install tox .
-      script: tox --recreate
-    - # Same stage name
-      install: pip install sphinx
+      install: pip install tox sphinx .
       script:
-        - python setup.py install --force
+        - pip check
+        - tox --recreate
         - make -C ./docs dummy
     - stage: Deploy
       script: skip
