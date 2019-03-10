@@ -1,6 +1,8 @@
 Upcoming
 ========
 
+v0.1.4
+======
 Features
 --------
 - New Session options `restart_callbacks`, `pre_send_callbacks`, and `post_test_case_callbacks` to hand over custom callback functions.
@@ -13,6 +15,7 @@ Fixes
 - Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
 - Windows process monitor handles certain errors more gracefully
 - Fixed target close behavior so post send callbacks can use the target.
+- Fixed a dependency issue in installation.
 
 
 v0.1.3
