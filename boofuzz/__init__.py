@@ -29,7 +29,7 @@ from .sessions import Session, Target, open_test_run
 from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 
 # REQUEST MANAGEMENT

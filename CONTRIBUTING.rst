@@ -53,6 +53,10 @@ Prep
 
 2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
+   1. In ``boofuzz/__init__.py``.
+
+   2. In ``docs/conf.py``.
+
 3. Modify CHANGELOG file for publication if needed.
 
 4. Merge release branch.
