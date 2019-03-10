@@ -7,7 +7,7 @@ before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 stages:
   - Test
   - name: Deploy
-    if: (branch = master) AND (repo = jtpereyda/boofuzz) AND (tag IS present)
+    if: (repo = jtpereyda/boofuzz) AND (fork = false) AND (tag IS present)
 
 jobs:
   include:
