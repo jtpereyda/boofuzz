@@ -307,6 +307,8 @@ class Session(pgraph.Graph):
         ignore_connection_issues_when_sending_fuzz_data (bool): Ignore fuzz data transmission failures. Default True.
                                 This is usually a helpful setting to enable, as targets may drop connections once a
                                 message is clearly invalid.
+        reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
+                                        Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
 
         log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
@@ -336,11 +338,13 @@ class Session(pgraph.Graph):
                  ignore_connection_reset=False,
                  ignore_connection_aborted=False,
                  ignore_connection_issues_when_sending_fuzz_data=True,
+                 reuse_target_connection=False,
                  target=None,
                  ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
         self._ignore_connection_issues_when_sending_fuzz_data = ignore_connection_issues_when_sending_fuzz_data
+        self._reuse_target_connection = reuse_target_connection
         _ = log_level
         _ = logfile
         _ = logfile_level
@@ -659,6 +663,8 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
+            if self._reuse_target_connection:
+                self.targets[0].open()
             num_cases_actually_fuzzed = 0
             for fuzz_args in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
@@ -677,6 +683,8 @@ class Session(pgraph.Graph):
 
                 num_cases_actually_fuzzed += 1
             self._fuzz_data_logger.close_test()
+            if self._reuse_target_connection:
+                self.targets[0].close()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -970,6 +978,9 @@ class Session(pgraph.Graph):
             finally:
                 self._fuzz_data_logger.open_test_step('Cleaning up connections from callbacks')
                 target.close()
+                if self._reuse_target_connection:
+                    self._fuzz_data_logger.open_test_step('Reopening target connection')
+                    target.open()
 
         # otherwise all we can do is wait a while for the target to recover on its own.
         else:
@@ -1306,7 +1317,8 @@ class Session(pgraph.Graph):
                 target.netmon.pre_send(self.total_mutant_index)
 
             try:
-                target.open()
+                if not self._reuse_target_connection:
+                    target.open()
             except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
@@ -1326,7 +1338,8 @@ class Session(pgraph.Graph):
 
             self._post_send(target)
             self._check_procmon_failures(target)
-            target.close()
+            if not self._reuse_target_connection:
+                target.close()
 
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
@@ -1375,7 +1388,8 @@ class Session(pgraph.Graph):
 
         try:
             try:
-                target.open()
+                if not self._reuse_target_connection:
+                    target.open()
             except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
                 raise
@@ -1395,7 +1409,8 @@ class Session(pgraph.Graph):
             if not self._check_for_passively_detected_failures(target=target):
                 self._post_send(target)
                 self._check_procmon_failures(target=target)
-            target.close()
+            if not self._reuse_target_connection:
+                target.close()
 
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
