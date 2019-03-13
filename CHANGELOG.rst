@@ -1,5 +1,8 @@
 Upcoming
 ========
+Features
+--------
+- New Session option `keep_web_open` to allow analyzing the test results after test completion.
 
 v0.1.4
 ======
