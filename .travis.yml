@@ -10,11 +10,8 @@ stages:
 jobs:
   include:
     - stage: Test
-      install: pip install tox sphinx .
-      script:
-        - pip check
-        - tox --recreate
-        - make -C ./docs dummy
+      install: pip install tox
+      script: tox --recreate
       deploy:
         provider: pypi
         user: jtpereyda

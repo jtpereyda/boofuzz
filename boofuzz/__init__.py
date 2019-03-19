@@ -477,7 +477,7 @@ def s_mirror(primitive_name, name=None):
     :param name:            (Optional, def=None) Name of current primitive
     """
     if primitive_name not in blocks.CURRENT.names:
-        raise sex.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
+        raise exception.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
 
     mirror = primitives.Mirror(primitive_name, blocks.CURRENT, name)
     blocks.CURRENT.push(mirror)
