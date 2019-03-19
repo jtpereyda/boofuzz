@@ -693,8 +693,6 @@ class Session(pgraph.Graph):
                 print("\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
                       "\nPress ENTER to close webinterface")
                 raw_input()
-            else:
-                print("\nFuzzing session completed. Webinterface will be available as long as this script is running.")
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
