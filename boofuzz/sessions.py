@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import cPickle
 import datetime
@@ -287,6 +287,7 @@ class Session(pgraph.Graph):
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
                                                   Default None.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+        keep_web_open (bool):     Keep the webinterface open after session completion. Default True.
         fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
         fuzz_db_keep_only_n_pass_cases (int): Minimize disk usage by only saving passing test cases
@@ -322,6 +323,7 @@ class Session(pgraph.Graph):
     def __init__(self, session_filename=None, index_start=1, index_end=None, sleep_time=0.0,
                  restart_interval=0,
                  web_port=constants.DEFAULT_WEB_UI_PORT,
+                 keep_web_open=True,
                  crash_threshold_request=12,
                  crash_threshold_element=3,
                  restart_sleep_time=5,
@@ -357,6 +359,7 @@ class Session(pgraph.Graph):
         self.sleep_time = sleep_time
         self.restart_interval = restart_interval
         self.web_port = web_port
+        self._keep_web_open = keep_web_open
         self._crash_threshold_node = crash_threshold_request
         self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
@@ -685,6 +688,11 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test()
             if self._reuse_target_connection:
                 self.targets[0].close()
+
+            if self._keep_web_open and self.web_port is not None:
+                print("\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
+                      "\nPress ENTER to close webinterface")
+                raw_input()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()

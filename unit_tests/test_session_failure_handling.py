@@ -163,6 +163,7 @@ class TestNoResponseFailure(unittest.TestCase):
             ),
             fuzz_loggers=[],  # log to nothing
             check_data_received_each_request=True,
+            keep_web_open=False,
         )
         session._restart_target = self._mock_restart_target()
 
