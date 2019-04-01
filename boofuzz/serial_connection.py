@@ -35,7 +35,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         baudrate (int): Baud rate for port.
         timeout (float): For recv(). After timeout seconds from receive start, recv() will return all received data,
             if any.
-        message_separator_time (float): After message_separator_time seconds _without receiving any more data_,
+        message_separator_time (float): After message_separator_time seconds *without receiving any more data*,
             recv() will return. Optional. Default None.
         content_checker (function(str) -> int): User-defined function. recv() will pass all bytes received so far to
             this method. If the method returns n > 0, recv() will return n bytes. If it returns 0, recv() will keep on

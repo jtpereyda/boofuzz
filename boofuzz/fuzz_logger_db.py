@@ -3,7 +3,6 @@ import collections
 import datetime
 import sqlite3
 
-from . import constants
 from . import helpers
 from . import ifuzz_logger_backend
 from . import data_test_case
@@ -33,14 +32,19 @@ def get_time_stamp():
 class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
     """Log fuzz data in a sqlite database file."""
 
-    def __init__(self, db_filename):
+    def __init__(self, db_filename, num_log_cases=0):
         self._database_connection = sqlite3.connect(db_filename, check_same_thread=False)
         self._db_cursor = self._database_connection.cursor()
         self._db_cursor.execute('''CREATE TABLE cases (name text, number integer, timestamp TEXT)''')
         self._db_cursor.execute(
             '''CREATE TABLE steps (test_case_index integer, type text, description text, data blob, timestamp TEXT)''')
 
-        self._current_test_case_index = None
+        self._current_test_case_index = 0
+
+        self._queue = collections.deque([])  # Queue that holds last n test cases before commiting
+        self._queue_max_len = num_log_cases
+        self._fail_detected = False
+        self._log_first_case = True
 
     def get_test_case_data(self, index):
         c = self._database_connection.cursor()
@@ -67,49 +71,66 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
                                            steps=steps)
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
-        self._db_cursor.execute('''INSERT INTO cases VALUES(?, ?, ?)''', [name, index, helpers.get_time_stamp()])
+        self._queue.append(["INSERT INTO cases VALUES(?, ?, ?);\n", name, index, helpers.get_time_stamp()])
         self._current_test_case_index = index
-        self._database_connection.commit()
 
     def open_test_step(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'step', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'step',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_check(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'check', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'check',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_error(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'error', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'error',
+                            description, b'', helpers.get_time_stamp()])
+        self._fail_detected = True
+        self._write_log()
 
     def log_recv(self, data):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'receive', u'', buffer(data), helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'receive',
+                            u'', buffer(data), helpers.get_time_stamp()])
 
     def log_send(self, data):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'send', u'', buffer(data), helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'send',
+                            u'', buffer(data), helpers.get_time_stamp()])
 
     def log_info(self, description):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'info', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'info',
+                            description, b'', helpers.get_time_stamp()])
 
     def log_fail(self, description=""):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'fail', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'fail',
+                            description, b'', helpers.get_time_stamp()])
+        self._fail_detected = True
 
     def log_pass(self, description=""):
-        self._db_cursor.execute('''INSERT INTO steps VALUES(?, ?, ?, ?, ?)''',
-                                [self._current_test_case_index, 'pass', description, b'', helpers.get_time_stamp()])
-        self._database_connection.commit()
+        self._queue.append(["INSERT INTO steps VALUES(?, ?, ?, ?, ?);\n", self._current_test_case_index, 'pass',
+                            description, b'', helpers.get_time_stamp()])
+
+    def close_test_case(self):
+        self._write_log(force=False)
+
+    def close_test(self):
+        self._write_log(force=True)
+
+    def _write_log(self, force=False):
+        if len(self._queue) > 0:
+            if self._queue_max_len > 0:
+                while (self._current_test_case_index - next(
+                        x for x in self._queue[0] if isinstance(x, (int, long)))) >= self._queue_max_len:
+                    self._queue.popleft()
+            else:
+                force = True
+
+            if force or self._fail_detected or self._log_first_case:
+                for query in self._queue:
+                    self._db_cursor.execute(query[0], query[1:])
+                self._queue.clear()
+                self._database_connection.commit()
+                self._log_first_case = False
+                self._fail_detected = False
 
 
 class FuzzLoggerDbReader(object):

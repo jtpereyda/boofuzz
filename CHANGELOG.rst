@@ -1,3 +1,39 @@
+Upcoming
+========
+Features
+--------
+- New Session option `keep_web_open` to allow analyzing the test results after test completion.
+
+v0.1.4
+======
+Features
+--------
+- New Session options `restart_callbacks`, `pre_send_callbacks`, and `post_test_case_callbacks` to hand over custom callback functions.
+- New Session option `fuzz_db_keep_only_n_pass_cases`. This allowes saving only n test cases preceding a failure or error to the database.
+- Added logic to find next available port for web interface or disable the web interface.
+- Removed sleep logs when sleep time is zero.
+- Added option to reuse the connection to the target.
+
+Fixes
+-----
+- Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
+- Windows process monitor handles certain errors more gracefully
+- Fixed target close behavior so post send callbacks can use the target.
+- Fixed a dependency issue in installation.
+
+
+v0.1.3
+======
+Features
+--------
+- Socket Connections now allow client fuzzing.
+- Log only the data actually sent, when sending is truncated. Helps reduce database size, especially when fuzzing layer 2 or 3.
+- `Target` `recv` function now accepts a `max_recv_bytes` argument.
+
+Fixes
+-----
+- Fixed install package -- now includes JavaScript files.
+
 v0.1.2
 ======
 Features

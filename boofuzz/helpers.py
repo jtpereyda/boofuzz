@@ -46,9 +46,9 @@ test_step_info = {
     },
     'send': {
         'indent': 2,
-        'title': 'Transmitting',
-        'html': 'Transmitting {n} bytes: {msg}',
-        'terminal': Fore.CYAN + "Transmitting {n} bytes: {msg}" + Style.RESET_ALL,
+        'title': 'Transmitted',
+        'html': 'Transmitted {n} bytes: {msg}',
+        'terminal': Fore.CYAN + "Transmitted {n} bytes: {msg}" + Style.RESET_ALL,
         'css_class': 'log-send'
     },
     'receive': {
