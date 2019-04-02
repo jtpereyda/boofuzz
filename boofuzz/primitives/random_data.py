@@ -37,7 +37,7 @@ class RandomData(BasePrimitive):
         self.step = step
         self._name = name
         if self.step:
-            self.max_mutations = (self.max_length - self.min_length) / self.step + 1
+            self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
     @property
     def name(self):

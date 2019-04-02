@@ -93,12 +93,12 @@ class BitField(BasePrimitive):
             else:
                 # try only "smart" values.
                 self.add_integer_boundaries(0)
-                self.add_integer_boundaries(self.max_num / 2)
-                self.add_integer_boundaries(self.max_num / 3)
-                self.add_integer_boundaries(self.max_num / 4)
-                self.add_integer_boundaries(self.max_num / 8)
-                self.add_integer_boundaries(self.max_num / 16)
-                self.add_integer_boundaries(self.max_num / 32)
+                self.add_integer_boundaries(self.max_num // 2)
+                self.add_integer_boundaries(self.max_num // 3)
+                self.add_integer_boundaries(self.max_num // 4)
+                self.add_integer_boundaries(self.max_num // 8)
+                self.add_integer_boundaries(self.max_num // 16)
+                self.add_integer_boundaries(self.max_num // 32)
                 self.add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
@@ -151,7 +151,7 @@ class BitField(BasePrimitive):
                 bit_stream += int_to_binary_string(value, bit_width)
 
             # convert the bit stream from a string of bits into raw bytes.
-            for i in range(len(bit_stream) / 8):
+            for i in range(len(bit_stream) // 8):
                 chunk_min = 8 * i
                 chunk_max = chunk_min + 8
                 chunk = bit_stream[chunk_min:chunk_max]
@@ -185,7 +185,7 @@ class BitField(BasePrimitive):
 
     def __len__(self):
         if self.format == "binary":
-            return self.width / 8
+            return self.width // 8
         else:
             return len(str(self._value))
 
