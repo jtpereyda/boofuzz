@@ -135,10 +135,10 @@ class Checksum(primitives.BasePrimitive):
         """
         if type(self._algorithm) is str:
             if self._algorithm == "crc32":
-                check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
 
             elif self._algorithm == "adler32":
-                check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFF))
 
             elif self._algorithm == "ipv4":
                 check = struct.pack(self._endian + "H", helpers.ipv4_checksum(data))
