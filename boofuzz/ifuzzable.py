@@ -1,5 +1,7 @@
 import abc
 
+from future.utils import with_metaclass
+
 
 class DocStringInheritor(type):
     """
@@ -28,15 +30,14 @@ class DocStringInheritor(type):
                         break
         return type.__new__(meta, name, bases, clsdict)
 
-
-class IFuzzable(object):
+# DocStringInheritor is the metaclass in python 2 and 3
+class IFuzzable(with_metaclass(DocStringInheritor, object)):
     """Describes a fuzzable message element or message.
 
     Design Notes:
      - mutate and reset pretty much form an iterator. Future design goal is
        to eliminate them and add a generator function in their place.
     """
-    __metaclass__ = DocStringInheritor
 
     @abc.abstractproperty
     def fuzzable(self):
