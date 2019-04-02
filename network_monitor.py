@@ -17,7 +17,7 @@ MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 def log_error(message=None):
     try:
         sys.stderr.write("ERR> %s\n" % message) or sys.exit(1)
-    except Exception, e:
+    except Exception as e:
         print(e)
         sys.exit(1)
 
