@@ -1,5 +1,4 @@
 #!c:\\python\\python.exe
-
 import getopt
 import sys
 sys.path.append(r"../../../paimei")
@@ -21,7 +20,7 @@ try:
 
     opts, args = getopt.getopt(sys.argv[2:], "t:g:", ["test=", "graph="])
 except Exception:
-    print USAGE
+    print(USAGE)
     sys.exit(1)
 
 test_number = graph_name = graph = None
@@ -36,7 +35,7 @@ try:
     crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
 except Exception:
-    print "unable to open crashbin: '%s'." % sys.argv[1]
+    print("unable to open crashbin: '%s'." % sys.argv[1])
     sys.exit(1)
 
 #
@@ -47,7 +46,7 @@ if test_number:
     for _, crashes in crashbin.bins.iteritems():
         for crash in crashes:
             if test_number == crash.extra:
-                print crashbin.crash_synopsis(crash)
+                print(crashbin.crash_synopsis(crash))
                 sys.exit(0)
 
 #
@@ -67,8 +66,8 @@ for _, crashes in crashbin.bins.iteritems():
             crash_node.count = len(crashes)
             crash_node.label = "[%d] %s.%08x" % (crash_node.count, crashes[0].exception_module, crash_node.id)
             graph.add_node(crash_node)
-            print "[%d] %s" % (len(crashes), synopsis)
-            print "\t",
+            print("[%d] %s" % (len(crashes), synopsis))
+            print("\t")
             last = crash_node.id
             for entry in crash.stack_unwind:
                 address = long(entry.split(":")[1], 16)
@@ -86,9 +85,9 @@ for _, crashes in crashbin.bins.iteritems():
                 edge = pgraph.Edge(n.id, last)
                 graph.add_edge(edge)
                 last = n.id
-        print "%d," % crash.extra,
+        print("%d," % crash.extra)
 
-    print "\n"
+    print("\n")
 
 if graph:
     fh = open("%s.udg" % graph_name, "w+")

@@ -1,13 +1,16 @@
 #!/usr/bin/python
 #!c:\\python\\python.exe
+from __future__ import print_function
 
+import getopt
 import os
 import sys
 import time
-import getopt
+
+from boofuzz import pedrpc
 
 if os.name != "nt":
-    print "[!] This only works on windows!"
+    print("[!] This only works on windows!")
     sys.exit(1)
 
 try:
@@ -17,11 +20,10 @@ try:
     from win32com.shell import shell
 except Exception:
     if os.name == "nt":
-        print "[!] Failed to import win32api/win32com modules, please install these! Bailing..."
+        print("[!] Failed to import win32api/win32com modules, please install these! Bailing...")
         sys.exit(1)
 
 
-from boofuzz import pedrpc
 
 PORT  = 26003
 ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
@@ -63,12 +65,12 @@ class VMControlPedrpcServer (pedrpc.Server):
         self.interactive = interactive
 
         if interactive:
-            print "[*] Entering interactive mode..."
+            print("[*] Entering interactive mode...")
 
             # get vmrun path
             try:
                 while 1:
-                    print "[*] Please browse to the folder containing vmrun.exe..."
+                    print("[*] Please browse to the folder containing vmrun.exe...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
                         0,
                         None,
@@ -77,19 +79,19 @@ class VMControlPedrpcServer (pedrpc.Server):
                     fullpath = shell.SHGetPathFromIDList(pidl)
                     file_list = os.listdir(fullpath)
                     if "vmrun.exe" not in file_list:
-                        print "[!] vmrun.exe not found in selected folder, please try again"
+                        print("[!] vmrun.exe not found in selected folder, please try again")
                     else:
                         vmrun = fullpath + "\\vmrun.exe"
-                        print "[*] Using %s" % vmrun
+                        print("[*] Using %s" % vmrun)
                         break
             except Exception:
-                print "[!] Error while trying to find vmrun.exe. Try again without -i."
+                print("[!] Error while trying to find vmrun.exe. Try again without -i.")
                 sys.exit(1)
 
             # get vmx path
             try:
                 while 1:
-                    print "[*] Please browse to the folder containing the .vmx file..."
+                    print("[*] Please browse to the folder containing the .vmx file...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
                         0,
                         None,
@@ -104,14 +106,14 @@ class VMControlPedrpcServer (pedrpc.Server):
                         if idx == len(filename) - 4:
                             exists = True
                             vmx = fullpath + "\\" + filename
-                            print "[*] Using %s" % vmx
+                            print("[*] Using %s" % vmx)
 
                     if exists:
                         break
                     else:
-                        print "[!] No .vmx file found in the selected folder, please try again"
+                        print("[!] No .vmx file found in the selected folder, please try again")
             except Exception:
-                print "[!] Error while trying to find the .vmx file. Try again without -i."
+                print("[!] Error while trying to find the .vmx file. Try again without -i.")
                 sys.exit(1)
 
         # Grab snapshot name and log level if we're in interactive mode
@@ -159,7 +161,7 @@ class VMControlPedrpcServer (pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def set_vmrun(self, vmrun):
         self.log("setting vmrun to %s" % vmrun, 2)
@@ -331,12 +333,12 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         self.interactive = interactive
 
         if interactive:
-            print "[*] Entering interactive mode..."
+            print("[*] Entering interactive mode...")
 
             # get vmrun path
             try:
                 while 1:
-                    print "[*] Please browse to the folder containing VBoxManage.exe..."
+                    print("[*] Please browse to the folder containing VBoxManage.exe...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
                         0,
                         None,
@@ -345,13 +347,13 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
                     fullpath = shell.SHGetPathFromIDList(pidl)
                     file_list = os.listdir(fullpath)
                     if "VBoxManage.exe" not in file_list:
-                        print "[!] VBoxManage.exe not found in selected folder, please try again"
+                        print("[!] VBoxManage.exe not found in selected folder, please try again")
                     else:
                         vmrun = fullpath + "\\VBoxManage.exe"
-                        print "[*] Using %s" % vmrun
+                        print("[*] Using %s" % vmrun)
                         break
             except Exception:
-                print "[!] Error while trying to find VBoxManage.exe. Try again without -I."
+                print("[!] Error while trying to find VBoxManage.exe. Try again without -I.")
                 sys.exit(1)
 
         # Grab vmx, snapshot name and log level if we're in interactive mode
@@ -555,7 +557,7 @@ if __name__ == "__main__":
         
     # OS check
     if interactive_arg and not os.name == "nt":
-        print "[!] Interactive mode currently only works on Windows operating systems."
+        print("[!] Interactive mode currently only works on Windows operating systems.")
         ERR(USAGE)
 
     if (not vmx_arg or not vmrun_arg or not snap_name_arg) and not interactive_arg:

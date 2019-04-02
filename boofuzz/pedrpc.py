@@ -71,7 +71,7 @@ class Client:
 
     def __debug(self, msg):
         if self.__dbg_flag:
-            print "PED-RPC> %s" % msg
+            print("PED-RPC> %s" % msg)
 
     def __method_missing(self, method_name, *args, **kwargs):
         """
@@ -198,7 +198,7 @@ class Server(object):
 
     def __debug(self, msg):
         if self.__dbg_flag:
-            print "PED-RPC> %s" % msg
+            print("PED-RPC> %s" % msg)
 
     def __pickle_recv(self):
         """

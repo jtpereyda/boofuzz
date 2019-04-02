@@ -7,7 +7,7 @@ import cPickle
 USAGE = "\nUSAGE: print_session.py <session file>\n"
 
 if len(sys.argv) != 2:
-    print USAGE
+    print(USAGE)
     sys.exit(1)
 
 fh = open(sys.argv[1], "rb")
@@ -17,5 +17,5 @@ fh.close()
 
 #print data
 for key in data.keys():
-    print key + " -> " + str(data[key])
+    print(key + " -> " + str(data[key]))
 

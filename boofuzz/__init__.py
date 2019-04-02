@@ -39,7 +39,7 @@ def s_get(name=None):
     global function style request manipulation to direct object manipulation. Example::
 
         req = s_get("HTTP BASIC")
-        print req.num_mutations()
+        print(req.num_mutations())
 
     The selected request is also set as the default current. (ie: s_switch(name) is implied).
 

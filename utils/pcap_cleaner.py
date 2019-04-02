@@ -9,7 +9,7 @@ from boofuzz import utils
 USAGE = "\nUSAGE: pcap_cleaner.py <xxx.crashbin> <path to pcaps>\n"
 
 if len(sys.argv) != 3:
-    print USAGE
+    print(USAGE)
     sys.exit(1)
 
 
@@ -21,7 +21,7 @@ try:
     crashbin = utils.crash_binning.CrashBinning()
     crashbin.import_file(sys.argv[1])
 except Exception:
-    print "unable to open crashbin: '%s'." % sys.argv[1]
+    print("unable to open crashbin: '%s'." % sys.argv[1])
     sys.exit(1)
 
 test_cases = []

@@ -18,7 +18,7 @@ def log_error(message=None):
     try:
         sys.stderr.write("ERR> %s\n" % message) or sys.exit(1)
     except Exception, e:
-        print e
+        print(e)
         sys.exit(1)
 
 
@@ -214,7 +214,7 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def retrieve(self, test_number):
         """

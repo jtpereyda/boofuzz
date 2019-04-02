@@ -64,7 +64,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, BitField):
-            print self.variable
+            print(self.variable)
             raise exception.SullyRuntimeError(
                     "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
             )

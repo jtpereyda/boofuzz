@@ -53,9 +53,9 @@ def do_single(req, num):
 
         s_mutate()
 
-    print "xmitting single test case"
+    print("xmitting single test case")
     s.send(s_render())
-    print "done."
+    print("done.")
 
 
 def do_fuzz():
@@ -76,7 +76,7 @@ def do_fuzz():
     # start up the target.
     target.vmcontrol.restart_target()
 
-    print "virtual machine up and running"
+    print("virtual machine up and running")
 
     sess.add_target(target)
     sess.pre_send = rpc_bind
@@ -88,7 +88,7 @@ def do_fuzz():
     sess.connect(s_get("5168: op-1f"))
     sess.fuzz()
 
-    print "done fuzzing. web interface still running."
+    print("done fuzzing. web interface still running.")
 
 if not req or not num:
     do_fuzz()

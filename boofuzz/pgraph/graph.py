@@ -317,7 +317,7 @@ class Graph(object):
         from_node = self.find_node("id", from_node_id)
 
         if not from_node:
-            print "unable to resolve node %08x" % from_node_id
+            print("unable to resolve node %08x" % from_node_id)
             raise Exception
 
         levels_to_process = []

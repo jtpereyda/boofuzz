@@ -29,23 +29,23 @@ def groups_and_num_test_cases():
 
     # count how many mutations we get per primitive type.
     req1 = s_get("UNIT TEST 1")
-    print "PRIMITIVE MUTATION COUNTS (SIZES):"
+    print("PRIMITIVE MUTATION COUNTS (SIZES):")
 
-    print "\tdelim:  %d\t(%s)" % (
+    print("\tdelim:  %d\t(%s)" % (
         req1.names["delim"].num_mutations(),
         sum(map(len, req1.names["delim"]._fuzz_library))
-    )
+    ))
 
-    print "\tstring: %d\t(%s)" % (
+    print("\tstring: %d\t(%s)" % (
         req1.names["string"].num_mutations(),
         sum(map(len, req1.names["string"]._fuzz_library))
-    )
+    ))
 
-    print "\tbyte:   %d" % req1.names["byte"].num_mutations()
-    print "\tword:   %d" % req1.names["word"].num_mutations()
-    print "\tdword:  %d" % req1.names["dword"].num_mutations()
-    print "\tqword:  %d" % req1.names["qword"].num_mutations()
-    print "\tsizer:  %d" % req1.names["sizer"].num_mutations()
+    print("\tbyte:   %d" % req1.names["byte"].num_mutations())
+    print("\tword:   %d" % req1.names["word"].num_mutations())
+    print("\tdword:  %d" % req1.names["dword"].num_mutations())
+    print("\tqword:  %d" % req1.names["qword"].num_mutations())
+    print("\tsizer:  %d" % req1.names["sizer"].num_mutations())
 
     # we specify the number of mutations in a random field, so ensure that matches.
     assert (req1.names["random"].num_mutations() == 100)
