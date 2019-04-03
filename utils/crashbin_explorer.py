@@ -1,10 +1,14 @@
 #!c:\\python\\python.exe
 import getopt
 import sys
+
+from future.utils import iteritems
+
+import pgraph
+from boofuzz import utils
+
 sys.path.append(r"../../../paimei")
 
-from boofuzz import utils
-import pgraph
 
 USAGE = "\nUSAGE: crashbin_explorer.py <xxx.crashbin>"                                      \
         "\n    [-t|--test #]     dump the crash synopsis for a specific test case number"   \
@@ -43,7 +47,7 @@ except Exception:
 #
 
 if test_number:
-    for _, crashes in crashbin.bins.iteritems():
+    for _, crashes in iteritems(crashbin.bins):
         for crash in crashes:
             if test_number == crash.extra:
                 print(crashbin.crash_synopsis(crash))
@@ -57,7 +61,7 @@ if graph_name:
     graph = pgraph.Graph()
 
 # noinspection PyRedeclaration
-for _, crashes in crashbin.bins.iteritems():
+for _, crashes in iteritems(crashbin.bins):
     synopsis = crashbin.crash_synopsis(crashes[0]).split("\n")[0]
 
     for crash in crashes:

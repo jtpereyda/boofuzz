@@ -1,8 +1,8 @@
 import collections
 
 from .. import exception
-from .block import Block
 from ..ifuzzable import IFuzzable
+from .block import Block
 
 
 class Request(IFuzzable):
@@ -125,7 +125,7 @@ class Request(IFuzzable):
         # if the item has a name, add it to the internal dictionary of names.
         if hasattr(item, "name") and item.name:
             # ensure the name doesn't already exist.
-            if item.name in self.names.keys():
+            if item.name in list(self.names):
                 raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
 
             self.names[item.name] = item

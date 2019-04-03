@@ -24,7 +24,7 @@ class ParsePDML(ContentHandler):
             if not name == "field":
                 print("Found payload with name %s" % attributes["name"])
             elif name == "field":
-                if "value" in attributes.keys():
+                if "value" in list(attributes):
                     val_string = self.get_string(attributes["value"])
 
                     if val_string:

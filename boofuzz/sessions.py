@@ -28,6 +28,7 @@ from . import primitives
 from . import exception
 from .web.app import app
 
+from future.utils import listitems
 
 class Target(object):
     """Target descriptor container.
@@ -95,7 +96,7 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key, value in self.procmon_options.items():
+            for key, value in listitems(self.procmon_options):
                 getattr(self.procmon, 'set_{0}'.format(key))(value)
 
         # If the network monitor is alive, set it's options
@@ -107,7 +108,7 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key in self.netmon_options.keys():
+            for key in list(self.netmon_options):
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
     def recv(self, max_bytes=None):

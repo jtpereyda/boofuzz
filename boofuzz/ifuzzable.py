@@ -1,6 +1,6 @@
 import abc
 
-from future.utils import with_metaclass
+from future.utils import listitems, with_metaclass
 
 
 class DocStringInheritor(type):
@@ -16,7 +16,7 @@ class DocStringInheritor(type):
                 if doc:
                     clsdict['__doc__']=doc
                     break
-        for attr, attribute in clsdict.items():
+        for attr, attribute in listitems(clsdict):
             if not attribute.__doc__:
                 for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()
                                 if hasattr(mro_cls, attr)):

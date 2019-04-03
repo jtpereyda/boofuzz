@@ -16,6 +16,6 @@ fh.close()
 
 
 #print data
-for key in data.keys():
+for key in list(data):
     print(key + " -> " + str(data[key]))
 

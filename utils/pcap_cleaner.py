@@ -2,9 +2,14 @@
 
 import os
 import sys
-sys.path.append(r"..\..\..\paimei")
+
+from future.utils import iteritems
 
 from boofuzz import utils
+
+sys.path.append(r"..\..\..\paimei")
+
+
 
 USAGE = "\nUSAGE: pcap_cleaner.py <xxx.crashbin> <path to pcaps>\n"
 
@@ -25,7 +30,7 @@ except Exception:
     sys.exit(1)
 
 test_cases = []
-for _, crashes in crashbin.bins.iteritems():
+for _, crashes in iteritems(crashbin.bins):
     for crash in crashes:
         test_cases.append("%d.pcap" % crash.extra)
 
