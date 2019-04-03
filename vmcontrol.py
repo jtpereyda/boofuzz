@@ -23,6 +23,8 @@ except Exception:
         print("[!] Failed to import win32api/win32com modules, please install these! Bailing...")
         sys.exit(1)
 
+from builtins import input
+
 
 
 PORT  = 26003
@@ -118,8 +120,8 @@ class VMControlPedrpcServer (pedrpc.Server):
 
         # Grab snapshot name and log level if we're in interactive mode
         if interactive:
-            snap_name = raw_input("[*] Please enter the snapshot name: ")
-            log_level = raw_input("[*] Please enter the log level (default 1): ")
+            snap_name = input("[*] Please enter the snapshot name: ")
+            log_level = input("[*] Please enter the log level (default 1): ")
 
             if log_level:
                 log_level = int(log_level)
@@ -358,9 +360,9 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
 
         # Grab vmx, snapshot name and log level if we're in interactive mode
         if interactive:
-            vmx = raw_input("[*] Please enter the VirtualBox virtual machine name: ")
-            snap_name = raw_input("[*] Please enter the snapshot name: ")
-            log_level = raw_input("[*] Please enter the log level (default 1): ")
+            vmx = input("[*] Please enter the VirtualBox virtual machine name: ")
+            snap_name = input("[*] Please enter the snapshot name: ")
+            log_level = input("[*] Please enter the log level (default 1): ")
 
         if log_level:
             log_level = int(log_level)

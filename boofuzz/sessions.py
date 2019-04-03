@@ -30,6 +30,7 @@ from .web.app import app
 
 from future.utils import listitems
 from io import open
+from builtins import input
 
 class Target(object):
     """Target descriptor container.
@@ -694,7 +695,7 @@ class Session(pgraph.Graph):
             if self._keep_web_open and self.web_port is not None:
                 print("\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
                       "\nPress ENTER to close webinterface")
-                raw_input()
+                input()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
