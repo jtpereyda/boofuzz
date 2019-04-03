@@ -93,7 +93,7 @@ class Client:
         #     x = pedrpc.client(host, port)
         #     if x:
         #         x.do_something()
-        if method_name == "__nonzero__":
+        if method_name == "__bool__":
             return 1
 
         # ignore all other attempts to access a private member.

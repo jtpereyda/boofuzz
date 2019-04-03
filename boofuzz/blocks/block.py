@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 
-from ..primitives import BasePrimitive
+from builtins import object
+
 from ..ifuzzable import IFuzzable
+from ..primitives import BasePrimitive
 
 
 class Block(IFuzzable):
@@ -267,7 +269,7 @@ class Block(IFuzzable):
         else:
             return sum(len(item) for item in self.stack)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

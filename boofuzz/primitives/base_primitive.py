@@ -1,4 +1,5 @@
 import abc
+from builtins import object
 
 from ..ifuzzable import IFuzzable
 
@@ -89,7 +90,7 @@ class BasePrimitive(IFuzzable):
     def __len__(self):
         return len(self._value)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

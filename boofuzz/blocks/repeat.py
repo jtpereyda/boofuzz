@@ -1,5 +1,6 @@
-from .. import exception
-from .. import ifuzzable
+from builtins import object
+
+from .. import exception, ifuzzable
 from ..primitives.bit_field import BitField
 
 
@@ -176,7 +177,7 @@ class Repeat(ifuzzable.IFuzzable):
     def __len__(self):
         return self.current_reps * len(self.request.names[self.block_name])
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

@@ -1,4 +1,5 @@
 import collections
+from builtins import object
 
 from .. import exception
 from ..ifuzzable import IFuzzable
@@ -197,7 +198,7 @@ class Request(IFuzzable):
             length += len(item)
         return length
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

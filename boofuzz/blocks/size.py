@@ -1,7 +1,9 @@
+from builtins import object
 from functools import wraps
+
 from .. import primitives
-from ..ifuzzable import IFuzzable
 from ..blocks import Request
+from ..ifuzzable import IFuzzable
 
 
 def _may_recurse(f):
@@ -212,7 +214,7 @@ class Size(IFuzzable):
     def __len__(self):
         return self.length
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

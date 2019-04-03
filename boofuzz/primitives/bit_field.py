@@ -1,5 +1,5 @@
 import struct
-from builtins import range
+from builtins import object, range
 
 from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive
@@ -189,7 +189,7 @@ class BitField(BasePrimitive):
         else:
             return len(str(self._value))
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

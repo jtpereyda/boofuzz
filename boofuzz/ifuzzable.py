@@ -1,4 +1,5 @@
 import abc
+from builtins import object
 
 from future.utils import listitems, with_metaclass
 
@@ -107,7 +108,7 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         return
 
     @abc.abstractmethod
-    def __nonzero__(self):
+    def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.
 
         Design Note: Exists in case some wise guy uses `if my_element:` to
