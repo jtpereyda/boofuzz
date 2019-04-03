@@ -1,6 +1,6 @@
 from __future__ import absolute_import, print_function
 
-import cPickle
+import pickle
 import datetime
 import logging
 import os
@@ -550,7 +550,7 @@ class Session(pgraph.Graph):
         }
 
         fh = open(self.session_filename, "wb+")
-        fh.write(zlib.compress(cPickle.dumps(data, protocol=2)))
+        fh.write(zlib.compress(pickle.dumps(data, protocol=2)))
         fh.close()
 
     def feature_check(self):
@@ -725,8 +725,8 @@ class Session(pgraph.Graph):
 
         try:
             with open(self.session_filename, "rb") as f:
-                data = cPickle.loads(zlib.decompress(f.read()))
-        except (IOError, zlib.error, cPickle.UnpicklingError):
+                data = pickle.loads(zlib.decompress(f.read()))
+        except (IOError, zlib.error, pickle.UnpicklingError):
             return
 
         # update the skip variable to pick up fuzzing from last test case.

@@ -2,7 +2,7 @@ import sys
 import struct
 import time
 import socket
-import cPickle
+import pickle
 
 import select
 
@@ -143,7 +143,7 @@ class Client:
             raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
                 self.__host, self.__port, e))
 
-        return cPickle.loads(received)
+        return pickle.loads(received)
 
     def __pickle_send(self, data):
         """
@@ -157,7 +157,7 @@ class Client:
         @raise pdx: An exception is raised if the connection was severed.
         """
 
-        data = cPickle.dumps(data, protocol=2)
+        data = pickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
 
         try:
@@ -223,7 +223,7 @@ class Server(object):
             sys.stderr.write("PED-RPC> connection client severed during recv()\n")
             raise Exception
 
-        return cPickle.loads(received)
+        return pickle.loads(received)
 
     def __pickle_send(self, data):
         """
@@ -237,7 +237,7 @@ class Server(object):
         @raise pdx: An exception is raised if the connection was severed.
         """
 
-        data = cPickle.dumps(data, protocol=2)
+        data = pickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
 
         try:

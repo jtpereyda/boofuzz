@@ -23,7 +23,7 @@
 """
 
 import zlib
-import cPickle
+import pickle
 
 from past.builtins import xrange
 from io import open
@@ -197,7 +197,7 @@ class CrashBinning:
         self.last_crash = self.pydbg = None
 
         fh = open(file_name, "wb+")
-        fh.write(zlib.compress(cPickle.dumps(self, protocol=2)))
+        fh.write(zlib.compress(pickle.dumps(self, protocol=2)))
         fh.close()
 
         self.last_crash = last_crash
@@ -219,7 +219,7 @@ class CrashBinning:
         """
 
         fh  = open(file_name, "rb")
-        tmp = cPickle.loads(zlib.decompress(fh.read()))
+        tmp = pickle.loads(zlib.decompress(fh.read()))
         fh.close()
 
         self.bins = tmp.bins

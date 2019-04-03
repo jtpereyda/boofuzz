@@ -2,7 +2,7 @@
 
 import sys
 import zlib
-import cPickle
+import pickle
 from io import open
 
 USAGE = "\nUSAGE: print_session.py <session file>\n"
@@ -12,7 +12,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 fh = open(sys.argv[1], "rb")
-data = cPickle.loads(zlib.decompress(fh.read()))
+data = pickle.loads(zlib.decompress(fh.read()))
 fh.close()
 
 
