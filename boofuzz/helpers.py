@@ -18,6 +18,8 @@ from past.builtins import range
 from boofuzz import ip_constants
 from colorama import Fore, Back, Style
 
+from functools import reduce
+
 test_step_info = {
     'test_case': {
         'indent': 0,
