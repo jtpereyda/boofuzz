@@ -1,5 +1,6 @@
 from boofuzz import *
 
+from past.builtins import xrange
 
 def run():
     signed_tests()

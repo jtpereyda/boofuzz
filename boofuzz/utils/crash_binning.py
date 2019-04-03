@@ -25,6 +25,7 @@
 import zlib
 import cPickle
 
+from past.builtins import xrange
 
 class CrashBinStruct:
     def __init__(self):

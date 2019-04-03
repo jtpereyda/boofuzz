@@ -1,5 +1,6 @@
 from boofuzz import *
 
+from past.builtins import xrange
 
 def run():
     groups_and_num_test_cases()
