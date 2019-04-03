@@ -77,7 +77,7 @@ class Size(IFuzzable):
         self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
-            self.math = lambda (x): x
+            self.math = lambda x: x
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
