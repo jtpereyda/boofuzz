@@ -1,4 +1,4 @@
-from ifuzz_logger import IFuzzLogger
+from .ifuzz_logger import IFuzzLogger
 from past.builtins import map
 
 class FuzzLogger(IFuzzLogger):

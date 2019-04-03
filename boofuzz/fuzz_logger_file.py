@@ -1,4 +1,4 @@
-import ifuzz_logger
+from . import ifuzz_logger
 import os
 import errno
 from io import open
