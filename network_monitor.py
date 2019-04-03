@@ -10,6 +10,7 @@ import impacket
 import impacket.ImpactDecoder
 from boofuzz import pedrpc
 from boofuzz import helpers
+from io import open
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 

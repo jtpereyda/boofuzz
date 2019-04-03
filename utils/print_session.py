@@ -3,6 +3,7 @@
 import sys
 import zlib
 import cPickle
+from io import open
 
 USAGE = "\nUSAGE: print_session.py <session file>\n"
 

@@ -6,6 +6,7 @@ from future.utils import iteritems
 
 import pgraph
 from boofuzz import utils
+from io import open
 
 sys.path.append(r"../../../paimei")
 

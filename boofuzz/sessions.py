@@ -29,6 +29,7 @@ from . import exception
 from .web.app import app
 
 from future.utils import listitems
+from io import open
 
 class Target(object):
     """Target descriptor container.
