@@ -12,6 +12,7 @@ import struct
 import time
 import zlib
 
+from past.builtins import map
 from past.builtins import range
 
 from boofuzz import ip_constants

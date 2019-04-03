@@ -1,5 +1,6 @@
 import struct
 from builtins import object, range
+from past.builtins import map
 
 from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive

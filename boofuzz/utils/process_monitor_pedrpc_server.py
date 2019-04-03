@@ -4,6 +4,8 @@ import os
 import shlex
 import time
 
+from past.builtins import map
+
 from boofuzz import pedrpc
 from boofuzz import utils
 

@@ -6,6 +6,7 @@
 #
 from __future__ import print_function
 
+from past.builtins import map
 from past.builtins import xrange
 
 def get_string(ea):
