@@ -12,6 +12,8 @@ import struct
 import time
 import zlib
 
+from past.builtins import range
+
 from boofuzz import ip_constants
 from colorama import Fore, Back, Style
 

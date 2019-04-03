@@ -1,5 +1,7 @@
 import random
 
+from past.builtins import range
+
 from .base_primitive import BasePrimitive
 
 

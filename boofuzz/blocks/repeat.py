@@ -1,5 +1,7 @@
 from builtins import object
 
+from past.builtins import range
+
 from .. import exception, ifuzzable
 from ..primitives.bit_field import BitField
 
