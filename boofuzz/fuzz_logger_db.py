@@ -8,6 +8,11 @@ from . import ifuzz_logger_backend
 from . import data_test_case
 from . import data_test_step
 
+import sys
+# fixup for buffer in python 3
+if sys.version_info.major > 2:
+    buffer = memoryview
+
 
 def hex_to_hexstr(input_bytes):
     """
