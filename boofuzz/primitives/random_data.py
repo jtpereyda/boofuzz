@@ -1,5 +1,6 @@
 import random
 
+from builtins import chr
 from past.builtins import xrange
 
 from .base_primitive import BasePrimitive

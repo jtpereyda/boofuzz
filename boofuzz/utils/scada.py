@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import math
 import struct
 
+from builtins import chr
 from past.builtins import xrange
 
 from ..helpers import crc16

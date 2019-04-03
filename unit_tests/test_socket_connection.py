@@ -16,6 +16,7 @@ from boofuzz.socket_connection import SocketConnection
 from boofuzz import socket_connection
 from boofuzz import ip_constants
 from boofuzz import helpers
+from builtins import chr
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.

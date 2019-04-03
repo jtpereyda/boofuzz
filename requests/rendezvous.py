@@ -1,5 +1,5 @@
 from boofuzz import *
-
+from builtins import chr
 
 s_initialize("trillian 1")
 

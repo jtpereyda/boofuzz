@@ -29,6 +29,7 @@ from .sessions import Session, Target, open_test_run
 from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
 from past.builtins import map
+from builtins import chr
 __version__ = '0.1.4'
 
 
