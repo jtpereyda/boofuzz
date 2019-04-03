@@ -17,6 +17,7 @@ from boofuzz import socket_connection
 from boofuzz import ip_constants
 from boofuzz import helpers
 from builtins import chr
+import six
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -34,7 +35,7 @@ TEST_ERR_NO_NON_LOOPBACK_IPV4 = 'No local non-loopback IPv4 address found.'
 
 def bytes_or_unicode_to_unicode(s):
     if isinstance(s, bytes):
-        return s.decode('utf-8')
+        return six.text_type(s)
     else:
         return s
 

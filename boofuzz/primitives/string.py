@@ -1,6 +1,7 @@
 import random
 
 from past.builtins import range
+import six
 
 from .base_primitive import BasePrimitive
 
@@ -321,7 +322,7 @@ class String(BasePrimitive):
             # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
             # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
             # range.
-            _rendered = str(value).decode('ascii').encode(self.encoding)
+            _rendered = six.text_type(value).encode(self.encoding)
         except UnicodeDecodeError:
             # If we can't decode the string, just treat it like a plain byte string
             _rendered = value
