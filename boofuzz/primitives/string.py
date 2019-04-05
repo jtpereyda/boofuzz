@@ -1,7 +1,6 @@
 import random
 
 from past.builtins import range
-import six
 
 from .base_primitive import BasePrimitive
 
@@ -312,19 +311,11 @@ class String(BasePrimitive):
         return len(self._fuzz_library) + len(self.this_library)
 
     def _render(self, value):
-        """Render string value, properly encoded.
+        """
+        Render string value, properly padded.
         """
         # pad undersized library items.
         if len(value) < self.size:
             value += self.padding * (self.size - len(value))
 
-        try:
-            # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
-            # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
-            # range.
-            _rendered = six.text_type(value).encode(self.encoding)
-        except UnicodeDecodeError:
-            # If we can't decode the string, just treat it like a plain byte string
-            _rendered = value
-
-        return _rendered
+        return value
