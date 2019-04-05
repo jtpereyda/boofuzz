@@ -1,4 +1,5 @@
 import abc
+import six
 from builtins import object
 
 from ..ifuzzable import IFuzzable
@@ -61,11 +62,28 @@ class BasePrimitive(IFuzzable):
 
     def render(self):
         """
-        Nothing fancy on render, simply return the value.
+        Render this instance's value.
+
+        Returns:
+            bytes: Rendered value
         """
 
-        self._rendered = self._render(self._value)
-        return self._rendered
+        # For Python 2/3 compatibility, we need to make sure the rendered value is of the appropriate type: a bytes-like
+        # string.  Convert, if necessary, and default encoding to "ascii" if this primitive doesn't define its own.
+
+        value = self._render(self._value)
+
+        if type(value) != six.binary_type:
+            try:
+                encoding = self.encoding
+            except:
+                # self.encoding not defined
+                encoding = "ascii"
+
+            value = six.binary_type(value, encoding)
+
+        self._rendered = value
+        return value
 
     def _render(self, value):
         """
