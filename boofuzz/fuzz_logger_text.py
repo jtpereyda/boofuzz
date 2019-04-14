@@ -73,6 +73,9 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
     def close_test(self):
         pass
 
+    def window_resize(self):
+        pass
+
     def _print_log_msg(self, msg_type, msg=None, data=None):
         print(helpers.format_log_msg(msg_type=msg_type, description=msg, data=data, indent_size=self.INDENT_SIZE),
               file=self._file_handle)

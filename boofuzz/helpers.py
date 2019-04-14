@@ -21,63 +21,72 @@ test_step_info = {
         'title': 'Test Case',
         'html': 'Test Case: {msg}',
         'terminal': Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-case'
+        'css_class': 'log-case',
+        'curses': 4
     },
     'step': {
         'indent': 1,
         'title': 'Test Step',
         'html': ' Test Step: {msg}',
         'terminal': Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-step'
+        'css_class': 'log-step',
+        'curses': 6
     },
     'info': {
         'indent': 2,
         'title': 'Info',
         'html': 'Info: {msg}',
         'terminal': "Info: {msg}",
-        'css_class': 'log-info'
+        'css_class': 'log-info',
+        'curses': 1
     },
     'error': {
         'indent': 2,
         'title': 'Error',
         'html': 'Error!!!! {msg}',
         'terminal': Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
-        'css_class': 'log-error'
+        'css_class': 'log-error',
+        'curses': 3
     },
     'send': {
         'indent': 2,
         'title': 'Transmitted',
         'html': 'Transmitted {n} bytes: {msg}',
         'terminal': Fore.CYAN + "Transmitted {n} bytes: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-send'
+        'css_class': 'log-send',
+        'curses': 2
     },
     'receive': {
         'indent': 2,
         'title': 'Received',
         'html': 'Received: {msg}',
         'terminal': Fore.CYAN + "Received: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-receive'
+        'css_class': 'log-receive',
+        'curses': 2
     },
     'check': {
         'indent': 2,
         'title': 'Check',
         'html': 'Check: {msg}',
         'terminal': "Check: {msg}",
-        'css_class': 'log-check'
+        'css_class': 'log-check',
+        'curses': 1
     },
     'fail': {
         'indent': 3,
         'title': 'Check Failed',
         'html': 'Check Failed: {msg}',
         'terminal': Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-fail'
+        'css_class': 'log-fail',
+        'curses': 3
     },
     'pass': {
         'indent': 3,
         'title': 'Check OK',
         'html': 'Check OK: {msg}',
         'terminal': Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-pass'
+        'css_class': 'log-pass',
+        'curses': 5
     },
 }
 
@@ -364,10 +373,14 @@ def _indent_after_first_line(lines, amount, ch=' '):
 
 
 def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, format_type='terminal'):
+    curses_mode = False
     if data is None:
         data = b''
     if timestamp is None:
         timestamp = get_time_stamp()
+    if format_type == 'curses':
+        curses_mode = True
+        format_type = 'html'
 
     if description is not None and description != '':
         msg = description
@@ -379,6 +392,9 @@ def format_log_msg(msg_type, description=None, data=None, indent_size=2, timesta
     msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data))
     msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
     msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+
+    if curses_mode:
+        return [msg, test_step_info[msg_type]['curses']]
 
     return msg
 
@@ -410,3 +426,23 @@ def mkdir_safe(directory_name):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def get_boofuzz_version(boofuzz_class):
+    """
+    Parses __init__.py for a version string and returns it like 'v0.0.0'
+
+    :type  boofuzz_class: class
+    :param boofuzz_class: Any boofuzz class in the same dir as the __init__ class.
+
+    :rtype: str
+    :return: Boofuzz version as string
+    """
+    version = "v0.0.0"
+    path = os.path.dirname(boofuzz_class.__file__)
+    with open(os.path.join(path, "__init__.py")) as search:
+        for line in search:
+            # line = line.rstrip()  # remove '\n' at end of line
+            if line.find("__version__ = ") != -1:
+                version = 'v' + re.search("\'(.*?)\'", line).group(1)
+    return version

@@ -11,6 +11,7 @@ import traceback
 import zlib
 import socket
 import errno
+import signal
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -22,6 +23,7 @@ from . import event_hook
 from . import fuzz_logger
 from . import fuzz_logger_db
 from . import fuzz_logger_text
+from . import fuzz_logger_curses
 from . import ifuzz_logger
 from . import pgraph
 from . import primitives
@@ -277,6 +279,8 @@ class Session(pgraph.Graph):
         index_end (int);        Last test case index to run
         sleep_time (float):     Time in seconds to sleep in between tests. Default 0.
         restart_interval (int): Restart the target after n test cases, disable by setting to 0 (default).
+        console_gui (bool):     Use curses to generate a static console screen similar to the webinterface. Has not been
+                                tested under Windows. Default False.
         crash_threshold_request (int):  Maximum number of crashes allowed before a request is exhausted. Default 12.
         crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
@@ -324,6 +328,7 @@ class Session(pgraph.Graph):
                  restart_interval=0,
                  web_port=constants.DEFAULT_WEB_UI_PORT,
                  keep_web_open=True,
+                 console_gui=False,
                  crash_threshold_request=12,
                  crash_threshold_element=3,
                  restart_sleep_time=5,
@@ -360,13 +365,18 @@ class Session(pgraph.Graph):
         self.restart_interval = restart_interval
         self.web_port = web_port
         self._keep_web_open = keep_web_open
+        self.console_gui = console_gui
         self._crash_threshold_node = crash_threshold_request
         self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
         if fuzz_data_logger is not None:
             raise exception.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
-            fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
+            if self.console_gui:
+                fuzz_loggers = [fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port)]
+                self._keep_web_open = False
+            else:
+                fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
         helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
@@ -380,6 +390,8 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
+
+        signal.signal(signal.SIGWINCH, self._int_sleep)
 
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
@@ -428,6 +440,13 @@ class Session(pgraph.Graph):
             except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
+
+    def _int_sleep(self, signal, frame):
+        """
+        SIGWINCH handling for logger classes
+        """
+        self._fuzz_data_logger.window_resize()
+        time.sleep(self.sleep_time)
 
     def add_node(self, node):
         """
@@ -685,7 +704,6 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(*fuzz_args)
 
                 num_cases_actually_fuzzed += 1
-            self._fuzz_data_logger.close_test()
             if self._reuse_target_connection:
                 self.targets[0].close()
 
@@ -710,6 +728,8 @@ class Session(pgraph.Graph):
                 "Unexpected exception! {0}".format(traceback.format_exc()))
             self.export_file()
             raise
+        finally:
+            self._fuzz_data_logger.close_test()
 
     def import_file(self):
         """
@@ -1311,9 +1331,12 @@ class Session(pgraph.Graph):
 
         test_case_name = self._test_case_name_feature_check(path)
 
-        self._fuzz_data_logger.open_test_case(
-            "{0}: {1}".format(self.total_mutant_index, test_case_name),
-            name=test_case_name, index=self.total_mutant_index)
+        self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
+                                              name=test_case_name,
+                                              index=self.total_mutant_index,
+                                              num_mutations=self.total_num_mutations,
+                                              current_index=self.fuzz_node.mutant_index,
+                                              current_num_mutations=self.fuzz_node.num_mutations())
 
         try:
             if target.procmon:
@@ -1377,7 +1400,11 @@ class Session(pgraph.Graph):
         test_case_name = self._test_case_name(path, self.fuzz_node.mutant)
 
         self._fuzz_data_logger.open_test_case("{0}: {1}".format(self.total_mutant_index, test_case_name),
-                                              name=test_case_name, index=self.total_mutant_index)
+                                              name=test_case_name,
+                                              index=self.total_mutant_index,
+                                              num_mutations=self.total_num_mutations,
+                                              current_index=self.fuzz_node.mutant_index,
+                                              current_num_mutations=self.fuzz_node.num_mutations())
 
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall." % (

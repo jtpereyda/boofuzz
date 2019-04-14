@@ -115,6 +115,9 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
     def close_test(self):
         self._write_log(force=True)
 
+    def window_resize(self):
+        pass
+
     def _write_log(self, force=False):
         if len(self._queue) > 0:
             if self._queue_max_len > 0:

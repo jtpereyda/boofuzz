@@ -2,6 +2,8 @@ Upcoming
 ========
 Features
 --------
+- New curses logger class to provide a console gui similar to the webinterface. Use the session option `console_gui` to enable it.
+  This has not been tested under Windows!
 - New Session option `keep_web_open` to allow analyzing the test results after test completion.
 
 v0.1.4

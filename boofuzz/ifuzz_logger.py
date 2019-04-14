@@ -201,3 +201,16 @@ class IFuzzLogger(object):
         :rtype: None
         """
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def window_resize(self):
+        """
+        Called when a SIGWINCH is caught. Can be used to adjust the output screen to the terminal size.
+
+        :param None
+        :type None
+
+        :return: None
+        :rtype: None
+        """
+        raise NotImplementedError
