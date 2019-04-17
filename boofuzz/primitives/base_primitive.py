@@ -73,7 +73,7 @@ class BasePrimitive(IFuzzable):
 
         value = self._render(self._value)
 
-        if type(value) != six.binary_type:
+        if not isinstance(value, six.binary_type):
             try:
                 encoding = self.encoding
             except:
