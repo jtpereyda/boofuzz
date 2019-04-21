@@ -1,7 +1,6 @@
 import abc
 import six
 from builtins import object
-from .. import helpers
 from ..ifuzzable import IFuzzable
 
 
@@ -69,10 +68,6 @@ class BasePrimitive(IFuzzable):
         """
 
         value = self._render(self._value)
-
-        # use the helper to convert bytes to utf-8 if possible and a hex string otherwise
-        value = helpers.hex_to_hexstr(value)
-
         self._rendered = value
         return value
 
