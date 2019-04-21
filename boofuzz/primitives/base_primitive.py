@@ -1,7 +1,7 @@
 import abc
 import six
 from builtins import object
-
+from .. import helpers
 from ..ifuzzable import IFuzzable
 
 
@@ -68,19 +68,10 @@ class BasePrimitive(IFuzzable):
             bytes: Rendered value
         """
 
-        # For Python 2/3 compatibility, we need to make sure the rendered value is of the appropriate type: a bytes-like
-        # string.  Convert, if necessary, and default encoding to "ascii" if this primitive doesn't define its own.
-
         value = self._render(self._value)
 
-        if not isinstance(value, six.binary_type):
-            try:
-                encoding = self.encoding
-            except:
-                # self.encoding not defined
-                encoding = "ascii"
-
-            value = six.binary_type(value, encoding)
+        # use the helper to convert bytes to utf-8 if possible and a hex string otherwise
+        value = helpers.hex_to_hexstr(value)
 
         self._rendered = value
         return value
