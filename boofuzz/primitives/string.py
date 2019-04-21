@@ -1,5 +1,7 @@
 import random
 
+import six
+
 from past.builtins import range
 
 from .base_primitive import BasePrimitive
@@ -55,9 +57,9 @@ class String(BasePrimitive):
 
                 # UTF-8
                 # TODO: This can't actually convert these to unicode strings...
-                self._value * 2 + b"\xfe",
-                self._value * 10 + b"\xfe",
-                self._value * 100 + b"\xfe",
+                self._value * 2 + six.binary_type(b"\xfe"),
+                self._value * 10 + six.binary_type(b"\xfe"),
+                self._value * 100 + six.binary_type(b"\xfe"),
             ]
         if not self._fuzz_library:
             self._fuzz_library = \

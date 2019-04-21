@@ -7,6 +7,7 @@ import os
 import platform
 import re
 import signal
+import six
 import socket
 import struct
 import time
@@ -255,7 +256,7 @@ def ipv4_checksum(msg):
     """
     # Pad with 0 byte if needed
     if len(msg) % 2 == 1:
-        msg += b"\x00"
+        msg += six.binary_type(b"\x00")
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
@@ -279,7 +280,7 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     """
     return (src_addr +
             dst_addr +
-            b"\x00" +
+            six.binary_type(b"\x00") +
             chr(ip_constants.IPV4_PROTOCOL_UDP) +
             struct.pack(">H", msg_len))
 

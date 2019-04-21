@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 from builtins import object
 
+import six
+
 from ..ifuzzable import IFuzzable
 from ..primitives import BasePrimitive
 
@@ -56,7 +58,7 @@ class Block(IFuzzable):
 
     @property
     def original_value(self):
-        original_value = b""
+        original_value = six.binary_type(b"")
 
         for item in self.stack:
             original_value += item.original_value
