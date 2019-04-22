@@ -42,7 +42,7 @@ class Block(IFuzzable):
         self.dep_compare = dep_compare
 
         self.stack = []  # block item stack.
-        self._rendered = ""  # rendered block contents.
+        self._rendered = six.binary_type(b"")  # rendered block contents.
         self._fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
@@ -196,47 +196,38 @@ class Block(IFuzzable):
         #
         # if this block is dependant on another field and the value is not met, render nothing.
         #
+        self._rendered = six.binary_type(b"")
 
         if self.dep:
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
-                    self._rendered = ""
                     return self._rendered
 
                 elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
-                    self._rendered = ""
                     return self._rendered
 
             if self.dep_compare == "!=":
                 if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
-                    self._rendered = ""
                     return self._rendered
 
                 elif self.request.names[self.dep]._value == self.dep_value:
-                    self._rendered = ""
                     return
 
             if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
         #
         # otherwise, render and encode as usual.
         #
-
-        self._rendered = ""
 
         for item in self.stack:
             self._rendered += item.render()

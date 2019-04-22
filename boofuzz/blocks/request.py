@@ -26,7 +26,7 @@ class Request(IFuzzable):
         # dictionary of list of sizers / checksums that were unable to complete rendering:
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
-        self._rendered = ""  # rendered block structure.
+        self._rendered = six.binary_type(b"")  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.

@@ -33,7 +33,7 @@ class BasePrimitive(IFuzzable):
 
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
-        self._rendered = ""  # rendered value of primitive.
+        self._rendered = six.binary_type(b"")  # rendered value of primitive.
         self._value = None  # current value of primitive.
 
     def mutate(self):
@@ -81,7 +81,9 @@ class BasePrimitive(IFuzzable):
         Returns:
             bytes: Rendered value
         """
-        return value
+        if value is None:
+            value = six.binary_type(b"")
+        return six.binary_type(value)
 
     def reset(self):
         self._fuzz_complete = False
