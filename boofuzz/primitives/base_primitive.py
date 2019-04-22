@@ -83,6 +83,9 @@ class BasePrimitive(IFuzzable):
         """
         if value is None:
             value = six.binary_type(b"")
+        if isinstance(value, six.text_type):
+            #TODO: this should probably be handled better
+            value = six.binary_type(value, "utf-8")
         return six.binary_type(value)
 
     def reset(self):
