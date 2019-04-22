@@ -1,7 +1,7 @@
 import random
 
 import six
-
+from .. import helpers
 from past.builtins import range
 
 from .base_primitive import BasePrimitive
@@ -11,7 +11,7 @@ class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
+    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), encoding="ascii", fuzzable=True, max_len=-1, name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -320,4 +320,6 @@ class String(BasePrimitive):
         if len(value) < self.size:
             value += self.padding * (self.size - len(value))
 
+        if isinstance(value, six.text_type):
+            value = six.binary_type(value, self.encoding)
         return value
