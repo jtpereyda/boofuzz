@@ -1,5 +1,6 @@
 from __future__ import division
 import os
+import sys
 import time
 import curses
 import threading
@@ -23,31 +24,39 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                  auto_scoll=True,
                  max_log_lines=200,
                  wait_on_quit=True,
+                 min_refresh_rate=1000,
                  bytes_to_str=DEFAULT_HEX_TO_STR):
         """
         :type web_port: int
-        :param web_port: Webinterface port
+        :param web_port: Webinterface port. Default 26000
 
         :type window_height: int
-        :param window_height: Default console heigth, set to on startup
+        :param window_height: Default console heigth, set to on startup. Default 40
 
         :type window_width: int
-        :param window_width: Default console width, set to on startup
+        :param window_width: Default console width, set to on startup. Default 130
 
         :type auto_scoll: bool
         :param auto_scoll: Whether to auto-scoll the cases and crashed windows to allways display the last line if there
-                           are too many lines to display all of them.
+                           are too many lines to display all of them. Default True
 
         :type max_log_lines: int
         :param max_log_lines: Maximum log lines to keep in the internal storage. Additional lines exceeding this limit
-                              will not be displayed.
+                              will not be displayed. Default 200
 
         :type wait_on_quit: bool
         :param wait_on_quit: Whether to keep the GUI open and wait for user-input when the main thread is about to exit.
+                             Default True
+
+        :type min_refresh_rate: int
+        :param min_refresh_rate: The guaranteed minimum refresh rate of the console screen in milliseconds. Additionally
+                                 the screen refreshes after every completed test case or failures/errors, so the actuall
+                                 refresh rate might be higher depending on the test case frequency. Default 1000 ms
 
         :type bytes_to_str: function
         :param bytes_to_str: Function that converts sent/received bytes data to string for logging.
         """
+
         self._title = "boofuzz"
         self._web_port = web_port
         self._max_log_lines = max_log_lines
@@ -58,6 +67,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._wait_on_quit = wait_on_quit
         self._quit = False
         self._status = 0  # 0: Running 1: Paused 2: Done
+        self._refresh_interval = min_refresh_rate
         self._event_resize = True
         self._event_log = False
         self._event_case_close = False
@@ -72,7 +82,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._format_raw_bytes = bytes_to_str
         self._version = helpers.get_boofuzz_version(helpers)
 
-        # Resize console
+        # Resize console to minimum size
         print("\x1b[8;{};{}t".format(window_height, window_width))
         self._height, self._width = window_height, window_width
         self._min_size_ok = True
@@ -152,6 +162,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def close_test_case(self):
         self._event_case_close = True
+        self._event_resize = True
 
     def close_test(self):
         self._status = 2
@@ -167,8 +178,10 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def _draw_main(self):
         # TODO: Fix bug with wrong window size on first startup
-        self._height, self._width = os.popen('stty size', 'r').read().split()
-        # columns, rows = os.get_terminal_size() for python 3
+        if sys.version_info >= (3, 3):
+            self._width, self._height = os.get_terminal_size()  # for python 3
+        else:
+            self._height, self._width = os.popen('stty size', 'r').read().split()
         self._height = int(self._height)
         self._width = int(self._width)
         curses.resizeterm(self._height, self._width)
@@ -271,12 +284,14 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._statscr.refresh()
 
     def _draw_screen(self):
+        ms_since_refresh = 0
         k = 0
         wait_for_key = False
         try:
             while not ((k == ord('q') or not self._wait_on_quit) and self._quit):
-                if self._event_resize:
+                if self._event_resize or ms_since_refresh >= self._refresh_interval:
                     self._draw_main()
+                    ms_since_refresh = 0
                     self._event_resize = False
 
                 if self._quit and not wait_for_key:
@@ -300,6 +315,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                 curses.flushinp()
 
                 time.sleep(0.1)
+                ms_since_refresh += 100
         finally:
             curses.nocbreak()
             self._stdscr.keypad(False)
