@@ -58,3 +58,10 @@ class Mirror(BasePrimitive):
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name):
         return self._request.names[primitive_name].original_value if primitive_name is not None else None
+
+    @_may_recurse
+    def get_length(self):
+        return len(self._request.names[self._primitive_name]) if self._primitive_name is not None else 0
+
+    def __len__(self):
+        return self.get_length()

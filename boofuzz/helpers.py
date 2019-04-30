@@ -51,16 +51,16 @@ test_step_info = {
     'send': {
         'indent': 2,
         'title': 'Transmitted',
-        'html': 'Transmitted {n} bytes: {msg}',
-        'terminal': Fore.CYAN + "Transmitted {n} bytes: {msg}" + Style.RESET_ALL,
+        'html': 'Transmitted {n} bytes{note}: {msg}',
+        'terminal': Fore.CYAN + "Transmitted {n} bytes{note}: {msg}" + Style.RESET_ALL,
         'css_class': 'log-send',
         'curses': 2
     },
     'receive': {
         'indent': 2,
         'title': 'Received',
-        'html': 'Received: {msg}',
-        'terminal': Fore.CYAN + "Received: {msg}" + Style.RESET_ALL,
+        'html': 'Received{note}: {msg}',
+        'terminal': Fore.CYAN + "Received{note}: {msg}" + Style.RESET_ALL,
         'css_class': 'log-receive',
         'curses': 2
     },
@@ -372,7 +372,7 @@ def _indent_after_first_line(lines, amount, ch=' '):
     return ('\n' + padding).join(lines.split('\n'))
 
 
-def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, format_type='terminal'):
+def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, truncated=False, format_type='terminal'):
     curses_mode = False
     if data is None:
         data = b''
@@ -389,7 +389,7 @@ def format_log_msg(msg_type, description=None, data=None, indent_size=2, timesta
     else:
         msg = ''
 
-    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data))
+    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data), note='' if not truncated else ' (data truncated for database storage)')
     msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
     msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
 

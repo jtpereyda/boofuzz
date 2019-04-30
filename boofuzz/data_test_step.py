@@ -11,6 +11,7 @@ class DataTestStep(object):
     description = attr.ib()
     data = attr.ib()
     timestamp = attr.ib()
+    truncated = attr.ib(type=bool)
 
     @property
     def text_render(self):
@@ -19,6 +20,7 @@ class DataTestStep(object):
             description=self.description,
             data=self.data,
             timestamp=self.timestamp,
+            truncated=self.truncated,
             format_type='terminal',
         )
 
@@ -29,6 +31,7 @@ class DataTestStep(object):
             description=self.description,
             data=self.data,
             timestamp=self.timestamp,
+            truncated=self.truncated,
             format_type='html',
         )
 

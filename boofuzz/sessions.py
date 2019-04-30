@@ -208,11 +208,12 @@ class SessionInfo(object):
 
     @property
     def total_num_mutations(self):
-        return 100  # TODO upgrade database format to store this info
+        return None
 
     @property
     def total_mutant_index(self):
-        return 100  # TODO SELECT COUNT(*) FROM cases -- But watch out for partially finished case
+        x = self._db_reader.query('''SELECT COUNT(*) FROM cases''').next()[0]
+        return x
 
     def test_case_data(self, index):
         """Return test case data object (for use by web server)
@@ -386,6 +387,8 @@ class Session(pgraph.Graph):
         self._db_logger = fuzz_logger_db.FuzzLoggerDb(db_filename=self._db_filename,
                                                       num_log_cases=fuzz_db_keep_only_n_pass_cases)
 
+        self._crash_filename = 'boofuzz-crash-bin-{0}'.format(self._run_id)
+
         self._fuzz_data_logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self._db_logger] + fuzz_loggers)
         self._check_data_received_each_request = check_data_received_each_request
         self._receive_data_after_each_request = receive_data_after_each_request
@@ -437,6 +440,7 @@ class Session(pgraph.Graph):
         self.add_node(self.root)
 
         if target is not None:
+            target.procmon_options['crash_filename'] = self._crash_filename
             try:
                 self.add_target(target=target)
             except exception.BoofuzzRpcError as e:
@@ -1349,12 +1353,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.open_test_step('Calling netmon pre_send()')
                 target.netmon.pre_send(self.total_mutant_index)
 
-            try:
-                if not self._reuse_target_connection:
-                    target.open()
-            except exception.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
-                raise
+            self._open_connection_keep_trying(target)
 
             self._pre_send(target)
 
@@ -1424,12 +1423,7 @@ class Session(pgraph.Graph):
             target.netmon.pre_send(self.total_mutant_index)
 
         try:
-            try:
-                if not self._reuse_target_connection:
-                    target.open()
-            except exception.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_error(constants.ERR_CONN_FAILED_TERMINAL)
-                raise
+            self._open_connection_keep_trying(target)
 
             self._pre_send(target)
 
@@ -1451,13 +1445,31 @@ class Session(pgraph.Graph):
 
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
-                self._fuzz_data_logger.log_info("sleeping for %f seconds" % self.sleep_time)
-                time.sleep(self.sleep_time)
+                self._sleep(self.sleep_time)
         finally:
             self._process_failures(target=target)
             self._stop_netmon(target=target)
             self._fuzz_data_logger.close_test_case()
             self.export_file()
+
+    def _open_connection_keep_trying(self, target):
+        """ Open connection and if it fails, keep retrying.
+
+        Args:
+            target (Target): Target to open.
+        """
+        if not self._reuse_target_connection:
+            while True:
+                try:
+                    target.open()
+                    break  # break if no exception
+                except exception.BoofuzzTargetConnectionFailedError:
+                    self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
+                    self._restart_target(target)
+
+    def _sleep(self, seconds):
+        self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)
+        time.sleep(seconds)
 
     def _test_case_name_feature_check(self, path):
         message_path = "->".join([self.nodes[e.dst].name for e in path])

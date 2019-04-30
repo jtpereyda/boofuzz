@@ -5,6 +5,15 @@ Features
 - New curses logger class to provide a console gui similar to the webinterface. Use the session option `console_gui` to enable it.
   This has not been tested under Windows!
 - New Session option `keep_web_open` to allow analyzing the test results after test completion.
+- Large test cases are now truncated, unless a failure is detected.
+- When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
+- Process monitor creates new crash file for each run by default.
+- Long lines now wrap in web view; longer lines no longer need to be truncated.
+
+Fixes
+-----
+- Web server no longer crashes when asked for a non-existing test case.
+- EINPROGRESS socket error is now handled while opening a socket (note: this sometimes-transient error motivated the move to retry upon connection failure)
 
 v0.1.4
 ======
