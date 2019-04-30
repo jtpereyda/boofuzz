@@ -26,6 +26,10 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     socket_errmsg = attr.ib()
 
 
+class BoofuzzNoSuchTestCase(BoofuzzError):
+    pass
+
+
 class BoofuzzRpcError(BoofuzzError):
     pass
 

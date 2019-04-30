@@ -71,16 +71,27 @@ function update_current_test_case_log(response) {
 
     // Create log table entries
     let new_entries = document.createElement('tbody');
-    response.log_data.forEach(function(log_entry) {
+    if (response.log_data === null){
         let new_span = document.createElement('span');
-        new_span.setAttribute('class', log_entry.css_class);
-        new_span.textContent = log_entry.log_line;
+        new_span.textContent = 'Test case does not exist'
         let new_td = document.createElement('td');
         let new_tr = document.createElement('tr');
         new_td.appendChild(new_span);
         new_tr.appendChild(new_td);
         new_entries.appendChild(new_tr);
-    });
+    }
+    else{
+        response.log_data.forEach(function(log_entry) {
+            let new_span = document.createElement('span');
+            new_span.setAttribute('class', log_entry.css_class);
+            new_span.textContent = log_entry.log_line;
+            let new_td = document.createElement('td');
+            let new_tr = document.createElement('tr');
+            new_td.appendChild(new_span);
+            new_tr.appendChild(new_td);
+            new_entries.appendChild(new_tr);
+        });
+    }
 
     // Insert log table entries
     let test_cases_table = document.getElementById('test-steps-table');
