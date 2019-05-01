@@ -200,3 +200,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("updating stop commands to: {0}".format(list(new_stop_commands)))
         self.stop_commands = new_stop_commands
         self.stop_commands = map(_split_command_if_str, new_stop_commands)
+
+    def set_crash_filename(self, new_crash_filename):
+        self.log("updating crash bin filename to '%s'" % new_crash_filename)
+        self.crash_filename = new_crash_filename

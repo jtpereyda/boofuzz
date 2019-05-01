@@ -3,6 +3,8 @@ Upcoming
 Features
 --------
 - New Session option `keep_web_open` to allow analyzing the test results after test completion.
+- Process monitor now stores crash bins in JSON format instead of pickled format.
+- Process monitor in Windows will use `taskkill -F`
 
 v0.1.4
 ======
