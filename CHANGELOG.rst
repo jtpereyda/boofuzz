@@ -7,6 +7,8 @@ Features
 - When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
 - Process monitor creates new crash file for each run by default.
 - Long lines now wrap in web view; longer lines no longer need to be truncated.
+- Process monitor now stores crash bins in JSON format instead of pickled format.
+- Process monitor in Windows will use `taskkill -F` if `taskkill` fails.
 
 Fixes
 -----
