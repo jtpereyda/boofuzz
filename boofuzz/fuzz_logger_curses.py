@@ -1,5 +1,4 @@
 from __future__ import division
-import os
 import sys
 import time
 import curses
@@ -8,6 +7,10 @@ import threading
 from math import *
 from . import helpers
 from . import ifuzz_logger_backend
+if sys.version_info >= (3, 3):
+    from shutil import get_terminal_size
+else:
+    from backports.shutil_get_terminal_size import get_terminal_size
 
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
@@ -42,7 +45,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         :type max_log_lines: int
         :param max_log_lines: Maximum log lines to keep in the internal storage. Additional lines exceeding this limit
-                              will not be displayed. Default 200
+                              will not be displayed. Default 500
 
         :type wait_on_quit: bool
         :param wait_on_quit: Whether to keep the GUI open and wait for user-input when the main thread is about to exit.
@@ -82,8 +85,10 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._version = helpers.get_boofuzz_version(helpers)
 
         # Resize console to minimum size
-        print("\x1b[8;{};{}t".format(window_height, window_width))
-        self._height, self._width = window_height, window_width
+        self._width, self._height = get_terminal_size()
+        if self._height < window_height or self._width < window_width:
+            print("\x1b[8;{};{}t".format(window_height, window_width))
+            self._height, self._width = window_height, window_width
         self._height_old = 0
         self._width_old = 0
         self._min_size_ok = True
@@ -180,13 +185,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         curses.endwin()
 
     def _draw_main(self, force=False):
-        # TODO: Fix bug with wrong window size on first startup
-        if sys.version_info >= (3, 3):
-            self._width, self._height = os.get_terminal_size()  # for python 3
-        else:
-            self._height, self._width = os.popen('stty size', 'r').read().split()
-        self._height = int(self._height)
-        self._width = int(self._width)
+        self._width, self._height = get_terminal_size()
         if not force and self._width == self._width_old and self._height == self._height_old:
             return
         self._height_old = self._height
@@ -251,6 +250,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                     pad=self._casescr,
                     y_min=2, x_min=1,
                     y_max=self._height - 18, x_max=self._width - 1,
+                    max_lines=self._max_log_lines,
                     total_indent_size=total_indent_size,
                     auto_scroll=self._auto_scroll)
 
@@ -262,6 +262,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                     pad=self._crashescr,
                     y_min=self._height - 16, x_min=1,
                     y_max=self._height - 8, x_max=self._width - 1,
+                    max_lines=self._max_log_lines,
                     total_indent_size=total_indent_size,
                     auto_scroll=self._auto_scroll)
 
@@ -351,30 +352,39 @@ def _progess_bar(current, total, width):
     return title_str + bar_str + percent_str
 
 
-def _render_pad(lines, pad, y_min, x_min, y_max, x_max, total_indent_size, auto_scroll):
+def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_size, auto_scroll):
     total_rows = 0
     height = y_max - y_min + 1
     width = x_max - x_min
 
     for i in range(len(lines)):
-        pad.addnstr(total_rows,
-                    0,
-                    lines[i][0],
-                    width,
-                    curses.color_pair(lines[i][1]))
-        total_rows += 1
+        if total_rows < max_lines - 1:
+            pad.addnstr(total_rows,
+                        0,
+                        lines[i][0],
+                        width,
+                        curses.color_pair(lines[i][1]))
+            total_rows += 1
+        else:
+            pad.addstr(total_rows,
+                       0,
+                       "Maximum number of lines reached for this window! Increase 'max_log_lines'",
+                       curses.color_pair(3))
+            total_rows += 1
+            break
 
         columns = width - total_indent_size
         rows = int(ceil(len(lines[i][0][width:]) / columns))
-
         if rows >= 1:
             for row in range(1, rows + 1):
-                pad.addstr(row - 1 + total_rows,
-                           total_indent_size,
-                           lines[i][0][width:][(row * columns) - columns:row * columns],
-                           curses.color_pair(lines[i][1]))
-
-        total_rows += rows
+                if total_rows < max_lines - 1:
+                    pad.addstr(total_rows,
+                               total_indent_size,
+                               lines[i][0][width:][(row * columns) - columns:row * columns],
+                               curses.color_pair(lines[i][1]))
+                    total_rows += 1
+                else:
+                    break
 
     if total_rows > height and auto_scroll:
         offset = total_rows - height
