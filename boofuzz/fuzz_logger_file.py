@@ -36,9 +36,6 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
     def close_test(self):
         pass
 
-    def window_resize(self):
-        pass
-
     def __init__(self, path):
         """
         :param path: Directory in which to save fuzz data.

@@ -78,10 +78,6 @@ class FuzzLogger(IFuzzLogger):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.close_test()
 
-    def window_resize(self):
-        for fuzz_logger in self._fuzz_loggers:
-            fuzz_logger.window_resize()
-
     def failure_summary(self):
         """Return test summary string based on fuzz logger results.
 

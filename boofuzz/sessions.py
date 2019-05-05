@@ -373,7 +373,7 @@ class Session(pgraph.Graph):
         if fuzz_data_logger is not None:
             raise exception.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
-            if self.console_gui:
+            if self.console_gui and os.name != 'nt':
                 default_signal_handler = signal.getsignal(signal.SIGWINCH)
                 fuzz_loggers = [fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port)]
                 self._keep_web_open = False
@@ -395,8 +395,6 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
-
-        # signal.signal(signal.SIGWINCH, self._int_sleep)
 
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
@@ -446,13 +444,6 @@ class Session(pgraph.Graph):
             except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
-
-    def _int_sleep(self, signal, frame):
-        """
-        SIGWINCH handling for logger classes
-        """
-        self._fuzz_data_logger.window_resize()
-        time.sleep(self.sleep_time)
 
     def add_node(self, node):
         """

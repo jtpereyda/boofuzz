@@ -76,9 +76,6 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def close_test(self):
         pass
 
-    def window_resize(self):
-        pass
-
     def _print_log_msg(self, msg):
         time_stamp = get_time_stamp()
         self._csv_handle.writerow([time_stamp] + msg)

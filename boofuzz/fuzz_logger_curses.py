@@ -5,24 +5,24 @@ import time
 import curses
 import threading
 
+from math import *
 from . import helpers
 from . import ifuzz_logger_backend
-
-
-DEFAULT_HEX_TO_STR = helpers.hex_to_hexstr
 
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     """
     This class formats FuzzLogger data for a console GUI using curses. This hasn't been tested on Windows.
     """
+    DEFAULT_HEX_TO_STR = helpers.hex_to_hexstr
+    INDENT_SIZE = 2
 
     def __init__(self,
                  web_port=26000,
                  window_height=40,
                  window_width=130,
                  auto_scoll=True,
-                 max_log_lines=200,
+                 max_log_lines=500,
                  wait_on_quit=True,
                  min_refresh_rate=1000,
                  bytes_to_str=DEFAULT_HEX_TO_STR):
@@ -49,9 +49,8 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                              Default True
 
         :type min_refresh_rate: int
-        :param min_refresh_rate: The guaranteed minimum refresh rate of the console screen in milliseconds. Additionally
-                                 the screen refreshes after every completed test case or failures/errors, so the actuall
-                                 refresh rate might be higher depending on the test case frequency. Default 1000 ms
+        :param min_refresh_rate: The delay between two checks for a resize of the terminal in milliseconds.
+                                 Increment 100 ms. Default 1000 ms
 
         :type bytes_to_str: function
         :param bytes_to_str: Function that converts sent/received bytes data to string for logging.
@@ -85,28 +84,28 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # Resize console to minimum size
         print("\x1b[8;{};{}t".format(window_height, window_width))
         self._height, self._width = window_height, window_width
+        self._height_old = 0
+        self._width_old = 0
         self._min_size_ok = True
 
         self._stdscr = curses.initscr()
         curses.start_color()
+        curses.use_default_colors()
         curses.noecho()
         curses.curs_set(0)
         self._stdscr.nodelay(1)
 
         # Curses color pairs
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(6, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+        curses.init_pair(1, curses.COLOR_WHITE, -1)
+        curses.init_pair(2, curses.COLOR_CYAN, -1)
+        curses.init_pair(3, curses.COLOR_RED, -1)
+        curses.init_pair(4, curses.COLOR_YELLOW, -1)
+        curses.init_pair(5, curses.COLOR_GREEN, -1)
+        curses.init_pair(6, curses.COLOR_MAGENTA, -1)
         curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
         self._draw_thread = threading.Thread(name="curses_logger", target=self._draw_screen)
         self._draw_thread.start()
-
-    def _thread_draw(self):
-        curses.wrapper(self._draw_screen())
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._log_storage = []
@@ -139,15 +138,23 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                                                         format_type='curses'))
         self._event_log = True
 
-    def log_fail(self, description=""):
-        self._fail_storage.append([self._total_index, description])
+    def log_fail(self, description="", indent_size=INDENT_SIZE):
+        # TODO: Why do some fail messages have a trailing whitespace?
+        fail_msg = '#' + str(self._total_index) + \
+                   (4 * indent_size + 1 - len(str(self._total_index))) * ' ' + description.strip()
+        self._fail_storage.append([fail_msg, 1])
         self._log_storage.append(helpers.format_log_msg(msg_type='fail', description=description,
                                                         format_type='curses'))
         self._event_crash = True
+        self._event_log = True
 
-    def log_error(self, description):
+    def log_error(self, description="", indent_size=INDENT_SIZE):
+        fail_msg = '#' + str(self._total_index) + \
+                   (4 * indent_size + 1 - len(str(self._total_index))) * ' ' + description.strip()
+        self._fail_storage.append([fail_msg, 3])
         self._log_storage.append(helpers.format_log_msg(msg_type='error', description=description,
                                                         format_type='curses'))
+        self._event_crash = True
         self._event_log = True
 
     def log_recv(self, data):
@@ -162,7 +169,6 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def close_test_case(self):
         self._event_case_close = True
-        self._event_resize = True
 
     def close_test(self):
         self._status = 2
@@ -173,10 +179,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         curses.echo()
         curses.endwin()
 
-    def window_resize(self):
-        self._event_resize = True
-
-    def _draw_main(self):
+    def _draw_main(self, force=False):
         # TODO: Fix bug with wrong window size on first startup
         if sys.version_info >= (3, 3):
             self._width, self._height = os.get_terminal_size()  # for python 3
@@ -184,6 +187,10 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             self._height, self._width = os.popen('stty size', 'r').read().split()
         self._height = int(self._height)
         self._width = int(self._width)
+        if not force and self._width == self._width_old and self._height == self._height_old:
+            return
+        self._height_old = self._height
+        self._width_old = self._width
         curses.resizeterm(self._height, self._width)
         self._stdscr.erase()
         if self._height < 40 or self._width < 130:
@@ -210,7 +217,6 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._stdscr.refresh()
 
         # Initialise test case window
-        # TODO: Handle lines longer than window width
         self._casescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._casescr_frame.nodelay(1)
         self._casescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
@@ -220,7 +226,6 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._draw_case()
 
         # Initialise crash window
-        # TODO: Handle lines longer than window width
         self._crashescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._crashescr_frame.nodelay(1)
         self._crashescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
@@ -236,26 +241,29 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._statscr.addstr(0, 1, "Status", curses.color_pair(2) | curses.A_BOLD)
         self._draw_stat()
 
-    def _draw_case(self):
+    def _draw_case(self, indent_size=INDENT_SIZE):
         # Test Case Screen
-        pos = 0
+        # TODO: Handle longer indent for multi-line 'fail' messages
         self._casescr.erase()
-        for i in range(len(self._log_storage[:self._max_log_lines])):
-            self._casescr.addnstr(i, 0, self._log_storage[i][0], self._width - 2,
-                                  curses.color_pair(self._log_storage[i][1]))
-            if i >= self._height - 19 and self._auto_scroll:
-                pos += 1
-        self._casescr.refresh(pos, 0, 2, 1, self._height - 18, self._width - 2)
+        total_indent_size = indent_size * 2 + 1 + 25
 
-    def _draw_crash(self):
+        _render_pad(lines=self._log_storage[:self._max_log_lines],
+                    pad=self._casescr,
+                    y_min=2, x_min=1,
+                    y_max=self._height - 18, x_max=self._width - 1,
+                    total_indent_size=total_indent_size,
+                    auto_scroll=self._auto_scroll)
+
+    def _draw_crash(self, indent_size=INDENT_SIZE):
         # Crashes Screen
-        pos = 0
-        for i in range(len(self._fail_storage[:self._max_log_lines])):
-            self._crashescr.addstr(i, 0, "# " + str(self._fail_storage[i][0]), curses.color_pair(3))
-            self._crashescr.addnstr(i, 9, self._fail_storage[i][1], self._width - 12)
-            if i >= 9 and self._auto_scroll:
-                pos += 1
-        self._crashescr.refresh(pos, 0, self._height - 16, 1, self._height - 8, self._width - 2)
+        total_indent_size = indent_size * 5
+
+        _render_pad(lines=self._fail_storage[:self._max_log_lines],
+                    pad=self._crashescr,
+                    y_min=self._height - 16, x_min=1,
+                    y_max=self._height - 8, x_max=self._width - 1,
+                    total_indent_size=total_indent_size,
+                    auto_scroll=self._auto_scroll)
 
     def _draw_stat(self):
         # Status Screen
@@ -284,38 +292,45 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._statscr.refresh()
 
     def _draw_screen(self):
+        error_counter = 0
         ms_since_refresh = 0
         k = 0
         wait_for_key = False
         try:
             while not ((k == ord('q') or not self._wait_on_quit) and self._quit):
-                if self._event_resize or ms_since_refresh >= self._refresh_interval:
-                    self._draw_main()
-                    ms_since_refresh = 0
-                    self._event_resize = False
+                try:
+                    if self._event_resize or ms_since_refresh >= self._refresh_interval:
+                        self._draw_main()
+                        ms_since_refresh = 0
+                        self._event_resize = False
 
-                if self._quit and not wait_for_key:
-                    self._draw_main()
-                    wait_for_key = True
+                    if self._quit and not wait_for_key:
+                        self._draw_main(force=True)
+                        wait_for_key = True
 
-                if self._min_size_ok:
-                    if self._event_crash:
-                        self._draw_crash()
-                        self._event_crash = False
+                    if self._min_size_ok:
+                        if self._event_log:
+                            self._draw_case()
+                            self._event_log = False
 
-                    if self._event_log:
-                        self._draw_case()
-                        self._event_log = False
+                        if self._event_crash:
+                            self._draw_crash()
+                            self._event_crash = False
 
-                    if self._event_case_close:
-                        self._draw_stat()
-                        self._event_case_close = False
+                        if self._event_case_close:
+                            self._draw_stat()
+                            self._event_case_close = False
 
-                k = self._stdscr.getch()
-                curses.flushinp()
+                    k = self._stdscr.getch()
+                    curses.flushinp()
 
-                time.sleep(0.1)
-                ms_since_refresh += 100
+                    time.sleep(0.1)
+                    ms_since_refresh += 100
+                    error_counter = 0
+                except curses.error:
+                    error_counter += 1
+                    if error_counter > 2:
+                        raise
         finally:
             curses.nocbreak()
             self._stdscr.keypad(False)
@@ -334,3 +349,35 @@ def _progess_bar(current, total, width):
     num_bars = int(round(percent * bar_len))
     bar_str = "[" + "=" * num_bars + " " * (bar_len - num_bars) + "]"
     return title_str + bar_str + percent_str
+
+
+def _render_pad(lines, pad, y_min, x_min, y_max, x_max, total_indent_size, auto_scroll):
+    total_rows = 0
+    height = y_max - y_min + 1
+    width = x_max - x_min
+
+    for i in range(len(lines)):
+        pad.addnstr(total_rows,
+                    0,
+                    lines[i][0],
+                    width,
+                    curses.color_pair(lines[i][1]))
+        total_rows += 1
+
+        columns = width - total_indent_size
+        rows = int(ceil(len(lines[i][0][width:]) / columns))
+
+        if rows >= 1:
+            for row in range(1, rows + 1):
+                pad.addstr(row - 1 + total_rows,
+                           total_indent_size,
+                           lines[i][0][width:][(row * columns) - columns:row * columns],
+                           curses.color_pair(lines[i][1]))
+
+        total_rows += rows
+
+    if total_rows > height and auto_scroll:
+        offset = total_rows - height
+        pad.refresh(offset, 0, y_min, x_min, y_max, x_max)
+    else:
+        pad.refresh(0, 0, y_min, x_min, y_max, x_max)
