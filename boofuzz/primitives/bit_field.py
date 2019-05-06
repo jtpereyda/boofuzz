@@ -88,7 +88,7 @@ class BitField(BasePrimitive):
             for i in range(0, self.max_num):
                 self._fuzz_library.append(i)
         else:
-            if type(value) in [list, tuple]:
+            if isinstance(value, (list, tuple)):
                 # Use the supplied values as the fuzz library.
                 for val in iter(value):
                     self._fuzz_library.append(val)

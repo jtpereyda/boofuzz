@@ -1,4 +1,5 @@
 import hashlib
+import six
 import struct
 import zlib
 from builtins import object
@@ -132,7 +133,7 @@ class Checksum(primitives.BasePrimitive):
         :rtype:  str
         :return: Checksum.
         """
-        if type(self._algorithm) is str:
+        if isinstance(self._algorithm, six.string_types):
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
 

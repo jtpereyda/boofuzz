@@ -12,5 +12,5 @@ class DWord(BitField):
 
         super(DWord, self).__init__(value, width, max_num, *args, **kwargs)
 
-        if type(self._value) not in [six.integer_types, list, tuple]:
+        if not isinstance(self._value, (six.integer_types, list, tuple)):
             self._value = struct.unpack(self.endian + "L", self._value)[0]

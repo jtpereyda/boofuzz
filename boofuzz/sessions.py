@@ -5,6 +5,7 @@ import datetime
 import logging
 import os
 import re
+import six
 import threading
 import time
 import traceback
@@ -505,10 +506,10 @@ class Session(pgraph.Graph):
             src = self.root
 
         # if source or destination is a name, resolve the actual node.
-        if type(src) is str:
+        if isinstance(src, six.string_types):
             src = self.find_node("name", src)
 
-        if type(dst) is str:
+        if isinstance(dst, six.string_types):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
