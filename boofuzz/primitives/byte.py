@@ -1,3 +1,4 @@
+import six
 import struct
 
 from .bit_field import BitField
@@ -11,5 +12,5 @@ class Byte(BitField):
 
         super(Byte, self).__init__(value, width, max_num, *args, **kwargs)
 
-        if type(self._value) not in [int, long, list, tuple]:
+        if type(self._value) not in [six.integer_types, list, tuple]:
             self._value = struct.unpack(self.endian + "B", self._value)[0]
