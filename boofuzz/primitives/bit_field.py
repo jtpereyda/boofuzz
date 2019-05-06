@@ -1,3 +1,4 @@
+import six
 import struct
 from builtins import object, range
 from past.builtins import map
@@ -63,8 +64,8 @@ class BitField(BasePrimitive):
 
         super(BitField, self).__init__()
 
-        assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
-        assert isinstance(width, (int, long)), "width must be an integer!"
+        assert isinstance(value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
+        assert isinstance(width, (six.integer_types)), "width must be an integer!"
 
         self._value = self._original_value = value
         self.width = width
@@ -80,7 +81,7 @@ class BitField(BasePrimitive):
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
 
-        assert isinstance(self.max_num, (int, long)), "max_num must be an integer!"
+        assert isinstance(self.max_num, (six.integer_types)), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.

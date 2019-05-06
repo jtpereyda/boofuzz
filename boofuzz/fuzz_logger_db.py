@@ -1,6 +1,7 @@
 from __future__ import print_function
 import collections
 import datetime
+import six
 import sqlite3
 
 from . import helpers
@@ -124,7 +125,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         if len(self._queue) > 0:
             if self._queue_max_len > 0:
                 while (self._current_test_case_index - next(
-                        x for x in self._queue[0] if isinstance(x, (int, long)))) >= self._queue_max_len:
+                        x for x in self._queue[0] if isinstance(x, (six.integer_types)))) >= self._queue_max_len:
                     self._queue.popleft()
             else:
                 force = True
