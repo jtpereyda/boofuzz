@@ -3,7 +3,11 @@ from __future__ import unicode_literals
 from builtins import bytes, chr
 import unittest
 import six
-import StringIO
+try:
+    from StringIO import StringIO
+# probably because python 3
+except ImportError:
+    from io import StringIO
 
 import boofuzz.helpers
 from boofuzz import fuzz_logger_text
@@ -116,7 +120,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
 
 class TestFuzzLoggerText(unittest.TestCase):
     def setUp(self):
-        self.virtual_file = StringIO.StringIO()
+        self.virtual_file = StringIO()
         self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file)
         self.some_test_case_id = "some test case id"
         self.some_test_case_name = "some test case name"
