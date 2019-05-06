@@ -1,4 +1,5 @@
 from .base_primitive import BasePrimitive
+import six
 
 
 class Group(BasePrimitive):
@@ -28,7 +29,7 @@ class Group(BasePrimitive):
         self._value = self._original_value = default_value
 
         for val in self.values:
-            assert isinstance(val, basestring), "Value list may only contain strings or raw data"
+            assert isinstance(val, six.string_types), "Value list may only contain strings or raw data"
 
     @property
     def name(self):
