@@ -1,4 +1,5 @@
 import random
+import six
 
 from builtins import chr
 from past.builtins import xrange
@@ -73,7 +74,7 @@ class RandomData(BasePrimitive):
         # reset the value and generate a random string of the determined length.
         self._value = ""
         for i in xrange(length):
-            self._value += chr(random.randint(0, 255))
+            self._value += six.int2byte(random.randint(0, 255))
 
         # increment the mutation count.
         self._mutant_index += 1

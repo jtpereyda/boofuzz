@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import functools
+import six
 
 from . import blocks
 from . import legos
@@ -361,7 +362,7 @@ def s_binary(value, name=None):
         pair = parsed[:2]
         parsed = parsed[2:]
 
-        value += chr(int(pair, 16))
+        value += six.int2byte(int(pair, 16))
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)

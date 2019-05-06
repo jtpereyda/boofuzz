@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from builtins import bytes, chr
 import unittest
+import six
 import StringIO
 
 import boofuzz.helpers
@@ -109,7 +110,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         }
         for c in range(0, 255):
             self.assertEqual("{:02x} {}".format(c, expected_results[c]),
-                             boofuzz.helpers.hex_to_hexstr(bytes(chr(c), 'latin-1'))
+                             boofuzz.helpers.hex_to_hexstr(bytes(six.int2byte(c), 'latin-1'))
                              )
 
 

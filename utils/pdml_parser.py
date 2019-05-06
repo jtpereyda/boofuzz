@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import sys
+import six
 from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
 from builtins import chr
@@ -75,7 +76,7 @@ class ParsePDML(ContentHandler):
             if hex_pair > 0x7f:
                 return False
 
-            value += chr(hex_pair)
+            value += six.int2byte(hex_pair)
 
         value = value.replace("\t", "")
         value = value.replace("\r", "")
