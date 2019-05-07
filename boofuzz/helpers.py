@@ -245,8 +245,7 @@ def _collate_bytes(msb, lsb):
     if six.PY2:
         result = (ord(msb) << 8) + ord(lsb)
     else:
-        # concatenate b'msb with b'lsb to get b'msblsb
-        result = int.from_bytes(msb + lsb, byteorder="big")
+        result = (msb << 8) + lsb
     return result
 
 
