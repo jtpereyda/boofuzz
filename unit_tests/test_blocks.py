@@ -20,7 +20,7 @@ def run():
 def groups_and_num_test_cases():
     s_initialize("UNIT TEST 1")
     s_size("BLOCK", length=4, name="sizer")
-    s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
+    s_group("group", values=[b"\x01", b"\x05", b"\x0a", b"\xff"])
     if s_block_start("BLOCK"):
         s_delim(">", name="delim")
         s_string("pedram", name="string")
@@ -69,7 +69,7 @@ def groups_and_num_test_cases():
     ))
 
     s_initialize("UNIT TEST 2")
-    s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
+    s_group("group", values=[b"\x01", b"\x05", b"\x0a", b"\xff"])
     if s_block_start("BLOCK", group="group"):
         s_delim(">", name="delim")
         s_string("pedram", name="string")
@@ -87,7 +87,7 @@ def groups_and_num_test_cases():
 
 def dependencies():
     s_initialize("DEP TEST 1")
-    s_group("group", values=["1", "2"])
+    s_group("group", values=[b"1", b"2"])
 
     if s_block_start("ONE", dep="group", dep_values=["1"]):
         s_static("ONE" * 100)
