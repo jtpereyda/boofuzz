@@ -152,7 +152,6 @@ class Request(IFuzzable):
         self._rendered = six.binary_type(b"")
 
         for item in self.stack:
-            print(item)
             self._rendered += item.render()
 
         return self._rendered
