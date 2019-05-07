@@ -60,7 +60,7 @@ class Request(IFuzzable):
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = ""
+        self._rendered = six.binary_type(b"")
 
         for item in self.stack:
             self._rendered += item.original_value
@@ -152,6 +152,7 @@ class Request(IFuzzable):
         self._rendered = six.binary_type(b"")
 
         for item in self.stack:
+            print(item)
             self._rendered += item.render()
 
         return self._rendered

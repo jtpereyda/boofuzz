@@ -1,4 +1,5 @@
 from builtins import object
+import six
 
 from past.builtins import range
 
@@ -45,9 +46,9 @@ class Repeat(ifuzzable.IFuzzable):
         self._fuzzable = fuzzable
         self._name = name
 
-        self._value = ""
-        self._original_value = ""  # default to nothing!
-        self._rendered = ""  # rendered value
+        self._value = six.binary_type(b"")
+        self._original_value = six.binary_type(b"")  # default to nothing!
+        self._rendered = six.binary_type(b"")  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self._mutant_index = 0  # current mutation number
