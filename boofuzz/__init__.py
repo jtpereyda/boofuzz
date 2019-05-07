@@ -485,7 +485,7 @@ def s_mirror(primitive_name, name=None):
     blocks.CURRENT.push(mirror)
 
 
-def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a string onto the current block stack.
 

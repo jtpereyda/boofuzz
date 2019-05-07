@@ -38,22 +38,22 @@ def signed_tests():
 
     req = s_get("UNIT TEST 1")
 
-    assert (req.names["byte_1"].render() == "0")
-    assert (req.names["byte_2"].render() == "127")
-    assert (req.names["byte_3"].render() == "-128")
-    assert (req.names["byte_4"].render() == "-1")
-    assert (req.names["word_1"].render() == "0")
-    assert (req.names["word_2"].render() == "32767")
-    assert (req.names["word_3"].render() == "-32768")
-    assert (req.names["word_4"].render() == "-1")
-    assert (req.names["dword_1"].render() == "0")
-    assert (req.names["dword_2"].render() == "2147483647")
-    assert (req.names["dword_3"].render() == "-2147483648")
-    assert (req.names["dword_4"].render() == "-1")
-    assert (req.names["qword_1"].render() == "0")
-    assert (req.names["qword_2"].render() == "9223372036854775807")
-    assert (req.names["qword_3"].render() == "-9223372036854775808")
-    assert (req.names["qword_4"].render() == "-1")
+    assert (req.names["byte_1"].render() == b"0")
+    assert (req.names["byte_2"].render() == b"127")
+    assert (req.names["byte_3"].render() == b"-128")
+    assert (req.names["byte_4"].render() == b"-1")
+    assert (req.names["word_1"].render() == b"0")
+    assert (req.names["word_2"].render() == b"32767")
+    assert (req.names["word_3"].render() == b"-32768")
+    assert (req.names["word_4"].render() == b"-1")
+    assert (req.names["dword_1"].render() == b"0")
+    assert (req.names["dword_2"].render() == b"2147483647")
+    assert (req.names["dword_3"].render() == b"-2147483648")
+    assert (req.names["dword_4"].render() == b"-1")
+    assert (req.names["qword_1"].render() == b"0")
+    assert (req.names["qword_2"].render() == b"9223372036854775807")
+    assert (req.names["qword_3"].render() == b"-9223372036854775808")
+    assert (req.names["qword_4"].render() == b"-1")
 
 
 def string_tests():
@@ -71,7 +71,7 @@ def string_tests():
 
 
 def s_mirror_tests():
-    TEST_GROUP_VALUES = ['aaa', 'bbb', 'ccc', 'ddd']
+    TEST_GROUP_VALUES = [b'aaa', b'bbb', b'ccc', b'ddd']
     s_initialize('test_s_mirror')
     s_static('<')
     s_group('group_start', values=TEST_GROUP_VALUES)
