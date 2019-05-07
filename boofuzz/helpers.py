@@ -242,7 +242,12 @@ def _collate_bytes(msb, lsb):
 
     :return: msb and lsb all together in one 16 bit value.
     """
-    return (ord(msb) << 8) + ord(lsb)
+    if six.PY2:
+        result = (ord(msb) << 8) + ord(lsb)
+    else:
+        # concatenate b'msb with b'lsb to get b'msblsb
+        result = int.from_bytes(msb + lsb, byteorder="big")
+    return result
 
 
 def ipv4_checksum(msg):
