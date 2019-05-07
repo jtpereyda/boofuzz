@@ -1,5 +1,7 @@
 from boofuzz import *
 
+import six
+
 from past.builtins import map
 from past.builtins import xrange
 
@@ -97,9 +99,9 @@ def dependencies():
 
     assert (s_num_mutations() == 2)
     assert (s_mutate() == True)
-    assert (s_render().find("TWO") == -1)
+    assert (s_render().find(six.binary_type(b"TWO")) == -1)
     assert (s_mutate() == True)
-    assert (s_render().find("ONE") == -1)
+    assert (s_render().find(six.binary_type(b"ONE")) == -1)
     assert (s_mutate() == False)
 
 
