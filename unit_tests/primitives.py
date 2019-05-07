@@ -17,23 +17,23 @@ def run():
 def signed_tests():
     s_initialize("UNIT TEST 1")
     s_byte(0, output_format="ascii", signed=True, name="byte_1")
-    s_byte(0xff / 2, output_format="ascii", signed=True, name="byte_2")
-    s_byte(0xff / 2 + 1, output_format="ascii", signed=True, name="byte_3")
+    s_byte(0xff // 2, output_format="ascii", signed=True, name="byte_2")
+    s_byte(0xff // 2 + 1, output_format="ascii", signed=True, name="byte_3")
     s_byte(0xff, output_format="ascii", signed=True, name="byte_4")
 
     s_word(0, output_format="ascii", signed=True, name="word_1")
-    s_word(0xffff / 2, output_format="ascii", signed=True, name="word_2")
-    s_word(0xffff / 2 + 1, output_format="ascii", signed=True, name="word_3")
+    s_word(0xffff // 2, output_format="ascii", signed=True, name="word_2")
+    s_word(0xffff // 2 + 1, output_format="ascii", signed=True, name="word_3")
     s_word(0xffff, output_format="ascii", signed=True, name="word_4")
 
     s_dword(0, output_format="ascii", signed=True, name="dword_1")
-    s_dword(0xffffffff / 2, output_format="ascii", signed=True, name="dword_2")
-    s_dword(0xffffffff / 2 + 1, output_format="ascii", signed=True, name="dword_3")
+    s_dword(0xffffffff // 2, output_format="ascii", signed=True, name="dword_2")
+    s_dword(0xffffffff // 2 + 1, output_format="ascii", signed=True, name="dword_3")
     s_dword(0xffffffff, output_format="ascii", signed=True, name="dword_4")
 
     s_qword(0, output_format="ascii", signed=True, name="qword_1")
-    s_qword(0xffffffffffffffff / 2, output_format="ascii", signed=True, name="qword_2")
-    s_qword(0xffffffffffffffff / 2 + 1, output_format="ascii", signed=True, name="qword_3")
+    s_qword(0xffffffffffffffff // 2, output_format="ascii", signed=True, name="qword_2")
+    s_qword(0xffffffffffffffff // 2 + 1, output_format="ascii", signed=True, name="qword_3")
     s_qword(0xffffffffffffffff, output_format="ascii", signed=True, name="qword_4")
 
     req = s_get("UNIT TEST 1")
