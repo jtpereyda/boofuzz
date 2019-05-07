@@ -192,4 +192,4 @@ def with_statements():
 
     req = s_get("WITH TEST")
     assert (req.num_mutations() == 0)
-    assert (req.render() == "test")
+    assert (req.render() == six.binary_type(b"test"))
