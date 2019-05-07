@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from .. import blocks, primitives, exception
 import six
+from .. import helpers
 
 class DNSHostname(blocks.Block):
     def __init__(self, name, request, value, options=None):
@@ -35,7 +36,7 @@ class DNSHostname(blocks.Block):
         # be sure to null terminate too.
         self._rendered = new_str + six.binary_type(b"\x00")
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class Tag(blocks.Block):

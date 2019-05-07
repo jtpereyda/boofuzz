@@ -316,10 +316,11 @@ class String(BasePrimitive):
         """
         Render string value, properly padded.
         """
+
+        if isinstance(value, six.text_type):
+            value = helpers.str_to_bytes(value)
+
         # pad undersized library items.
         if len(value) < self.size:
             value += self.padding * (self.size - len(value))
-
-        if isinstance(value, six.text_type):
-            value = six.binary_type(value, self.encoding)
-        return value
+        return helpers.str_to_bytes(value)

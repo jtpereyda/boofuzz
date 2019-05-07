@@ -5,7 +5,7 @@ from past.builtins import map
 
 from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive
-
+from .. import helpers
 
 def binary_string_to_int(binary):
     """
@@ -124,7 +124,8 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(case)
 
     def _render(self, value):
-        return self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+        temp = self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+        return helpers.str_to_bytes(temp)
 
     @staticmethod
     def render_int(value, output_format, bit_width, endian, signed):

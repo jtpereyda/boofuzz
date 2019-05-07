@@ -417,3 +417,12 @@ def mkdir_safe(directory_name):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+def str_to_bytes(value):
+    result = value
+    # if python2, str is alread bytes compatible        
+    if six.PY3:
+        if isinstance(value, six.text_type):
+            temp = [bytes([ord(i)]) for i in value] 
+            result = six.binary_type().join(temp)
+    return result

@@ -2,7 +2,7 @@ import abc
 import six
 from builtins import object
 from ..ifuzzable import IFuzzable
-
+from .. import helpers
 
 class BasePrimitive(IFuzzable):
     """
@@ -69,7 +69,7 @@ class BasePrimitive(IFuzzable):
 
         value = self._render(self._value)
         self._rendered = value
-        return value
+        return helpers.str_to_bytes(value)
 
     def _render(self, value):
         """
@@ -83,10 +83,7 @@ class BasePrimitive(IFuzzable):
         """
         if value is None:
             value = six.binary_type(b"")
-        if isinstance(value, six.text_type):
-            #TODO: this should probably be handled better
-            value = six.binary_type(value, "utf-8")
-        return six.binary_type(value)
+        return helpers.str_to_bytes(value)
 
     def reset(self):
         self._fuzz_complete = False

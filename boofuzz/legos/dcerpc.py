@@ -4,6 +4,7 @@ import six
 import struct
 from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
+from .. import helpers
 
 
 class NdrConformantArray(blocks.Block):
@@ -43,7 +44,7 @@ class NdrConformantArray(blocks.Block):
             string_with_padding = self._rendered + calculate_four_byte_padding(self._rendered)
             self._rendered = struct.pack("<L", len(self._rendered)) + string_with_padding
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class NdrString(blocks.Block):
@@ -92,7 +93,7 @@ class NdrString(blocks.Block):
                              + self._rendered \
                              + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class NdrWString(blocks.Block):
@@ -141,4 +142,4 @@ class NdrWString(blocks.Block):
                              + self._rendered \
                              + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)

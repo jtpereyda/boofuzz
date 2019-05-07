@@ -6,6 +6,7 @@ import six
 from .. import primitives
 from ..blocks import Request
 from ..ifuzzable import IFuzzable
+from .. import helpers
 
 
 def _may_recurse(f):
@@ -159,7 +160,7 @@ class Size(IFuzzable):
         else:
             self._rendered = self._render()
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
@@ -169,7 +170,7 @@ class Size(IFuzzable):
 
     def _render(self):
         length = self._calculated_length()
-        return self._length_to_bytes(length)
+        return helpers.str_to_bytes(self._length_to_bytes(length))
 
     def _calculated_length(self):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block

@@ -6,6 +6,7 @@ import six
 
 from ..ifuzzable import IFuzzable
 from ..primitives import BasePrimitive
+from .. import helpers
 
 
 class Block(IFuzzable):
@@ -239,7 +240,7 @@ class Block(IFuzzable):
         if self.encoder:
             self._rendered = self.encoder(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """

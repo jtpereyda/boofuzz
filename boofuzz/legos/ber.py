@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 from .. import blocks, primitives, exception
 from ..constants import BIG_ENDIAN
+from .. import helpers
 
 
 class String(blocks.Block):
@@ -23,7 +24,7 @@ class String(blocks.Block):
 
         self.value = value
         self.options = options
-        self.prefix = options.get("prefix", "\x04")
+        self.prefix = options.get("prefix", b"\x04")
 
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
@@ -39,9 +40,9 @@ class String(blocks.Block):
         blocks.Block.render(self)
 
         # TODO: What is this I don't even
-        self._rendered = self.prefix + "\x84" + self._rendered
+        self._rendered = self.prefix + b"\x84" + self._rendered
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class Integer(blocks.Block):
@@ -72,5 +73,5 @@ class Integer(blocks.Block):
         # let the parent do the initial render.
         blocks.Block.render(self)
 
-        self._rendered = "\x02\x04" + self._rendered
-        return self._rendered
+        self._rendered = b"\x02\x04" + self._rendered
+        return helpers.str_to_bytes(self._rendered)

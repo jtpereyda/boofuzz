@@ -5,6 +5,7 @@ from past.builtins import range
 
 from .. import exception, ifuzzable
 from ..primitives.bit_field import BitField
+from .. import helpers
 
 
 class Repeat(ifuzzable.IFuzzable):
@@ -164,7 +165,7 @@ class Repeat(ifuzzable.IFuzzable):
             self._value = block.render() * self.variable.render()
 
         self._rendered = self._value
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """

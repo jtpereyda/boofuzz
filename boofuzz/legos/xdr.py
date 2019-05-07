@@ -7,6 +7,7 @@ import struct
 
 from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
+from .. import helpers
 
 
 class String(blocks.Block):
@@ -46,4 +47,4 @@ class String(blocks.Block):
             size_header = struct.pack(">L", len(self._rendered))
             self._rendered = size_header + self._rendered + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)

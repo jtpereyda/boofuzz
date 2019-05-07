@@ -6,6 +6,7 @@ import six
 from .. import exception
 from ..ifuzzable import IFuzzable
 from .block import Block
+from .. import helpers
 
 
 class Request(IFuzzable):
@@ -154,7 +155,7 @@ class Request(IFuzzable):
         for item in self.stack:
             self._rendered += item.render()
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """

@@ -7,6 +7,7 @@ from functools import wraps
 
 from .. import exception, helpers, primitives
 from ..constants import LITTLE_ENDIAN
+from .. import helpers
 
 
 def _may_recurse(f):
@@ -109,7 +110,7 @@ class Checksum(primitives.BasePrimitive):
             self._rendered = self._checksum(data=self._render_block(self._block_name),
                                             ipv4_src=self._render_block(self._ipv4_src_block_name),
                                             ipv4_dst=self._render_block(self._ipv4_dst_block_name))
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
