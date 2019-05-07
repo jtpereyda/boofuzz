@@ -143,7 +143,7 @@ class BitField(BasePrimitive):
         """
         if output_format == "binary":
             bit_stream = ""
-            rendered = ""
+            rendered = six.binary_type(b"")
 
             # pad the bit stream to the next byte boundary.
             if bit_width % 8 == 0:
@@ -161,9 +161,8 @@ class BitField(BasePrimitive):
 
             # if necessary, convert the endianness of the raw bytes.
             if endian == LITTLE_ENDIAN:
-                rendered = list(rendered)
-                rendered.reverse()
-                rendered = "".join(rendered)
+                # reverse the bytes
+                rendered = rendered[::-1]
 
             _rendered = rendered
         else:
