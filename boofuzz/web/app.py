@@ -2,6 +2,8 @@ import flask
 from flask import Flask, render_template, redirect
 import re
 
+from .. import exception
+
 MAX_LOG_LINE_LEN = 1500
 
 app = Flask(__name__)
@@ -50,13 +52,14 @@ def api_test_case(test_case_index):
 
 def _get_log_data(test_case_id):
     results = []
-    case = app.session.test_case_data(test_case_id)
+    try:
+        case = app.session.test_case_data(test_case_id)
+    except exception.BoofuzzNoSuchTestCase:
+        return None
     if case is not None:
         results.append({'css_class': case.css_class, 'log_line': case.html_log_line})
         for step in case.steps:
             line = step.html_log_line
-            if len(line) > MAX_LOG_LINE_LEN:
-                line = line[:MAX_LOG_LINE_LEN] + ' (truncated)'
             results.append({'css_class': step.css_class, 'log_line': line})
     return results
 
@@ -105,12 +108,15 @@ def index():
         num_mutations = 100  # TODO improve template instead of hard coding fake values
 
     total_mutant_index = float(app.session.total_mutant_index)
-    total_num_mutations = float(app.session.total_num_mutations)
-
-    try:
-        progress_total = total_mutant_index / total_num_mutations
-    except ZeroDivisionError:
+    total_num_mutations = app.session.total_num_mutations
+    if total_num_mutations is None:
         progress_total = 0
+    else:
+        try:
+            progress_total = total_mutant_index / total_num_mutations
+        except ZeroDivisionError:
+            progress_total = 0
+
     num_bars = int(progress_total * 50)
     progress_total_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
     progress_total = "%.3f%%" % (progress_total * 100)
@@ -125,7 +131,7 @@ def index():
         "progress_total": progress_total,
         "progress_total_bar": progress_total_bar,
         "total_mutant_index": commify(int(total_mutant_index)),
-        "total_num_mutations": commify(int(total_num_mutations)),
+        "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else "N/A",
     }
 
     return render_template('index.html', state=state, crashes=crashes)

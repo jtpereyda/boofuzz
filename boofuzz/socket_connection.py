@@ -157,7 +157,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
             try:
                 self._sock.connect((self.host, self.port))
             except socket.error as e:
-                if e.errno == errno.ECONNREFUSED:
+                if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS]:
                     raise exception.BoofuzzTargetConnectionFailedError(e.message)
                 else:
                     raise
