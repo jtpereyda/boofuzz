@@ -13,7 +13,7 @@ import struct
 import time
 import zlib
 
-from builtins import chr
+from builtins import int
 from past.builtins import map
 from past.builtins import range
 
@@ -209,7 +209,7 @@ def uuid_str_to_bin(uuid):
 
     matches = re.match(uuid_re, uuid)
 
-    (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: long(x, 16), matches.groups())
+    (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: int(x, 16), matches.groups())
 
     uuid = struct.pack('<LHH', uuid1, uuid2, uuid3)
     uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
