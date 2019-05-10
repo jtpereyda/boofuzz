@@ -3,6 +3,17 @@ Upcoming
 Features
 --------
 - New Session option `keep_web_open` to allow analyzing the test results after test completion.
+- Large test cases are now truncated, unless a failure is detected.
+- When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
+- Process monitor creates new crash file for each run by default.
+- Long lines now wrap in web view; longer lines no longer need to be truncated.
+- Process monitor now stores crash bins in JSON format instead of pickled format.
+- Process monitor in Windows will use `taskkill -F` if `taskkill` fails.
+
+Fixes
+-----
+- Web server no longer crashes when asked for a non-existing test case.
+- EINPROGRESS socket error is now handled while opening a socket (note: this sometimes-transient error motivated the move to retry upon connection failure)
 
 v0.1.4
 ======

@@ -162,7 +162,6 @@ table.test-steps td {
     font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace;
     margin: 0;
 }
-
 table.test-steps .log-case { color: yellow; }
 table.test-steps .log-step { color: magenta; }
 table.test-steps .log-error { color: red; }
@@ -170,5 +169,21 @@ table.test-steps .log-check { }
 table.test-steps .log-info { }
 table.test-steps .log-pass { color: limegreen; }
 table.test-steps .log-fail { color: red; }
-table.test-steps .log-send { color: darkcyan; }
-table.test-steps .log-receive { color: darkcyan; }
+table.test-steps .log-send { color: darkcyan;
+  /* start break-long-words code */
+  display: inline-block;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  word-break: break-word;
+  /* end break-long-words code */
+}
+table.test-steps .log-receive { color: darkcyan;
+  /* start break-long-words code */
+  display: inline-block;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all;
+  word-break: break-word;
+  /* end break-long-words code */
+}

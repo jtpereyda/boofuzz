@@ -69,20 +69,28 @@ def string_tests():
 
 
 def s_mirror_tests():
-    TEST_GROUP_VALUES = ['aaa', 'bbb', 'ccc', 'ddd']
+    TEST_GROUP_VALUES = ['a', 'bb', 'ccc', 'dddd']
     s_initialize('test_s_mirror')
-    s_static('<')
-    s_group('group_start', values=TEST_GROUP_VALUES)
-    s_static('>')
-    s_static('hello')
-    s_static('<')
-    s_mirror('group_start', name='group_end')
-    s_static('/>')
+
+    s_size('data', output_format="ascii", fuzzable=False, name='size')
+    s_mirror('size', name='size_mirror')
+
+    with s_block('data'):
+        s_static('<')
+        s_group('group_start', values=TEST_GROUP_VALUES)
+        s_static('>')
+        s_static('hello')
+        s_static('</')
+        s_mirror('group_start', name='group_end')
+        s_static('>')
 
     req = s_get('test_s_mirror')
     for _ in xrange(len(TEST_GROUP_VALUES)):
         s_mutate()
-        assert (req.names['group_end'].render() == req.names['group_start'].render())
+        group_start_value = req.names['group_start'].render()
+        assert (req.names['size'].render() == str(len('<{0}>hello</{0}>'.format(group_start_value))))
+        assert (req.names['group_end'].render() == group_start_value)
+        assert (req.names['size_mirror'].render() == req.names['size'].render())
 
 
 def fuzz_extension_tests():

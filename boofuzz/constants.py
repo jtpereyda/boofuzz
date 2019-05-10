@@ -12,6 +12,9 @@ ERR_CONN_FAILED_TERMINAL = "Cannot connect to target; target presumed down. Stop
 ERR_CONN_FAILED = "Cannot connect to target; target presumed down. Note: This likely " \
                   "indicates a failure caused by the previous test case. "
 
+WARN_CONN_FAILED_TERMINAL = "Cannot connect to target; retrying. Note: This likely " \
+                            "indicates a failure caused by the previous test case, or a target that is slow to restart."
+
 ERR_CONN_ABORTED = "Target connection lost (socket error: {socket_errno} {socket_errmsg}): You may have a " \
                    "network issue, or an issue with firewalls or anti-virus. Try " \
                    "disabling your firewall."
