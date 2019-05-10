@@ -3,6 +3,7 @@ from boofuzz import *
 from past.builtins import xrange
 from io import open
 
+
 def run():
     signed_tests()
     string_tests()
@@ -90,7 +91,7 @@ def s_mirror_tests():
     for _ in xrange(len(TEST_GROUP_VALUES)):
         s_mutate()
         group_start_value = req.names['group_start'].render()
-        assert (req.names['size'].render() == str(len('<{0}>hello</{0}>'.format(group_start_value))))
+        assert (int(req.names['size'].render()) == len('<{0}>hello</{0}>'.format(group_start_value.decode("utf-8"))))
         assert (req.names['group_end'].render() == group_start_value)
         assert (req.names['size_mirror'].render() == req.names['size'].render())
 

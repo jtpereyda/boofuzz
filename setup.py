@@ -60,6 +60,7 @@ setup(
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.6',
             'Topic :: Security',
             'Topic :: Software Development :: Testing :: Traffic Generation',
         ]

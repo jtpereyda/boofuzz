@@ -1,9 +1,9 @@
 #!c:\\python\\python.exe
 import getopt
-import six
 import sys
 
 from future.utils import iteritems
+from builtins import int
 
 import pgraph
 from boofuzz import utils
@@ -76,11 +76,7 @@ for _, crashes in iteritems(crashbin.bins):
             print("\t")
             last = crash_node.id
             for entry in crash.stack_unwind:
-                # python 3 doesn't have 'long' as its own type
-                if six.PY2:
-                    address = long(entry.split(":")[1], 16)
-                else:
-                    address = int(entry.split(":")[1], 16)
+                address = int(entry.split(":")[1], 16)
                 n = graph.find_node("id", address)
 
                 if not n:

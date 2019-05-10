@@ -5,6 +5,7 @@ import shlex
 import time
 
 from past.builtins import map
+from builtins import str
 
 from boofuzz import pedrpc
 from boofuzz import utils
@@ -24,7 +25,7 @@ def _split_command_if_str(command):
     Returns:
         (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
     """
-    if isinstance(command, basestring):
+    if isinstance(command, str):
         return shlex.split(command)
     else:
         return command
