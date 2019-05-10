@@ -194,9 +194,7 @@ class CrashBinning:
 
         self.last_crash = self.pydbg = None
 
-        fh = open(file_name, "wb+")
-        fh.write(json.dumps(self.bins, default=lambda o: o.__dict__))
-        fh.close()
+        json.dump(self.bins, open(file_name, "wb+"), default=lambda o: o.__dict__)
 
         self.last_crash = last_crash
         self.pydbg      = pydbg
@@ -217,14 +215,13 @@ class CrashBinning:
         """
 
         self.bins = {}
-        with open(file_name, "rb") as fh:
-            bin_dict = json.loads(fh.read())
-            for (crash_address, bin_list) in bin_dict.items():
-                self.bins[crash_address] = []
-                for single_bin in bin_list:
-                    tmp = CrashBinStruct()
-                    tmp.__dict__ = single_bin
-                    self.bins[crash_address].append(tmp)
+        bin_dict = json.load(open(file_name, "rb"))
+        for (crash_address, bin_list) in bin_dict.items():
+            self.bins[crash_address] = []
+            for single_bin in bin_list:
+                tmp = CrashBinStruct()
+                tmp.__dict__ = single_bin
+                self.bins[crash_address].append(tmp)
 
         return self
 
