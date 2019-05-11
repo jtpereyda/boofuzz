@@ -5,6 +5,7 @@ import unittest
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 import mock
+from builtins import bytes
 from boofuzz import FuzzLogger
 from boofuzz import Session
 from boofuzz import SocketConnection
@@ -27,7 +28,7 @@ class MiniTestServer(object):
     def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = bytes("\xFE\xEB\xDA\xED")
+        self.data_to_send = bytes(b"\xFE\xEB\xDA\xED")
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto

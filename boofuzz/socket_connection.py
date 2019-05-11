@@ -77,7 +77,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  send_timeout=5.0,
                  recv_timeout=5.0,
                  ethernet_proto=ETH_P_IP,
-                 l2_dst='\xFF' * 6,
+                 l2_dst=b'\xFF' * 6,
                  udp_broadcast=False,
                  server=False,
                  keyfile=None,
