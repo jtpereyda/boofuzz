@@ -19,8 +19,8 @@ ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_e
 def _seconds_to_second_microsecond_struct(seconds):
     """Convert floating point seconds value to second/useconds struct used by socket library."""
     microseconds_per_second = 1000000
-    whole_seconds = math.floor(seconds)
-    whole_microseconds = math.floor((seconds % 1) * microseconds_per_second)
+    whole_seconds = int(math.floor(seconds))
+    whole_microseconds = int(math.floor((seconds % 1) * microseconds_per_second))
     return struct.pack('ll', whole_seconds, whole_microseconds)
 
 
