@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from builtins import bytes, chr
+import six
 import unittest
 
 try:
@@ -24,7 +25,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         s = boofuzz.helpers.get_time_stamp()
 
         # Then
-        self.assertRegexpMatches(s, r'\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
+        six.assertRegex(self, s, r'\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
 
     def test_hex_to_hexstr(self):
         """
