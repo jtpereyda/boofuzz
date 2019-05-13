@@ -7,6 +7,7 @@ import struct
 import sys
 import unittest
 import zlib
+import six
 
 import pytest
 import ipaddress
@@ -16,8 +17,6 @@ from boofuzz.socket_connection import SocketConnection
 from boofuzz import socket_connection
 from boofuzz import ip_constants
 from boofuzz import helpers
-from builtins import chr
-import six
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -342,7 +341,7 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         data_to_send = six.binary_type(b'"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
-                             b' why, tidiness is a toil for giants."')
+                                       b' why, tidiness is a toil for giants."')
 
         # Given
         server = MiniTestServer(proto='udp')
@@ -430,9 +429,11 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = six.binary_type(b'"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             b' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             b' but creative artists very seldom. "')
+        data_to_send = six.binary_type(b'"Imagination does not breed insanity.'
+                                       b'Exactly what does breed insanity is reason.'
+                                       b' Poets do not go mad; but chess-players do.'
+                                       b'Mathematicians go mad, and cashiers;'
+                                       b' but creative artists very seldom. "')
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -444,15 +445,15 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = ethernet_frame(
-                payload=ip_packet(
-                        payload=udp_packet(
-                                payload=data_to_send,
-                                src_port=server.active_port + 1,
-                                dst_port=server.active_port),
-                        src_ip=b"\x7F\x00\x00\x01",
-                        dst_ip=b"\x7F\x00\x00\x01"),
-                src_mac=b"\x00" * 6,
-                dst_mac=b"\xff" * 6)
+            payload=ip_packet(
+                payload=udp_packet(
+                    payload=data_to_send,
+                    src_port=server.active_port + 1,
+                    dst_port=server.active_port),
+                src_ip=b"\x7F\x00\x00\x01",
+                dst_ip=b"\x7F\x00\x00\x01"),
+            src_mac=b"\x00" * 6,
+            dst_mac=b"\xff" * 6)
         expected_server_receive = raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -566,7 +567,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -582,8 +583,8 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = six.binary_type(b'"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
-                             b' prudent marriages?""')
+        data_to_send = six.binary_type(b'"Imprudent marriages!" roared Michael. '
+                                       b'"And pray where in earth or heaven are there any prudent marriages?""')
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -595,12 +596,12 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = ip_packet(
-                payload=udp_packet(
-                        payload=data_to_send,
-                        src_port=server.active_port + 1,
-                        dst_port=server.active_port),
-                src_ip=b"\x7F\x00\x00\x01",
-                dst_ip=b"\x7F\x00\x00\x01")
+            payload=udp_packet(
+                payload=data_to_send,
+                src_port=server.active_port + 1,
+                dst_port=server.active_port),
+            src_ip=b"\x7F\x00\x00\x01",
+            dst_ip=b"\x7F\x00\x00\x01")
         expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -716,7 +717,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive,
                          server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     def test_required_args_port(self):
         """

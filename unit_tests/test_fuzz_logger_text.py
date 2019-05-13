@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from builtins import bytes, chr
 import unittest
-import six
+
 try:
     from StringIO import StringIO
 # probably because python 3
@@ -24,7 +24,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         s = boofuzz.helpers.get_time_stamp()
 
         # Then
-        self.assertRegexpMatches(s, '\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
+        self.assertRegexpMatches(s, r'\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
 
     def test_hex_to_hexstr(self):
         """
@@ -114,7 +114,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         }
         for c in range(0, 255):
             self.assertEqual("{:02x} {}".format(c, expected_results[c]),
-                             boofuzz.helpers.hex_to_hexstr(bytes(six.int2byte(c), 'latin-1'))
+                             boofuzz.helpers.hex_to_hexstr(bytes(chr(c), 'latin-1'))
                              )
 
 
@@ -456,7 +456,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
         self.assertTrue(self.some_test_step_msg in self.virtual_file.readline())
-        self.assertTrue(self.some_recv_data in self.virtual_file.readline())
+        self.assertTrue(str(len(self.some_recv_data)) in self.virtual_file.readline())
         self.assertTrue(str(len(self.some_send_data)) in self.virtual_file.readline())
         self.assertTrue(self.some_log_info_msg in self.virtual_file.readline())
         self.assertTrue(self.some_log_check_msg in self.virtual_file.readline())

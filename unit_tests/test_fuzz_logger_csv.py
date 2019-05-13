@@ -1,5 +1,6 @@
 import unittest
 import re
+import six
 try:
     from StringIO import StringIO
 # probably because python 3
@@ -21,7 +22,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
         s = fuzz_logger_csv.get_time_stamp()
 
         # Then
-        self.assertRegexpMatches(s, '\d\d\d\d-\d\d-\d\d\w\d\d:\d\d:\d\d.\d*')
+        self.assertRegexpMatches(s, r'\d\d\d\d-\d\d-\d\d\w\d\d:\d\d:\d\d.\d*')
 
     def test_hex_to_hexstr(self):
         """
@@ -29,7 +30,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
         When: Calling hex_to_hexstr
         Then: Hex of several-line string is output first, then repr format.
         """
-        given = "abc\n123\r\nA\n"
+        given = six.binary_type(b'abc\n123\r\nA\n')
         expected = u'61 62 63 0a 31 32 33 0d 0a 41 0a'
         self.assertEqual(expected, fuzz_logger_csv.hex_to_hexstr(given))
 
@@ -47,8 +48,8 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.some_log_fail_msg = "broken"
         self.some_log_pass_msg = "it works so far!"
         self.some_log_error_msg = "D:"
-        self.some_recv_data = bytes('A B C')
-        self.some_send_data = bytes('123')
+        self.some_recv_data = six.binary_type(b'A B C')
+        self.some_send_data = six.binary_type(b'123')
 
     def test_open_test_case(self):
         """
@@ -335,7 +336,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.logger.open_test_case(self.some_test_case_id,
                                    name=self.some_test_case_name,
                                    index=self.some_test_case_index)
-        self.logger.log_recv(bytes(''))
+        self.logger.log_recv(six.binary_type(b''))
 
         # Then
         self.virtual_file.seek(0)
@@ -344,7 +345,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                                      "open test case,,,Test case " + self.some_test_case_id + "\r\n"))
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOGGER_PREAMBLE + re.escape(
-                                     "recv,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes('')) + ",\r\n"))
+                                     "recv,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b'')) + ",\r\n"))
 
     def test_log_send_empty(self):
         """
@@ -357,7 +358,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.logger.open_test_case(self.some_test_case_id,
                                    name=self.some_test_case_name,
                                    index=self.some_test_case_index)
-        self.logger.log_send(bytes(''))
+        self.logger.log_send(six.binary_type(b''))
 
         # Then
         self.virtual_file.seek(0)
@@ -366,7 +367,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                                      "open test case,,,Test case " + self.some_test_case_id + "\r\n"))
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOGGER_PREAMBLE + re.escape(
-                                     "send,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes('')) + ",\r\n"))
+                                     "send,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b'')) + ",\r\n"))
 
     def test_log_info_empty(self):
         """
@@ -518,7 +519,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.assertRegexpMatches(self.virtual_file.readline(),
                                  LOGGER_PREAMBLE + re.escape(
                                      "recv," + str(len(self.some_recv_data)) + "," + hex_to_str(
-                                         self.some_recv_data) + "," + self.some_recv_data + "\r\n"))
+                                         self.some_recv_data) + "," + str(self.some_recv_data) + "\r\n"))
 
 
 if __name__ == '__main__':
