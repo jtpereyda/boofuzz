@@ -1,5 +1,4 @@
 import collections
-from builtins import object
 
 import six
 
@@ -64,7 +63,7 @@ class Request(IFuzzable):
         self._rendered = six.binary_type(b"")
 
         for item in self.stack:
-            self._rendered += item.original_value
+            self._rendered += helpers.str_to_bytes(item.original_value)
 
         return self._rendered
 

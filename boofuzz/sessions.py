@@ -919,8 +919,8 @@ class Session(pgraph.Graph):
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
 
-            args: Implementations should include \*args and \**kwargs for forward-compatibility.
-            kwargs: Implementations should include \*args and \**kwargs for forward-compatibility.
+            args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
+            kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
         """
         # default to doing nothing.
         self._fuzz_data_logger.log_info("No post_send callback registered.")

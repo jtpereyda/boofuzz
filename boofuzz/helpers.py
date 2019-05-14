@@ -234,10 +234,10 @@ def _collate_bytes(msb, lsb):
     Helper function for our helper functions.
     Collates msb and lsb into one 16-bit value.
 
-    :type msb: str
+    :type msb: byte
     :param msb: Single byte (most significant).
 
-    :type lsb: str
+    :type lsb: byte
     :param lsb: Single byte (least significant).
 
     :return: msb and lsb all together in one 16 bit value.
@@ -303,7 +303,7 @@ def udp_checksum(msg, src_addr, dst_addr):
 
 
     :param msg: Message to compute checksum over.
-    :type msg: str
+    :type msg: bytes
 
     :type src_addr: bytes
     :param src_addr: Source IP address -- 4 bytes.
@@ -421,6 +421,7 @@ def mkdir_safe(directory_name):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
 
 def str_to_bytes(value):
     result = value

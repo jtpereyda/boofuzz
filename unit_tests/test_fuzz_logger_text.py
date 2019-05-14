@@ -457,7 +457,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
         self.assertTrue(self.some_test_step_msg in self.virtual_file.readline())
-        self.assertTrue(str(len(self.some_recv_data)) in self.virtual_file.readline())
+        self.assertTrue(str(self.some_recv_data) in self.virtual_file.readline())
         self.assertTrue(str(len(self.some_send_data)) in self.virtual_file.readline())
         self.assertTrue(self.some_log_info_msg in self.virtual_file.readline())
         self.assertTrue(self.some_log_check_msg in self.virtual_file.readline())
