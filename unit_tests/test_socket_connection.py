@@ -56,7 +56,7 @@ def udp_packet(payload, src_port, dst_port):
     Create a UDP packet.
 
     :param payload: Payload / next layer protocol.
-    :type payload: str
+    :type payload: bytes
 
     :param src_port: 16-bit source port number.
     :type src_port: int
@@ -65,7 +65,7 @@ def udp_packet(payload, src_port, dst_port):
     :type dst_port: int
 
     :return: UDP packet.
-    :rtype: str
+    :rtype: bytes
     """
     udp_header = struct.pack(">H", src_port)  # Src port
     udp_header += struct.pack(">H", dst_port)  # Dst port
@@ -89,20 +89,20 @@ def ip_packet(payload, src_ip, dst_ip, protocol=six.int2byte(ip_constants.IPV4_P
     """
     Create an IPv4 packet.
 
-    :type payload: str
+    :type payload: bytes
     :param payload: Contents of next layer up.
 
-    :type src_ip: str
+    :type src_ip: bytes
     :param src_ip: 4-byte source IP address.
 
-    :type dst_ip: str
+    :type dst_ip: bytes
     :param dst_ip: 4-byte destination IP address.
 
-    :type protocol: str
+    :type protocol: bytes
     :param protocol: Single-byte string identifying next layer's protocol. Default "\x11" UDP.
 
     :return: IPv4 packet.
-    :rtype: str
+    :rtype: bytes
     """
     ip_header = b"\x45"  # Version | Header Length
     ip_header += b"\x00"  # "Differentiated Services Field"
@@ -126,19 +126,19 @@ def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
     Create an Ethernet frame.
 
     :param payload: Network layer content.
-    :type payload: str
+    :type payload: bytes
 
     :param src_mac: 6-byte source MAC address.
-    :type src_mac: str
+    :type src_mac: bytes
 
     :param dst_mac: 6-byte destination MAC address.
-    :type dst_mac: str
+    :type dst_mac: bytes
 
     :param ether_type: EtherType indicating protocol of next layer; default "\x08\x00" IPv4.
-    :type ether_type: str
+    :type ether_type: bytes
 
     :return: Ethernet frame
-    :rtype: str
+    :rtype: bytes
     """
     eth_header = dst_mac
     eth_header += src_mac
@@ -380,13 +380,13 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+            broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())['broadcast']
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
 
-        data_to_send = bytes('"Never drink because you need it, for this is rational drinking, and the way to death and'
-                             ' hell. But drink because you do not need it, for this is irrational drinking, and the'
-                             ' ancient health of the world."')
+        data_to_send = helpers.str_to_bytes('"Never drink because you need it, for this is rational drinking, and the '
+                                            'way to death and hell. But drink because you do not need it, for this is '
+                                            'irrational drinking, and the ancient health of the world."')
 
         # Given
         server = MiniTestServer(proto='udp', host='')

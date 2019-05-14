@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from builtins import object
-
 import six
 
 from ..ifuzzable import IFuzzable
@@ -62,7 +60,7 @@ class Block(IFuzzable):
         original_value = six.binary_type(b"")
 
         for item in self.stack:
-            original_value += item.original_value
+            original_value += helpers.str_to_bytes(item.original_value)
 
         return original_value
 
