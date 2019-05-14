@@ -380,7 +380,6 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            # broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
             broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())['broadcast']
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4

@@ -29,7 +29,7 @@ class Group(BasePrimitive):
         self._value = self._original_value = default_value
 
         for val in self.values:
-            assert isinstance(val, six.binary_type), "Value list may only contain binary data"
+            assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
 
     @property
     def name(self):
