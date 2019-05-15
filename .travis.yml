@@ -1,5 +1,5 @@
 language: python
-
+dist: xenial
 sudo: required
 
 before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
