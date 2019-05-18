@@ -1,9 +1,11 @@
+import six
 import struct
-from builtins import range
+from builtins import object, range
+from past.builtins import map
 
 from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive
-
+from .. import helpers
 
 def binary_string_to_int(binary):
     """
@@ -62,8 +64,8 @@ class BitField(BasePrimitive):
 
         super(BitField, self).__init__()
 
-        assert isinstance(value, (int, long, list, tuple)), "value must be an integer, list, or tuple!"
-        assert isinstance(width, (int, long)), "width must be an integer!"
+        assert isinstance(value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
+        assert isinstance(width, (six.integer_types)), "width must be an integer!"
 
         self._value = self._original_value = value
         self.width = width
@@ -79,26 +81,26 @@ class BitField(BasePrimitive):
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
 
-        assert isinstance(self.max_num, (int, long)), "max_num must be an integer!"
+        assert isinstance(self.max_num, (six.integer_types)), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.
             for i in range(0, self.max_num):
                 self._fuzz_library.append(i)
         else:
-            if type(value) in [list, tuple]:
+            if isinstance(value, (list, tuple)):
                 # Use the supplied values as the fuzz library.
                 for val in iter(value):
                     self._fuzz_library.append(val)
             else:
                 # try only "smart" values.
                 self.add_integer_boundaries(0)
-                self.add_integer_boundaries(self.max_num / 2)
-                self.add_integer_boundaries(self.max_num / 3)
-                self.add_integer_boundaries(self.max_num / 4)
-                self.add_integer_boundaries(self.max_num / 8)
-                self.add_integer_boundaries(self.max_num / 16)
-                self.add_integer_boundaries(self.max_num / 32)
+                self.add_integer_boundaries(self.max_num // 2)
+                self.add_integer_boundaries(self.max_num // 3)
+                self.add_integer_boundaries(self.max_num // 4)
+                self.add_integer_boundaries(self.max_num // 8)
+                self.add_integer_boundaries(self.max_num // 16)
+                self.add_integer_boundaries(self.max_num // 32)
                 self.add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
@@ -122,7 +124,8 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(case)
 
     def _render(self, value):
-        return self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+        temp = self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+        return helpers.str_to_bytes(temp)
 
     @staticmethod
     def render_int(value, output_format, bit_width, endian, signed):
@@ -141,7 +144,7 @@ class BitField(BasePrimitive):
         """
         if output_format == "binary":
             bit_stream = ""
-            rendered = ""
+            rendered = six.binary_type(b"")
 
             # pad the bit stream to the next byte boundary.
             if bit_width % 8 == 0:
@@ -151,7 +154,7 @@ class BitField(BasePrimitive):
                 bit_stream += int_to_binary_string(value, bit_width)
 
             # convert the bit stream from a string of bits into raw bytes.
-            for i in range(len(bit_stream) / 8):
+            for i in range(len(bit_stream) // 8):
                 chunk_min = 8 * i
                 chunk_max = chunk_min + 8
                 chunk = bit_stream[chunk_min:chunk_max]
@@ -159,9 +162,8 @@ class BitField(BasePrimitive):
 
             # if necessary, convert the endianness of the raw bytes.
             if endian == LITTLE_ENDIAN:
-                rendered = list(rendered)
-                rendered.reverse()
-                rendered = "".join(rendered)
+                # reverse the bytes
+                rendered = rendered[::-1]
 
             _rendered = rendered
         else:
@@ -185,11 +187,11 @@ class BitField(BasePrimitive):
 
     def __len__(self):
         if self.format == "binary":
-            return self.width / 8
+            return self.width // 8
         else:
             return len(str(self._value))
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

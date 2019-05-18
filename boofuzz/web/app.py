@@ -139,7 +139,7 @@ def index():
 
 def _crash_summary_info():
     crashes = []
-    procmon_result_keys = app.session.procmon_results.keys()
+    procmon_result_keys = list(app.session.procmon_results)
     procmon_result_keys.sort()
     for key in procmon_result_keys:
         val = app.session.procmon_results[key]

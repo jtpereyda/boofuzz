@@ -1,5 +1,9 @@
 from boofuzz import *
 
+import six
+
+from past.builtins import map
+from past.builtins import xrange
 
 def run():
     groups_and_num_test_cases()
@@ -16,7 +20,7 @@ def run():
 def groups_and_num_test_cases():
     s_initialize("UNIT TEST 1")
     s_size("BLOCK", length=4, name="sizer")
-    s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
+    s_group("group", values=[b"\x01", b"\x05", b"\x0a", b"\xff"])
     if s_block_start("BLOCK"):
         s_delim(">", name="delim")
         s_string("pedram", name="string")
@@ -29,23 +33,23 @@ def groups_and_num_test_cases():
 
     # count how many mutations we get per primitive type.
     req1 = s_get("UNIT TEST 1")
-    print "PRIMITIVE MUTATION COUNTS (SIZES):"
+    print("PRIMITIVE MUTATION COUNTS (SIZES):")
 
-    print "\tdelim:  %d\t(%s)" % (
+    print("\tdelim:  %d\t(%s)" % (
         req1.names["delim"].num_mutations(),
         sum(map(len, req1.names["delim"]._fuzz_library))
-    )
+    ))
 
-    print "\tstring: %d\t(%s)" % (
+    print("\tstring: %d\t(%s)" % (
         req1.names["string"].num_mutations(),
         sum(map(len, req1.names["string"]._fuzz_library))
-    )
+    ))
 
-    print "\tbyte:   %d" % req1.names["byte"].num_mutations()
-    print "\tword:   %d" % req1.names["word"].num_mutations()
-    print "\tdword:  %d" % req1.names["dword"].num_mutations()
-    print "\tqword:  %d" % req1.names["qword"].num_mutations()
-    print "\tsizer:  %d" % req1.names["sizer"].num_mutations()
+    print("\tbyte:   %d" % req1.names["byte"].num_mutations())
+    print("\tword:   %d" % req1.names["word"].num_mutations())
+    print("\tdword:  %d" % req1.names["dword"].num_mutations())
+    print("\tqword:  %d" % req1.names["qword"].num_mutations())
+    print("\tsizer:  %d" % req1.names["sizer"].num_mutations())
 
     # we specify the number of mutations in a random field, so ensure that matches.
     assert (req1.names["random"].num_mutations() == 100)
@@ -65,7 +69,7 @@ def groups_and_num_test_cases():
     ))
 
     s_initialize("UNIT TEST 2")
-    s_group("group", values=["\x01", "\x05", "\x0a", "\xff"])
+    s_group("group", values=[b"\x01", b"\x05", b"\x0a", b"\xff"])
     if s_block_start("BLOCK", group="group"):
         s_delim(">", name="delim")
         s_string("pedram", name="string")
@@ -83,7 +87,7 @@ def groups_and_num_test_cases():
 
 def dependencies():
     s_initialize("DEP TEST 1")
-    s_group("group", values=["1", "2"])
+    s_group("group", values=[b"1", b"2"])
 
     if s_block_start("ONE", dep="group", dep_values=["1"]):
         s_static("ONE" * 100)
@@ -95,9 +99,9 @@ def dependencies():
 
     assert (s_num_mutations() == 2)
     assert (s_mutate() == True)
-    assert (s_render().find("TWO") == -1)
+    assert (s_render().find(six.binary_type(b"TWO")) == -1)
     assert (s_mutate() == True)
-    assert (s_render().find("ONE") == -1)
+    assert (s_render().find(six.binary_type(b"ONE")) == -1)
     assert (s_mutate() == False)
 
 
@@ -188,4 +192,4 @@ def with_statements():
 
     req = s_get("WITH TEST")
     assert (req.num_mutations() == 0)
-    assert (req.render() == "test")
+    assert (req.render() == six.binary_type(b"test"))

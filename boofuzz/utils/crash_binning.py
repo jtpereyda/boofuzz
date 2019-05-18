@@ -25,6 +25,8 @@
 import zlib
 import json
 
+from past.builtins import xrange
+from io import open
 
 class CrashBinStruct:
     def __init__(self):

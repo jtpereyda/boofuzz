@@ -38,7 +38,7 @@ class External:
         """
 
         if self.__dbg_flag:
-            print "EXT-INSTR> %s" % msg
+            print("EXT-INSTR> %s" % msg)
 
     # noinspection PyUnusedLocal
     def pre_send(self, test_number):

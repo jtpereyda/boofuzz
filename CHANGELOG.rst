@@ -3,6 +3,7 @@ Upcoming
 Features
 --------
 - New Session option `keep_web_open` to allow analyzing the test results after test completion.
+- Added compatibility for python3
 - Large test cases are now truncated, unless a failure is detected.
 - When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
 - Process monitor creates new crash file for each run by default.

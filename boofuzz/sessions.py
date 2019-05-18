@@ -1,10 +1,11 @@
 from __future__ import absolute_import, print_function
 
-import cPickle
+import pickle
 import datetime
 import logging
 import os
 import re
+import six
 import threading
 import time
 import traceback
@@ -28,6 +29,9 @@ from . import primitives
 from . import exception
 from .web.app import app
 
+from future.utils import listitems
+from io import open
+from builtins import input
 
 class Target(object):
     """Target descriptor container.
@@ -95,7 +99,7 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key, value in self.procmon_options.items():
+            for key, value in listitems(self.procmon_options):
                 getattr(self.procmon, 'set_{0}'.format(key))(value)
 
         # If the network monitor is alive, set it's options
@@ -107,7 +111,7 @@ class Target(object):
                 time.sleep(1)
 
             # connection established.
-            for key in self.netmon_options.keys():
+            for key in list(self.netmon_options):
                 eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
 
     def recv(self, max_bytes=None):
@@ -506,10 +510,10 @@ class Session(pgraph.Graph):
             src = self.root
 
         # if source or destination is a name, resolve the actual node.
-        if type(src) is str:
+        if isinstance(src, six.string_types):
             src = self.find_node("name", src)
 
-        if type(dst) is str:
+        if isinstance(dst, six.string_types):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
@@ -551,7 +555,7 @@ class Session(pgraph.Graph):
         }
 
         fh = open(self.session_filename, "wb+")
-        fh.write(zlib.compress(cPickle.dumps(data, protocol=2)))
+        fh.write(zlib.compress(pickle.dumps(data, protocol=2)))
         fh.close()
 
     def feature_check(self):
@@ -696,7 +700,7 @@ class Session(pgraph.Graph):
             if self._keep_web_open and self.web_port is not None:
                 print("\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
                       "\nPress ENTER to close webinterface")
-                raw_input()
+                input()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -726,8 +730,8 @@ class Session(pgraph.Graph):
 
         try:
             with open(self.session_filename, "rb") as f:
-                data = cPickle.loads(zlib.decompress(f.read()))
-        except (IOError, zlib.error, cPickle.UnpicklingError):
+                data = pickle.loads(zlib.decompress(f.read()))
+        except (IOError, zlib.error, pickle.UnpicklingError):
             return
 
         # update the skip variable to pick up fuzzing from last test case.
@@ -915,8 +919,8 @@ class Session(pgraph.Graph):
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
 
-            args: Implementations should include \*args and \**kwargs for forward-compatibility.
-            kwargs: Implementations should include \*args and \**kwargs for forward-compatibility.
+            args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
+            kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
         """
         # default to doing nothing.
         self._fuzz_data_logger.log_info("No post_send callback registered.")

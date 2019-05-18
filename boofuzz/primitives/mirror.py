@@ -1,6 +1,6 @@
 from functools import wraps
 from .base_primitive import BasePrimitive
-
+from .. import helpers
 
 def _may_recurse(f):
     @wraps(f)
@@ -45,7 +45,7 @@ class Mirror(BasePrimitive):
         :return: Rendered value.
         """
         self._rendered = self._render_primitive(self._primitive_name)
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
     
     @property
     def original_value(self):

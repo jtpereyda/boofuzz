@@ -15,6 +15,7 @@ import threading
 import time
 
 import psutil
+from io import open
 
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):

@@ -2,10 +2,12 @@
 
 from __future__ import absolute_import
 
+import six
 import struct
 
 from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
+from .. import helpers
 
 
 class String(blocks.Block):
@@ -39,10 +41,10 @@ class String(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self._rendered == "":
-            self._rendered = "\x00\x00\x00\x00"
+        if self._rendered == six.binary_type(b""):
+            self._rendered = six.binary_type(b"\x00\x00\x00\x00")
         else:
             size_header = struct.pack(">L", len(self._rendered))
             self._rendered = size_header + self._rendered + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)

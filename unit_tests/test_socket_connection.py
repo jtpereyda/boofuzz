@@ -7,6 +7,7 @@ import struct
 import sys
 import unittest
 import zlib
+import six
 
 import pytest
 import ipaddress
@@ -33,7 +34,7 @@ TEST_ERR_NO_NON_LOOPBACK_IPV4 = 'No local non-loopback IPv4 address found.'
 
 def bytes_or_unicode_to_unicode(s):
     if isinstance(s, bytes):
-        return s.decode('utf-8')
+        return six.text_type(s)
     else:
         return s
 
@@ -55,7 +56,7 @@ def udp_packet(payload, src_port, dst_port):
     Create a UDP packet.
 
     :param payload: Payload / next layer protocol.
-    :type payload: str
+    :type payload: bytes
 
     :param src_port: 16-bit source port number.
     :type src_port: int
@@ -64,12 +65,12 @@ def udp_packet(payload, src_port, dst_port):
     :type dst_port: int
 
     :return: UDP packet.
-    :rtype: str
+    :rtype: bytes
     """
     udp_header = struct.pack(">H", src_port)  # Src port
     udp_header += struct.pack(">H", dst_port)  # Dst port
     udp_header += struct.pack(">H", len(payload) + UDP_HEADER_LEN)  # Length
-    udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+    udp_header += b"\x00\x00"  # Checksum (0 means no checksum)
     return udp_header + payload
 
 
@@ -84,33 +85,33 @@ def ones_complement_sum_carry_16(a, b):
     return (c & 0xffff) + (c >> 16)
 
 
-def ip_packet(payload, src_ip, dst_ip, protocol=chr(ip_constants.IPV4_PROTOCOL_UDP)):
+def ip_packet(payload, src_ip, dst_ip, protocol=six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)):
     """
     Create an IPv4 packet.
 
-    :type payload: str
+    :type payload: bytes
     :param payload: Contents of next layer up.
 
-    :type src_ip: str
+    :type src_ip: bytes
     :param src_ip: 4-byte source IP address.
 
-    :type dst_ip: str
+    :type dst_ip: bytes
     :param dst_ip: 4-byte destination IP address.
 
-    :type protocol: str
+    :type protocol: bytes
     :param protocol: Single-byte string identifying next layer's protocol. Default "\x11" UDP.
 
     :return: IPv4 packet.
-    :rtype: str
+    :rtype: bytes
     """
-    ip_header = "\x45"  # Version | Header Length
-    ip_header += "\x00"  # "Differentiated Services Field"
+    ip_header = b"\x45"  # Version | Header Length
+    ip_header += b"\x00"  # "Differentiated Services Field"
     ip_header += struct.pack(">H", IP_HEADER_LEN + len(payload))  # Length
-    ip_header += "\x00\x01"  # ID Field
-    ip_header += "\x40\x00"  # Flags, Fragment Offset
-    ip_header += "\x40"  # Time to live
+    ip_header += b"\x00\x01"  # ID Field
+    ip_header += b"\x40\x00"  # Flags, Fragment Offset
+    ip_header += b"\x40"  # Time to live
     ip_header += protocol
-    ip_header += "\x00\x00"  # Header checksum (fill in zeros in order to compute checksum)
+    ip_header += b"\x00\x00"  # Header checksum (fill in zeros in order to compute checksum)
     ip_header += src_ip
     ip_header += dst_ip
 
@@ -125,19 +126,19 @@ def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
     Create an Ethernet frame.
 
     :param payload: Network layer content.
-    :type payload: str
+    :type payload: bytes
 
     :param src_mac: 6-byte source MAC address.
-    :type src_mac: str
+    :type src_mac: bytes
 
     :param dst_mac: 6-byte destination MAC address.
-    :type dst_mac: str
+    :type dst_mac: bytes
 
     :param ether_type: EtherType indicating protocol of next layer; default "\x08\x00" IPv4.
-    :type ether_type: str
+    :type ether_type: bytes
 
     :return: Ethernet frame
-    :rtype: str
+    :rtype: bytes
     """
     eth_header = dst_mac
     eth_header += src_mac
@@ -157,7 +158,7 @@ class MiniTestServer(object):
     def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = bytes("\xFE\xEB\xDA\xED")
+        self.data_to_send = six.binary_type(b"\xFE\xEB\xDA\xED")
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto
@@ -269,7 +270,7 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns RAW_L3_MAX_PAYLOAD.
          and: Sent and received data is as expected.
         """
-        data_to_send = bytes('uuddlrlrba')
+        data_to_send = six.binary_type(b'uuddlrlrba')
 
         # Given
         server = MiniTestServer()
@@ -304,7 +305,7 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns length of payload.
          and: Sent works as expected, and recv() returns bytes('') after timing out.
         """
-        data_to_send = bytes('uuddlrlrba')
+        data_to_send = six.binary_type(b'uuddlrlrba')
 
         # Given
         server = MiniTestServer(stay_silent=True)
@@ -330,7 +331,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     def test_udp_client(self):
         """
@@ -339,8 +340,8 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns length of payload.
          and: Sent and received data is as expected.
         """
-        data_to_send = bytes('"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
-                             ' why, tidiness is a toil for giants."')
+        data_to_send = six.binary_type(b'"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
+                                       b' why, tidiness is a toil for giants."')
 
         # Given
         server = MiniTestServer(proto='udp')
@@ -379,13 +380,13 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+            broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())['broadcast']
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
 
-        data_to_send = bytes('"Never drink because you need it, for this is rational drinking, and the way to death and'
-                             ' hell. But drink because you do not need it, for this is irrational drinking, and the'
-                             ' ancient health of the world."')
+        data_to_send = helpers.str_to_bytes('"Never drink because you need it, for this is rational drinking, and the '
+                                            'way to death and hell. But drink because you do not need it, for this is '
+                                            'irrational drinking, and the ancient health of the world."')
 
         # Given
         server = MiniTestServer(proto='udp', host='')
@@ -428,9 +429,11 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             ' but creative artists very seldom. "')
+        data_to_send = six.binary_type(b'"Imagination does not breed insanity.'
+                                       b'Exactly what does breed insanity is reason.'
+                                       b' Poets do not go mad; but chess-players do.'
+                                       b'Mathematicians go mad, and cashiers;'
+                                       b' but creative artists very seldom. "')
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -442,15 +445,15 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = ethernet_frame(
-                payload=ip_packet(
-                        payload=udp_packet(
-                                payload=data_to_send,
-                                src_port=server.active_port + 1,
-                                dst_port=server.active_port),
-                        src_ip="\x7F\x00\x00\x01",
-                        dst_ip="\x7F\x00\x00\x01"),
-                src_mac="\x00" * 6,
-                dst_mac="\xff" * 6)
+            payload=ip_packet(
+                payload=udp_packet(
+                    payload=data_to_send,
+                    src_port=server.active_port + 1,
+                    dst_port=server.active_port),
+                src_ip=b"\x7F\x00\x00\x01",
+                dst_ip=b"\x7F\x00\x00\x01"),
+            src_mac=b"\x00" * 6,
+            dst_mac=b"\xff" * 6)
         expected_server_receive = raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -470,7 +473,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(expected_server_receive))
         self.assertEqual(raw_packet, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -486,7 +489,7 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('1' * RAW_L2_MAX_PAYLOAD)
+        data_to_send = six.binary_type(b'1' * RAW_L2_MAX_PAYLOAD)
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -517,7 +520,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -533,7 +536,7 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the first RAW_L2_MAX_PAYLOAD bytes of raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('F' * (RAW_L2_MAX_PAYLOAD + 1))
+        data_to_send = six.binary_type(b'F' * (RAW_L2_MAX_PAYLOAD + 1))
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -564,7 +567,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -580,8 +583,8 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
-                             ' prudent marriages?""')
+        data_to_send = six.binary_type(b'"Imprudent marriages!" roared Michael. '
+                                       b'"And pray where in earth or heaven are there any prudent marriages?""')
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -593,13 +596,13 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = ip_packet(
-                payload=udp_packet(
-                        payload=data_to_send,
-                        src_port=server.active_port + 1,
-                        dst_port=server.active_port),
-                src_ip="\x7F\x00\x00\x01",
-                dst_ip="\x7F\x00\x00\x01")
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+            payload=udp_packet(
+                payload=data_to_send,
+                src_port=server.active_port + 1,
+                dst_port=server.active_port),
+            src_ip=b"\x7F\x00\x00\x01",
+            dst_ip=b"\x7F\x00\x00\x01")
+        expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -618,7 +621,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(raw_packet))
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -634,7 +637,7 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('0' * RAW_L3_MAX_PAYLOAD)
+        data_to_send = six.binary_type(b'0' * RAW_L3_MAX_PAYLOAD)
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -646,7 +649,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+        expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -665,7 +668,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     @pytest.mark.skipif(sys.platform == 'win32',
                         reason="Raw sockets not supported on Windows.")
@@ -681,7 +684,7 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('D' * (RAW_L3_MAX_PAYLOAD + 1))
+        data_to_send = six.binary_type(b'D' * (RAW_L3_MAX_PAYLOAD + 1))
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -693,7 +696,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[
+        expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[
                                                                                                :RAW_L3_MAX_PAYLOAD]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -714,7 +717,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
         self.assertEqual(expected_server_receive,
                          server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, six.binary_type(b''))
 
     def test_required_args_port(self):
         """

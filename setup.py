@@ -4,6 +4,7 @@ import os
 import re
 
 from setuptools import setup, find_packages
+from io import open
 
 setup_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -32,7 +33,7 @@ setup(
         packages=find_packages(exclude=['unit_tests', 'requests', 'examples', 'utils', 'web', 'new_examples']),
         package_data={'boofuzz': ['web/templates/*', 'web/static/css/*', 'web/static/js/*']},
         install_requires=[
-            'future', 'pyserial', 'pydot', 'tornado~=4.0',
+            'future', 'pyserial', 'pydot', 'tornado~=4.0', 'six',
             'Flask~=1.0', 'impacket', 'colorama', 'attrs', 'click', 'psutil', 'ldap3==2.5.1'],
         extras_require={
             # This list is duplicated in tox.ini. Make sure to change both!
@@ -59,6 +60,7 @@ setup(
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.6',
             'Topic :: Security',
             'Topic :: Software Development :: Testing :: Traffic Generation',
         ]

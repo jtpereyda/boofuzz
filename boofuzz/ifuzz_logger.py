@@ -1,7 +1,9 @@
 import abc
 
+from future.utils import with_metaclass
 
-class IFuzzLogger(object):
+# abc.ABCMeta is the metaclass in both python 2 and 3
+class IFuzzLogger(with_metaclass(abc.ABCMeta, object)):
     """
     Abstract class for logging fuzz data.
 
@@ -54,7 +56,6 @@ class IFuzzLogger(object):
     results, and other information.
 
     """
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):

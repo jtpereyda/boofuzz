@@ -1,5 +1,8 @@
-from boofuzz import *
+from builtins import chr
 
+import six
+
+from boofuzz import *
 
 s_initialize("trillian 1")
 
@@ -45,7 +48,7 @@ s_static("\x00\x01")  # type  = A (host address)
 s_static("\x00\x01")  # class = in
 s_static("\x00\x00\x00\xf0")  # ttl 4 minutes
 s_static("\x00\x04")  # data length
-s_static(chr(152) + chr(67) + chr(137) + chr(53))  # ip address
+s_static(six.int2byte(152) + six.int2byte(67) + six.int2byte(137) + six.int2byte(53))  # ip address
 
 s_static("\xc0")  # offset specifier
 s_size("pamini.local", length=1)  # offset to pedram@PAMINI...
@@ -89,7 +92,7 @@ s_static("\x00\x01")  # type  = A (host address)
 s_static("\x00\x01")  # class = in
 s_static("\x00\x00\x00\xf0")  # ttl 4 minutes
 s_static("\x00\x04")  # data length
-s_static(chr(152) + chr(67) + chr(137) + chr(53))  # ip address
+s_static(six.int2byte(152) + six.int2byte(67) + six.int2byte(137) + six.int2byte(53))  # ip address
 
 s_static("\xc0")  # offset specifier
 s_size("pamini.local", length=1)  # offset to pedram@PAMINI...
