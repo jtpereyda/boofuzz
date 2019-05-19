@@ -272,4 +272,3 @@ class SocketConnection(itarget_connection.ITargetConnection):
     @property
     def info(self):
         return '{0}:{1}'.format(self.host, self.port)
-
