@@ -18,15 +18,17 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Verify tests pass: ::
+1. Install python version 2.7.9+ **and** 3.6+
+
+2. Verify tests pass: ::
 
       tox
 
-2. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+3. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
 
-3. Modify CHANGELOG.rst to say what you changed.
+4. Modify CHANGELOG.rst to say what you changed.
 
-4. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
+5. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
 
 Maintainers
 ===========

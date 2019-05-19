@@ -1,17 +1,28 @@
-language: python
 dist: xenial
 sudo: required
-
-before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+language: python
+cache: pip
 
 stages:
   - Test
+  - name: Deploy
+    if: (repo = jtpereyda/boofuzz) AND (fork = false) AND (tag IS present)
 
 jobs:
   include:
     - stage: Test
-      install: pip install tox
-      script: tox --recreate
+      python: 2.7
+      env: TOXENV=py27-unix
+    - python: 3.6
+      env: TOXENV=py36-unix
+    - python: 3.7
+      env: TOXENV=py37-unix
+    - python: 3.8
+      env: TOXENV=py38-unix
+
+    - stage: Deploy
+      install: true
+      script: skip
       deploy:
         provider: pypi
         user: jtpereyda
@@ -23,3 +34,10 @@ jobs:
           tags: true
           repo: jtpereyda/boofuzz
           branch: master
+
+  allow_failures:
+    - python: 3.8
+
+before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+install: pip install tox
+script: tox --skip-missing-interpreters false
