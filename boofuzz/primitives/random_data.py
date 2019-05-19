@@ -1,4 +1,8 @@
 import random
+import six
+
+from builtins import chr
+from past.builtins import xrange
 
 from .base_primitive import BasePrimitive
 
@@ -37,7 +41,7 @@ class RandomData(BasePrimitive):
         self.step = step
         self._name = name
         if self.step:
-            self.max_mutations = (self.max_length - self.min_length) / self.step + 1
+            self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
     @property
     def name(self):
@@ -70,7 +74,7 @@ class RandomData(BasePrimitive):
         # reset the value and generate a random string of the determined length.
         self._value = ""
         for i in xrange(length):
-            self._value += chr(random.randint(0, 255))
+            self._value += six.int2byte(random.randint(0, 255))
 
         # increment the mutation count.
         self._mutant_index += 1

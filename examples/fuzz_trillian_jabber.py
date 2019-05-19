@@ -42,7 +42,7 @@ target.procmon_options = {"proc_name": "trillian.exe"}
 
 # start up the target.
 target.vmcontrol.restart_target()
-print "virtual machine up and running"
+print("virtual machine up and running")
 
 sess.add_target(target)
 sess.pre_send = init_message

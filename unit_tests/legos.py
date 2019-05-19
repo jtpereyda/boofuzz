@@ -17,8 +17,8 @@ def tag():
 
     req = s_get("UNIT TEST TAG 1")
 
-    print "LEGO MUTATION COUNTS:"
-    print "\ttag:    %d" % req.num_mutations()
+    print("LEGO MUTATION COUNTS:")
+    print("\ttag:    %d" % req.num_mutations())
 
 
 def ndr_string():
@@ -27,7 +27,7 @@ def ndr_string():
 
     req = s_get("UNIT TEST NDR 1")
     # TODO: unfinished!
-    # print req.render()
+    # print(req.render())
 
 
 def ber():

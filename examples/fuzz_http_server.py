@@ -2,7 +2,7 @@ import sys
 sys.path.insert(0, '../')
 
 from boofuzz.primitives import String, Static, Delim
-
+from .. import helpers
 
 class Group(object):
     blocks = []
@@ -17,7 +17,7 @@ class Group(object):
         self.definition = definition
 
     def render(self):
-        return "".join([x.value for x in self.definition])
+        return helpers.str_to_bytes("".join([x.value for x in self.definition]))
 
     def exhaust(self):
         for item in self.definition:

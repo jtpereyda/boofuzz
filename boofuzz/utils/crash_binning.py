@@ -23,8 +23,10 @@
 """
 
 import zlib
-import cPickle
+import json
 
+from past.builtins import xrange
+from io import open
 
 class CrashBinStruct:
     def __init__(self):
@@ -194,9 +196,7 @@ class CrashBinning:
 
         self.last_crash = self.pydbg = None
 
-        fh = open(file_name, "wb+")
-        fh.write(zlib.compress(cPickle.dumps(self, protocol=2)))
-        fh.close()
+        json.dump(self.bins, open(file_name, "wb+"), default=lambda o: o.__dict__)
 
         self.last_crash = last_crash
         self.pydbg      = pydbg
@@ -216,11 +216,14 @@ class CrashBinning:
         @return:            self
         """
 
-        fh  = open(file_name, "rb")
-        tmp = cPickle.loads(zlib.decompress(fh.read()))
-        fh.close()
-
-        self.bins = tmp.bins
+        self.bins = {}
+        bin_dict = json.load(open(file_name, "rb"))
+        for (crash_address, bin_list) in bin_dict.items():
+            self.bins[crash_address] = []
+            for single_bin in bin_list:
+                tmp = CrashBinStruct()
+                tmp.__dict__ = single_bin
+                self.bins[crash_address].append(tmp)
 
         return self
 

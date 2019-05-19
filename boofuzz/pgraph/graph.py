@@ -13,8 +13,10 @@
 # Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-import pydot
 import copy
+
+import pydot
+from future.utils import listvalues
 
 
 class Graph(object):
@@ -173,7 +175,7 @@ class Graph(object):
         @return: List of edges from the specified node
         """
 
-        return [edge_value for edge_value in self.edges.values() if edge_value.src == edge_id]
+        return [edge_value for edge_value in listvalues(self.edges) if edge_value.src == edge_id]
 
     def edges_to(self, edge_id):
         """
@@ -186,7 +188,7 @@ class Graph(object):
         @return: List of edges to the specified node
         """
 
-        return [edge_value for edge_value in self.edges.values() if edge_value.dst == edge_id]
+        return [edge_value for edge_value in listvalues(self.edges) if edge_value.dst == edge_id]
 
     def find_cluster(self, attribute, value):
         """
@@ -249,7 +251,7 @@ class Graph(object):
         # step through all the edges looking for the given attribute/value pair.
         else:
             # TODO: Verify that this actually works? Was broken when I got here ;-P
-            for node_edge in self.edges.values():
+            for node_edge in listvalues(self.edges):
                 if hasattr(node_edge, attribute):
                     if getattr(node_edge, attribute) == value:
                         return node_edge
@@ -275,7 +277,7 @@ class Graph(object):
 
         # step through all the nodes looking for the given attribute/value pair.
         else:
-            for node in self.nodes.values():
+            for node in listvalues(self.nodes):
                 if hasattr(node, attribute):
                     if getattr(node, attribute) == value:
                         return node
@@ -292,10 +294,10 @@ class Graph(object):
         @param other_graph: Graph to concatenate into this one.
         """
 
-        for other_node in other_graph.nodes.values():
+        for other_node in listvalues(other_graph.nodes):
             self.add_node(other_node)
 
-        for other_edge in other_graph.edges.values():
+        for other_edge in listvalues(other_graph.edges):
             self.add_edge(other_edge)
 
         return self
@@ -317,7 +319,7 @@ class Graph(object):
         from_node = self.find_node("id", from_node_id)
 
         if not from_node:
-            print "unable to resolve node %08x" % from_node_id
+            print("unable to resolve node %08x" % from_node_id)
             raise Exception
 
         levels_to_process = []
@@ -361,11 +363,11 @@ class Graph(object):
         @param other_graph: Graph to intersect with
         """
 
-        for node in self.nodes.values():
+        for node in listvalues(self.nodes):
             if not other_graph.find_node("id", node.id):
                 self.del_node(node.id)
 
-        for edge in self.edges.values():
+        for edge in listvalues(self.edges):
             if not other_graph.find_edge("id", edge.id):
                 self.del_edge(edge.id)
 
@@ -402,10 +404,10 @@ class Graph(object):
         @param other_graph: Graph to diff/remove against
         """
 
-        for other_node in other_graph.nodes.values():
+        for other_node in listvalues(other_graph.nodes):
             self.del_node(other_node.id)
 
-        for other_edge in other_graph.edges.values():
+        for other_edge in listvalues(other_graph.edges):
             self.del_edge(None, other_edge.src, other_edge.dst)
 
         return self
@@ -472,11 +474,11 @@ class Graph(object):
         gml += 'graph [\n'
 
         # add the nodes to the GML definition.
-        for node in self.nodes.values():
+        for node in listvalues(self.nodes):
             gml += node.render_node_gml(self)
 
         # add the edges to the GML definition.
-        for edge in self.edges.values():
+        for edge in listvalues(self.edges):
             gml += edge.render_edge_gml(self)
 
         # close the graph tag.
@@ -513,10 +515,10 @@ class Graph(object):
         """
         dot_graph = pydot.Dot()
 
-        for node in self.nodes.values():
+        for node in listvalues(self.nodes):
             dot_graph.add_node(node.render_node_graphviz(self))
 
-        for edge in self.edges.values():
+        for edge in listvalues(self.edges):
             dot_graph.add_edge(edge.render_edge_graphviz(self))
 
         return dot_graph
@@ -533,7 +535,7 @@ class Graph(object):
 
         # render each of the nodes in the graph.
         # the individual nodes will handle their own edge rendering.
-        for node in self.nodes.values():
+        for node in listvalues(self.nodes):
             udraw += node.render_node_udraw(self)
             udraw += ','
 
@@ -552,11 +554,11 @@ class Graph(object):
 
         udraw = '['
 
-        for node in self.nodes.values():
+        for node in listvalues(self.nodes):
             udraw += node.render_node_udraw_update()
             udraw += ','
 
-        for edge in self.edges.values():
+        for edge in listvalues(self.edges):
             udraw += edge.render_edge_udraw_update()
             udraw += ','
 
@@ -586,7 +588,7 @@ class Graph(object):
         self.nodes[node.id] = node
 
         # update the edges.
-        for edge in [edge for edge in self.edges.values() if current_id in (edge.src, edge.dst)]:
+        for edge in [edge for edge in listvalues(self.edges) if current_id in (edge.src, edge.dst)]:
             del self.edges[edge.id]
 
             if edge.src == current_id:
@@ -606,7 +608,7 @@ class Graph(object):
         @return: List of nodes, sorted by id.
         """
 
-        node_keys = self.nodes.keys()
+        node_keys = list(self.nodes)
         node_keys.sort()
 
         return [self.nodes[key] for key in node_keys]

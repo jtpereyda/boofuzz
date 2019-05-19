@@ -1,8 +1,10 @@
 # MSRPC NDR TYPES
+import six
 
 import struct
 from .. import blocks, primitives, exception
 from ..helpers import calculate_four_byte_padding
+from .. import helpers
 
 
 class NdrConformantArray(blocks.Block):
@@ -36,13 +38,13 @@ class NdrConformantArray(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self._rendered == "":
-            self._rendered = "\x00\x00\x00\x00"
+        if self._rendered == six.binary_type(b""):
+            self._rendered = six.binary_type(b"\x00\x00\x00\x00")
         else:
             string_with_padding = self._rendered + calculate_four_byte_padding(self._rendered)
             self._rendered = struct.pack("<L", len(self._rendered)) + string_with_padding
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class NdrString(blocks.Block):
@@ -76,22 +78,22 @@ class NdrString(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self._rendered == "":
-            self._rendered = "\x00\x00\x00\x00"
+        if self._rendered == six.binary_type(b""):
+            self._rendered = six.binary_type(b"\x00\x00\x00\x00")
         else:
             # ensure null termination.
-            self._rendered += "\x00"
+            self._rendered += six.binary_type(b"\x00")
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = "" \
+            self._rendered = six.binary_type(b"") \
                              + struct.pack("<L", length) \
                              + struct.pack("<L", 0) \
                              + struct.pack("<L", length) \
                              + self._rendered \
                              + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class NdrWString(blocks.Block):
@@ -125,19 +127,19 @@ class NdrWString(blocks.Block):
         blocks.Block.render(self)
 
         # encode the empty string correctly:
-        if self._rendered == "":
-            self._rendered = "\x00\x00\x00\x00"
+        if self._rendered == six.binary_type(b""):
+            self._rendered = six.binary_type(b"\x00\x00\x00\x00")
         else:
             # unicode encode and null terminate.
-            self._rendered = self._rendered.encode("utf-16le") + "\x00"
+            self._rendered = self._rendered.encode("utf-16le") + six.binary_type(b"\x00")
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = "" \
+            self._rendered = six.binary_type(b"") \
                              + struct.pack("<L", length) \
                              + struct.pack("<L", 0) \
                              + struct.pack("<L", length) \
                              + self._rendered \
                              + calculate_four_byte_padding(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)

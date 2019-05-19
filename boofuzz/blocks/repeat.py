@@ -1,6 +1,11 @@
-from .. import exception
-from .. import ifuzzable
+from builtins import object
+import six
+
+from past.builtins import range
+
+from .. import exception, ifuzzable
 from ..primitives.bit_field import BitField
+from .. import helpers
 
 
 class Repeat(ifuzzable.IFuzzable):
@@ -42,9 +47,9 @@ class Repeat(ifuzzable.IFuzzable):
         self._fuzzable = fuzzable
         self._name = name
 
-        self._value = ""
-        self._original_value = ""  # default to nothing!
-        self._rendered = ""  # rendered value
+        self._value = six.binary_type(b"")
+        self._original_value = six.binary_type(b"")  # default to nothing!
+        self._rendered = six.binary_type(b"")  # rendered value
         self._fuzz_complete = False  # flag if this primitive has been completely fuzzed
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
         self._mutant_index = 0  # current mutation number
@@ -64,7 +69,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, BitField):
-            print self.variable
+            print(self.variable)
             raise exception.SullyRuntimeError(
                     "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
             )
@@ -160,7 +165,7 @@ class Repeat(ifuzzable.IFuzzable):
             self._value = block.render() * self.variable.render()
 
         self._rendered = self._value
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """
@@ -176,7 +181,7 @@ class Repeat(ifuzzable.IFuzzable):
     def __len__(self):
         return self.current_reps * len(self.request.names[self.block_name])
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

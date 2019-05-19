@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import functools
+import six
 
 from . import blocks
 from . import legos
@@ -29,7 +30,8 @@ from .serial_connection import SerialConnection
 from .sessions import Session, Target, open_test_run
 from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
 from .socket_connection import SocketConnection
-
+from past.builtins import map
+from builtins import chr
 __version__ = '0.1.4'
 
 
@@ -40,7 +42,7 @@ def s_get(name=None):
     global function style request manipulation to direct object manipulation. Example::
 
         req = s_get("HTTP BASIC")
-        print req.num_mutations()
+        print(req.num_mutations())
 
     The selected request is also set as the default current. (ie: s_switch(name) is implied).
 
@@ -361,7 +363,7 @@ def s_binary(value, name=None):
         pair = parsed[:2]
         parsed = parsed[2:]
 
-        value += chr(int(pair, 16))
+        value += six.int2byte(int(pair, 16))
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)
@@ -484,7 +486,7 @@ def s_mirror(primitive_name, name=None):
     blocks.CURRENT.push(mirror)
 
 
-def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a string onto the current block stack.
 

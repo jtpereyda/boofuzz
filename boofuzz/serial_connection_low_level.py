@@ -1,4 +1,4 @@
-import iserial_like
+from . import iserial_like
 import serial
 
 

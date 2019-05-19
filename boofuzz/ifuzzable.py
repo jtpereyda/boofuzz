@@ -1,4 +1,7 @@
 import abc
+from builtins import object
+
+from future.utils import listitems, with_metaclass
 
 
 class DocStringInheritor(type):
@@ -14,7 +17,7 @@ class DocStringInheritor(type):
                 if doc:
                     clsdict['__doc__']=doc
                     break
-        for attr, attribute in clsdict.items():
+        for attr, attribute in listitems(clsdict):
             if not attribute.__doc__:
                 for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()
                                 if hasattr(mro_cls, attr)):
@@ -28,15 +31,14 @@ class DocStringInheritor(type):
                         break
         return type.__new__(meta, name, bases, clsdict)
 
-
-class IFuzzable(object):
+# DocStringInheritor is the metaclass in python 2 and 3
+class IFuzzable(with_metaclass(DocStringInheritor, object)):
     """Describes a fuzzable message element or message.
 
     Design Notes:
      - mutate and reset pretty much form an iterator. Future design goal is
        to eliminate them and add a generator function in their place.
     """
-    __metaclass__ = DocStringInheritor
 
     @abc.abstractproperty
     def fuzzable(self):
@@ -106,7 +108,7 @@ class IFuzzable(object):
         return
 
     @abc.abstractmethod
-    def __nonzero__(self):
+    def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.
 
         Design Note: Exists in case some wise guy uses `if my_element:` to

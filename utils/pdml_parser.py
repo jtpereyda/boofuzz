@@ -1,10 +1,12 @@
 #!c:\python\python.exe
 
-import sys
+from __future__ import print_function
 
-from xml.sax import make_parser
-from xml.sax import ContentHandler
+import sys
+import six
+from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
+from builtins import chr
 
 
 class ParsePDML(ContentHandler):
@@ -22,15 +24,15 @@ class ParsePDML(ContentHandler):
         if self.start_parsing:
 
             if not name == "field":
-                print "Found payload with name %s" % attributes["name"]
+                print("Found payload with name %s" % attributes["name"])
             elif name == "field":
-                if "value" in attributes.keys():
+                if "value" in list(attributes):
                     val_string = self.get_string(attributes["value"])
 
                     if val_string:
                         self.sulley += "s_string(\"%s\")\n" % val_string
-                        print self.sulley
-                        # print "\tFound value: %s" % val_string
+                        print(self.sulley)
+                        # print("\tFound value: %s" % val_string)
                     else:
                         # not string
                         pass
@@ -49,7 +51,7 @@ class ParsePDML(ContentHandler):
         if name == "proto":
             # and that proto is tcp, set parsing flag
             if self.current == "tcp":
-                # print "Setting parsing flag to TRUE"
+                # print("Setting parsing flag to TRUE")
                 self.start_parsing = True
 
             else:
@@ -74,7 +76,7 @@ class ParsePDML(ContentHandler):
             if hex_pair > 0x7f:
                 return False
 
-            value += chr(hex_pair)
+            value += six.int2byte(hex_pair)
 
         value = value.replace("\t", "")
         value = value.replace("\r", "")
@@ -87,7 +89,7 @@ class ParsePDML(ContentHandler):
 
     # noinspection PyMethodMayBeStatic
     def error(self, exception):
-        print "Oh shitz: ", exception
+        print("Oh shitz: ", exception)
         sys.exit(1)
 
 
@@ -106,5 +108,3 @@ if __name__ == '__main__':
 
     # parse 
     parser.parse(sys.argv[1])
-
-

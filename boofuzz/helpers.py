@@ -7,13 +7,20 @@ import os
 import platform
 import re
 import signal
+import six
 import socket
 import struct
 import time
 import zlib
 
+from builtins import int
+from past.builtins import map
+from past.builtins import range
+
 from boofuzz import ip_constants
 from colorama import Fore, Back, Style
+
+from functools import reduce
 
 test_step_info = {
     'test_case': {
@@ -117,6 +124,7 @@ def get_max_udp_size():
     windows = platform.uname()[0] == "Windows"
     mac = platform.uname()[0] == "Darwin"
     linux = platform.uname()[0] == "Linux"
+    openbsd = platform.uname()[0] == "OpenBSD"
     lib = None
 
     if windows:
@@ -124,11 +132,13 @@ def get_max_udp_size():
         sol_max_msg_size = 0x2003
         lib = ctypes.WinDLL('Ws2_32.dll'.encode('ascii'))
         opt = ctypes.c_int(sol_max_msg_size)
-    elif linux or mac:
+    elif linux or mac or openbsd:
         if mac:
             lib = ctypes.cdll.LoadLibrary('libc.dylib')
         elif linux:
             lib = ctypes.cdll.LoadLibrary('libc.so.6')
+        elif openbsd:
+            lib = ctypes.cdll.LoadLibrary('libc.so')
         sol_socket = ctypes.c_int(socket.SOL_SOCKET)
         opt = ctypes.c_int(socket.SO_SNDBUF)
 
@@ -211,7 +221,7 @@ def uuid_str_to_bin(uuid):
 
     matches = re.match(uuid_re, uuid)
 
-    (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: long(x, 16), matches.groups())
+    (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: int(x, 16), matches.groups())
 
     uuid = struct.pack('<LHH', uuid1, uuid2, uuid3)
     uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
@@ -236,15 +246,19 @@ def _collate_bytes(msb, lsb):
     Helper function for our helper functions.
     Collates msb and lsb into one 16-bit value.
 
-    :type msb: str
+    :type msb: byte
     :param msb: Single byte (most significant).
 
-    :type lsb: str
+    :type lsb: byte
     :param lsb: Single byte (least significant).
 
     :return: msb and lsb all together in one 16 bit value.
     """
-    return (ord(msb) << 8) + ord(lsb)
+    if six.PY2:
+        result = (ord(msb) << 8) + ord(lsb)
+    else:
+        result = (msb << 8) + lsb
+    return result
 
 
 def ipv4_checksum(msg):
@@ -258,7 +272,7 @@ def ipv4_checksum(msg):
     """
     # Pad with 0 byte if needed
     if len(msg) % 2 == 1:
-        msg += b"\x00"
+        msg += six.binary_type(b"\x00")
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
@@ -282,8 +296,8 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     """
     return (src_addr +
             dst_addr +
-            b"\x00" +
-            chr(ip_constants.IPV4_PROTOCOL_UDP) +
+            six.binary_type(b"\x00") +
+            six.int2byte(ip_constants.IPV4_PROTOCOL_UDP) +
             struct.pack(">H", msg_len))
 
 
@@ -301,7 +315,7 @@ def udp_checksum(msg, src_addr, dst_addr):
 
 
     :param msg: Message to compute checksum over.
-    :type msg: str
+    :type msg: bytes
 
     :type src_addr: bytes
     :param src_addr: Source IP address -- 4 bytes.
@@ -446,3 +460,13 @@ def get_boofuzz_version(boofuzz_class):
             if line.find("__version__ = ") != -1:
                 version = 'v' + re.search("\'(.*?)\'", line).group(1)
     return version
+
+
+def str_to_bytes(value):
+    result = value
+    # if python2, str is alread bytes compatible        
+    if six.PY3:
+        if isinstance(value, six.text_type):
+            temp = [bytes([ord(i)]) for i in value] 
+            result = six.binary_type().join(temp)
+    return result

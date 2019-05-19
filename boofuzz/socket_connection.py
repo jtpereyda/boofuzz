@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 import math
+import six
 import ssl
 import struct
 import sys
-import httplib
 import socket
 import errno
 from future.utils import raise_
@@ -19,8 +19,8 @@ ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_e
 def _seconds_to_second_microsecond_struct(seconds):
     """Convert floating point seconds value to second/useconds struct used by socket library."""
     microseconds_per_second = 1000000
-    whole_seconds = math.floor(seconds)
-    whole_microseconds = math.floor((seconds % 1) * microseconds_per_second)
+    whole_seconds = int(math.floor(seconds))
+    whole_microseconds = int(math.floor((seconds % 1) * microseconds_per_second))
     return struct.pack('ll', whole_seconds, whole_microseconds)
 
 
@@ -77,7 +77,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  send_timeout=5.0,
                  recv_timeout=5.0,
                  ethernet_proto=ETH_P_IP,
-                 l2_dst='\xFF' * 6,
+                 l2_dst=b'\xFF' * 6,
                  udp_broadcast=False,
                  server=False,
                  keyfile=None,
@@ -165,11 +165,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
             if self.server:
-                ssl_sock = ssl.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile, server_side=True)
-                self._sock = httplib.FakeSocket(self._sock, ssl_sock)
+                ssl_sock = ssl.SSLContext.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile, server_side=True)
+                self._sock = ssl_sock
             else:
-                ssl_sock = ssl.wrap_socket(self._sock)
-                self._sock = httplib.FakeSocket(self._sock, ssl_sock)
+                ssl_sock = ssl.SSLContext.wrap_socket(self._sock)
+                self._sock = ssl_sock
 
     def recv(self, max_bytes):
         """
@@ -194,11 +194,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
             elif self.proto in ['raw-l2', 'raw-l3']:
                 # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
                 # dump everything off the interface anyway, which is probably not what the user wants.
-                data = bytes('')
+                data = six.binary_type(b'')
             else:
                 raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
-            data = bytes('')
+            data = six.binary_type(b'')
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror), None, sys.exc_info()[2])
@@ -207,7 +207,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     (e.errno == errno.ETIMEDOUT):
                 raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
-                data = bytes('')
+                data = six.binary_type(b'')
             else:
                 raise
 
@@ -272,4 +272,3 @@ class SocketConnection(itarget_connection.ITargetConnection):
     @property
     def info(self):
         return '{0}:{1}'.format(self.host, self.port)
-
