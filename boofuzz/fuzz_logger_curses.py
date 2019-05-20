@@ -2,6 +2,7 @@ from __future__ import division
 import sys
 import time
 import curses
+import signal
 import threading
 
 from math import *
@@ -109,8 +110,11 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         curses.init_pair(6, curses.COLOR_MAGENTA, -1)
         curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
+        # Start thread and restore the original SIGWINCH handler
         self._draw_thread = threading.Thread(name="curses_logger", target=self._draw_screen)
+        current_signal_handler = signal.getsignal(signal.SIGWINCH)
         self._draw_thread.start()
+        signal.signal(signal.SIGWINCH, current_signal_handler)
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._log_storage = []

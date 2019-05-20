@@ -181,9 +181,8 @@ class DebuggerThreadSimple(threading.Thread):
         if self.isAlive():
             return True
         else:
-            rec_file = open(self.process_monitor.crash_filename, 'a')
-            rec_file.write(self.process_monitor.last_synopsis)
-            rec_file.close()
+            with open(self.process_monitor.crash_filename, 'a') as rec_file:
+                rec_file.write(self.process_monitor.last_synopsis.decode())
 
             if self.process_monitor.coredump_dir is not None:
                 dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))

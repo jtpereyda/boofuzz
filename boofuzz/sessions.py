@@ -12,7 +12,6 @@ import traceback
 import zlib
 import socket
 import errno
-import signal
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -377,13 +376,12 @@ class Session(pgraph.Graph):
         if fuzz_data_logger is not None:
             raise exception.BoofuzzError('Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!')
         if fuzz_loggers is None:
-            if self.console_gui and os.name != 'nt':
-                default_signal_handler = signal.getsignal(signal.SIGWINCH)
-                fuzz_loggers = [fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port)]
-                self._keep_web_open = False
-                signal.signal(signal.SIGWINCH, default_signal_handler)
-            else:
-                fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
+            fuzz_loggers = []
+        if self.console_gui and os.name != 'nt':
+            fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
+            self._keep_web_open = False
+        if len(fuzz_loggers) == 0:
+            fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
         helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
