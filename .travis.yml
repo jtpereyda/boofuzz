@@ -16,8 +16,6 @@ jobs:
       env: TOXENV=py36-unix
     - python: 3.7
       env: TOXENV=py37-unix
-    - python: 3.8-dev
-      env: TOXENV=py38-unix
 
     - stage: Deploy
       install: true
@@ -33,10 +31,6 @@ jobs:
           tags: true
           repo: jtpereyda/boofuzz
           branch: master
-
-  fast_finish: true
-  allow_failures:
-    - python: 3.8-dev
 
 before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 install: pip install tox
