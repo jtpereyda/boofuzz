@@ -9,7 +9,7 @@ import select
 from . import exception
 
 
-class Client:
+class Client(object):
     def __init__(self, host, port):
         self.__host           = host
         self.__port           = port
