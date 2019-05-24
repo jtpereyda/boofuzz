@@ -26,7 +26,7 @@ def _split_command_if_str(command):
         (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
     """
     if isinstance(command, str):
-        return shlex.split(command)
+        return command #shlex.split(command) this function removed backslashes in my start command Ex:C:\\tinyweb\\tiny.exe changed to C:tinywebtiny.exe in tiny_http_fuzzer.py
     else:
         return command
 
