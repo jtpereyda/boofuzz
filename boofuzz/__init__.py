@@ -32,7 +32,7 @@ from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementEx
 from .socket_connection import SocketConnection
 from past.builtins import map
 from builtins import chr
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 # REQUEST MANAGEMENT

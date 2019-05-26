@@ -1,13 +1,16 @@
 Upcoming
 ========
+
+v0.1.5
+======
 Features
 --------
 - New curses logger class to provide a console gui similar to the webinterface. Use the session option `console_gui` to enable it.
   This has not been tested under Windows!
-- New Session option `keep_web_open` to allow analyzing the test results after test completion.
-- Added compatibility for python3
+- Compatibility for Python 3
 - Large test cases are now truncated, unless a failure is detected.
 - When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
+- New Session option `keep_web_open` to allow analyzing the test results after test completion.
 - Process monitor creates new crash file for each run by default.
 - Long lines now wrap in web view; longer lines no longer need to be truncated.
 - Process monitor now stores crash bins in JSON format instead of pickled format.
