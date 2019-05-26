@@ -1,7 +1,10 @@
 from __future__ import division
 import sys
 import time
-import curses
+try:
+    import curses
+except ImportError:
+    pass  # Allow package to be imported on Windows -- will fail if you try to use it
 import signal
 import threading
 
