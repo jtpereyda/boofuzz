@@ -1,6 +1,6 @@
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import Size, Request, Block, Byte, BasePrimitive
+from boofuzz import BasePrimitive, Block, Byte, Request, Size
 
 scenarios('size_original_value.feature')
 
@@ -19,8 +19,8 @@ class SizeChangingBlock(BasePrimitive):
         self._value = self._original_value = value
 
         self._fuzz_library.append(b'\x01\x02')
-        self._fuzz_library.append(b'\x01\x02'*1000)
-        self._fuzz_library.append(b'\x01\x02'*5)
+        self._fuzz_library.append(b'\x01\x02' * 1000)
+        self._fuzz_library.append(b'\x01\x02' * 5)
 
 
 @given('A Size')
@@ -43,7 +43,7 @@ def request_one_block(context):
     context.uut = size
 
 
-@given('A Size whose target block will change size upon mutation')
+@given('A Size whose target block will change size upon mutation')  # noqa: F811
 def request_one_block(context):
     request = Request("unit-test-request")
 
@@ -116,7 +116,7 @@ def result_equals_render_after_reset(context):
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after Request reset()')
+@then('Result equals .render() after Request reset()')  # noqa: F811
 def result_equals_render_after_reset(context):
     context.request.reset()
     assert context.result == context.uut.render()

@@ -1,9 +1,10 @@
 from __future__ import print_function
+
 import os
 import subprocess
+import sys
 import threading
 import time
-import sys
 
 import pydbg
 import pydbg.defines
@@ -173,7 +174,7 @@ class DebuggerThreadPydbg(threading.Thread):
         try:
             self.process_monitor.crash_bin.import_file(self.process_monitor.crash_filename)
         except IOError:
-            pass # ignore missing file, etc.
+            pass  # ignore missing file, etc.
 
     def post_send(self):
         """

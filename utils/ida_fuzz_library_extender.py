@@ -6,9 +6,10 @@
 #
 from __future__ import print_function
 
-from past.builtins import map
-from past.builtins import xrange
 from io import open
+
+from past.builtins import map, xrange
+
 
 def get_string(ea):
     str_type = GetStringType(ea)

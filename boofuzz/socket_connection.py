@@ -1,17 +1,16 @@
 from __future__ import absolute_import
+
+import errno
 import math
-import six
+import socket
 import ssl
 import struct
 import sys
-import socket
-import errno
+
+import six
 from future.utils import raise_
 
-from . import helpers
-from . import itarget_connection
-from . import ip_constants
-from . import exception
+from . import exception, helpers, ip_constants, itarget_connection
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
 
@@ -55,8 +54,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             See "if_ether.h" in Linux documentation for more options.
         l2_dst (str): Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
             Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast).
-        udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send() to
-            work, and '' for bind host for recv() to work.
+        udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send()
+            to work, and '' for bind host for recv() to work.
         server (bool): Set to True to enable server side fuzzing.
         keyfile (str): The file to use for the SSL key when server side fuzzing with proto ssl.
         certfile (str): The file to use for the SSL certificate when server side fuzzing with proto ssl.
@@ -140,8 +139,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
         else:
             raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_second_microsecond_struct(self._send_timeout))
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_second_microsecond_struct(self._recv_timeout))
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO,
+                              _seconds_to_second_microsecond_struct(self._send_timeout))
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO,
+                              _seconds_to_second_microsecond_struct(self._recv_timeout))
 
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -165,7 +166,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
             if self.server:
-                ssl_sock = ssl.SSLContext.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile, server_side=True)
+                ssl_sock = ssl.SSLContext.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile,
+                                                      server_side=True)
                 self._sock = ssl_sock
             else:
                 ssl_sock = ssl.SSLContext.wrap_socket(self._sock)
@@ -201,7 +203,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
             data = six.binary_type(b'')
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror), None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
+                       None,
+                       sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):

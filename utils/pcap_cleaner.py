@@ -10,7 +10,6 @@ from boofuzz import utils
 sys.path.append(r"..\..\..\paimei")
 
 
-
 USAGE = "\nUSAGE: pcap_cleaner.py <xxx.crashbin> <path to pcaps>\n"
 
 if len(sys.argv) != 3:

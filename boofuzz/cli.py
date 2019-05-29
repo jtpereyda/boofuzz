@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
+
 import logging
 import time
 
 import click
-from . import constants
-from . import sessions
+
+from . import constants, sessions
 
 
 @click.group()

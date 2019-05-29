@@ -1,7 +1,8 @@
-from boofuzz import *
+from io import open
 
 from past.builtins import xrange
-from io import open
+
+from boofuzz import *
 
 
 def run():

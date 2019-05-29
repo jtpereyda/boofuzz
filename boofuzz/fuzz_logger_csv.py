@@ -1,10 +1,10 @@
 from __future__ import print_function
-import sys
-import datetime
-import csv
 
-from . import helpers
-from . import ifuzz_logger_backend
+import csv
+import datetime
+import sys
+
+from . import helpers, ifuzz_logger_backend
 
 
 def hex_to_hexstr(input_bytes):
@@ -36,7 +36,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
         Args:
-            file_handle (io.TextIOBase): Open file handle for logging. Defaults to sys.stdout.
+            file_handle (io.TextIO): Open file handle for logging. Defaults to sys.stdout.
             bytes_to_str (function): Function that converts sent/received bytes data to string for logging.
         """
         self._file_handle = file_handle

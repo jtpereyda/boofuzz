@@ -3,10 +3,10 @@
 from __future__ import print_function
 
 import sys
-import six
 from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
-from builtins import chr
+
+import six
 
 
 class ParsePDML(ContentHandler):
@@ -106,5 +106,5 @@ if __name__ == '__main__':
     # point parser to handler
     parser.setContentHandler(handler)
 
-    # parse 
+    # parse
     parser.parse(sys.argv[1])

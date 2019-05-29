@@ -1,16 +1,14 @@
 from __future__ import print_function
+
 import collections
 import datetime
-import six
 import sqlite3
-
-from . import helpers
-from . import ifuzz_logger_backend
-from . import data_test_case
-from . import data_test_step
-from . import exception
-
 import sys
+
+import six
+
+from . import data_test_case, data_test_step, exception, helpers, ifuzz_logger_backend
+
 # fixup for buffer in python 3
 if sys.version_info.major > 2:
     buffer = memoryview
@@ -43,8 +41,8 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._database_connection = sqlite3.connect(db_filename, check_same_thread=False)
         self._db_cursor = self._database_connection.cursor()
         self._db_cursor.execute('''CREATE TABLE cases (name text, number integer, timestamp TEXT)''')
-        self._db_cursor.execute(
-            '''CREATE TABLE steps (test_case_index integer, type text, description text, data blob, timestamp TEXT, is_truncated BOOLEAN)''')
+        self._db_cursor.execute('''CREATE TABLE steps (test_case_index integer, type text, description text, data blob,
+                                                        timestamp TEXT, is_truncated BOOLEAN)''')
 
         self._current_test_case_index = 0
 
@@ -129,7 +127,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         if len(self._queue) > 0:
             if self._queue_max_len > 0:
                 while (self._current_test_case_index - next(
-                        x for x in self._queue[0] if isinstance(x, (six.integer_types)))) >= self._queue_max_len:
+                        x for x in self._queue[0] if isinstance(x, six.integer_types))) >= self._queue_max_len:
                     self._queue.popleft()
             else:
                 force = True

@@ -1,17 +1,18 @@
 import random
 
 import six
-from .. import helpers
 from past.builtins import range
 
 from .base_primitive import BasePrimitive
+from .. import helpers
 
 
 class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), encoding="ascii", fuzzable=True, max_len=-1, name=None):
+    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), encoding="ascii", fuzzable=True, max_len=-1,
+                 name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -104,8 +105,8 @@ class String(BasePrimitive):
                     "|reboot",
                     ";reboot;",
                     "\nreboot\n",
-                    
-                    #fuzzdb command injection
+
+                    # fuzzdb command injection
                     "a)|reboot;",
                     "CMD=$'reboot';$CMD",
                     "a;reboot",
@@ -235,7 +236,7 @@ class String(BasePrimitive):
         if self.max_len > 0:
             if any(len(s) > self.max_len for s in self.this_library):
                 # Pull out the bad string(s):
-                self.this_library = list(set([s[:self.max_len] for s in self.this_library]))
+                self.this_library = list(set([s[:self.max_len] for s in self.this_library]))  # noqa: F812
             if any(len(s) > self.max_len for s in self._fuzz_library):
                 # Pull out the bad string(s):
                 self._fuzz_library = list(set([s[:self.max_len] for s in self._fuzz_library]))

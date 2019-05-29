@@ -1,9 +1,9 @@
 from __future__ import absolute_import
+
 import math
 import struct
-import six
 
-from builtins import chr
+import six
 from past.builtins import xrange
 
 from ..helpers import crc16

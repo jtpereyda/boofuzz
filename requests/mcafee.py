@@ -1,9 +1,9 @@
+from struct import *
+
 import six
 
 from boofuzz import *
 
-from struct import *
-from builtins import chr
 
 # stupid one byte XOR
 def mcafee_epo_xor(buf, poly=0xAA):

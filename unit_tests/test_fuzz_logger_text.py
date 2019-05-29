@@ -1,8 +1,9 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
-from builtins import bytes, chr
-import six
+from __future__ import absolute_import, unicode_literals
+
 import unittest
+
+import six
+from builtins import bytes, chr
 
 try:
     from StringIO import StringIO

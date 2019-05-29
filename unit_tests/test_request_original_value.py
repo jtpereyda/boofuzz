@@ -1,7 +1,6 @@
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import Request
-from boofuzz import primitives
+from boofuzz import primitives, Request
 
 scenarios('request_original_value.feature')
 
@@ -33,7 +32,7 @@ def mutate_twice(context):
 
 
 @given('Request is mutated thrice')
-def mutate_twice(context):
+def mutate_thrice(context):
     context.uut.mutate()
     context.uut.mutate()
     context.uut.mutate()

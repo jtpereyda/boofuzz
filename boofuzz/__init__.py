@@ -1,37 +1,70 @@
 from __future__ import absolute_import
 
 import functools
-import six
 
-from . import blocks
-from . import legos
-from . import pedrpc
-from . import primitives
-from . import exception
-from .blocks import REQUESTS
-from .blocks.block import Block
-from .blocks.checksum import Checksum
-from .blocks.repeat import Repeat
-from .blocks.request import Request
-from .blocks.size import Size
-from .constants import BIG_ENDIAN, LITTLE_ENDIAN, DEFAULT_PROCMON_PORT
+import six
+from past.builtins import map
+
+from . import blocks, exception, legos, pedrpc, primitives
+from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
+from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
+from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
-from .fuzz_logger_text import FuzzLoggerText
 from .fuzz_logger_curses import FuzzLoggerCurses
+from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
-from .primitives import (BasePrimitive, Delim, Group,
-                         RandomData, Static, String, BitField,
-                         Byte, Word, DWord, QWord, FromFile, Mirror)
+from .primitives import (BasePrimitive, BitField, Byte, Delim, DWord, FromFile, Group, Mirror, QWord, RandomData,
+                         Static, String, Word)
 from .serial_connection import SerialConnection
-from .sessions import Session, Target, open_test_run
-from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
+from .sessions import open_test_run, Session, Target
 from .socket_connection import SocketConnection
-from past.builtins import map
-from builtins import chr
+
+__all__ = ['blocks', 'legos', 'pedrpc', 'primitives', 'exception',
+           'REQUESTS', 'Block', 'Checksum', 'Repeat', 'Request', 'Size',
+           'BIG_ENDIAN', 'LITTLE_ENDIAN', 'DEFAULT_PROCMON_PORT',
+           'EventHook',
+           'FuzzLogger', 'FuzzLoggerCsv', 'FuzzLoggerText', 'FuzzLoggerCurses', 'IFuzzLogger', 'IFuzzLoggerBackend',
+           'ITargetConnection',
+           'BasePrimitive', 'Delim', 'Group', 'RandomData', 'Static', 'String', 'BitField', 'Byte', 'Word', 'DWord',
+           'QWord', 'FromFile', 'Mirror',
+           'SerialConnection', 'SocketConnection',
+           'Session', 'Target', 'open_test_run',
+           'SullyRuntimeError', 'SizerNotUtilizedError', 'MustImplementException',
+           's_get',
+           's_initialize',
+           's_mutate',
+           's_num_mutations',
+           's_render',
+           's_switch',
+           's_block', 's_block_start', 's_block_end',
+           's_checksum',
+           's_repeat', 's_repeater',
+           's_size', 's_sizer',
+           's_update',
+           's_binary',
+           's_delim',
+           's_group',
+           's_lego',
+           's_random',
+           's_static', 's_dunno', 's_raw', 's_unknown',
+           's_mirror',
+           's_string',
+           's_from_file',
+           's_bit_field', 's_bit', 's_bits',
+           's_byte', 's_char',
+           's_word', 's_short',
+           's_dword', 's_long', 's_int',
+           's_qword', 's_double',
+           's_intelword',
+           's_bigword',
+           's_cstring',
+           's_hex_dump'
+           ]
+
 __version__ = '0.1.5'
 
 
@@ -180,8 +213,8 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
 
 def s_block_start(name, *args, **kwargs):
     """
-    Open a new block under the current request. This routine always returns an instance so you can make your fuzzer pretty
-    with indenting::
+    Open a new block under the current request. This routine always returns an instance so you can make your fuzzer
+    pretty with indenting::
 
         if s_block_start("header"):
             s_static("\\x00\\x01")
@@ -473,7 +506,7 @@ def s_static(value, name=None):
 def s_mirror(primitive_name, name=None):
     """
     Push a mirror of another primitive onto the current block stack.
-    
+
     :type primitive_name:   str
     :param primitive_name:  Name of target primitive
     :type name:             str
@@ -547,7 +580,7 @@ def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", sign
     :type  endian:         Character
     :param endian:         (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
     :type  output_format:  str
-    :param output_format format:  (Optional, def=binary) Output format, "binary" or "ascii"
+    :param output_format:  (Optional, def=binary) Output format, "binary" or "ascii"
     :type  signed:         bool
     :param signed:         (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
     :type  full_range:     bool

@@ -1,9 +1,10 @@
 from __future__ import print_function
+
 import sys
+
 from colorama import init
 
-from . import helpers
-from . import ifuzz_logger_backend
+from . import helpers, ifuzz_logger_backend
 
 init()
 
@@ -22,7 +23,7 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
-        :type file_handle: io.FileIO
+        :type file_handle: io.TextIO
         :param file_handle: Open file handle for logging. Defaults to sys.stdout.
 
         :type bytes_to_str: function

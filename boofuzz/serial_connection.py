@@ -1,7 +1,8 @@
 from __future__ import absolute_import
+
 import time
-from . import itarget_connection
-from . import serial_connection_low_level
+
+from . import itarget_connection, serial_connection_low_level
 
 
 class SerialConnection(itarget_connection.ITargetConnection):
@@ -64,8 +65,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         """
         Opens connection to the target. Make sure to call close!
 
-        Returns:
-            No  ne
+        :return: None
         """
         self._connection.open()
 
@@ -93,7 +93,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
                 last_byte_time = time.time()
 
             # Try recv again
-            fragment = self._connection.recv(max_bytes=max_bytes-len(data))
+            fragment = self._connection.recv(max_bytes=max_bytes - len(data))
             data += fragment
 
             # User-supplied content_checker function

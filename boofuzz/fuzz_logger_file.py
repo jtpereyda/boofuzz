@@ -1,7 +1,9 @@
-from . import ifuzz_logger
-import os
 import errno
+import os
 from io import open
+
+from . import ifuzz_logger
+
 
 class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
     """

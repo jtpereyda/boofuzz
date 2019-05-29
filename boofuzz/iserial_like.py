@@ -2,6 +2,7 @@ import abc
 
 from future.utils import with_metaclass
 
+
 # abc.ABCMeta is the metaclass in both python 2 and 3
 class ISerialLike(with_metaclass(abc.ABCMeta, object)):
     """

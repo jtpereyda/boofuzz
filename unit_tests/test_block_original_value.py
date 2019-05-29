@@ -1,6 +1,6 @@
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import Request, Block, Byte
+from boofuzz import Block, Byte, Request
 
 scenarios('block_original_value.feature')
 

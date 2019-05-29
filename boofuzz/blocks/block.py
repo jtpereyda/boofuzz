@@ -2,9 +2,8 @@ from __future__ import absolute_import
 
 import six
 
-from ..ifuzzable import IFuzzable
-from ..primitives import BasePrimitive
 from .. import helpers
+from ..ifuzzable import IFuzzable
 
 
 class Block(IFuzzable):
@@ -68,7 +67,7 @@ class Block(IFuzzable):
     def name(self):
         return self._name
 
-    def mutate(self):
+    def mutate(self):  # noqa: C901
         mutated = False
 
         # are we done with this block?

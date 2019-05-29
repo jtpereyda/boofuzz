@@ -1,6 +1,6 @@
 import abc
-from builtins import object
 
+from builtins import object
 from future.utils import listitems, with_metaclass
 
 
@@ -13,15 +13,15 @@ class DocStringInheritor(type):
     def __new__(meta, name, bases, clsdict):
         if not('__doc__' in clsdict and clsdict['__doc__']):
             for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()):
-                doc=mro_cls.__doc__
+                doc = mro_cls.__doc__
                 if doc:
-                    clsdict['__doc__']=doc
+                    clsdict['__doc__'] = doc
                     break
         for attr, attribute in listitems(clsdict):
             if not attribute.__doc__:
                 for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()
                                 if hasattr(mro_cls, attr)):
-                    doc=getattr(getattr(mro_cls,attr),'__doc__')
+                    doc = getattr(getattr(mro_cls, attr), '__doc__')
                     if doc:
                         if isinstance(attribute, property):
                             clsdict[attr] = property(attribute.fget, attribute.fset,
@@ -30,6 +30,7 @@ class DocStringInheritor(type):
                             attribute.__doc__ = doc
                         break
         return type.__new__(meta, name, bases, clsdict)
+
 
 # DocStringInheritor is the metaclass in python 2 and 3
 class IFuzzable(with_metaclass(DocStringInheritor, object)):

@@ -1,7 +1,8 @@
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 import pytest
-from pytest_bdd import given, when, then, scenarios, scenario
+from pytest_bdd import given, scenario, scenarios, then, when
+
 from boofuzz import helpers
 
 

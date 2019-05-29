@@ -2,10 +2,10 @@ import sys
 
 import click
 
+from boofuzz import helpers
 from boofuzz.constants import DEFAULT_PROCMON_PORT
 from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
-from boofuzz import helpers
 
 '''
 By nnp
@@ -31,7 +31,7 @@ Limitations
     - Currently only accepts one start_command
     - Limited 'crash binning'. Relies on the availability of core dumps. These
       should be created in the same directory the process is ran from on Linux
-      and in the (hidden) /cores directory on OS X. On OS X you have to add 
+      and in the (hidden) /cores directory on OS X. On OS X you have to add
       the option COREDUMPS=-YES- to /etc/hostconfig and then `ulimit -c
       unlimited` as far as I know. A restart may be required. The file
       specified by crash_bin will any other available details such as the test

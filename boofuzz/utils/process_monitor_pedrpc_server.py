@@ -4,11 +4,10 @@ import os
 import shlex
 import time
 
-from past.builtins import map
 from builtins import str
+from past.builtins import map
 
-from boofuzz import pedrpc
-from boofuzz import utils
+from boofuzz import pedrpc, utils
 
 
 def _split_command_if_str(command):
@@ -32,7 +31,8 @@ def _split_command_if_str(command):
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None):
+    def __init__(self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1,
+                 coredump_dir=None):
         """
         @type  host:           str
         @param host:           Hostname or IP address
@@ -40,8 +40,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @param port:           Port to bind server to
         @type  crash_filename: str
         @param crash_filename: Name of file to (un)serialize crash bin to/from
-        @type  proc_name:           str
-        @param proc_name:           (Optional, def=None) Process name to search for and attach to
+        @type  proc_name:      str
+        @param proc_name:      (Optional, def=None) Process name to search for and attach to
         @type  pid_to_ignore:  int
         @param pid_to_ignore:  (Optional, def=None) Ignore this PID when searching for the target process
         @type  level:          int

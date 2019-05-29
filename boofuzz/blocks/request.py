@@ -2,10 +2,9 @@ import collections
 
 import six
 
-from .. import exception
-from ..ifuzzable import IFuzzable
 from .block import Block
-from .. import helpers
+from .. import exception, helpers
+from ..ifuzzable import IFuzzable
 
 
 class Request(IFuzzable):

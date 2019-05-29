@@ -1,8 +1,10 @@
 import sys
+
+from boofuzz import helpers
+from boofuzz.primitives import Delim, Static, String
+
 sys.path.insert(0, '../')
 
-from boofuzz.primitives import String, Static, Delim
-from .. import helpers
 
 class Group(object):
     blocks = []
@@ -42,7 +44,7 @@ class Group(object):
 
 
 s_static = Static
-s_delim  = Delim
+s_delim = Delim
 s_string = String
 
 CloseHeader = Group(

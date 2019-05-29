@@ -1,9 +1,8 @@
+import six
+from past.builtins import xrange
+
 from boofuzz import *
 
-import six
-
-from past.builtins import map
-from past.builtins import xrange
 
 def run():
     groups_and_num_test_cases()
@@ -58,15 +57,14 @@ def groups_and_num_test_cases():
     assert (req1.names["group"].num_mutations() == 4)
 
     # assert that the number of block mutations equals the sum of the number of mutations of its components.
-    assert (req1.names["BLOCK"].num_mutations() == (
-            req1.names["delim"].num_mutations() +
-            req1.names["string"].num_mutations() +
-            req1.names["byte"].num_mutations() +
-            req1.names["word"].num_mutations() +
-            req1.names["dword"].num_mutations() +
-            req1.names["qword"].num_mutations() +
-            req1.names["random"].num_mutations()
-    ))
+    assert (req1.names["BLOCK"].num_mutations() == (req1.names["delim"].num_mutations()
+                                                    + req1.names["string"].num_mutations()
+                                                    + req1.names["byte"].num_mutations()
+                                                    + req1.names["word"].num_mutations()
+                                                    + req1.names["dword"].num_mutations()
+                                                    + req1.names["qword"].num_mutations()
+                                                    + req1.names["random"].num_mutations()
+                                                    ))
 
     s_initialize("UNIT TEST 2")
     s_group("group", values=[b"\x01", b"\x05", b"\x0a", b"\xff"])
@@ -98,11 +96,11 @@ def dependencies():
         s_block_end()
 
     assert (s_num_mutations() == 2)
-    assert (s_mutate() == True)
+    assert (s_mutate() is True)
     assert (s_render().find(six.binary_type(b"TWO")) == -1)
-    assert (s_mutate() == True)
+    assert (s_mutate() is True)
     assert (s_render().find(six.binary_type(b"ONE")) == -1)
-    assert (s_mutate() == False)
+    assert (s_mutate() is False)
 
 
 def repeaters():

@@ -1,16 +1,17 @@
 #!c:\\python\\python.exe
-import threading
 import getopt
-import time
-import sys
 import os
-# noinspection PyUnresolvedReferences
-import pcapy
+import sys
+import threading
+import time
+from io import open
+
 import impacket
 import impacket.ImpactDecoder
-from boofuzz import pedrpc
-from boofuzz import helpers
-from io import open
+# noinspection PyUnresolvedReferences
+import pcapy
+
+from boofuzz import helpers, pedrpc
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 
@@ -285,6 +286,7 @@ def main():
 
     except Exception:
         pass
+
 
 if __name__ == "__main__":
     main()

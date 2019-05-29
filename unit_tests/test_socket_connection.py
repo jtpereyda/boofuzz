@@ -1,22 +1,20 @@
 import functools
-import threading
-import time
 import logging
 import socket
 import struct
 import sys
+import threading
+import time
 import unittest
 import zlib
-import six
 
-import pytest
 import ipaddress
 import netifaces
+import pytest
+import six
 
+from boofuzz import helpers, ip_constants, socket_connection
 from boofuzz.socket_connection import SocketConnection
-from boofuzz import socket_connection
-from boofuzz import ip_constants
-from boofuzz import helpers
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -697,8 +695,8 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[
-                                                                                               :RAW_L3_MAX_PAYLOAD]
+        expected_server_receive = b'\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00'\
+                                  + raw_packet[:RAW_L3_MAX_PAYLOAD]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True

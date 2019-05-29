@@ -1,5 +1,4 @@
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import ctypes
 import errno
@@ -7,20 +6,18 @@ import os
 import platform
 import re
 import signal
-import six
 import socket
 import struct
 import time
 import zlib
+from functools import reduce
 
+import six
 from builtins import int
-from past.builtins import map
-from past.builtins import range
+from colorama import Back, Fore, Style
+from past.builtins import map, range
 
 from boofuzz import ip_constants
-from colorama import Fore, Back, Style
-
-from functools import reduce
 
 test_step_info = {
     'test_case': {
@@ -294,11 +291,11 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     :return: UDP pseudo-header
     :rtype: bytes
     """
-    return (src_addr +
-            dst_addr +
-            six.binary_type(b"\x00") +
-            six.int2byte(ip_constants.IPV4_PROTOCOL_UDP) +
-            struct.pack(">H", msg_len))
+    return (src_addr
+            + dst_addr
+            + six.binary_type(b"\x00")
+            + six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)
+            + struct.pack(">H", msg_len))
 
 
 def udp_checksum(msg, src_addr, dst_addr):
@@ -330,9 +327,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # "Truncate" the message as it appears in the checksum.
     msg = msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
-    return ipv4_checksum(
-        _udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) +
-        msg)
+    return ipv4_checksum(_udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg)
 
 
 def hex_str(s):
@@ -386,7 +381,8 @@ def _indent_after_first_line(lines, amount, ch=' '):
     return ('\n' + padding).join(lines.split('\n'))
 
 
-def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, truncated=False, format_type='terminal'):
+def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, truncated=False,
+                   format_type='terminal'):
     curses_mode = False
     if data is None:
         data = b''
@@ -403,7 +399,8 @@ def format_log_msg(msg_type, description=None, data=None, indent_size=2, timesta
     else:
         msg = ''
 
-    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data), note='' if not truncated else ' (data truncated for database storage)')
+    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data), note='' if not truncated
+                                                       else ' (data truncated for database storage)')
     msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
     msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
 
@@ -458,15 +455,15 @@ def get_boofuzz_version(boofuzz_class):
         for line in search:
             # line = line.rstrip()  # remove '\n' at end of line
             if line.find("__version__ = ") != -1:
-                version = 'v' + re.search("\'(.*?)\'", line).group(1)
+                version = 'v' + re.search(r"\'(.*?)\'", line).group(1)
     return version
 
 
 def str_to_bytes(value):
     result = value
-    # if python2, str is alread bytes compatible        
+    # if python2, str is alread bytes compatible
     if six.PY3:
         if isinstance(value, six.text_type):
-            temp = [bytes([ord(i)]) for i in value] 
+            temp = [bytes([ord(i)]) for i in value]
             result = six.binary_type().join(temp)
     return result

@@ -1,6 +1,7 @@
-import flask
-from flask import Flask, render_template, redirect
 import re
+
+import flask
+from flask import Flask, redirect, render_template
 
 from .. import exception
 

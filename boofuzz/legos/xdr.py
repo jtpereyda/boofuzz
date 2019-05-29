@@ -2,12 +2,12 @@
 
 from __future__ import absolute_import
 
-import six
 import struct
 
-from .. import blocks, primitives, exception
+import six
+
+from .. import blocks, exception, helpers, primitives
 from ..helpers import calculate_four_byte_padding
-from .. import helpers
 
 
 class String(blocks.Block):

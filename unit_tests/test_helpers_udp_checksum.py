@@ -1,14 +1,14 @@
 from __future__ import division
+
 import ast
 import math
+
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 import pytest
-from pytest_bdd import parsers
-from pytest_bdd import given, when, then, scenarios
-from boofuzz import helpers
-from boofuzz import ip_constants
+from pytest_bdd import given, parsers, scenarios, then, when
 
+from boofuzz import helpers, ip_constants
 
 scenarios('helpers_udp_checksum.feature')
 

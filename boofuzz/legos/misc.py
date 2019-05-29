@@ -1,8 +1,10 @@
 # Misc Types
 from __future__ import absolute_import
-from .. import blocks, primitives, exception
+
 import six
-from .. import helpers
+
+from .. import blocks, exception, helpers, primitives
+
 
 class DNSHostname(blocks.Block):
     def __init__(self, name, request, value, options=None):
