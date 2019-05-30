@@ -1376,6 +1376,7 @@ class Session(pgraph.Graph):
             else:
                 print("PASS: {0}".format(test_case_name))
             self._stop_netmon(target)
+            self._fuzz_data_logger.close_test_case()
             self.export_file()
 
     def _fuzz_current_case(self, path):
