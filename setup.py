@@ -24,8 +24,11 @@ def find_version(*path_elements):
 
 
 def get_long_description():
-    with open(os.path.join(setup_dir, 'README.rst'), encoding='utf-8') as f:
-        return f.read()
+    descr = []
+    for fname in 'README.rst', 'CHANGELOG.rst':
+        with open(os.path.join(setup_dir, fname), encoding='utf-8') as f:
+            descr.append(f.read())
+    return '\n\n'.join(descr)
 
 
 setup(
