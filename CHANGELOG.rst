@@ -3,6 +3,12 @@ Changelog
 
 Upcoming
 --------
+Features
+^^^^^^^^
+
+Fixes
+^^^^^
+- Test cases were not being properly closed when using the check_message() functionality.
 
 v0.1.5
 ------
