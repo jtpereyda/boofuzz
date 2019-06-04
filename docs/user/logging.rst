@@ -35,6 +35,13 @@ CSV Logging
     :undoc-members:
     :show-inheritance:
 
+Console-GUI Logging
+===================
+.. autoclass:: boofuzz.FuzzLoggerCurses
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 File Logging
 ============
 Deprecated: Use FuzzLogger with FuzzLoggerText for typical fuzz logging.

@@ -23,9 +23,20 @@ def find_version(*path_elements):
     raise RuntimeError("version string not found in {0}".format(path))
 
 
+def get_long_description():
+    descr = []
+    for fname in 'README.rst', 'CHANGELOG.rst':
+        with open(os.path.join(setup_dir, fname), encoding='utf-8') as f:
+            descr.append(f.read())
+    return '\n\n'.join(descr)
+
+
 setup(
     name='boofuzz',
     version=find_version("boofuzz", "__init__.py"),
+    description="A fork and successor of the Sulley Fuzzing Framework",
+    long_description=get_long_description(),
+    long_description_content_type='text/x-rst',
     maintainer='Joshua Pereyda',
     maintainer_email='joshua.t.pereyda@gmail.com',
     url='https://github.com/jtpereyda/boofuzz',

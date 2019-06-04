@@ -159,7 +159,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 self._sock.connect((self.host, self.port))
             except socket.error as e:
                 if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS]:
-                    raise exception.BoofuzzTargetConnectionFailedError(e.message)
+                    raise exception.BoofuzzTargetConnectionFailedError(str(e))
                 else:
                     raise
 
@@ -209,7 +209,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
             elif (e.errno == errno.ECONNRESET) or \
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT):
-                raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
                 data = six.binary_type(b'')
             else:
@@ -268,7 +268,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     (e.errno == errno.ENETRESET) or \
                     (e.errno == errno.ETIMEDOUT) or \
                     (e.errno == errno.EPIPE):
-                raise_(exception.BoofuzzTargetConnectionReset, None, sys.exc_info()[2])
+                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             else:
                 raise
         return num_sent
