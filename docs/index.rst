@@ -73,6 +73,11 @@ User Guide
     user/quickstart
     user/contributing
 
+.. toctree::
+    :maxdepth: 1
+
+    user/changelog
+
 Public Protocol Libraries
 -------------------------
 
