@@ -9,6 +9,7 @@ Features
 Fixes
 ^^^^^
 - Test cases were not being properly closed when using the check_message() functionality.
+- Some code style changes to meet PEP8
 
 v0.1.5
 ------
