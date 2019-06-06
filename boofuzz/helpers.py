@@ -449,14 +449,12 @@ def get_boofuzz_version(boofuzz_class):
     :rtype: str
     :return: Boofuzz version as string
     """
-    version = "v0.0.0"
     path = os.path.dirname(boofuzz_class.__file__)
     with open(os.path.join(path, "__init__.py")) as search:
         for line in search:
-            # line = line.rstrip()  # remove '\n' at end of line
             if line.find("__version__ = ") != -1:
-                version = 'v' + re.search(r"\'(.*?)\'", line).group(1)
-    return version
+                return 'v' + re.search("\'(.*?)\'", line).group(1)
+    return "v-.-.-"
 
 
 def str_to_bytes(value):

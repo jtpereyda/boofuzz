@@ -236,10 +236,10 @@ class String(BasePrimitive):
         if self.max_len > 0:
             if any(len(s) > self.max_len for s in self.this_library):
                 # Pull out the bad string(s):
-                self.this_library = list(set([s[:self.max_len] for s in self.this_library]))  # noqa: F812
+                self.this_library = list(set([t[:self.max_len] for t in self.this_library]))
             if any(len(s) > self.max_len for s in self._fuzz_library):
                 # Pull out the bad string(s):
-                self._fuzz_library = list(set([s[:self.max_len] for s in self._fuzz_library]))
+                self._fuzz_library = list(set([t[:self.max_len] for t in self._fuzz_library]))
 
     @property
     def name(self):

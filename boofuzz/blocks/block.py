@@ -67,7 +67,7 @@ class Block(IFuzzable):
     def name(self):
         return self._name
 
-    def mutate(self):  # noqa: C901
+    def mutate(self):
         mutated = False
 
         # are we done with this block?

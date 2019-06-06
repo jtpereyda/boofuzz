@@ -23,7 +23,7 @@ class FuzzLoggerText(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
-        :type file_handle: io.TextIO
+        :type file_handle: io.BinaryIO
         :param file_handle: Open file handle for logging. Defaults to sys.stdout.
 
         :type bytes_to_str: function
