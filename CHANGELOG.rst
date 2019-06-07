@@ -9,6 +9,7 @@ Features
 Fixes
 ^^^^^
 - Test cases were not being properly closed when using the check_message() functionality.
+- Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
 
 v0.1.5
 ------
