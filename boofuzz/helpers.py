@@ -453,7 +453,7 @@ def get_boofuzz_version(boofuzz_class):
     with open(os.path.join(path, "__init__.py")) as search:
         for line in search:
             if line.find("__version__ = ") != -1:
-                return 'v' + re.search("\'(.*?)\'", line).group(1)
+                return 'v' + re.search(r"'(.*?)'", line).group(1)
     return "v-.-.-"
 
 

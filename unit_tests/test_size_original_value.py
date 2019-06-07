@@ -43,8 +43,8 @@ def request_one_block(context):
     context.uut = size
 
 
-@given('A Size whose target block will change size upon mutation')  # noqa: F811
-def request_one_block(context):
+@given('A Size whose target block will change size upon mutation')
+def request_one_block_with_size_change(context):
     request = Request("unit-test-request")
 
     block = Block(name="unit-test-block", request=Request)
@@ -116,7 +116,7 @@ def result_equals_render_after_reset(context):
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after Request reset()')  # noqa: F811
-def result_equals_render_after_reset(context):
+@then('Result equals .render() after Request reset()')
+def result_equals_render_after_request_reset(context):
     context.request.reset()
     assert context.result == context.uut.render()
