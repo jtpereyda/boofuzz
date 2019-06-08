@@ -35,10 +35,10 @@ def request_one_block(context):
     request.push(byte1)
     request.push(byte2)
 
+    request.pop()
+
     size = Size(block_name="unit-test-block", request=request, fuzzable=True, name="Size block")
     request.push(size)
-
-    request.pop()
 
     context.uut = size
 
