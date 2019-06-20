@@ -9,6 +9,7 @@ Features
 Fixes
 ^^^^^
 - Test cases were not being properly closed when using the check_message() functionality.
+- `s_group` primitive was not accepting empty default value.
 
 v0.1.5
 ------
