@@ -24,6 +24,8 @@ class Group(BasePrimitive):
 
         assert len(self.values) > 0, "You can't have an empty value list for your group!"
 
+        if default_value is None:
+            default_value = self.values[0]
         self._value = self._original_value = default_value
 
         for val in self.values:
