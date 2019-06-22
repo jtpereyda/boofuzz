@@ -1,9 +1,9 @@
 import random
-import six
 
-from builtins import chr
+import six
 from past.builtins import xrange
 
+from boofuzz import helpers
 from .base_primitive import BasePrimitive
 
 
@@ -33,7 +33,7 @@ class RandomData(BasePrimitive):
 
         super(RandomData, self).__init__()
 
-        self._value = self._original_value = str(value)
+        self._value = self._original_value = helpers.str_to_bytes(value)
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations
