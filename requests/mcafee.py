@@ -1,6 +1,8 @@
-from boofuzz import *
-
 from struct import *
+
+import six
+
+from boofuzz import *
 
 
 # stupid one byte XOR
@@ -8,7 +10,7 @@ def mcafee_epo_xor(buf, poly=0xAA):
     new_buf = ""
 
     for char in buf:
-        new_buf += chr(ord(char) ^ poly)
+        new_buf += six.int2byte(ord(char) ^ poly)
 
     return new_buf
 

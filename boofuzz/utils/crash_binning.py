@@ -22,24 +22,26 @@
 @organization: www.openrce.org
 """
 
-import zlib
-import cPickle
+import json
+from io import open
+
+from past.builtins import xrange
 
 
 class CrashBinStruct:
     def __init__(self):
-        self.exception_module    = None
-        self.exception_address   = 0
-        self.write_violation     = 0
-        self.violation_address   = 0
+        self.exception_module = None
+        self.exception_address = 0
+        self.write_violation = 0
+        self.violation_address = 0
         self.violation_thread_id = 0
-        self.context             = None
-        self.context_dump        = None
-        self.disasm              = None
-        self.disasm_around       = []
-        self.stack_unwind        = []
-        self.seh_unwind          = []
-        self.extra               = None
+        self.context = None
+        self.context_dump = None
+        self.disasm = None
+        self.disasm_around = []
+        self.stack_unwind = []
+        self.seh_unwind = []
+        self.extra = None
 
 
 class CrashBinning:
@@ -47,14 +49,14 @@ class CrashBinning:
     @todo: Add MySQL import/export.
     """
 
-    bins       = {}
+    bins = {}
     last_crash = None
-    pydbg      = None
+    pydbg = None
 
     def __init__(self):
-        self.bins       = {}
+        self.bins = {}
         self.last_crash = None
-        self.pydbg      = None
+        self.pydbg = None
 
     def record_crash(self, pydbg, extra=None):
         """
@@ -80,22 +82,22 @@ class CrashBinning:
         else:
             exception_module = "[INVALID]"
 
-        crash.exception_module    = exception_module
-        crash.exception_address   = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionAddress
-        crash.write_violation     = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionInformation[0]
-        crash.violation_address   = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionInformation[1]
+        crash.exception_module = exception_module
+        crash.exception_address = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionAddress
+        crash.write_violation = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionInformation[0]
+        crash.violation_address = pydbg.dbg.u.Exception.ExceptionRecord.ExceptionInformation[1]
         crash.violation_thread_id = pydbg.dbg.dwThreadId
-        crash.context             = pydbg.context
-        crash.context_dump        = pydbg.dump_context(pydbg.context, print_dots=False)
-        crash.disasm              = pydbg.disasm(crash.exception_address)
-        crash.disasm_around       = pydbg.disasm_around(crash.exception_address, 10)
-        crash.stack_unwind        = pydbg.stack_unwind()
-        crash.seh_unwind          = pydbg.seh_unwind()
-        crash.extra               = extra
+        crash.context = pydbg.context
+        crash.context_dump = pydbg.dump_context(pydbg.context, print_dots=False)
+        crash.disasm = pydbg.disasm(crash.exception_address)
+        crash.disasm_around = pydbg.disasm_around(crash.exception_address, 10)
+        crash.stack_unwind = pydbg.stack_unwind()
+        crash.seh_unwind = pydbg.seh_unwind()
+        crash.extra = extra
 
         # add module names to the stack unwind.
         for i in xrange(len(crash.stack_unwind)):
-            addr   = crash.stack_unwind[i]
+            addr = crash.stack_unwind[i]
             module = pydbg.addr_to_module(addr)
 
             if module:
@@ -118,7 +120,7 @@ class CrashBinning:
 
             crash.seh_unwind[i] = (addr, handler, "%s:%08x" % (module, handler))
 
-        if not crash.exception_address in self.bins:
+        if crash.exception_address not in self.bins:
             self.bins[crash.exception_address] = []
 
         self.bins[crash.exception_address].append(crash)
@@ -190,16 +192,14 @@ class CrashBinning:
 
         # null out what we don't serialize but save copies to restore after dumping to disk.
         last_crash = self.last_crash
-        pydbg      = self.pydbg
+        pydbg = self.pydbg
 
         self.last_crash = self.pydbg = None
 
-        fh = open(file_name, "wb+")
-        fh.write(zlib.compress(cPickle.dumps(self, protocol=2)))
-        fh.close()
+        json.dump(self.bins, open(file_name, "wb+"), default=lambda o: o.__dict__)
 
         self.last_crash = last_crash
-        self.pydbg      = pydbg
+        self.pydbg = pydbg
 
         return self
 
@@ -216,11 +216,14 @@ class CrashBinning:
         @return:            self
         """
 
-        fh  = open(file_name, "rb")
-        tmp = cPickle.loads(zlib.decompress(fh.read()))
-        fh.close()
-
-        self.bins = tmp.bins
+        self.bins = {}
+        bin_dict = json.load(open(file_name, "rb"))
+        for (crash_address, bin_list) in bin_dict.items():
+            self.bins[crash_address] = []
+            for single_bin in bin_list:
+                tmp = CrashBinStruct()
+                tmp.__dict__ = single_bin
+                self.bins[crash_address].append(tmp)
 
         return self
 

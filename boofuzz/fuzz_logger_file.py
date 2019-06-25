@@ -1,6 +1,8 @@
-import ifuzz_logger
-import os
 import errno
+import os
+from io import open
+
+from . import ifuzz_logger
 
 
 class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
@@ -29,6 +31,12 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
 
     def log_check(self, description):
         raise Exception("FuzzLoggerFile does not support log_check()!")
+
+    def close_test_case(self):
+        pass
+
+    def close_test(self):
+        pass
 
     def __init__(self, path):
         """

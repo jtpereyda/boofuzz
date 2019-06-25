@@ -34,9 +34,9 @@ class DataTestCase(object):
     @property
     def description(self):
         return "{index}: {name}".format(
-                index=self.index,
-                name=self.name,
-            )
+            index=self.index,
+            name=self.name,
+        )
 
     @property
     def css_class(self):

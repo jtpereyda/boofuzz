@@ -1,7 +1,9 @@
 import sys
-sys.path.insert(0, '../')
 
-from boofuzz.primitives import String, Static, Delim
+from boofuzz import helpers
+from boofuzz.primitives import Delim, Static, String
+
+sys.path.insert(0, '../')
 
 
 class Group(object):
@@ -17,7 +19,7 @@ class Group(object):
         self.definition = definition
 
     def render(self):
-        return "".join([x.value for x in self.definition])
+        return helpers.str_to_bytes("".join([x.value for x in self.definition]))
 
     def exhaust(self):
         for item in self.definition:
@@ -42,7 +44,7 @@ class Group(object):
 
 
 s_static = Static
-s_delim  = Delim
+s_delim = Delim
 s_string = String
 
 CloseHeader = Group(

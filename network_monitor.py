@@ -1,15 +1,17 @@
 #!c:\\python\\python.exe
-import threading
 import getopt
-import time
-import sys
 import os
-# noinspection PyUnresolvedReferences
-import pcapy
+import sys
+import threading
+import time
+from io import open
+
 import impacket
 import impacket.ImpactDecoder
-from boofuzz import pedrpc
-from boofuzz import helpers
+# noinspection PyUnresolvedReferences
+import pcapy
+
+from boofuzz import helpers, pedrpc
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 
@@ -17,8 +19,8 @@ MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 def log_error(message=None):
     try:
         sys.stderr.write("ERR> %s\n" % message) or sys.exit(1)
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         sys.exit(1)
 
 
@@ -214,7 +216,7 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def retrieve(self, test_number):
         """
@@ -284,6 +286,7 @@ def main():
 
     except Exception:
         pass
+
 
 if __name__ == "__main__":
     main()

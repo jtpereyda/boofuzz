@@ -1,7 +1,9 @@
 # Misc Types
-
 from __future__ import absolute_import
-from .. import blocks, primitives, exception
+
+import six
+
+from .. import blocks, exception, helpers, primitives
 
 
 class DNSHostname(blocks.Block):
@@ -27,16 +29,16 @@ class DNSHostname(blocks.Block):
         # let the parent do the initial render.
         blocks.Block.render(self)
 
-        new_str = ""
+        new_str = six.binary_type(b"")
 
         # replace dots (.) with the substring length.
         for part in self._rendered.split("."):
             new_str += str(len(part)) + part
 
         # be sure to null terminate too.
-        self._rendered = new_str + "\x00"
+        self._rendered = new_str + six.binary_type(b"\x00")
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
 
 class Tag(blocks.Block):

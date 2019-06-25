@@ -1,3 +1,5 @@
+import six
+
 from .base_primitive import BasePrimitive
 
 
@@ -23,12 +25,12 @@ class Group(BasePrimitive):
 
         assert len(self.values) > 0, "You can't have an empty value list for your group!"
 
-        if not default_value:
+        if default_value is None:
             default_value = self.values[0]
         self._value = self._original_value = default_value
 
         for val in self.values:
-            assert isinstance(val, basestring), "Value list may only contain strings or raw data"
+            assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
 
     @property
     def name(self):

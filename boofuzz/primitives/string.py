@@ -1,13 +1,18 @@
 import random
 
+import six
+from past.builtins import range
+
 from .base_primitive import BasePrimitive
+from .. import helpers
 
 
 class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
+    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), encoding="ascii", fuzzable=True, max_len=-1,
+                 name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -53,9 +58,9 @@ class String(BasePrimitive):
 
                 # UTF-8
                 # TODO: This can't actually convert these to unicode strings...
-                self._value * 2 + b"\xfe",
-                self._value * 10 + b"\xfe",
-                self._value * 100 + b"\xfe",
+                self._value * 2 + six.binary_type(b"\xfe"),
+                self._value * 10 + six.binary_type(b"\xfe"),
+                self._value * 100 + six.binary_type(b"\xfe"),
             ]
         if not self._fuzz_library:
             self._fuzz_library = \
@@ -100,8 +105,8 @@ class String(BasePrimitive):
                     "|reboot",
                     ";reboot;",
                     "\nreboot\n",
-                    
-                    #fuzzdb command injection
+
+                    # fuzzdb command injection
                     "a)|reboot;",
                     "CMD=$'reboot';$CMD",
                     "a;reboot",
@@ -231,10 +236,10 @@ class String(BasePrimitive):
         if self.max_len > 0:
             if any(len(s) > self.max_len for s in self.this_library):
                 # Pull out the bad string(s):
-                self.this_library = list(set([s[:self.max_len] for s in self.this_library]))
+                self.this_library = list(set([t[:self.max_len] for t in self.this_library]))
             if any(len(s) > self.max_len for s in self._fuzz_library):
                 # Pull out the bad string(s):
-                self._fuzz_library = list(set([s[:self.max_len] for s in self._fuzz_library]))
+                self._fuzz_library = list(set([t[:self.max_len] for t in self._fuzz_library]))
 
     @property
     def name(self):
@@ -309,19 +314,14 @@ class String(BasePrimitive):
         return len(self._fuzz_library) + len(self.this_library)
 
     def _render(self, value):
-        """Render string value, properly encoded.
         """
+        Render string value, properly padded.
+        """
+
+        if isinstance(value, six.text_type):
+            value = helpers.str_to_bytes(value)
+
         # pad undersized library items.
         if len(value) < self.size:
             value += self.padding * (self.size - len(value))
-
-        try:
-            # Note: In the future, we should use unicode strings when we mean to encode them later. As it is, we need
-            # decode the value before decoding it! Meaning we'll never be able to use characters outside the ASCII
-            # range.
-            _rendered = str(value).decode('ascii').encode(self.encoding)
-        except UnicodeDecodeError:
-            # If we can't decode the string, just treat it like a plain byte string
-            _rendered = value
-
-        return _rendered
+        return helpers.str_to_bytes(value)

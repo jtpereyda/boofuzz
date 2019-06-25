@@ -1,7 +1,8 @@
+import time
 import unittest
+
 from boofuzz import iserial_like
 from boofuzz.serial_connection import SerialConnection
-import time
 
 
 class MockSerial(iserial_like.ISerialLike):

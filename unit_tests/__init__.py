@@ -1,3 +1,3 @@
-import test_blocks
-import legos
-import primitives
+from . import legos, primitives, test_blocks
+
+__all__ = ['test_blocks', 'legos', 'primitives']

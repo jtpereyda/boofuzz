@@ -2,14 +2,12 @@ import socket
 import threading
 import time
 import unittest
+
+import six
+
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
-import mock
-from boofuzz import FuzzLogger
-from boofuzz import Session
-from boofuzz import SocketConnection
-from boofuzz import Target
-from boofuzz import s_initialize, s_string, s_static, s_get
+from boofuzz import s_get, s_initialize, s_static, s_string, Session, SocketConnection, Target
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 
@@ -27,7 +25,7 @@ class MiniTestServer(object):
     def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = bytes("\xFE\xEB\xDA\xED")
+        self.data_to_send = six.binary_type(b"\xFE\xEB\xDA\xED")
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto
@@ -128,12 +126,12 @@ class MiniTestServer(object):
 
 class TestNoResponseFailure(unittest.TestCase):
     def setUp(self):
-        #self.mock_logger_1 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
-        #self.mock_logger_2 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
-        #self.logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self.mock_logger_1, self.mock_logger_2])
+        # self.mock_logger_1 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
+        # self.mock_logger_2 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
+        # self.logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self.mock_logger_1, self.mock_logger_2])
 
-        #self.some_text = "Some test text"
-        #self.some_data = bytes('1234567890\0')
+        # self.some_text = "Some test text"
+        # self.some_data = bytes('1234567890\0')
 
         self.restarts = 0
 
@@ -163,8 +161,9 @@ class TestNoResponseFailure(unittest.TestCase):
             ),
             fuzz_loggers=[],  # log to nothing
             check_data_received_each_request=True,
+            keep_web_open=False,
         )
-        session.restart_target = self._mock_restart_target()
+        session._restart_target = self._mock_restart_target()
 
         s_initialize("test-msg-a")
         s_string("test-str-value")

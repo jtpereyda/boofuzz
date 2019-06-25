@@ -1,7 +1,8 @@
 from __future__ import absolute_import
+
 import time
-from . import itarget_connection
-from . import serial_connection_low_level
+
+from . import itarget_connection, serial_connection_low_level
 
 
 class SerialConnection(itarget_connection.ITargetConnection):
@@ -35,7 +36,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         baudrate (int): Baud rate for port.
         timeout (float): For recv(). After timeout seconds from receive start, recv() will return all received data,
             if any.
-        message_separator_time (float): After message_separator_time seconds _without receiving any more data_,
+        message_separator_time (float): After message_separator_time seconds *without receiving any more data*,
             recv() will return. Optional. Default None.
         content_checker (function(str) -> int): User-defined function. recv() will pass all bytes received so far to
             this method. If the method returns n > 0, recv() will return n bytes. If it returns 0, recv() will keep on
@@ -64,8 +65,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         """
         Opens connection to the target. Make sure to call close!
 
-        Returns:
-            No  ne
+        :return: None
         """
         self._connection.open()
 
@@ -93,7 +93,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
                 last_byte_time = time.time()
 
             # Try recv again
-            fragment = self._connection.recv(max_bytes=max_bytes-len(data))
+            fragment = self._connection.recv(max_bytes=max_bytes - len(data))
             data += fragment
 
             # User-supplied content_checker function

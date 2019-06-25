@@ -1,7 +1,9 @@
 from functools import wraps
-from .. import primitives
+
+import six
+
+from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
-from ..blocks import Request
 
 
 def _may_recurse(f):
@@ -64,18 +66,18 @@ class Size(IFuzzable):
         self._name = name
 
         self.bit_field = primitives.BitField(
-                0,
-                self.length * 8,
-                endian=self.endian,
-                output_format=self.format,
-                signed=self.signed
+            0,
+            self.length * 8,
+            endian=self.endian,
+            output_format=self.format,
+            signed=self.signed
         )
-        self._rendered = ""
+        self._rendered = six.binary_type(b"")
         self._fuzz_complete = False
         self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
-            self.math = lambda (x): x
+            self.math = lambda x: x
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
@@ -155,7 +157,7 @@ class Size(IFuzzable):
         else:
             self._rendered = self._render()
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
@@ -165,7 +167,7 @@ class Size(IFuzzable):
 
     def _render(self):
         length = self._calculated_length()
-        return self._length_to_bytes(length)
+        return helpers.str_to_bytes(self._length_to_bytes(length))
 
     def _calculated_length(self):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block
@@ -212,7 +214,7 @@ class Size(IFuzzable):
     def __len__(self):
         return self.length
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

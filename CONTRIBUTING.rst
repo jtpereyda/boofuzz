@@ -18,15 +18,19 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Verify tests pass: ::
+1. Install python version 2.7.9+ **and** 3.6+
+
+2. Verify tests pass: ::
 
       tox
 
-2. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+   If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
 
-3. Modify CHANGELOG.rst to say what you changed.
+3. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
 
-4. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
+4. Modify CHANGELOG.rst to say what you changed.
+
+5. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
 
 Maintainers
 ===========
@@ -52,6 +56,10 @@ Prep
 1. Create release branch.
 
 2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
+
+   1. In ``boofuzz/__init__.py``.
+
+   2. In ``docs/conf.py``.
 
 3. Modify CHANGELOG file for publication if needed.
 

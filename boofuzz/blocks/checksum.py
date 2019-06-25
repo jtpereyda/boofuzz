@@ -3,10 +3,10 @@ import struct
 import zlib
 from functools import wraps
 
-from .. import primitives
+import six
+
+from .. import exception, helpers, primitives
 from ..constants import LITTLE_ENDIAN
-from .. import exception
-from .. import helpers
 
 
 def _may_recurse(f):
@@ -71,7 +71,7 @@ class Checksum(primitives.BasePrimitive):
 
         self._fuzzable = fuzzable
 
-        if not self._length and self._algorithm in self.checksum_lengths.iterkeys():
+        if not self._length and self._algorithm in self.checksum_lengths:
             self._length = self.checksum_lengths[self._algorithm]
 
         # Edge cases and a couple arbitrary strings (all 1s, all Es)
@@ -109,7 +109,7 @@ class Checksum(primitives.BasePrimitive):
             self._rendered = self._checksum(data=self._render_block(self._block_name),
                                             ipv4_src=self._render_block(self._ipv4_src_block_name),
                                             ipv4_dst=self._render_block(self._ipv4_dst_block_name))
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
@@ -133,12 +133,12 @@ class Checksum(primitives.BasePrimitive):
         :rtype:  str
         :return: Checksum.
         """
-        if type(self._algorithm) is str:
+        if isinstance(self._algorithm, six.string_types):
             if self._algorithm == "crc32":
-                check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
 
             elif self._algorithm == "adler32":
-                check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFFL))
+                check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFF))
 
             elif self._algorithm == "ipv4":
                 check = struct.pack(self._endian + "H", helpers.ipv4_checksum(data))
@@ -200,7 +200,7 @@ class Checksum(primitives.BasePrimitive):
     def __len__(self):
         return self._length
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

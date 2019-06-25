@@ -1,5 +1,6 @@
-import iserial_like
 import serial
+
+from . import iserial_like
 
 
 class SerialConnectionLowLevel(iserial_like.ISerialLike):

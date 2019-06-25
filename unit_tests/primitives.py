@@ -1,3 +1,7 @@
+from io import open
+
+from past.builtins import xrange
+
 from boofuzz import *
 
 
@@ -15,43 +19,43 @@ def run():
 def signed_tests():
     s_initialize("UNIT TEST 1")
     s_byte(0, output_format="ascii", signed=True, name="byte_1")
-    s_byte(0xff / 2, output_format="ascii", signed=True, name="byte_2")
-    s_byte(0xff / 2 + 1, output_format="ascii", signed=True, name="byte_3")
+    s_byte(0xff // 2, output_format="ascii", signed=True, name="byte_2")
+    s_byte(0xff // 2 + 1, output_format="ascii", signed=True, name="byte_3")
     s_byte(0xff, output_format="ascii", signed=True, name="byte_4")
 
     s_word(0, output_format="ascii", signed=True, name="word_1")
-    s_word(0xffff / 2, output_format="ascii", signed=True, name="word_2")
-    s_word(0xffff / 2 + 1, output_format="ascii", signed=True, name="word_3")
+    s_word(0xffff // 2, output_format="ascii", signed=True, name="word_2")
+    s_word(0xffff // 2 + 1, output_format="ascii", signed=True, name="word_3")
     s_word(0xffff, output_format="ascii", signed=True, name="word_4")
 
     s_dword(0, output_format="ascii", signed=True, name="dword_1")
-    s_dword(0xffffffff / 2, output_format="ascii", signed=True, name="dword_2")
-    s_dword(0xffffffff / 2 + 1, output_format="ascii", signed=True, name="dword_3")
+    s_dword(0xffffffff // 2, output_format="ascii", signed=True, name="dword_2")
+    s_dword(0xffffffff // 2 + 1, output_format="ascii", signed=True, name="dword_3")
     s_dword(0xffffffff, output_format="ascii", signed=True, name="dword_4")
 
     s_qword(0, output_format="ascii", signed=True, name="qword_1")
-    s_qword(0xffffffffffffffff / 2, output_format="ascii", signed=True, name="qword_2")
-    s_qword(0xffffffffffffffff / 2 + 1, output_format="ascii", signed=True, name="qword_3")
+    s_qword(0xffffffffffffffff // 2, output_format="ascii", signed=True, name="qword_2")
+    s_qword(0xffffffffffffffff // 2 + 1, output_format="ascii", signed=True, name="qword_3")
     s_qword(0xffffffffffffffff, output_format="ascii", signed=True, name="qword_4")
 
     req = s_get("UNIT TEST 1")
 
-    assert (req.names["byte_1"].render() == "0")
-    assert (req.names["byte_2"].render() == "127")
-    assert (req.names["byte_3"].render() == "-128")
-    assert (req.names["byte_4"].render() == "-1")
-    assert (req.names["word_1"].render() == "0")
-    assert (req.names["word_2"].render() == "32767")
-    assert (req.names["word_3"].render() == "-32768")
-    assert (req.names["word_4"].render() == "-1")
-    assert (req.names["dword_1"].render() == "0")
-    assert (req.names["dword_2"].render() == "2147483647")
-    assert (req.names["dword_3"].render() == "-2147483648")
-    assert (req.names["dword_4"].render() == "-1")
-    assert (req.names["qword_1"].render() == "0")
-    assert (req.names["qword_2"].render() == "9223372036854775807")
-    assert (req.names["qword_3"].render() == "-9223372036854775808")
-    assert (req.names["qword_4"].render() == "-1")
+    assert (req.names["byte_1"].render() == b"0")
+    assert (req.names["byte_2"].render() == b"127")
+    assert (req.names["byte_3"].render() == b"-128")
+    assert (req.names["byte_4"].render() == b"-1")
+    assert (req.names["word_1"].render() == b"0")
+    assert (req.names["word_2"].render() == b"32767")
+    assert (req.names["word_3"].render() == b"-32768")
+    assert (req.names["word_4"].render() == b"-1")
+    assert (req.names["dword_1"].render() == b"0")
+    assert (req.names["dword_2"].render() == b"2147483647")
+    assert (req.names["dword_3"].render() == b"-2147483648")
+    assert (req.names["dword_4"].render() == b"-1")
+    assert (req.names["qword_1"].render() == b"0")
+    assert (req.names["qword_2"].render() == b"9223372036854775807")
+    assert (req.names["qword_3"].render() == b"-9223372036854775808")
+    assert (req.names["qword_4"].render() == b"-1")
 
 
 def string_tests():
@@ -69,20 +73,28 @@ def string_tests():
 
 
 def s_mirror_tests():
-    TEST_GROUP_VALUES = ['aaa', 'bbb', 'ccc', 'ddd']
+    TEST_GROUP_VALUES = [b'a', b'bb', b'ccc', b'dddd']
     s_initialize('test_s_mirror')
-    s_static('<')
-    s_group('group_start', values=TEST_GROUP_VALUES)
-    s_static('>')
-    s_static('hello')
-    s_static('<')
-    s_mirror('group_start', name='group_end')
-    s_static('/>')
+
+    s_size('data', output_format="ascii", fuzzable=False, name='size')
+    s_mirror('size', name='size_mirror')
+
+    with s_block('data'):
+        s_static('<')
+        s_group('group_start', values=TEST_GROUP_VALUES)
+        s_static('>')
+        s_static('hello')
+        s_static('</')
+        s_mirror('group_start', name='group_end')
+        s_static('>')
 
     req = s_get('test_s_mirror')
     for _ in xrange(len(TEST_GROUP_VALUES)):
         s_mutate()
-        assert (req.names['group_end'].render() == req.names['group_start'].render())
+        group_start_value = req.names['group_start'].render()
+        assert (int(req.names['size'].render()) == len('<{0}>hello</{0}>'.format(group_start_value.decode("utf-8"))))
+        assert (req.names['group_end'].render() == group_start_value)
+        assert (req.names['size_mirror'].render() == req.names['size'].render())
 
 
 def fuzz_extension_tests():

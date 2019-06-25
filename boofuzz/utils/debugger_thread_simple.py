@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+
 try:
     import resource  # Linux only
     resource.setrlimit(  # Equivalent to: ulimit -c unlimited
@@ -15,6 +16,7 @@ import threading
 import time
 
 import psutil
+from io import open
 
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):
@@ -180,9 +182,8 @@ class DebuggerThreadSimple(threading.Thread):
         if self.isAlive():
             return True
         else:
-            rec_file = open(self.process_monitor.crash_filename, 'a')
-            rec_file.write(self.process_monitor.last_synopsis)
-            rec_file.close()
+            with open(self.process_monitor.crash_filename, 'a') as rec_file:
+                rec_file.write(self.process_monitor.last_synopsis.decode())
 
             if self.process_monitor.coredump_dir is not None:
                 dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))

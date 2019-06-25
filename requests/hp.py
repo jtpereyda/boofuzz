@@ -1,6 +1,6 @@
-from boofuzz import *
-
 from struct import *
+
+from boofuzz import *
 
 
 def unicode_ftw(val):

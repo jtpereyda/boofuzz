@@ -1,7 +1,4 @@
-import ber
-import dcerpc
-import misc
-import xdr
+from . import ber, dcerpc, misc, xdr
 
 # all defined legos must be added to this bin.
 BIN = {

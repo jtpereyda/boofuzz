@@ -1,7 +1,7 @@
-from boofuzz import *
-
 import struct
 import time
+
+from boofuzz import *
 
 ndmp_messages = \
     [  # Connect Interface

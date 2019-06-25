@@ -1,9 +1,10 @@
 import unittest
+
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 import mock
-from boofuzz import fuzz_logger
-from boofuzz import ifuzz_logger_backend
+
+from boofuzz import fuzz_logger, ifuzz_logger_backend
 
 
 class TestFuzzLogger(unittest.TestCase):
@@ -15,7 +16,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.some_text = "Some test text"
         self.some_other_text = "More test text"
         self.some_int = 1
-        self.some_data = bytes('1234567890\0')
+        self.some_data = bytes(b"1234567890\0")
 
     def test_open_test_step(self):
         """

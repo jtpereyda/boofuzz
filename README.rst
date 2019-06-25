@@ -16,7 +16,7 @@ Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility.
 The goal: fuzz everything.
 
-.. figure:: _static/boofuzz-screenshot.png
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/_static/boofuzz-screenshot.png
     :alt: boofuzz screenshot
 
 Why?
@@ -50,7 +50,7 @@ Sulley is affectionately named after the giant teal and purple creature
 from Monsters Inc. due to his fuzziness. Boofuzz is likewise named after
 the only creature known to have scared Sulley himself: Boo!
 
-.. figure:: _static/boo.png
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/_static/boo.png
    :alt: Boo from Monsters Inc
 
    Boo from Monsters Inc
