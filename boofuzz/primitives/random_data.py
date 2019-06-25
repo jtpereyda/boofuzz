@@ -1,9 +1,9 @@
 import random
-import six
 
-from builtins import chr
+import six
 from past.builtins import xrange
 
+from boofuzz import helpers
 from .base_primitive import BasePrimitive
 
 
@@ -33,7 +33,7 @@ class RandomData(BasePrimitive):
 
         super(RandomData, self).__init__()
 
-        self._value = self._original_value = str(value)
+        self._value = self._original_value = helpers.str_to_bytes(value)
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations
@@ -72,7 +72,7 @@ class RandomData(BasePrimitive):
             length = self.min_length + self._mutant_index * self.step
 
         # reset the value and generate a random string of the determined length.
-        self._value = ""
+        self._value = b""
         for i in xrange(length):
             self._value += six.int2byte(random.randint(0, 255))
 

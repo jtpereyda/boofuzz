@@ -114,7 +114,7 @@ def repeaters():
         s_word(0xdead, name="word", fuzzable=False)
         s_dword(0xdeadbeef, name="dword", fuzzable=False)
         s_qword(0xdeadbeefdeadbeef, name="qword", fuzzable=False)
-        s_random(0, 5, 10, 100, name="random", fuzzable=False)
+        s_random("0", 5, 10, 100, name="random", fuzzable=False)
         s_block_end()
     s_repeat("BLOCK", min_reps=5, max_reps=15, step=5)
 
