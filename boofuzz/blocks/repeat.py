@@ -1,11 +1,8 @@
-from builtins import object
 import six
-
 from past.builtins import range
 
-from .. import exception, ifuzzable
+from .. import exception, helpers, ifuzzable
 from ..primitives.bit_field import BitField
-from .. import helpers
 
 
 class Repeat(ifuzzable.IFuzzable):
@@ -58,20 +55,20 @@ class Repeat(ifuzzable.IFuzzable):
         # ensure the target block exists.
         if self.block_name not in self.request.names:
             raise exception.SullyRuntimeError(
-                    "Can't add repeater for non-existent block: %s!" % self.block_name
+                "Can't add repeater for non-existent block: %s!" % self.block_name
             )
 
         # ensure the user specified either a variable to tie this repeater to or a min/max val.
         if self.variable is None and self.max_reps is None:
             raise exception.SullyRuntimeError(
-                    "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
+                "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
             )
 
         # if a variable is specified, ensure it is an integer type.
         if self.variable and not isinstance(self.variable, BitField):
             print(self.variable)
             raise exception.SullyRuntimeError(
-                    "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
+                "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
             )
 
         # if not binding variable was specified, propagate the fuzz library with the repetition counts.
@@ -113,7 +110,7 @@ class Repeat(ifuzzable.IFuzzable):
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
             raise exception.SullyRuntimeError(
-                    "Can't apply repeater to unclosed block: %s" % self.block_name
+                "Can't apply repeater to unclosed block: %s" % self.block_name
             )
 
         # if we've run out of mutations, raise the completion flag.

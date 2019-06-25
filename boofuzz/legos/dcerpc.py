@@ -1,10 +1,10 @@
 # MSRPC NDR TYPES
+import struct
+
 import six
 
-import struct
-from .. import blocks, primitives, exception
+from .. import blocks, exception, helpers, primitives
 from ..helpers import calculate_four_byte_padding
-from .. import helpers
 
 
 class NdrConformantArray(blocks.Block):
@@ -86,12 +86,12 @@ class NdrString(blocks.Block):
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = six.binary_type(b"") \
-                             + struct.pack("<L", length) \
-                             + struct.pack("<L", 0) \
-                             + struct.pack("<L", length) \
-                             + self._rendered \
-                             + calculate_four_byte_padding(self._rendered)
+            self._rendered = (six.binary_type(b"")
+                              + struct.pack("<L", length)
+                              + struct.pack("<L", 0)
+                              + struct.pack("<L", length)
+                              + self._rendered
+                              + calculate_four_byte_padding(self._rendered))
 
         return helpers.str_to_bytes(self._rendered)
 
@@ -135,11 +135,11 @@ class NdrWString(blocks.Block):
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = six.binary_type(b"") \
-                             + struct.pack("<L", length) \
-                             + struct.pack("<L", 0) \
-                             + struct.pack("<L", length) \
-                             + self._rendered \
-                             + calculate_four_byte_padding(self._rendered)
+            self._rendered = (six.binary_type(b"")
+                              + struct.pack("<L", length)
+                              + struct.pack("<L", 0)
+                              + struct.pack("<L", length)
+                              + self._rendered
+                              + calculate_four_byte_padding(self._rendered))
 
         return helpers.str_to_bytes(self._rendered)

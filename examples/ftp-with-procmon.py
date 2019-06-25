@@ -9,7 +9,7 @@ def main():
     It assumes that the procmon is already running. The script will connect to
     the procmon and tell the procmon to start the target application
     (see start_cmd).
-    
+
     The ftpd.py in `start_cmd` is a simple FTP server using pyftpdlib. You can
     substitute any FTP server.
     """

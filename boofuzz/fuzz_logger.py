@@ -1,5 +1,7 @@
-from .ifuzz_logger import IFuzzLogger
 from past.builtins import map
+
+from .ifuzz_logger import IFuzzLogger
+
 
 class FuzzLogger(IFuzzLogger):
     """

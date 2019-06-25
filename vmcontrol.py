@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#!c:\\python\\python.exe
+#!c:\\python\\python.exe  # noqa: E265
 from __future__ import print_function
 
 import getopt
@@ -23,12 +23,9 @@ except Exception:
         print("[!] Failed to import win32api/win32com modules, please install these! Bailing...")
         sys.exit(1)
 
-from builtins import input
 
-
-
-PORT  = 26003
-ERR   = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
+PORT = 26003
+ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)  # noqa: E731
 USAGE = "USAGE: vmcontrol.py"                                                               \
         "\n    <-x|--vmx FILENAME|NAME> path to VMX to control or name of VirtualBox image" \
         "\n    <-r|--vmrun FILENAME>    path to vmrun.exe or VBoxManage"                    \
@@ -61,8 +58,8 @@ class VMControlPedrpcServer (pedrpc.Server):
         # initialize the PED-RPC server.
         pedrpc.Server.__init__(self, host, port)
 
-        self.host        = host
-        self.port        = port
+        self.host = host
+        self.port = port
 
         self.interactive = interactive
 
@@ -131,13 +128,13 @@ class VMControlPedrpcServer (pedrpc.Server):
         # if we're on windows, get the DOS path names
         if os.name == "nt":
             self.vmrun = GetShortPathName(r"%s" % vmrun)
-            self.vmx   = GetShortPathName(r"%s" % vmx)
+            self.vmx = GetShortPathName(r"%s" % vmx)
         else:
             self.vmrun = vmrun
-            self.vmx   = vmx
+            self.vmx = vmx
 
-        self.snap_name   = snap_name
-        self.log_level   = log_level
+        self.snap_name = snap_name
+        self.log_level = log_level
         self.interactive = interactive
 
         self.log("VMControl PED-RPC server initialized:")
@@ -190,7 +187,7 @@ class VMControlPedrpcServer (pedrpc.Server):
             self.log("executing: %s" % command, 5)
 
             pipe = os.popen(command)
-            out  = pipe.readlines()
+            out = pipe.readlines()
 
             try:
                 pipe.close()
@@ -329,8 +326,8 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         # initialize the PED-RPC server.
         pedrpc.Server.__init__(self, host, port)
 
-        self.host        = host
-        self.port        = port
+        self.host = host
+        self.port = port
 
         self.interactive = interactive
 
@@ -372,13 +369,13 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         # if we're on windows, get the DOS path names
         if os.name == "nt":
             self.vmrun = GetShortPathName(r"%s" % vmrun)
-            self.vmx   = GetShortPathName(r"%s" % vmx)
+            self.vmx = GetShortPathName(r"%s" % vmx)
         else:
             self.vmrun = vmrun
-            self.vmx   = vmx
+            self.vmx = vmx
 
-        self.snap_name   = snap_name
-        self.log_level   = log_level
+        self.snap_name = snap_name
+        self.log_level = log_level
         self.interactive = interactive
 
         self.log("VirtualBox PED-RPC server initialized:")
@@ -420,7 +417,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
 
         command = self.vmrun + " controlvm " + self.vmx + " pause"
         return self.vmcommand(command)
-    
+
     def resume(self):
         self.log("resuming image", 2)
 
@@ -431,20 +428,20 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         if not snap_name:
             snap_name = self.snap_name
 
-        #VirtualBox flips out if you try to do this with a running VM
+        # VirtualBox flips out if you try to do this with a running VM
         if self.is_target_running():
             self.stop()
 
         self.log("reverting to snapshot: %s" % snap_name, 2)
 
-        command = self.vmrun + " snapshot " + self.vmx + " restore " + snap_name 
+        command = self.vmrun + " snapshot " + self.vmx + " restore " + snap_name
         return self.vmcommand(command)
 
     def snapshot(self, snap_name=None):
         if not snap_name:
             snap_name = self.snap_name
 
-        #VirtualBox flips out if you try to do this with a running VM
+        # VirtualBox flips out if you try to do this with a running VM
         if self.is_target_running():
             self.pause()
 
@@ -457,7 +454,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
     def start(self):
         self.log("starting image", 2)
 
-        command = self.vmrun + " startvm " + self.vmx 
+        command = self.vmrun + " startvm " + self.vmx
         # TODO: we may want to do more here with headless, gui, etc...
         return self.vmcommand(command)
 
@@ -473,7 +470,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         command = self.vmrun + " controlvm " + self.vmx + " pause"
         return self.vmcommand(command)
 
-    #added a function here to get vminfo... useful for parsing stuff out later
+    # added a function here to get vminfo... useful for parsing stuff out later
     def get_vminfo(self):
         self.log("getting vminfo", 2)
 
@@ -482,8 +479,8 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
 
     def restart_target(self):
         self.log("restarting virtual machine...")
-    
-        #VirtualBox flips out if you try to do this with a running VM
+
+        # VirtualBox flips out if you try to do this with a running VM
         if self.is_target_running():
             self.stop()
 
@@ -503,26 +500,27 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
                 return True
 
         return False
-    
+
     def is_target_paused(self):
         time.sleep(10)
-        
+
         for line in self.get_vminfo().split('\n'):
             if line == 'VMState="paused"':
                 return True
 
         return False
 
+
 if __name__ == "__main__":
     opts = None
 
-    vmrun_arg       = None
-    vmx_arg         = None
-    snap_name_arg   = None
-    log_level_arg   = 1
+    vmrun_arg = None
+    vmx_arg = None
+    snap_name_arg = None
+    log_level_arg = 1
     interactive_arg = False
-    virtualbox_arg  = False
-    port_arg        = None
+    virtualbox_arg = False
+    port_arg = None
 
     # parse command line options.
     try:
@@ -540,7 +538,7 @@ if __name__ == "__main__":
         )
     except getopt.GetoptError:
         ERR(USAGE)
-    
+
     for opt, arg in opts:
         if opt in ("-x", "--vmx"):
             vmx_arg = arg
@@ -556,7 +554,7 @@ if __name__ == "__main__":
             port_arg = int(arg)
         if opt in ("-v", "--vbox"):
             virtualbox_arg = True
-        
+
     # OS check
     if interactive_arg and not os.name == "nt":
         print("[!] Interactive mode currently only works on Windows operating systems.")
@@ -564,7 +562,7 @@ if __name__ == "__main__":
 
     if (not vmx_arg or not vmrun_arg or not snap_name_arg) and not interactive_arg:
         ERR(USAGE)
-    
+
     if not virtualbox_arg:
         servlet = VMControlPedrpcServer(
             "0.0.0.0",
@@ -585,5 +583,5 @@ if __name__ == "__main__":
             log_level_arg,
             interactive_arg
         )
-    
+
     servlet.serve_forever()

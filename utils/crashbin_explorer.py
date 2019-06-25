@@ -1,13 +1,12 @@
 #!c:\\python\\python.exe
 import getopt
 import sys
-
-from future.utils import iteritems
-from builtins import int
-
-import pgraph
-from boofuzz import utils
 from io import open
+
+from builtins import int
+from future.utils import iteritems
+
+from boofuzz import pgraph, utils
 
 sys.path.append(r"../../../paimei")
 
@@ -35,7 +34,7 @@ for opt, arg in opts:
     if opt in ("-t", "--test"):
         test_number = int(arg)
     if opt in ("-g", "--graph"):
-        graph_name  = arg
+        graph_name = arg
 
 try:
     crashbin = utils.crash_binning.CrashBinning()
@@ -68,7 +67,7 @@ for _, crashes in iteritems(crashbin.bins):
 
     for crash in crashes:
         if graph:
-            crash_node       = pgraph.Node(crashes[0].exception_address)
+            crash_node = pgraph.Node(crashes[0].exception_address)
             crash_node.count = len(crashes)
             crash_node.label = "[%d] %s.%08x" % (crash_node.count, crashes[0].exception_module, crash_node.id)
             graph.add_node(crash_node)
@@ -80,7 +79,7 @@ for _, crashes in iteritems(crashbin.bins):
                 n = graph.find_node("id", address)
 
                 if not n:
-                    n       = pgraph.Node(address)
+                    n = pgraph.Node(address)
                     n.count = 1
                     n.label = "[%d] %s" % (n.count, entry)
                     graph.add_node(n)

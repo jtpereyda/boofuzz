@@ -3,23 +3,13 @@
 # A partial MDNS fuzzer.  Could be made to be a DNS fuzzer trivially
 # Charlie Miller <cmiller@securityevaluators.com>
 
-from boofuzz import s_word, \
-    s_initialize,          \
-    sessions,              \
-    s_block_start,         \
-    s_size,                \
-    s_block_end,           \
-    s_string,              \
-    s_repeat,              \
-    s_group,               \
-    s_dword,               \
-    s_binary,              \
-    s_get
+from boofuzz import *
 
 
-def insert_questions(sess, node, edge, sock):
+def insert_questions(target, fuzz_data_logger, session, node, edge, *args, **kwargs):
     node.names['Questions'].value = 1 + node.names['queries'].current_reps
     node.names['Authority'].value = 1 + node.names['auth_nameservers'].current_reps
+
 
 s_initialize("query")
 s_word(0, name="TransactionID")
@@ -46,7 +36,7 @@ s_block_end()
 s_repeat("query", 0, 1000, 40, name="queries")
 
 
-######## Authorities ############
+# ####### Authorities #############
 if s_block_start("auth_nameserver"):
     if s_block_start("name_chunk_auth"):
         s_size("string_auth", length=1)
@@ -69,10 +59,10 @@ s_repeat("auth_nameserver", 0, 1000, 40, name="auth_nameservers")
 
 s_word(0)
 
-sess = sessions.Session(proto="udp")
-target = sessions.Target("224.0.0.251", 5353)
-sess.add_target(target)
+sess = Session(
+    target=Target(
+        connection=SocketConnection("224.0.0.251", 5353, proto="udp")
+    ))
 sess.connect(s_get("query"), callback=insert_questions)
 
 sess.fuzz()
-

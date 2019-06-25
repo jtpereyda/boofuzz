@@ -1,6 +1,8 @@
 from functools import wraps
+
 from .base_primitive import BasePrimitive
 from .. import helpers
+
 
 def _may_recurse(f):
     @wraps(f)
@@ -46,7 +48,7 @@ class Mirror(BasePrimitive):
         """
         self._rendered = self._render_primitive(self._primitive_name)
         return helpers.str_to_bytes(self._rendered)
-    
+
     @property
     def original_value(self):
         return self._original_value_of_primitive(self._primitive_name)
@@ -54,7 +56,7 @@ class Mirror(BasePrimitive):
     @_may_recurse
     def _render_primitive(self, primitive_name):
         return self._request.names[primitive_name].render() if primitive_name is not None else None
-    
+
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name):
         return self._request.names[primitive_name].original_value if primitive_name is not None else None

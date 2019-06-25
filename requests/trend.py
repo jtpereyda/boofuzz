@@ -1,9 +1,9 @@
-from boofuzz import *
+import struct
 
-from past.builtins import map
 from past.builtins import range
 
-import struct
+from boofuzz import *
+from boofuzz import utils
 
 
 # crap ass trend xor "encryption" routine for control manager (20901)
@@ -144,7 +144,7 @@ for op, submax in [(0x1, 22), (0x2, 19), (0x3, 85), (0x5, 25), (0xa, 49), (0x1f,
 s_initialize("5005")
 """
     Trend Micro Server Protect (EarthAgent.exe)
-    
+
     Some custom protocol listening on TCP port 5005
 """
 

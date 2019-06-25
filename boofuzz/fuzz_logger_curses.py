@@ -1,6 +1,8 @@
 from __future__ import division
+
 import sys
 import time
+
 try:
     import curses
 except ImportError:

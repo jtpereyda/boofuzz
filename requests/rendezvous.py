@@ -1,5 +1,3 @@
-from builtins import chr
-
 import six
 
 from boofuzz import *

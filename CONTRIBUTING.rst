@@ -24,6 +24,8 @@ Pull Request Checklist
 
       tox
 
+   If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
+
 3. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
 
 4. Modify CHANGELOG.rst to say what you changed.

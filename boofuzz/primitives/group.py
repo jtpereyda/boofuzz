@@ -1,5 +1,6 @@
-from .base_primitive import BasePrimitive
 import six
+
+from .base_primitive import BasePrimitive
 
 
 class Group(BasePrimitive):

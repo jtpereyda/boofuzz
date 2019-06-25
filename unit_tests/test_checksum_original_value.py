@@ -1,6 +1,6 @@
-from pytest_bdd import given, when, then, scenarios
+from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import Checksum, Request, Block, Byte, DWord, QWord
+from boofuzz import Block, Byte, Checksum, DWord, QWord, Request
 
 scenarios('checksum_original_value.feature')
 

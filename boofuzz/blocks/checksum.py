@@ -1,13 +1,12 @@
 import hashlib
-import six
 import struct
 import zlib
-from builtins import object
 from functools import wraps
+
+import six
 
 from .. import exception, helpers, primitives
 from ..constants import LITTLE_ENDIAN
-from .. import helpers
 
 
 def _may_recurse(f):

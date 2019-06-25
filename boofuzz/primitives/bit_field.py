@@ -1,11 +1,13 @@
-import six
 import struct
-from builtins import object, range
+
+import six
+from builtins import range
 from past.builtins import map
 
-from ..constants import LITTLE_ENDIAN
 from .base_primitive import BasePrimitive
 from .. import helpers
+from ..constants import LITTLE_ENDIAN
+
 
 def binary_string_to_int(binary):
     """
@@ -65,7 +67,7 @@ class BitField(BasePrimitive):
         super(BitField, self).__init__()
 
         assert isinstance(value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
-        assert isinstance(width, (six.integer_types)), "width must be an integer!"
+        assert isinstance(width, six.integer_types), "width must be an integer!"
 
         self._value = self._original_value = value
         self.width = width
@@ -81,7 +83,7 @@ class BitField(BasePrimitive):
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
 
-        assert isinstance(self.max_num, (six.integer_types)), "max_num must be an integer!"
+        assert isinstance(self.max_num, six.integer_types), "max_num must be an integer!"
 
         if self.full_range:
             # add all possible values.
@@ -124,7 +126,8 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(case)
 
     def _render(self, value):
-        temp = self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed)
+        temp = self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian,
+                               signed=self.signed)
         return helpers.str_to_bytes(temp)
 
     @staticmethod

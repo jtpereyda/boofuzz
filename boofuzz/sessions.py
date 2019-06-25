@@ -1,38 +1,30 @@
 from __future__ import absolute_import, print_function
 
-import pickle
 import datetime
+import errno
 import logging
 import os
+import pickle
 import re
-import six
+import socket
 import threading
 import time
 import traceback
 import zlib
-import socket
-import errno
+from io import open
 
+import six
+from builtins import input
+from future.utils import listitems
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
 from boofuzz import helpers
-from . import blocks, constants
-from . import event_hook
-from . import fuzz_logger
-from . import fuzz_logger_db
-from . import fuzz_logger_text
-from . import fuzz_logger_curses
-from . import ifuzz_logger
-from . import pgraph
-from . import primitives
-from . import exception
+from . import (blocks, constants, event_hook, exception, fuzz_logger, fuzz_logger_curses, fuzz_logger_db,
+               fuzz_logger_text, pgraph, primitives)
 from .web.app import app
 
-from future.utils import listitems
-from io import open
-from builtins import input
 
 class Target(object):
     """Target descriptor container.
@@ -1155,7 +1147,7 @@ class Session(pgraph.Graph):
                     raise
                 port += 1
             else:
-                self._fuzz_data_logger.log_info("Web interface can be found at http://localhost:%d"%port)
+                self._fuzz_data_logger.log_info("Web interface can be found at http://localhost:%d" % port)
                 break
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True

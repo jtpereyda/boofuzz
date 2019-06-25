@@ -1,11 +1,8 @@
-import unittest
 import re
+import unittest
+
 import six
-try:
-    from StringIO import StringIO
-# probably because python 3
-except ImportError:
-    from io import StringIO
+
 from boofuzz import fuzz_logger_csv
 
 LOGGER_PREAMBLE = ".*,"
@@ -37,7 +34,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
 
 class TestFuzzLoggerCsv(unittest.TestCase):
     def setUp(self):
-        self.virtual_file = StringIO()
+        self.virtual_file = six.StringIO()
         self.logger = fuzz_logger_csv.FuzzLoggerCsv(file_handle=self.virtual_file)
         self.some_test_case_id = "some test case"
         self.some_test_case_name = "some test case name"

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+
 try:
     import resource  # Linux only
     resource.setrlimit(  # Equivalent to: ulimit -c unlimited

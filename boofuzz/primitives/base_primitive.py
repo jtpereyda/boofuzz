@@ -1,8 +1,10 @@
 import abc
+
 import six
-from builtins import object
-from ..ifuzzable import IFuzzable
+
 from .. import helpers
+from ..ifuzzable import IFuzzable
+
 
 class BasePrimitive(IFuzzable):
     """
@@ -29,7 +31,7 @@ class BasePrimitive(IFuzzable):
         self._fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self._mutant_index = 0  # current mutation index into the fuzz library.
         self._original_value = None  # original value of primitive.
-        self._original_value_rendered = None # original value as rendered
+        self._original_value_rendered = None  # original value as rendered
 
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.

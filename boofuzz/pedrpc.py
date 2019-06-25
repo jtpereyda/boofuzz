@@ -1,22 +1,21 @@
-import sys
-import struct
-import time
-import socket
 import pickle
-
 import select
+import socket
+import struct
+import sys
+import time
 
 from . import exception
 
 
 class Client(object):
     def __init__(self, host, port):
-        self.__host           = host
-        self.__port           = port
-        self.__dbg_flag       = False
-        self.__server_sock    = None
-        self.__retry          = 0
-        self.NOLINGER         = struct.pack('ii', 1, 0)
+        self.__host = host
+        self.__port = port
+        self.__dbg_flag = False
+        self.__server_sock = None
+        self.__retry = 0
+        self.NOLINGER = struct.pack('ii', 1, 0)
 
     def __getattr__(self, method_name):
         """
@@ -53,8 +52,9 @@ class Client(object):
                 time.sleep(5)
                 self.__connect()
             else:
-                raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                    self.__host, self.__port, e))
+                raise exception.BoofuzzRpcError(
+                    'PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(self.__host,
+                                                                                                  self.__port, e))
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
@@ -136,12 +136,12 @@ class Client(object):
             received = ""
 
             while length:
-                chunk     = self.__server_sock.recv(length)
+                chunk = self.__server_sock.recv(length)
                 received += chunk
-                length   -= len(chunk)
+                length -= len(chunk)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server '
+                                            '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e))
 
         return pickle.loads(received)
 
@@ -164,16 +164,16 @@ class Client(object):
             self.__server_sock.send(struct.pack("<L", len(data)))
             self.__server_sock.send(data)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server '
+                                            '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e))
 
 
 class Server(object):
     def __init__(self, host, port):
-        self.__host           = host
-        self.__port           = port
-        self.__dbg_flag       = False
-        self.__client_sock    = None
+        self.__host = host
+        self.__port = port
+        self.__dbg_flag = False
+        self.__client_sock = None
         self.__client_address = None
 
         try:
@@ -212,13 +212,13 @@ class Server(object):
         """
 
         try:
-            length   = struct.unpack("<L", self.__client_sock.recv(4))[0]
+            length = struct.unpack("<L", self.__client_sock.recv(4))[0]
             received = ""
 
             while length:
-                chunk     = self.__client_sock.recv(length)
+                chunk = self.__client_sock.recv(length)
                 received += chunk
-                length   -= len(chunk)
+                length -= len(chunk)
         except Exception:
             sys.stderr.write("PED-RPC> connection client severed during recv()\n")
             raise Exception

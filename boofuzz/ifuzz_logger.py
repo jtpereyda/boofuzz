@@ -2,6 +2,7 @@ import abc
 
 from future.utils import with_metaclass
 
+
 # abc.ABCMeta is the metaclass in both python 2 and 3
 class IFuzzLogger(with_metaclass(abc.ABCMeta, object)):
     """
@@ -181,8 +182,8 @@ class IFuzzLogger(with_metaclass(abc.ABCMeta, object)):
         Called after a test case has been completed. Can be used to inform the operator
         or save the test case log.
 
-        :param None
-        :type None
+        :param: None
+        :type: None
 
         :return: None
         :rtype: None
@@ -195,8 +196,8 @@ class IFuzzLogger(with_metaclass(abc.ABCMeta, object)):
         Called after a test has been completed. Can be used to inform the operator
         or save the test log.
 
-        :param None
-        :type None
+        :param: None
+        :type: None
 
         :return: None
         :rtype: None

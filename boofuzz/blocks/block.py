@@ -2,9 +2,8 @@ from __future__ import absolute_import
 
 import six
 
-from ..ifuzzable import IFuzzable
-from ..primitives import BasePrimitive
 from .. import helpers
+from ..ifuzzable import IFuzzable
 
 
 class Block(IFuzzable):

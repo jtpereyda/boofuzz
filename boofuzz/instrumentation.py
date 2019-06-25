@@ -18,10 +18,10 @@ class External:
         @param stop:  Callback called to stop the target
         """
 
-        self.pre        = pre
-        self.post       = post
-        self.start      = start
-        self.stop       = stop
+        self.pre = pre
+        self.post = post
+        self.start = start
+        self.stop = stop
         self.__dbg_flag = False
 
     # noinspection PyMethodMayBeStatic

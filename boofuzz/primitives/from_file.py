@@ -1,6 +1,6 @@
-import random
 import glob
 from io import open
+
 from .base_primitive import BasePrimitive
 
 
@@ -35,9 +35,9 @@ class FromFile(BasePrimitive):
         self._fuzz_library = []
         list_of_files = glob.glob(self._filename)
         for fname in list_of_files:
-            with open(fname,"r") as _file_handle:
+            with open(fname, "r") as _file_handle:
                 self._fuzz_library.extend(_file_handle.readlines())
-            
+
         # TODO: Make this more clear
         if max_len > 0:
             # If any of our strings are over max_len

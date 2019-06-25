@@ -1,5 +1,6 @@
-import six
 import struct
+
+import six
 
 from .bit_field import BitField
 

@@ -1,12 +1,9 @@
-from builtins import object
 from functools import wraps
 
 import six
 
-from .. import primitives
-from ..blocks import Request
+from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
-from .. import helpers
 
 
 def _may_recurse(f):
@@ -69,11 +66,11 @@ class Size(IFuzzable):
         self._name = name
 
         self.bit_field = primitives.BitField(
-                0,
-                self.length * 8,
-                endian=self.endian,
-                output_format=self.format,
-                signed=self.signed
+            0,
+            self.length * 8,
+            endian=self.endian,
+            output_format=self.format,
+            signed=self.signed
         )
         self._rendered = six.binary_type(b"")
         self._fuzz_complete = False

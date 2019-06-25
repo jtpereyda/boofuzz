@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import click
+
 from boofuzz.constants import DEFAULT_PROCMON_PORT
 from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer

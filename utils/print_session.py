@@ -1,8 +1,8 @@
 #! /usr/bin/python
 
+import pickle
 import sys
 import zlib
-import pickle
 from io import open
 
 USAGE = "\nUSAGE: print_session.py <session file>\n"
@@ -16,7 +16,6 @@ data = pickle.loads(zlib.decompress(fh.read()))
 fh.close()
 
 
-#print data
+# print data
 for key in list(data):
     print(key + " -> " + str(data[key]))
-
