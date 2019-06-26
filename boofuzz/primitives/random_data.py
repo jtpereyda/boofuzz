@@ -72,7 +72,7 @@ class RandomData(BasePrimitive):
             length = self.min_length + self._mutant_index * self.step
 
         # reset the value and generate a random string of the determined length.
-        self._value = b""
+        self._value = six.binary_type(b"")
         for i in xrange(length):
             self._value += six.int2byte(random.randint(0, 255))
 

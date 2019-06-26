@@ -67,7 +67,7 @@ class ParsePDML(ContentHandler):
         parsed = parsed.replace("0x", "")
         parsed = parsed.replace("\\x", "")
 
-        value = ""
+        value = six.binary_type(b"")
         while parsed:
             pair = parsed[:2]
             parsed = parsed[2:]
