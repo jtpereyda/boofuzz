@@ -59,13 +59,14 @@ class ParsePDML(ContentHandler):
 
     # noinspection PyMethodMayBeStatic
     def get_string(self, parsed):
-
-        parsed = parsed.replace("\t", "")
-        parsed = parsed.replace("\r", "")
-        parsed = parsed.replace("\n", "")
-        parsed = parsed.replace(",", "")
-        parsed = parsed.replace("0x", "")
-        parsed = parsed.replace("\\x", "")
+        # until this becomes more universal, utf-8 is assumed
+        parsed = six.binary_type(parsed, "utf-8")
+        parsed = parsed.replace(b"\t", b"")
+        parsed = parsed.replace(b"\r", b"")
+        parsed = parsed.replace(b"\n", b"")
+        parsed = parsed.replace(b",", b"")
+        parsed = parsed.replace(b"0x", b"")
+        parsed = parsed.replace(b"\\x", b"")
 
         value = six.binary_type(b"")
         while parsed:
@@ -78,12 +79,12 @@ class ParsePDML(ContentHandler):
 
             value += six.int2byte(hex_pair)
 
-        value = value.replace("\t", "")
-        value = value.replace("\r", "")
-        value = value.replace("\n", "")
-        value = value.replace(",", "")
-        value = value.replace("0x", "")
-        value = value.replace("\\x", "")
+        value = value.replace(b"\t", b"")
+        value = value.replace(b"\r", b"")
+        value = value.replace(b"\n", b"")
+        value = value.replace(b",", b"")
+        value = value.replace(b"0x", b"")
+        value = value.replace(b"\\x", b"")
 
         return value
 
