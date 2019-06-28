@@ -8,6 +8,7 @@ from xml.sax.handler import feature_namespaces
 
 import six
 
+from boofuzz import helpers
 
 class ParsePDML(ContentHandler):
     def __init__(self):
@@ -60,7 +61,7 @@ class ParsePDML(ContentHandler):
     # noinspection PyMethodMayBeStatic
     def get_string(self, parsed):
         # until this becomes more universal, utf-8 is assumed
-        parsed = six.binary_type(parsed, "utf-8")
+        parsed = helpers.str_to_bytes(parsed)
         parsed = parsed.replace(b"\t", b"")
         parsed = parsed.replace(b"\r", b"")
         parsed = parsed.replace(b"\n", b"")
