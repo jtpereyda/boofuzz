@@ -5,6 +5,8 @@ Upcoming
 --------
 Features
 ^^^^^^^^
+- Pushed Tornado to 5.x and unpinned Flask
+- Added a favicon
 
 Fixes
 ^^^^^
