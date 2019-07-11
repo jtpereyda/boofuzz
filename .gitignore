@@ -8,3 +8,4 @@ dist/
 testing/
 .cache
 .tox
+boofuzz-results/
