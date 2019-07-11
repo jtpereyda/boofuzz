@@ -3,8 +3,6 @@ import threading
 import time
 import unittest
 
-import six
-
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 from boofuzz import s_get, s_initialize, s_static, s_string, Session, SocketConnection, Target

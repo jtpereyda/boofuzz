@@ -1,4 +1,3 @@
-import six
 from past.builtins import range
 
 from .. import exception, helpers, ifuzzable

@@ -4,8 +4,6 @@ from __future__ import absolute_import
 
 import struct
 
-import six
-
 from .. import blocks, exception, helpers, primitives
 from ..helpers import calculate_four_byte_padding
 

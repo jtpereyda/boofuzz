@@ -1,7 +1,5 @@
 from functools import wraps
 
-import six
-
 from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
 

@@ -1,7 +1,5 @@
 import collections
 
-import six
-
 from .block import Block
 from .. import exception, helpers
 from ..ifuzzable import IFuzzable

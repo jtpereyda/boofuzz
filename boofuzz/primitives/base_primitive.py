@@ -1,7 +1,5 @@
 import abc
 
-import six
-
 from .. import helpers
 from ..ifuzzable import IFuzzable
 

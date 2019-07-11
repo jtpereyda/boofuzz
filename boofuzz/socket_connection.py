@@ -7,7 +7,6 @@ import ssl
 import struct
 import sys
 
-import six
 from future.utils import raise_
 
 from . import exception, helpers, ip_constants, itarget_connection

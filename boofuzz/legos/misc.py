@@ -1,8 +1,6 @@
 # Misc Types
 from __future__ import absolute_import
 
-import six
-
 from .. import blocks, exception, helpers, primitives
 
 

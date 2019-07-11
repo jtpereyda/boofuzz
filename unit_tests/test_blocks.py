@@ -1,4 +1,3 @@
-import six
 from past.builtins import xrange
 
 from boofuzz import *
