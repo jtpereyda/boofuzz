@@ -17,7 +17,7 @@ from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
-from .primitives import (BasePrimitive, BitField, Byte, Delim, DWord, FromFile, Group, Mirror, QWord, RandomData,
+from .primitives import (BasePrimitive, BitField, Byte, Bytes, Delim, DWord, FromFile, Group, Mirror, QWord, RandomData,
                          Static, String, Word)
 from .serial_connection import SerialConnection
 from .sessions import open_test_run, Session, Target
@@ -29,7 +29,7 @@ __all__ = ['blocks', 'legos', 'pedrpc', 'primitives', 'exception',
            'EventHook',
            'FuzzLogger', 'FuzzLoggerCsv', 'FuzzLoggerText', 'FuzzLoggerCurses', 'IFuzzLogger', 'IFuzzLoggerBackend',
            'ITargetConnection',
-           'BasePrimitive', 'Delim', 'Group', 'RandomData', 'Static', 'String', 'BitField', 'Byte', 'Word', 'DWord',
+           'BasePrimitive', 'Delim', 'Group', 'RandomData', 'Static', 'String', 'BitField', 'Byte', 'Bytes', 'Word', 'DWord',
            'QWord', 'FromFile', 'Mirror',
            'SerialConnection', 'SocketConnection',
            'Session', 'Target', 'open_test_run',
@@ -56,6 +56,7 @@ __all__ = ['blocks', 'legos', 'pedrpc', 'primitives', 'exception',
            's_from_file',
            's_bit_field', 's_bit', 's_bits',
            's_byte', 's_char',
+           's_bytes',
            's_word', 's_short',
            's_dword', 's_long', 's_int',
            's_qword', 's_double',
@@ -620,6 +621,27 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
 
     byte = primitives.Byte(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(byte)
+
+def s_bytes(value, size=-1, padding=six.binary_type(b"\x00"), fuzzable=True, max_len=-1, name=None):
+    """
+    Pushes a bytes field onto the current block stack.
+
+    @type  value:                          bytes
+    @param value:                          Default string value
+    @type  size:                           int
+    @param size:                           (Optional, def=-1) Static size of this field, leave -1 for dynamic.
+    @type  padding:                        chr
+    @param padding:                        (Optional, def=b"\\x00") Value to use as padding to fill static field size.
+    @type  fuzzable:                       bool
+    @param fuzzable:                       (Optional, def=True) Enable/disable fuzzing of this primitive
+    @type  max_len:                        int
+    @param max_len:                        (Optional, def=-1) Maximum string length
+    @type  name:                           str
+    @param name:                           (Optional, def=None) Specifying a name gives you direct access to a primitive
+    """
+               
+    _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
+    blocks.CURRENT.push(_bytes)
 
 
 def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
