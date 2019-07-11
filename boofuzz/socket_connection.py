@@ -166,11 +166,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
             if self.server:
-                ssl_sock = ssl.SSLContext.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile,
+                ssl_sock = ssl.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile,
                                                       server_side=True)
                 self._sock = ssl_sock
             else:
-                ssl_sock = ssl.SSLContext.wrap_socket(self._sock)
+                ssl_sock = ssl.wrap_socket(self._sock)
                 self._sock = ssl_sock
 
     def recv(self, max_bytes):
