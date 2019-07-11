@@ -11,7 +11,7 @@ class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), encoding="ascii", fuzzable=True, max_len=-1,
+    def __init__(self, value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1,
                  name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
@@ -58,9 +58,9 @@ class String(BasePrimitive):
 
                 # UTF-8
                 # TODO: This can't actually convert these to unicode strings...
-                self._value * 2 + six.binary_type(b"\xfe"),
-                self._value * 10 + six.binary_type(b"\xfe"),
-                self._value * 100 + six.binary_type(b"\xfe"),
+                self._value * 2 + b"\xfe",
+                self._value * 10 + b"\xfe",
+                self._value * 100 + b"\xfe",
             ]
         if not self._fuzz_library:
             self._fuzz_library = \
