@@ -1,10 +1,10 @@
 import random
 
-import six
 from past.builtins import range
 
 from .base_primitive import BasePrimitive
 from .. import helpers
+
 
 class Bytes(BasePrimitive):
     # This binary strings will always included as testcases.
@@ -74,17 +74,15 @@ class Bytes(BasePrimitive):
             b'\x80',
             b'\xFF',
             ] + [i for i in _magic_debug_values if len(i) == 1]
-    _len_fuzz_strings_1byte = len(_fuzz_strings_1byte)
 
     _fuzz_strings_2byte = [
-            b'\x00\x00', 
-            b'\x01\x00', 
-            b'\x00\x01', 
-            b'\x7F\xFF', 
-            b'\xFF\x7F', 
-            b'\xFF\xFF', 
+            b'\x00\x00',
+            b'\x01\x00',
+            b'\x00\x01',
+            b'\x7F\xFF',
+            b'\xFF\x7F',
+            b'\xFF\xFF',
             ] + [i for i in _magic_debug_values if len(i) == 2]
-    _len_fuzz_strings_2byte = len(_fuzz_strings_2byte)
 
     _fuzz_strings_4byte = [
             b'\x00\x00\x00\x00',
@@ -94,10 +92,8 @@ class Bytes(BasePrimitive):
             b'\xFF\xFF\xFF\x7F',
             b'\xFF\xFF\xFF\xFF',
             ] + [i for i in _magic_debug_values if len(i) == 4]
-    _len_fuzz_strings_4byte = len(_fuzz_strings_4byte)
 
-
-    def __init__(self, value, size=-1, padding=six.binary_type(b"\x00"), fuzzable=True, max_len=-1, name=None):
+    def __init__(self, value, size=-1, padding=b"\x00", fuzzable=True, max_len=-1, name=None):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
 
@@ -134,15 +130,6 @@ class Bytes(BasePrimitive):
                 self._value * 100,
             ]
 
-        # Remove any fuzz items greater than self.max_len
-        if self.max_len > 0:
-            if any(len(s) > self.max_len for s in self.this_library):
-                # Pull out the bad string(s):
-                self.this_library = list(set([t[:self.max_len] for t in self.this_library]))
-            if any(len(s) > self.max_len for s in self._fuzz_library):
-                # Pull out the bad string(s):
-                self._fuzz_library = list(set([t[:self.max_len] for t in self._fuzz_library]))
-
     @property
     def name(self):
         return self._name
@@ -156,8 +143,7 @@ class Bytes(BasePrimitive):
         @return: True on success, False otherwise.
         """
 
-        # loop through the fuzz library until a suitable match is found.
-        while 1:
+        while True:
             # if we've ran out of mutations, raise the completion flag.
             if self._mutant_index == self.num_mutations():
                 self._fuzz_complete = True
@@ -209,17 +195,13 @@ class Bytes(BasePrimitive):
 
             # increment the mutation count.
             self._mutant_index += 1
+            if self.size > -1 and len(self._value) > self.size:
+                continue  # too long, skip this one
+            if self.max_len > -1 and len(self._value) > self.max_len:
+                continue  # too long, skip this one
 
-            # if the size parameter is disabled, done.
-            if self.size == -1:
-                return True
-
-            # ignore library items greater then user-supplied length.
-            # TODO: might want to make this smarter.
-            if len(self._value) > self.size:
-                continue
-            else:
-                return True
+            # _value has now been mutated and therefore we return True to indicate success
+            return True
 
     def num_mutations(self):
         """
@@ -239,8 +221,7 @@ class Bytes(BasePrimitive):
         Render string value, properly padded.
         """
 
-        if isinstance(value, six.text_type):
-            value = helpers.str_to_bytes(value)
+        value = helpers.str_to_bytes(value)
 
         # pad undersized library items.
         if len(value) < self.size:

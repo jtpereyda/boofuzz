@@ -622,6 +622,7 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     byte = primitives.Byte(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(byte)
 
+
 def s_bytes(value, size=-1, padding=six.binary_type(b"\x00"), fuzzable=True, max_len=-1, name=None):
     """
     Pushes a bytes field onto the current block stack.
@@ -639,7 +640,7 @@ def s_bytes(value, size=-1, padding=six.binary_type(b"\x00"), fuzzable=True, max
     @type  name:                           str
     @param name:                           (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
-               
+
     _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
     blocks.CURRENT.push(_bytes)
 
