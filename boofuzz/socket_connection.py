@@ -57,8 +57,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send()
             to work, and '' for bind host for recv() to work.
         server (bool): Set to True to enable server side fuzzing.
-        keyfile (str): The file to use for the SSL key when server side fuzzing with proto ssl.
-        certfile (str): The file to use for the SSL certificate when server side fuzzing with proto ssl.
+        sslcontext (ssl.SSLContext): Python SSL context to be used. Required if server=True or server_hostname=None.
+        server_hostname: server_hostname for SSL/TLS.
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
@@ -79,8 +79,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                  l2_dst=b'\xFF' * 6,
                  udp_broadcast=False,
                  server=False,
-                 keyfile=None,
-                 certfile=None):
+                 sslcontext=None,
+                 server_hostname=None):
         self.MAX_PAYLOADS["udp"] = helpers.get_max_udp_size()
 
         self.host = host
@@ -93,8 +93,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.l2_dst = l2_dst
         self._udp_broadcast = udp_broadcast
         self.server = server
-        self.keyfile = keyfile
-        self.certfile = certfile
+        self.sslcontext = sslcontext
+        self.server_hostname = server_hostname
+        assert(not self.server or self.sslcontext, "parameter sslcontext is required when server=True.")
+        assert(self.sslcontext or self.server, "You did neither specify a sslcontext nor server_hostname. Can't proceed without making you vulnerable to MITM attacks. If this is what you want, then specify a sslcontext.")
 
         self._sock = None
         self._udp_client_port = None
@@ -165,13 +167,23 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
-            if self.server:
-                ssl_sock = ssl.wrap_socket(self._sock, keyfile=self.keyfile, certfile=self.certfile,
-                                                      server_side=True)
-                self._sock = ssl_sock
-            else:
-                ssl_sock = ssl.wrap_socket(self._sock)
-                self._sock = ssl_sock
+            if not self.sslcontext:
+                # If we are the SSL client and user did not give us a SSLContext,
+                # then we just use a default one. However, we only can verify the
+                # identity of the SSL server, if we have been given a server_hostname.
+                if not self.server and not self.sslcontext:
+                    self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+                    if self.server_hostname:
+                        self.sslcontext.check_hostname = True
+                        self.sslcontext.verify_mode = ssl.CERT_REQUIRED
+                    else:
+                        # Only option left would be to accept any certificates.
+                        # This would left us vulnerable to man-in-the-middle attacks.
+                        # We won't allow that and the user has to remove the assert below.
+                        assert(False)
+                        self.sslcontext.check_hostname = False
+                        self.sslcontext.verify_mode = ssl.CERT_NONE
+            self._sock = self.sslcontext.wrap_socket(self._sock, server_side=self.server, server_hostname=self.server_hostname)
 
     def recv(self, max_bytes):
         """

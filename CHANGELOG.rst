@@ -12,6 +12,8 @@ Fixes
 - Some code style changes to meet PEP8
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
+- SSL/TLS works again. You can specify a SSLContext now, too.
+- examples: added SSL/TLS client and server
 
 v0.1.5
 ------
