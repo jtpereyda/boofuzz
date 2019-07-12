@@ -12,6 +12,7 @@ Fixes
 - Some code style changes to meet PEP8
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
+- new primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`)
 
 v0.1.5
 ------
