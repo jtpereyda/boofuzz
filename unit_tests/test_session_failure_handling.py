@@ -3,8 +3,6 @@ import threading
 import time
 import unittest
 
-import six
-
 # pytest is required as an extras_require:
 # noinspection PyPackageRequirements
 from boofuzz import s_get, s_initialize, s_static, s_string, Session, SocketConnection, Target
@@ -25,7 +23,7 @@ class MiniTestServer(object):
     def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = six.binary_type(b"\xFE\xEB\xDA\xED")
+        self.data_to_send = b"\xFE\xEB\xDA\xED"
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto

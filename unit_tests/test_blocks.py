@@ -1,4 +1,3 @@
-import six
 from past.builtins import xrange
 
 from boofuzz import *
@@ -97,9 +96,9 @@ def dependencies():
 
     assert (s_num_mutations() == 2)
     assert (s_mutate() is True)
-    assert (s_render().find(six.binary_type(b"TWO")) == -1)
+    assert (s_render().find(b"TWO") == -1)
     assert (s_mutate() is True)
-    assert (s_render().find(six.binary_type(b"ONE")) == -1)
+    assert (s_render().find(b"ONE") == -1)
     assert (s_mutate() is False)
 
 
@@ -190,4 +189,4 @@ def with_statements():
 
     req = s_get("WITH TEST")
     assert (req.num_mutations() == 0)
-    assert (req.render() == six.binary_type(b"test"))
+    assert (req.render() == b"test")

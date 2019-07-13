@@ -7,6 +7,7 @@ from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
 
 import six
+from boofuzz import helpers
 
 
 class ParsePDML(ContentHandler):
@@ -59,15 +60,16 @@ class ParsePDML(ContentHandler):
 
     # noinspection PyMethodMayBeStatic
     def get_string(self, parsed):
+        # until this becomes more universal, utf-8 is assumed
+        parsed = helpers.str_to_bytes(parsed)
+        parsed = parsed.replace(b"\t", b"")
+        parsed = parsed.replace(b"\r", b"")
+        parsed = parsed.replace(b"\n", b"")
+        parsed = parsed.replace(b",", b"")
+        parsed = parsed.replace(b"0x", b"")
+        parsed = parsed.replace(b"\\x", b"")
 
-        parsed = parsed.replace("\t", "")
-        parsed = parsed.replace("\r", "")
-        parsed = parsed.replace("\n", "")
-        parsed = parsed.replace(",", "")
-        parsed = parsed.replace("0x", "")
-        parsed = parsed.replace("\\x", "")
-
-        value = ""
+        value = b""
         while parsed:
             pair = parsed[:2]
             parsed = parsed[2:]
@@ -78,12 +80,12 @@ class ParsePDML(ContentHandler):
 
             value += six.int2byte(hex_pair)
 
-        value = value.replace("\t", "")
-        value = value.replace("\r", "")
-        value = value.replace("\n", "")
-        value = value.replace(",", "")
-        value = value.replace("0x", "")
-        value = value.replace("\\x", "")
+        value = value.replace(b"\t", b"")
+        value = value.replace(b"\r", b"")
+        value = value.replace(b"\n", b"")
+        value = value.replace(b",", b"")
+        value = value.replace(b"0x", b"")
+        value = value.replace(b"\\x", b"")
 
         return value
 

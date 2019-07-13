@@ -14,6 +14,7 @@ Fixes
 - Some code style changes to meet PEP8
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
+- Dropped six.binary_type in favor of b"" format
 
 v0.1.5
 ------
