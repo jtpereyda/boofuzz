@@ -7,8 +7,8 @@ from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
 
 import six
-
 from boofuzz import helpers
+
 
 class ParsePDML(ContentHandler):
     def __init__(self):

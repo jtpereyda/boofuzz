@@ -340,7 +340,7 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         data_to_send = b'"Rum idea this is, that tidiness is a timid, quiet sort of thing;' \
-                                       b' why, tidiness is a toil for giants."'
+                       b' why, tidiness is a toil for giants."'
 
         # Given
         server = MiniTestServer(proto='udp')
@@ -428,11 +428,11 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send =  b'"Imagination does not breed insanity.' \
-                        b'Exactly what does breed insanity is reason.' \
-                        b' Poets do not go mad; but chess-players do.' \
-                        b'Mathematicians go mad, and cashiers;' \
-                        b' but creative artists very seldom. "'
+        data_to_send = b'"Imagination does not breed insanity.' \
+                       b'Exactly what does breed insanity is reason.' \
+                       b' Poets do not go mad; but chess-players do.' \
+                       b'Mathematicians go mad, and cashiers;' \
+                       b' but creative artists very seldom. "'
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
@@ -582,8 +582,8 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send =  b'"Imprudent marriages!" roared Michael. ' \
-                        b'"And pray where in earth or heaven are there any prudent marriages?""'
+        data_to_send = b'"Imprudent marriages!" roared Michael. ' \
+                       b'"And pray where in earth or heaven are there any prudent marriages?""'
 
         # Given
         server = MiniTestServer(proto='raw', host='lo')
