@@ -2,6 +2,7 @@
 import ast
 import os
 import re
+import sys
 from io import open
 
 from setuptools import find_packages, setup
@@ -29,6 +30,23 @@ def get_long_description():
         with open(os.path.join(setup_dir, fname), encoding='utf-8') as f:
             descr.append(f.read())
     return '\n\n'.join(descr)
+
+
+extra_requirements = {
+    "dev": [
+        "tox",
+        "flake8",
+        "check-manifest",
+        "mock",
+        "pytest",
+        "pytest-bdd",
+        "netifaces",
+        "ipaddress",
+        "sphinx",
+    ]
+}
+if sys.version_info >= (3, 6):
+    extra_requirements["dev"] += ["black"]
 
 
 setup(
@@ -60,18 +78,7 @@ setup(
         'pydot',
         'six',
         'tornado~=5.0'],
-    extras_require={
-        'dev': ['black',
-                'tox',
-                'flake8',
-                'check-manifest',
-                'mock',
-                'pytest',
-                'pytest-bdd',
-                'netifaces',
-                'ipaddress',
-                'sphinx'],
-    },
+    extras_require=extra_requirements,
     entry_points={
         'console_scripts': ['boo=boofuzz.cli:main'],
     },
