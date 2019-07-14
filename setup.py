@@ -61,7 +61,8 @@ setup(
         'six',
         'tornado~=5.0'],
     extras_require={
-        'dev': ['tox',
+        'dev': ['black',
+                'tox',
                 'flake8',
                 'check-manifest',
                 'mock',
