@@ -16,7 +16,7 @@ from . import ifuzz_logger_backend
 if sys.version_info >= (3, 3):
     from shutil import get_terminal_size
 else:
-    from backports.shutil_get_terminal_size import get_terminal_size
+    from shutil_backports import get_terminal_size
 
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):

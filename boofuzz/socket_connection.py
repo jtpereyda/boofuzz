@@ -7,7 +7,6 @@ import ssl
 import struct
 import sys
 
-import six
 from future.utils import raise_
 
 from . import exception, helpers, ip_constants, itarget_connection
@@ -196,11 +195,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
             elif self.proto in ['raw-l2', 'raw-l3']:
                 # receive on raw is not supported. Since there is no specific protocol for raw, we would just have to
                 # dump everything off the interface anyway, which is probably not what the user wants.
-                data = six.binary_type(b'')
+                data = b""
             else:
                 raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
-            data = six.binary_type(b'')
+            data = b""
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
@@ -211,7 +210,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     (e.errno == errno.ETIMEDOUT):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
-                data = six.binary_type(b'')
+                data = b""
             else:
                 raise
 

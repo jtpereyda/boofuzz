@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-import six
-
 from .. import helpers
 from ..ifuzzable import IFuzzable
 
@@ -40,7 +38,7 @@ class Block(IFuzzable):
         self.dep_compare = dep_compare
 
         self.stack = []  # block item stack.
-        self._rendered = six.binary_type(b"")  # rendered block contents.
+        self._rendered = b""  # rendered block contents.
         self._fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
@@ -56,7 +54,7 @@ class Block(IFuzzable):
 
     @property
     def original_value(self):
-        original_value = six.binary_type(b"")
+        original_value = b""
 
         for item in self.stack:
             original_value += helpers.str_to_bytes(item.original_value)
@@ -194,7 +192,7 @@ class Block(IFuzzable):
         #
         # if this block is dependant on another field and the value is not met, render nothing.
         #
-        self._rendered = six.binary_type(b"")
+        self._rendered = b""
 
         if self.dep:
             if self.dep_compare == "==":

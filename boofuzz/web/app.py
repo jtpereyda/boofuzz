@@ -1,7 +1,8 @@
 import re
+import os
 
 import flask
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, send_from_directory
 
 from .. import exception
 
@@ -18,6 +19,12 @@ def commify(number):
     while processing:
         (number, processing) = regex.subn(r"\1,\2", number)
     return number
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/togglepause")

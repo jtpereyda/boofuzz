@@ -34,6 +34,10 @@ Nikolai Rusakov <nikolai.rusakov@gmail.com | @nrusakov>
 nnp <http://www.unprotectedhex.com>
     - Unix process monitor agent.
 
+Paul Sorensen <paulsorensen5@gmail.com>
+    - Python 3 porting
+    - Bug fixes
+
 Peter Silberman <peter.silberman@gmail.com>
     - General ideas, beta testing and morale support.
     - Upcoming file fuzzing capability.

@@ -147,7 +147,7 @@ class BitField(BasePrimitive):
         """
         if output_format == "binary":
             bit_stream = ""
-            rendered = six.binary_type(b"")
+            rendered = b""
 
             # pad the bit stream to the next byte boundary.
             if bit_width % 8 == 0:
