@@ -8,6 +8,7 @@ from boofuzz import *
 def run():
     signed_tests()
     string_tests()
+    bytes_tests()
     s_mirror_tests()
     # fuzz_extension_tests()
 
@@ -95,6 +96,28 @@ def s_mirror_tests():
         assert (int(req.names['size'].render()) == len('<{0}>hello</{0}>'.format(group_start_value.decode("utf-8"))))
         assert (req.names['group_end'].render() == group_start_value)
         assert (req.names['size_mirror'].render() == req.names['size'].render())
+
+
+def bytes_tests():
+    s_initialize("test_bytes_empty")
+    s_bytes(b"", name="bytes_empty")
+    req = s_get('test_bytes_empty')
+    while s_mutate():
+        tmp = req.names['bytes_empty'].render()
+
+    s_initialize("test_bytes_max_len")
+    s_bytes(b"12345", name="bytes_max_len", max_len=5)
+    req = s_get('test_bytes_max_len')
+    while s_mutate():
+        tmp = req.names['bytes_max_len'].render()
+        assert(len(tmp) <= 5)
+
+    s_initialize("test_bytes_size")
+    s_bytes(b"1234567", name="bytes_size", size=7, padding=b"A")
+    req = s_get('test_bytes_size')
+    while s_mutate():
+        tmp = req.names['bytes_size'].render()
+        assert(len(req.names['bytes_size'].render()) == 7)
 
 
 def fuzz_extension_tests():
