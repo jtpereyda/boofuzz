@@ -94,10 +94,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.server = server
         self.sslcontext = sslcontext
         self.server_hostname = server_hostname
-        if self.server is True and self.sslcontext is None:
-            raise ValueError("Parameter sslcontext is required when server=True.")
-        if self.sslcontext is None and self.server_hostname is None:
-            raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
+        if self.proto == "ssl":
+            if self.server is True and self.sslcontext is None:
+                raise ValueError("Parameter sslcontext is required when server=True.")
+            if self.sslcontext is None and self.server_hostname is None:
+                raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
         self._sock = None
         self._udp_client_port = None
