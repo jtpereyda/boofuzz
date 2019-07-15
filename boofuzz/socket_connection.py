@@ -58,7 +58,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
             to work, and '' for bind host for recv() to work.
         server (bool): Set to True to enable server side fuzzing.
         sslcontext (ssl.SSLContext): Python SSL context to be used. Required if server=True or server_hostname=None.
-        server_hostname: server_hostname for SSL/TLS.
+        server_hostname (string): server_hostname, required for verifying identity of remote SSL/TLS server.
     """
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
     _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]
@@ -95,8 +95,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.server = server
         self.sslcontext = sslcontext
         self.server_hostname = server_hostname
-        assert(not self.server or self.sslcontext, "parameter sslcontext is required when server=True.")
-        assert(self.sslcontext or self.server, "You did neither specify a sslcontext nor server_hostname. Can't proceed without making you vulnerable to MITM attacks. If this is what you want, then specify a sslcontext.")
+        if self.server is True and self.sslcontext is None:
+            raise ValueError("Parameter sslcontext is required when server=True.")
+        if self.sslcontext is None and self.server_hostname is None:
+            raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
         self._sock = None
         self._udp_client_port = None
@@ -167,23 +169,14 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
-            if not self.sslcontext:
-                # If we are the SSL client and user did not give us a SSLContext,
-                # then we just use a default one. However, we only can verify the
-                # identity of the SSL server, if we have been given a server_hostname.
-                if not self.server and not self.sslcontext:
-                    self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-                    if self.server_hostname:
-                        self.sslcontext.check_hostname = True
-                        self.sslcontext.verify_mode = ssl.CERT_REQUIRED
-                    else:
-                        # Only option left would be to accept any certificates.
-                        # This would left us vulnerable to man-in-the-middle attacks.
-                        # We won't allow that and the user has to remove the assert below.
-                        assert(False)
-                        self.sslcontext.check_hostname = False
-                        self.sslcontext.verify_mode = ssl.CERT_NONE
-            self._sock = self.sslcontext.wrap_socket(self._sock, server_side=self.server, server_hostname=self.server_hostname)
+            # If boofuzz is the SSL client and user did not give us a SSLContext,
+            # then we just use a default one.
+            if self.server is False and self.sslcontext is None:
+                self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+                self.sslcontext.check_hostname = True
+                self.sslcontext.verify_mode = ssl.CERT_REQUIRED
+            self._sock = self.sslcontext.wrap_socket(self._sock, server_side=self.server,
+                                                     server_hostname=self.server_hostname)
 
     def recv(self, max_bytes):
         """

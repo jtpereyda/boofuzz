@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+#
 # designed for use with boofuzz
 #
 # minimal example which act as a TLS server
@@ -7,8 +8,9 @@
 from boofuzz import *
 import ssl
 
-# create test certificate with
-# openssl req -x509 -newkey rsa -keyout key.pem -out cert.pem -days 365 -nodes
+# In order to act as a SSL/TLS server, boofuzz requires a SSL/TLS
+# certificate. You can create a self-signed one with
+#    openssl req -x509 -newkey rsa -keyout key.pem -out cert.pem -days 365 -nodes
 ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 ctx.load_cert_chain(certfile="cert.pem", keyfile="key.pem")
 
@@ -20,7 +22,7 @@ session = Session(
             proto='ssl',
             sslcontext=ctx,
             server=True,
-            ),
+        ),
     ),
 )
 s_initialize("A")

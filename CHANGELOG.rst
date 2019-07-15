@@ -12,8 +12,7 @@ Fixes
 - Some code style changes to meet PEP8
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
-- SSL/TLS works again. You can specify a SSLContext now, too.
-- examples: added SSL/TLS client and server
+- SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`
 
 v0.1.5
 ------
