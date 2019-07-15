@@ -1,7 +1,5 @@
 import collections
 
-import six
-
 from .block import Block
 from .. import exception, helpers
 from ..ifuzzable import IFuzzable
@@ -25,7 +23,7 @@ class Request(IFuzzable):
         # dictionary of list of sizers / checksums that were unable to complete rendering:
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
-        self._rendered = six.binary_type(b"")  # rendered block structure.
+        self._rendered = b""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.
@@ -59,7 +57,7 @@ class Request(IFuzzable):
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = six.binary_type(b"")
+        self._rendered = b""
 
         for item in self.stack:
             self._rendered += helpers.str_to_bytes(item.original_value)
@@ -148,7 +146,7 @@ class Request(IFuzzable):
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = six.binary_type(b"")
+        self._rendered = b""
 
         for item in self.stack:
             self._rendered += item.render()

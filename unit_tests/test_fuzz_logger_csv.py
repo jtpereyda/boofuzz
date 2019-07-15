@@ -27,7 +27,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
         When: Calling hex_to_hexstr
         Then: Hex of several-line string is output first, then repr format.
         """
-        given = six.binary_type(b'abc\n123\r\nA\n')
+        given = b"abc\n123\r\nA\n"
         expected = u'61 62 63 0a 31 32 33 0d 0a 41 0a'
         self.assertEqual(expected, fuzz_logger_csv.hex_to_hexstr(given))
 
@@ -45,8 +45,8 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.some_log_fail_msg = "broken"
         self.some_log_pass_msg = "it works so far!"
         self.some_log_error_msg = "D:"
-        self.some_recv_data = six.binary_type(b'A B C')
-        self.some_send_data = six.binary_type(b'123')
+        self.some_recv_data = b"A B C"
+        self.some_send_data = b"123"
 
     def test_open_test_case(self):
         """
@@ -333,7 +333,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.logger.open_test_case(self.some_test_case_id,
                                    name=self.some_test_case_name,
                                    index=self.some_test_case_index)
-        self.logger.log_recv(six.binary_type(b''))
+        self.logger.log_recv(b"")
 
         # Then
         self.virtual_file.seek(0)
@@ -355,7 +355,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         self.logger.open_test_case(self.some_test_case_id,
                                    name=self.some_test_case_name,
                                    index=self.some_test_case_index)
-        self.logger.log_send(six.binary_type(b''))
+        self.logger.log_send(b"")
 
         # Then
         self.virtual_file.seek(0)

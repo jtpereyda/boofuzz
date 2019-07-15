@@ -1,7 +1,5 @@
 from functools import wraps
 
-import six
-
 from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
 
@@ -72,7 +70,7 @@ class Size(IFuzzable):
             output_format=self.format,
             signed=self.signed
         )
-        self._rendered = six.binary_type(b"")
+        self._rendered = b""
         self._fuzz_complete = False
         self._mutant_index = self.bit_field.mutant_index
 

@@ -269,7 +269,7 @@ def ipv4_checksum(msg):
     """
     # Pad with 0 byte if needed
     if len(msg) % 2 == 1:
-        msg += six.binary_type(b"\x00")
+        msg += b"\x00"
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
@@ -293,7 +293,7 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     """
     return (src_addr
             + dst_addr
-            + six.binary_type(b"\x00")
+            + b"\x00"
             + six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)
             + struct.pack(">H", msg_len))
 
@@ -463,5 +463,5 @@ def str_to_bytes(value):
     if six.PY3:
         if isinstance(value, six.text_type):
             temp = [bytes([ord(i)]) for i in value]
-            result = six.binary_type().join(temp)
+            result = b"".join(temp)
     return result
