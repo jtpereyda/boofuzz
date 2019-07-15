@@ -14,12 +14,12 @@ def main():
     substitute any FTP server.
     """
     target_ip = "127.0.0.1"
-    start_cmd = ['python', 'C:\\ftpd\\ftpd.py']
+    start_cmd = ["python", "C:\\ftpd\\ftpd.py"]
     session = Session(
         target=Target(
-            connection=SocketConnection(target_ip, 21, proto='tcp'),
+            connection=SocketConnection(target_ip, 21, proto="tcp"),
             procmon=pedrpc.Client(target_ip, 26002),
-            procmon_options={"start_commands": [start_cmd]}
+            procmon_options={"start_commands": [start_cmd]},
         ),
         sleep_time=1,
     )

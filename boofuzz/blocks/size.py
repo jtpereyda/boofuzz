@@ -21,8 +21,20 @@ class Size(IFuzzable):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, block_name, request, offset=0, length=4, endian="<", output_format="binary", inclusive=False,
-                 signed=False, math=None, fuzzable=True, name=None):
+    def __init__(
+        self,
+        block_name,
+        request,
+        offset=0,
+        length=4,
+        endian="<",
+        output_format="binary",
+        inclusive=False,
+        signed=False,
+        math=None,
+        fuzzable=True,
+        name=None,
+    ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.
@@ -64,11 +76,7 @@ class Size(IFuzzable):
         self._name = name
 
         self.bit_field = primitives.BitField(
-            0,
-            self.length * 8,
-            endian=self.endian,
-            output_format=self.format,
-            signed=self.signed
+            0, self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
         )
         self._rendered = b""
         self._fuzz_complete = False
@@ -161,7 +169,7 @@ class Size(IFuzzable):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
 
     def _get_dummy_value(self):
-        return self.length * '\x00'
+        return self.length * "\x00"
 
     def _render(self):
         length = self._calculated_length()
@@ -171,11 +179,13 @@ class Size(IFuzzable):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block
 
     def _length_to_bytes(self, length):
-        return primitives.BitField.render_int(value=self.math(length),
-                                              output_format=self.format,
-                                              bit_width=self.length * 8,
-                                              endian=self.endian,
-                                              signed=self.signed)
+        return primitives.BitField.render_int(
+            value=self.math(length),
+            output_format=self.format,
+            bit_width=self.length * 8,
+            endian=self.endian,
+            signed=self.signed,
+        )
 
     @property
     def _inclusive_length_of_self(self):

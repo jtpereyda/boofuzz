@@ -39,8 +39,18 @@ def int_to_binary_string(number, bit_width):
 
 
 class BitField(BasePrimitive):
-    def __init__(self, value, width, max_num=None, endian=LITTLE_ENDIAN, output_format="binary", signed=False,
-                 full_range=False, fuzzable=True, name=None):
+    def __init__(
+        self,
+        value,
+        width,
+        max_num=None,
+        endian=LITTLE_ENDIAN,
+        output_format="binary",
+        signed=False,
+        full_range=False,
+        fuzzable=True,
+        name=None,
+    ):
         """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
 
@@ -78,7 +88,7 @@ class BitField(BasePrimitive):
         self.full_range = full_range
         self._fuzzable = fuzzable
         self._name = name
-        self.cyclic_index = 0         # when cycling through non-mutating values
+        self.cyclic_index = 0  # when cycling through non-mutating values
 
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
@@ -126,8 +136,9 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(case)
 
     def _render(self, value):
-        temp = self.render_int(value, output_format=self.format, bit_width=self.width, endian=self.endian,
-                               signed=self.signed)
+        temp = self.render_int(
+            value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed
+        )
         return helpers.str_to_bytes(temp)
 
     @staticmethod

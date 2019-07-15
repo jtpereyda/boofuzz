@@ -19,43 +19,43 @@ def run():
 def signed_tests():
     s_initialize("UNIT TEST 1")
     s_byte(0, output_format="ascii", signed=True, name="byte_1")
-    s_byte(0xff // 2, output_format="ascii", signed=True, name="byte_2")
-    s_byte(0xff // 2 + 1, output_format="ascii", signed=True, name="byte_3")
-    s_byte(0xff, output_format="ascii", signed=True, name="byte_4")
+    s_byte(0xFF // 2, output_format="ascii", signed=True, name="byte_2")
+    s_byte(0xFF // 2 + 1, output_format="ascii", signed=True, name="byte_3")
+    s_byte(0xFF, output_format="ascii", signed=True, name="byte_4")
 
     s_word(0, output_format="ascii", signed=True, name="word_1")
-    s_word(0xffff // 2, output_format="ascii", signed=True, name="word_2")
-    s_word(0xffff // 2 + 1, output_format="ascii", signed=True, name="word_3")
-    s_word(0xffff, output_format="ascii", signed=True, name="word_4")
+    s_word(0xFFFF // 2, output_format="ascii", signed=True, name="word_2")
+    s_word(0xFFFF // 2 + 1, output_format="ascii", signed=True, name="word_3")
+    s_word(0xFFFF, output_format="ascii", signed=True, name="word_4")
 
     s_dword(0, output_format="ascii", signed=True, name="dword_1")
-    s_dword(0xffffffff // 2, output_format="ascii", signed=True, name="dword_2")
-    s_dword(0xffffffff // 2 + 1, output_format="ascii", signed=True, name="dword_3")
-    s_dword(0xffffffff, output_format="ascii", signed=True, name="dword_4")
+    s_dword(0xFFFFFFFF // 2, output_format="ascii", signed=True, name="dword_2")
+    s_dword(0xFFFFFFFF // 2 + 1, output_format="ascii", signed=True, name="dword_3")
+    s_dword(0xFFFFFFFF, output_format="ascii", signed=True, name="dword_4")
 
     s_qword(0, output_format="ascii", signed=True, name="qword_1")
-    s_qword(0xffffffffffffffff // 2, output_format="ascii", signed=True, name="qword_2")
-    s_qword(0xffffffffffffffff // 2 + 1, output_format="ascii", signed=True, name="qword_3")
-    s_qword(0xffffffffffffffff, output_format="ascii", signed=True, name="qword_4")
+    s_qword(0xFFFFFFFFFFFFFFFF // 2, output_format="ascii", signed=True, name="qword_2")
+    s_qword(0xFFFFFFFFFFFFFFFF // 2 + 1, output_format="ascii", signed=True, name="qword_3")
+    s_qword(0xFFFFFFFFFFFFFFFF, output_format="ascii", signed=True, name="qword_4")
 
     req = s_get("UNIT TEST 1")
 
-    assert (req.names["byte_1"].render() == b"0")
-    assert (req.names["byte_2"].render() == b"127")
-    assert (req.names["byte_3"].render() == b"-128")
-    assert (req.names["byte_4"].render() == b"-1")
-    assert (req.names["word_1"].render() == b"0")
-    assert (req.names["word_2"].render() == b"32767")
-    assert (req.names["word_3"].render() == b"-32768")
-    assert (req.names["word_4"].render() == b"-1")
-    assert (req.names["dword_1"].render() == b"0")
-    assert (req.names["dword_2"].render() == b"2147483647")
-    assert (req.names["dword_3"].render() == b"-2147483648")
-    assert (req.names["dword_4"].render() == b"-1")
-    assert (req.names["qword_1"].render() == b"0")
-    assert (req.names["qword_2"].render() == b"9223372036854775807")
-    assert (req.names["qword_3"].render() == b"-9223372036854775808")
-    assert (req.names["qword_4"].render() == b"-1")
+    assert req.names["byte_1"].render() == b"0"
+    assert req.names["byte_2"].render() == b"127"
+    assert req.names["byte_3"].render() == b"-128"
+    assert req.names["byte_4"].render() == b"-1"
+    assert req.names["word_1"].render() == b"0"
+    assert req.names["word_2"].render() == b"32767"
+    assert req.names["word_3"].render() == b"-32768"
+    assert req.names["word_4"].render() == b"-1"
+    assert req.names["dword_1"].render() == b"0"
+    assert req.names["dword_2"].render() == b"2147483647"
+    assert req.names["dword_3"].render() == b"-2147483648"
+    assert req.names["dword_4"].render() == b"-1"
+    assert req.names["qword_1"].render() == b"0"
+    assert req.names["qword_2"].render() == b"9223372036854775807"
+    assert req.names["qword_3"].render() == b"-9223372036854775808"
+    assert req.names["qword_4"].render() == b"-1"
 
 
 def string_tests():
@@ -64,37 +64,37 @@ def string_tests():
 
     req = s_get("STRING UNIT TEST 1")
 
-    assert (len(req.names["sized_string"].render()) == 200)
+    assert len(req.names["sized_string"].render()) == 200
 
     # check that string padding and truncation are working correctly.
     for i in xrange(0, 50):
         s_mutate()
-        assert (len(req.names["sized_string"].render()) == 200)
+        assert len(req.names["sized_string"].render()) == 200
 
 
 def s_mirror_tests():
-    TEST_GROUP_VALUES = [b'a', b'bb', b'ccc', b'dddd']
-    s_initialize('test_s_mirror')
+    TEST_GROUP_VALUES = [b"a", b"bb", b"ccc", b"dddd"]
+    s_initialize("test_s_mirror")
 
-    s_size('data', output_format="ascii", fuzzable=False, name='size')
-    s_mirror('size', name='size_mirror')
+    s_size("data", output_format="ascii", fuzzable=False, name="size")
+    s_mirror("size", name="size_mirror")
 
-    with s_block('data'):
-        s_static('<')
-        s_group('group_start', values=TEST_GROUP_VALUES)
-        s_static('>')
-        s_static('hello')
-        s_static('</')
-        s_mirror('group_start', name='group_end')
-        s_static('>')
+    with s_block("data"):
+        s_static("<")
+        s_group("group_start", values=TEST_GROUP_VALUES)
+        s_static(">")
+        s_static("hello")
+        s_static("</")
+        s_mirror("group_start", name="group_end")
+        s_static(">")
 
-    req = s_get('test_s_mirror')
+    req = s_get("test_s_mirror")
     for _ in xrange(len(TEST_GROUP_VALUES)):
         s_mutate()
-        group_start_value = req.names['group_start'].render()
-        assert (int(req.names['size'].render()) == len('<{0}>hello</{0}>'.format(group_start_value.decode("utf-8"))))
-        assert (req.names['group_end'].render() == group_start_value)
-        assert (req.names['size_mirror'].render() == req.names['size'].render())
+        group_start_value = req.names["group_start"].render()
+        assert int(req.names["size"].render()) == len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8")))
+        assert req.names["group_end"].render() == group_start_value
+        assert req.names["size_mirror"].render() == req.names["size"].render()
 
 
 def fuzz_extension_tests():
@@ -127,16 +127,16 @@ def fuzz_extension_tests():
     req = s_get("EXTENSION TEST")
 
     # these should be here now.
-    assert (0xdeadbeef in req.names["int"]._fuzz_library)
-    assert (0xc0cac01a in req.names["int"]._fuzz_library)
+    assert 0xDEADBEEF in req.names["int"]._fuzz_library
+    assert 0xC0CAC01A in req.names["int"]._fuzz_library
 
     # these should not as a char is too small to store them.
-    assert (0xdeadbeef not in req.names["char"]._fuzz_library)
-    assert (0xc0cac01a not in req.names["char"]._fuzz_library)
+    assert 0xDEADBEEF not in req.names["char"]._fuzz_library
+    assert 0xC0CAC01A not in req.names["char"]._fuzz_library
 
     # these should be here now.
-    assert ("pedram" in req.names["string"]._fuzz_library)
-    assert ("amini" in req.names["string"]._fuzz_library)
+    assert "pedram" in req.names["string"]._fuzz_library
+    assert "amini" in req.names["string"]._fuzz_library
 
     # restore existing fuzz extension libraries.
     try:

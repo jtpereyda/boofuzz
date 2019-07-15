@@ -47,7 +47,7 @@ s_static("\r\n")
 
 # SOAPACTION: "urn:schemas-microsoft-com:service:MSContentDirectory:1#Search"
 s_static("SOAPACTION: ")
-s_delim("\"")
+s_delim('"')
 s_static("urn")
 s_delim(":")
 s_string("schemas-microsoft-com")
@@ -59,11 +59,11 @@ s_static(":")
 s_string("1")
 s_delim("#")
 s_string("Search")
-s_delim("\"")
+s_delim('"')
 s_static("\r\n")
 
 # CONTENT-TYPE: text/xml; charset="utf-8"
-s_static("CONTENT-TYPE: text/xml; charset=\"utf-8\"")
+s_static('CONTENT-TYPE: text/xml; charset="utf-8"')
 s_static("\r\n")
 
 # Content-Length: 547
@@ -79,15 +79,15 @@ if s_block_start("content"):
     s_string("s")
     s_delim(":")
     s_string("Envelope")
-    s_static(" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
+    s_static(' xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" ')
     s_static("s:")
     s_string("encodingStyle")
     s_delim("=")
-    s_string("\"http://schemas.xmlsoap.org/soap/encoding/\"")
+    s_string('"http://schemas.xmlsoap.org/soap/encoding/"')
     s_delim(">")
 
     s_static("<s:Body>")
-    s_static("<u:Search xmlns:u=\"urn:schemas-microsoft-com:service:MSContentDirectory:1\">")
+    s_static('<u:Search xmlns:u="urn:schemas-microsoft-com:service:MSContentDirectory:1">')
 
     # <ContainerID>7</ContainerID>
     s_static("<ContainerID>")

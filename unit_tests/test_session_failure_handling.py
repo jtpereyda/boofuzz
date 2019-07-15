@@ -20,7 +20,7 @@ class MiniTestServer(object):
     Small server class for testing SocketConnection.
     """
 
-    def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
+    def __init__(self, stay_silent=False, proto="tcp", host="0.0.0.0"):
         self.server_socket = None
         self.received = None
         self.data_to_send = b"\xFE\xEB\xDA\xED"
@@ -34,18 +34,18 @@ class MiniTestServer(object):
         """
         Bind server, and call listen if using TCP, meaning that the client test code can successfully connect.
         """
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        elif self.proto == 'udp':
+        elif self.proto == "udp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif self.proto == 'raw':
+        elif self.proto == "raw":
             self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
         self.server_socket.bind((self.host, 0))  # let OS choose a free port
 
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             self.server_socket.listen(1)
 
         self.active_port = self.server_socket.getsockname()[1]
@@ -57,7 +57,7 @@ class MiniTestServer(object):
         """
         self.server_socket.settimeout(self.timeout)
 
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             (client_socket, address) = self.server_socket.accept()
 
             self.received = client_socket.recv(10000)
@@ -66,12 +66,12 @@ class MiniTestServer(object):
                 client_socket.send(self.data_to_send)
 
             client_socket.close()
-        elif self.proto == 'udp':
+        elif self.proto == "udp":
             data, addr = self.server_socket.recvfrom(1024)
             self.received = data
             if not self.stay_silent:
                 self.server_socket.sendto(self.data_to_send, addr)
-        elif self.proto == 'raw':
+        elif self.proto == "raw":
             data, addr = self.server_socket.recvfrom(10000)
             self.received = data
             if not self.stay_silent:
@@ -98,7 +98,7 @@ class MiniTestServer(object):
         """
         self.server_socket.settimeout(self.timeout)
 
-        if self.proto == 'raw':
+        if self.proto == "raw":
             # Keep receiving
             elapsed_time = 0
             start_time = time.time()
@@ -136,6 +136,7 @@ class TestNoResponseFailure(unittest.TestCase):
     def _mock_restart_target(self):
         def x(target):
             self.restarts += 1
+
         return x
 
     def test_no_response_causes_restart(self):
@@ -146,7 +147,7 @@ class TestNoResponseFailure(unittest.TestCase):
         Then: The restart_target method is called.
         """
         # Given
-        server = MiniTestServer(host='localhost', stay_silent=True)
+        server = MiniTestServer(host="localhost", stay_silent=True)
         server.bind()
 
         t = threading.Thread(target=server.serve_once)
@@ -154,9 +155,7 @@ class TestNoResponseFailure(unittest.TestCase):
         t.start()
 
         session = Session(
-            target=Target(
-                connection=SocketConnection('localhost', server.active_port, proto='tcp'),
-            ),
+            target=Target(connection=SocketConnection("localhost", server.active_port, proto="tcp")),
             fuzz_loggers=[],  # log to nothing
             check_data_received_each_request=True,
             keep_web_open=False,
@@ -184,5 +183,5 @@ class TestNoResponseFailure(unittest.TestCase):
         self.assertEqual(1, self.restarts)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

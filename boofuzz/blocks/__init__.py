@@ -6,7 +6,7 @@ from .repeat import Repeat
 from .request import Request
 from .size import Size
 
-__all__ = ['Block', 'Checksum', 'Repeat', 'Request', 'Size', 'REQUESTS']
+__all__ = ["Block", "Checksum", "Repeat", "Request", "Size", "REQUESTS"]
 
 REQUESTS = {}
 CURRENT = None
