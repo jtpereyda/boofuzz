@@ -102,7 +102,7 @@ class Bytes(BasePrimitive):
         @type  value:      bytes
         @param value:      Default string value
         @type  size:       int
-        @param size:       (Optional, def=None) Static size of this field, leave -1 for dynamic.
+        @param size:       (Optional, def=None) Static size of this field, leave None for dynamic.
         @type  padding:    chr
         @param padding:    (Optional, def=b"\\x00") Value to use as padding to fill static field size.
         @type  fuzzable:   bool
@@ -228,7 +228,8 @@ class Bytes(BasePrimitive):
 
         value = helpers.str_to_bytes(value)
 
-        # pad undersized library items.
-        if len(value) < self.size:
+        # if size is set, then pad undersized values.
+        if self.size is not None:
             value += self.padding * (self.size - len(value))
+
         return helpers.str_to_bytes(value)

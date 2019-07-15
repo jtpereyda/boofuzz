@@ -624,20 +624,20 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     blocks.CURRENT.push(byte)
 
 
-def s_bytes(value, size=-1, padding=six.binary_type(b"\x00"), fuzzable=True, max_len=-1, name=None):
+def s_bytes(value, size=None, padding=six.binary_type(b"\x00"), fuzzable=True, max_len=None, name=None):
     """
     Pushes a bytes field onto the current block stack.
 
     @type  value:                          bytes
     @param value:                          Default string value
     @type  size:                           int
-    @param size:                           (Optional, def=-1) Static size of this field, leave -1 for dynamic.
+    @param size:                           (Optional, def=None) Static size of this field, leave None for dynamic.
     @type  padding:                        chr
     @param padding:                        (Optional, def=b"\\x00") Value to use as padding to fill static field size.
     @type  fuzzable:                       bool
     @param fuzzable:                       (Optional, def=True) Enable/disable fuzzing of this primitive
     @type  max_len:                        int
-    @param max_len:                        (Optional, def=-1) Maximum string length
+    @param max_len:                        (Optional, def=None) Maximum string length
     @type  name:                           str
     @param name:                           (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
