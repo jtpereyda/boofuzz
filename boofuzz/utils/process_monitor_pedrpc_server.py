@@ -25,7 +25,7 @@ def _split_command_if_str(command):
         (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
     """
     if isinstance(command, str):
-        return shlex.split(command, posix=(os.name == 'posix'))
+        return shlex.split(command, posix=(os.name == "posix"))
 
     else:
         return command
