@@ -13,10 +13,42 @@ sess.connect(s_get("HTTP REQ"))
 # Fuzz all the publicly avalible methods known for HTTP Servers
 
 s_initialize("HTTP VERBS")
-s_group("verbs", values=["GET", "HEAD", "POST", "OPTIONS", "TRACE", "PUT", "DELETE", "PROPFIND", "CONNECT", "PROPPATCH",
-                         "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK", "VERSION-CONTROL", "REPORT", "CHECKOUT", "CHECKIN",
-                         "UNCHECKOUT", "MKWORKSPACE", "UPDATE", "LABEL", "MERGE", "BASELINE-CONTROL", "MKACTIVITY",
-                         "ORDERPATCH", "ACL", "PATCH", "SEARCH", "CAT"])
+s_group(
+    "verbs",
+    values=[
+        "GET",
+        "HEAD",
+        "POST",
+        "OPTIONS",
+        "TRACE",
+        "PUT",
+        "DELETE",
+        "PROPFIND",
+        "CONNECT",
+        "PROPPATCH",
+        "MKCOL",
+        "COPY",
+        "MOVE",
+        "LOCK",
+        "UNLOCK",
+        "VERSION-CONTROL",
+        "REPORT",
+        "CHECKOUT",
+        "CHECKIN",
+        "UNCHECKOUT",
+        "MKWORKSPACE",
+        "UPDATE",
+        "LABEL",
+        "MERGE",
+        "BASELINE-CONTROL",
+        "MKACTIVITY",
+        "ORDERPATCH",
+        "ACL",
+        "PATCH",
+        "SEARCH",
+        "CAT",
+    ],
+)
 if s_block_start("body", group="verbs"):
     s_delim(" ")
     s_delim("/")

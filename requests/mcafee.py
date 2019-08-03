@@ -44,13 +44,13 @@ s_initialize("mcafee_epo_framework_udp")
     McAfee FrameworkService.exe UDP port 8082
 """
 
-s_static('Type=\"AgentWakeup\"', name="agent_wakeup")
-s_static('\"DataSize=\"')
+s_static('Type="AgentWakeup"', name="agent_wakeup")
+s_static('"DataSize="')
 s_size("data", output_format="ascii")  # must be over 234
 
 if s_block_start("data", encoder=mcafee_epo_xor):
     s_static("\x50\x4f", name="signature")
-    s_group(values=[pack('<L', 0x40000001), pack('<L', 0x30000001), pack('<L', 0x20000001)], name="opcode")
+    s_group(values=[pack("<L", 0x40000001), pack("<L", 0x30000001), pack("<L", 0x20000001)], name="opcode")
     s_size("data", length=4)  # TODO: needs to be size of data - 1 !!!
 
     s_string("size", size=210)
@@ -64,7 +64,7 @@ s_initialize("network_agent_udp")
     McAfee Network Agent UDP/TCP port 6646
 """
 
-s_size("kit_and_kaboodle", endian='>', fuzzable=True)
+s_size("kit_and_kaboodle", endian=">", fuzzable=True)
 
 if s_block_start("kit_and_kaboodle"):
     # TODO: command? might want to fuzz this later.
@@ -76,7 +76,7 @@ if s_block_start("kit_and_kaboodle"):
     # here comes the first tag.
     s_static("\x00\x00\x00\x01")
 
-    s_size("first_tag", endian='>', fuzzable=True)
+    s_size("first_tag", endian=">", fuzzable=True)
     if s_block_start("first_tag"):
         s_string("McNAUniqueId", encoding="utf-16-le")
     s_block_end()

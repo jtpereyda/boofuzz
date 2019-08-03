@@ -76,10 +76,10 @@ class Node(object):
 
             # if the end of the current chunk contains a backslash or double-quote, back off some.
             if cursor + amount < len(self.label):
-                while self.label[cursor + amount] == '\\' or self.label[cursor + amount] == '"':
+                while self.label[cursor + amount] == "\\" or self.label[cursor + amount] == '"':
                     amount -= 1
 
-            chunked_label += self.label[cursor:cursor + amount] + "\\\n"
+            chunked_label += self.label[cursor : cursor + amount] + "\\\n"
             cursor += amount
 
         # if node width and height were not explicitly specified, make a best effort guess to create something nice.
@@ -119,7 +119,7 @@ class Node(object):
             "gml_line_width": self.gml_line_width,
             "gml_type": self.gml_type,
             "gml_width_shape": self.gml_width_shape,
-            "chunked_label": chunked_label
+            "chunked_label": chunked_label,
         }
 
         return node
@@ -135,7 +135,7 @@ class Node(object):
         dot_node = pydot.Node(self.id)
 
         dot_node.label = '<<font face="lucida console">%s</font>>' % self.label.rstrip("\r\n")
-        dot_node.label = dot_node.label.replace("\\n", '<br/>')
+        dot_node.label = dot_node.label.replace("\\n", "<br/>")
         dot_node.shape = self.shape
         dot_node.color = "#%06x" % self.color
         dot_node.fillcolor = "#%06x" % self.color
@@ -182,19 +182,19 @@ class Node(object):
             "shape": self.shape,
             "color": self.color,
             "label": self.label,
-            "udraw_info": self.udraw_info
+            "udraw_info": self.udraw_info,
         }
 
         edges = graph.edges_from(self.id)
 
         for edge in edges:
             udraw += edge.render_edge_udraw(graph)
-            udraw += ','
+            udraw += ","
 
         if edges:
             udraw = udraw[0:-1]
 
-        udraw += ']))'
+        udraw += "]))"
 
         return udraw
 
@@ -234,7 +234,7 @@ class Node(object):
             "shape": self.shape,
             "color": self.color,
             "label": self.label,
-            "udraw_info": self.udraw_info
+            "udraw_info": self.udraw_info,
         }
 
         return udraw

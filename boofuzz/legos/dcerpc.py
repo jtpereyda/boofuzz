@@ -84,12 +84,14 @@ class NdrString(blocks.Block):
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = (b""
-                              + struct.pack("<L", length)
-                              + struct.pack("<L", 0)
-                              + struct.pack("<L", length)
-                              + self._rendered
-                              + calculate_four_byte_padding(self._rendered))
+            self._rendered = (
+                b""
+                + struct.pack("<L", length)
+                + struct.pack("<L", 0)
+                + struct.pack("<L", length)
+                + self._rendered
+                + calculate_four_byte_padding(self._rendered)
+            )
 
         return helpers.str_to_bytes(self._rendered)
 
@@ -133,11 +135,13 @@ class NdrWString(blocks.Block):
 
             # format accordingly.
             length = len(self._rendered)
-            self._rendered = (b""
-                              + struct.pack("<L", length)
-                              + struct.pack("<L", 0)
-                              + struct.pack("<L", length)
-                              + self._rendered
-                              + calculate_four_byte_padding(self._rendered))
+            self._rendered = (
+                b""
+                + struct.pack("<L", length)
+                + struct.pack("<L", 0)
+                + struct.pack("<L", length)
+                + self._rendered
+                + calculate_four_byte_padding(self._rendered)
+            )
 
         return helpers.str_to_bytes(self._rendered)

@@ -43,7 +43,7 @@ class FuzzLoggerFile(ifuzz_logger.IFuzzLogger):
         :param path: Directory in which to save fuzz data.
         """
         self._path = path
-        self._current_id = ''
+        self._current_id = ""
         self._rx_count = 0
         self._tx_count = 0
 

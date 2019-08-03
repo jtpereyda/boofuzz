@@ -4,20 +4,28 @@ LITTLE_ENDIAN = "<"
 DEFAULT_WEB_UI_PORT = 26000
 DEFAULT_PROCMON_PORT = 26002
 
-RESULTS_DIR = 'boofuzz-results'
+RESULTS_DIR = "boofuzz-results"
 
-ERR_CONN_FAILED_TERMINAL = "Cannot connect to target; target presumed down. Stopping test run. Note: This likely " \
-                           "indicates a failure caused by the previous test case. "
+ERR_CONN_FAILED_TERMINAL = (
+    "Cannot connect to target; target presumed down. Stopping test run. Note: This likely "
+    "indicates a failure caused by the previous test case. "
+)
 
-ERR_CONN_FAILED = "Cannot connect to target; target presumed down. Note: This likely " \
-                  "indicates a failure caused by the previous test case. "
+ERR_CONN_FAILED = (
+    "Cannot connect to target; target presumed down. Note: This likely "
+    "indicates a failure caused by the previous test case. "
+)
 
-WARN_CONN_FAILED_TERMINAL = "Cannot connect to target; retrying. Note: This likely " \
-                            "indicates a failure caused by the previous test case, or a target that is slow to restart."
+WARN_CONN_FAILED_TERMINAL = (
+    "Cannot connect to target; retrying. Note: This likely "
+    "indicates a failure caused by the previous test case, or a target that is slow to restart."
+)
 
-ERR_CONN_ABORTED = "Target connection lost (socket error: {socket_errno} {socket_errmsg}): You may have a " \
-                   "network issue, or an issue with firewalls or anti-virus. Try " \
-                   "disabling your firewall."
+ERR_CONN_ABORTED = (
+    "Target connection lost (socket error: {socket_errno} {socket_errmsg}): You may have a "
+    "network issue, or an issue with firewalls or anti-virus. Try "
+    "disabling your firewall."
+)
 
 ERR_CONN_RESET = "Target connection reset."
 

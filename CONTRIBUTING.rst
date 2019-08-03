@@ -26,11 +26,17 @@ Pull Request Checklist
 
    If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
 
-3. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+3. Format the code to meet our code style requirements (needs python 3.6+): ::
 
-4. Modify CHANGELOG.rst to say what you changed.
+      black .
 
-5. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
+   Use ``# fmt: off`` and ``# fmt: on`` around a block to locally disable formatting
+
+4. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+
+5. Modify CHANGELOG.rst to say what you changed.
+
+6. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
 
 Maintainers
 ===========

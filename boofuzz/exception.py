@@ -22,6 +22,7 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     """
     Raised on `errno.ECONNABORTED`.
     """
+
     socket_errno = attr.ib()
     socket_errmsg = attr.ib()
 
