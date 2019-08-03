@@ -135,7 +135,7 @@ class Client(object):
             return
 
         try:
-            received = ""
+            received = b""
 
             while length:
                 chunk = self.__server_sock.recv(length)
@@ -219,7 +219,7 @@ class Server(object):
 
         try:
             length = struct.unpack("<L", self.__client_sock.recv(4))[0]
-            received = ""
+            received = b""
 
             while length:
                 chunk = self.__client_sock.recv(length)
