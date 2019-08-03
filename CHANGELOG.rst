@@ -17,6 +17,7 @@ Fixes
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
 - Dropped six.binary_type in favor of b"" format
 - Fixed process monitor handling of backslashes in Windows start commands
+- Fixed and documented `boo open`
 
 v0.1.5
 ------
