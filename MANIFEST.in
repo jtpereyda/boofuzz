@@ -21,3 +21,5 @@ recursive-include docs Makefile
 
 recursive-include _static *.png
 recursive-include docs *.png
+
+prune docs/_build
