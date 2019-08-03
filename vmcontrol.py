@@ -16,6 +16,7 @@ if os.name != "nt":
 try:
     # noinspection PyUnresolvedReferences
     from win32api import GetShortPathName
+
     # noinspection PyUnresolvedReferences
     from win32com.shell import shell
 except Exception:
@@ -25,18 +26,25 @@ except Exception:
 
 
 PORT = 26003
-ERR = lambda msg: sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)  # noqa: E731
-USAGE = "USAGE: vmcontrol.py"                                                               \
-        "\n    <-x|--vmx FILENAME|NAME> path to VMX to control or name of VirtualBox image" \
-        "\n    <-r|--vmrun FILENAME>    path to vmrun.exe or VBoxManage"                    \
-        "\n    <-s|--snapshot NAME>     set the snapshot name"                              \
-        "\n    [-l|--log_level LEVEL]   log level (default 1), increase for more verbosity" \
-        "\n    [-i|--interactive]       Interactive mode, prompts for input values"         \
-        "\n    [--port PORT]            TCP port to bind this agent to"                     \
-        "\n    [--vbox]                 control an Oracle VirtualBox VM"
 
 
-class VMControlPedrpcServer (pedrpc.Server):
+def err(msg):
+    return sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
+
+
+USAGE = (
+    "USAGE: vmcontrol.py"
+    "\n    <-x|--vmx FILENAME|NAME> path to VMX to control or name of VirtualBox image"
+    "\n    <-r|--vmrun FILENAME>    path to vmrun.exe or VBoxManage"
+    "\n    <-s|--snapshot NAME>     set the snapshot name"
+    "\n    [-l|--log_level LEVEL]   log level (default 1), increase for more verbosity"
+    "\n    [-i|--interactive]       Interactive mode, prompts for input values"
+    "\n    [--port PORT]            TCP port to bind this agent to"
+    "\n    [--vbox]                 control an Oracle VirtualBox VM"
+)
+
+
+class VMControlPedrpcServer(pedrpc.Server):
     def __init__(self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         """
         @type  host:         str
@@ -71,9 +79,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                 while 1:
                     print("[*] Please browse to the folder containing vmrun.exe...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
-                        0,
-                        None,
-                        "Please browse to the folder containing vmrun.exe:"
+                        0, None, "Please browse to the folder containing vmrun.exe:"
                     )
                     fullpath = shell.SHGetPathFromIDList(pidl)
                     file_list = os.listdir(fullpath)
@@ -92,9 +98,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                 while 1:
                     print("[*] Please browse to the folder containing the .vmx file...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
-                        0,
-                        None,
-                        "Please browse to the folder containing the .vmx file:"
+                        0, None, "Please browse to the folder containing the .vmx file:"
                     )
                     fullpath = shell.SHGetPathFromIDList(pidl)
                     file_list = os.listdir(fullpath)
@@ -282,7 +286,7 @@ class VMControlPedrpcServer (pedrpc.Server):
         # sometimes vmrun reports that the VM is up while it's still reverting.
         time.sleep(10)
 
-        for line in self.list().lower().split('\n'):
+        for line in self.list().lower().split("\n"):
             if os.name == "nt":
                 try:
                     line = GetShortPathName(line)
@@ -302,7 +306,7 @@ class VMControlPedrpcServer (pedrpc.Server):
                 break
 
 
-class VBoxControlPedrpcServer (VMControlPedrpcServer):
+class VBoxControlPedrpcServer(VMControlPedrpcServer):
     def __init__(self, host, port, vmrun, vmx, snap_name=None, log_level=1, interactive=False):
         """
         Controls an Oracle VirtualBox Virtual Machine
@@ -339,9 +343,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
                 while 1:
                     print("[*] Please browse to the folder containing VBoxManage.exe...")
                     pidl, disp, imglist = shell.SHBrowseForFolder(
-                        0,
-                        None,
-                        "Please browse to the folder containing VBoxManage.exe"
+                        0, None, "Please browse to the folder containing VBoxManage.exe"
                     )
                     fullpath = shell.SHGetPathFromIDList(pidl)
                     file_list = os.listdir(fullpath)
@@ -495,7 +497,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
         # sometimes vmrun reports that the VM is up while it's still reverting.
         time.sleep(10)
 
-        for line in self.get_vminfo().split('\n'):
+        for line in self.get_vminfo().split("\n"):
             if line == 'VMState="running"':
                 return True
 
@@ -504,7 +506,7 @@ class VBoxControlPedrpcServer (VMControlPedrpcServer):
     def is_target_paused(self):
         time.sleep(10)
 
-        for line in self.get_vminfo().split('\n'):
+        for line in self.get_vminfo().split("\n"):
             if line == 'VMState="paused"':
                 return True
 
@@ -525,19 +527,10 @@ if __name__ == "__main__":
     # parse command line options.
     try:
         opts, args = getopt.getopt(
-            sys.argv[1:],
-            "x:r:s:l:i", [
-                "vmx=",
-                "vmrun=",
-                "snapshot=",
-                "log_level=",
-                "interactive",
-                "port=",
-                "vbox"
-            ]
+            sys.argv[1:], "x:r:s:l:i", ["vmx=", "vmrun=", "snapshot=", "log_level=", "interactive", "port=", "vbox"]
         )
     except getopt.GetoptError:
-        ERR(USAGE)
+        err(USAGE)
 
     for opt, arg in opts:
         if opt in ("-x", "--vmx"):
@@ -558,30 +551,18 @@ if __name__ == "__main__":
     # OS check
     if interactive_arg and not os.name == "nt":
         print("[!] Interactive mode currently only works on Windows operating systems.")
-        ERR(USAGE)
+        err(USAGE)
 
     if (not vmx_arg or not vmrun_arg or not snap_name_arg) and not interactive_arg:
-        ERR(USAGE)
+        err(USAGE)
 
     if not virtualbox_arg:
         servlet = VMControlPedrpcServer(
-            "0.0.0.0",
-            port_arg,
-            vmrun_arg,
-            vmx_arg,
-            snap_name_arg,
-            log_level_arg,
-            interactive_arg
+            "0.0.0.0", port_arg, vmrun_arg, vmx_arg, snap_name_arg, log_level_arg, interactive_arg
         )
     else:
         servlet = VBoxControlPedrpcServer(
-            "0.0.0.0",
-            port_arg,
-            vmrun_arg,
-            vmx_arg,
-            snap_name_arg,
-            log_level_arg,
-            interactive_arg
+            "0.0.0.0", port_arg, vmrun_arg, vmx_arg, snap_name_arg, log_level_arg, interactive_arg
         )
 
     servlet.serve_forever()

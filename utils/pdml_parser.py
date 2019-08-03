@@ -31,7 +31,7 @@ class ParsePDML(ContentHandler):
                     val_string = self.get_string(attributes["value"])
 
                     if val_string:
-                        self.sulley += "s_string(\"%s\")\n" % val_string
+                        self.sulley += 's_string("%s")\n' % val_string
                         print(self.sulley)
                         # print("\tFound value: %s" % val_string)
                     else:
@@ -75,7 +75,7 @@ class ParsePDML(ContentHandler):
             parsed = parsed[2:]
 
             hex_pair = int(pair, 16)
-            if hex_pair > 0x7f:
+            if hex_pair > 0x7F:
                 return False
 
             value += six.int2byte(hex_pair)
@@ -95,7 +95,7 @@ class ParsePDML(ContentHandler):
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # create the parser object
     parser = make_parser()
 

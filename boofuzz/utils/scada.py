@@ -14,7 +14,7 @@ def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
     packets = []
 
     for i in xrange(num_packets):
-        packet_slice = data[i * 250:(i + 1) * 250]
+        packet_slice = data[i * 250 : (i + 1) * 250]
 
         p = "\x05\x64"
         p += six.int2byte(len(packet_slice))
@@ -42,7 +42,7 @@ def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
         p += six.int2byte(frag_number)
 
         for x in xrange(num_chunks):
-            chunk = packet_slice[i * 16: (i + 1) * 16]
+            chunk = packet_slice[i * 16 : (i + 1) * 16]
             chksum = struct.pack("<H", crc16(chunk))
             p += chksum + chunk
 

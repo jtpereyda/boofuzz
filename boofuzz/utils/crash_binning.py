@@ -149,15 +149,14 @@ class CrashBinning:
         else:
             direction = "read from"
 
-        synopsis = "%s:%08x %s from thread %d caused access violation\nwhen attempting to %s 0x%08x\n\n" % \
-            (
-                crash.exception_module,
-                crash.exception_address,
-                crash.disasm,
-                crash.violation_thread_id,
-                direction,
-                crash.violation_address
-            )
+        synopsis = "%s:%08x %s from thread %d caused access violation\nwhen attempting to %s 0x%08x\n\n" % (
+            crash.exception_module,
+            crash.exception_address,
+            crash.disasm,
+            crash.violation_thread_id,
+            direction,
+            crash.violation_address,
+        )
 
         synopsis += crash.context_dump
 
@@ -243,15 +242,14 @@ class CrashBinning:
         else:
             direction = "read from"
 
-        synopsis = "%s:%08x %s from thread %d caused access violation\nwhen attempting to %s 0x%08x\n\n" % \
-            (
-                self.last_crash.exception_module,
-                self.last_crash.exception_address,
-                self.last_crash.disasm,
-                self.last_crash.violation_thread_id,
-                direction,
-                self.last_crash.violation_address
-            )
+        synopsis = "%s:%08x %s from thread %d caused access violation\nwhen attempting to %s 0x%08x\n\n" % (
+            self.last_crash.exception_module,
+            self.last_crash.exception_address,
+            self.last_crash.disasm,
+            self.last_crash.violation_thread_id,
+            direction,
+            self.last_crash.violation_address,
+        )
 
         synopsis += self.last_crash.context_dump
 

@@ -20,77 +20,77 @@ from past.builtins import map, range
 from boofuzz import ip_constants
 
 test_step_info = {
-    'test_case': {
-        'indent': 0,
-        'title': 'Test Case',
-        'html': 'Test Case: {msg}',
-        'terminal': Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-case',
-        'curses': 4
+    "test_case": {
+        "indent": 0,
+        "title": "Test Case",
+        "html": "Test Case: {msg}",
+        "terminal": Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
+        "css_class": "log-case",
+        "curses": 4,
     },
-    'step': {
-        'indent': 1,
-        'title': 'Test Step',
-        'html': ' Test Step: {msg}',
-        'terminal': Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-step',
-        'curses': 6
+    "step": {
+        "indent": 1,
+        "title": "Test Step",
+        "html": " Test Step: {msg}",
+        "terminal": Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
+        "css_class": "log-step",
+        "curses": 6,
     },
-    'info': {
-        'indent': 2,
-        'title': 'Info',
-        'html': 'Info: {msg}',
-        'terminal': "Info: {msg}",
-        'css_class': 'log-info',
-        'curses': 1
+    "info": {
+        "indent": 2,
+        "title": "Info",
+        "html": "Info: {msg}",
+        "terminal": "Info: {msg}",
+        "css_class": "log-info",
+        "curses": 1,
     },
-    'error': {
-        'indent': 2,
-        'title': 'Error',
-        'html': 'Error!!!! {msg}',
-        'terminal': Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
-        'css_class': 'log-error',
-        'curses': 3
+    "error": {
+        "indent": 2,
+        "title": "Error",
+        "html": "Error!!!! {msg}",
+        "terminal": Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
+        "css_class": "log-error",
+        "curses": 3,
     },
-    'send': {
-        'indent': 2,
-        'title': 'Transmitted',
-        'html': 'Transmitted {n} bytes{note}: {msg}',
-        'terminal': Fore.CYAN + "Transmitted {n} bytes{note}: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-send',
-        'curses': 2
+    "send": {
+        "indent": 2,
+        "title": "Transmitted",
+        "html": "Transmitted {n} bytes{note}: {msg}",
+        "terminal": Fore.CYAN + "Transmitted {n} bytes{note}: {msg}" + Style.RESET_ALL,
+        "css_class": "log-send",
+        "curses": 2,
     },
-    'receive': {
-        'indent': 2,
-        'title': 'Received',
-        'html': 'Received{note}: {msg}',
-        'terminal': Fore.CYAN + "Received{note}: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-receive',
-        'curses': 2
+    "receive": {
+        "indent": 2,
+        "title": "Received",
+        "html": "Received{note}: {msg}",
+        "terminal": Fore.CYAN + "Received{note}: {msg}" + Style.RESET_ALL,
+        "css_class": "log-receive",
+        "curses": 2,
     },
-    'check': {
-        'indent': 2,
-        'title': 'Check',
-        'html': 'Check: {msg}',
-        'terminal': "Check: {msg}",
-        'css_class': 'log-check',
-        'curses': 1
+    "check": {
+        "indent": 2,
+        "title": "Check",
+        "html": "Check: {msg}",
+        "terminal": "Check: {msg}",
+        "css_class": "log-check",
+        "curses": 1,
     },
-    'fail': {
-        'indent': 3,
-        'title': 'Check Failed',
-        'html': 'Check Failed: {msg}',
-        'terminal': Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-fail',
-        'curses': 3
+    "fail": {
+        "indent": 3,
+        "title": "Check Failed",
+        "html": "Check Failed: {msg}",
+        "terminal": Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
+        "css_class": "log-fail",
+        "curses": 3,
     },
-    'pass': {
-        'indent': 3,
-        'title': 'Check OK',
-        'html': 'Check OK: {msg}',
-        'terminal': Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
-        'css_class': 'log-pass',
-        'curses': 5
+    "pass": {
+        "indent": 3,
+        "title": "Check OK",
+        "html": "Check OK: {msg}",
+        "terminal": Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
+        "css_class": "log-pass",
+        "curses": 5,
     },
 }
 
@@ -125,17 +125,17 @@ def get_max_udp_size():
     lib = None
 
     if windows:
-        sol_socket = ctypes.c_int(0xffff)
+        sol_socket = ctypes.c_int(0xFFFF)
         sol_max_msg_size = 0x2003
         lib = ctypes.WinDLL("Ws2_32.dll")
         opt = ctypes.c_int(sol_max_msg_size)
     elif linux or mac or openbsd:
         if mac:
-            lib = ctypes.cdll.LoadLibrary('libc.dylib')
+            lib = ctypes.cdll.LoadLibrary("libc.dylib")
         elif linux:
-            lib = ctypes.cdll.LoadLibrary('libc.so.6')
+            lib = ctypes.cdll.LoadLibrary("libc.so.6")
         elif openbsd:
-            lib = ctypes.cdll.LoadLibrary('libc.so')
+            lib = ctypes.cdll.LoadLibrary("libc.so")
         sol_socket = ctypes.c_int(socket.SOL_SOCKET)
         opt = ctypes.c_int(socket.SO_SNDBUF)
 
@@ -148,13 +148,7 @@ def get_max_udp_size():
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    lib.getsockopt(
-        sock.fileno(),
-        sol_socket,
-        opt,
-        buf,
-        ctypes.pointer(bufsize)
-    )
+    lib.getsockopt(sock.fileno(), sol_socket, opt, buf, ctypes.pointer(bufsize))
 
     # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
     return min(ctypes.c_ulong.from_buffer(buf).value, ip_constants.UDP_MAX_PAYLOAD_IPV4_THEORETICAL)
@@ -176,7 +170,7 @@ def crc16(string, value=0):
 
         for _ in range(8):
             if (byte ^ crc) & 1:
-                crc = (crc >> 1) ^ 0xa001  # polly
+                crc = (crc >> 1) ^ 0xA001  # polly
             else:
                 crc >>= 1
 
@@ -185,7 +179,7 @@ def crc16(string, value=0):
         crc16_table.append(crc)
 
     for ch in string:
-        value = crc16_table[ord(ch) ^ (value & 0xff)] ^ (value >> 8)
+        value = crc16_table[ord(ch) ^ (value & 0xFF)] ^ (value >> 8)
 
     return value
 
@@ -214,14 +208,14 @@ def uuid_str_to_bin(uuid):
 
     @param uuid: UUID string to convert to bytes.
     """
-    uuid_re = r'([\dA-Fa-f]{8})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})([\dA-Fa-f]{8})'
+    uuid_re = r"([\dA-Fa-f]{8})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})([\dA-Fa-f]{8})"
 
     matches = re.match(uuid_re, uuid)
 
     (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: int(x, 16), matches.groups())
 
-    uuid = struct.pack('<LHH', uuid1, uuid2, uuid3)
-    uuid += struct.pack('>HHL', uuid4, uuid5, uuid6)
+    uuid = struct.pack("<LHH", uuid1, uuid2, uuid3)
+    uuid += struct.pack(">HHL", uuid4, uuid5, uuid6)
 
     return uuid
 
@@ -235,7 +229,7 @@ def _ones_complement_sum_carry_16(a, b):
     :return: Sum of a and b, ones complement, carry at 16 bits.
     """
     pre_sum = a + b
-    return (pre_sum & 0xffff) + (pre_sum >> 16)
+    return (pre_sum & 0xFFFF) + (pre_sum >> 16)
 
 
 def _collate_bytes(msb, lsb):
@@ -273,7 +267,7 @@ def ipv4_checksum(msg):
 
     msg_words = map(_collate_bytes, msg[0::2], msg[1::2])
     total = reduce(_ones_complement_sum_carry_16, msg_words, 0)
-    return ~total & 0xffff
+    return ~total & 0xFFFF
 
 
 def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
@@ -291,11 +285,7 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     :return: UDP pseudo-header
     :rtype: bytes
     """
-    return (src_addr
-            + dst_addr
-            + b"\x00"
-            + six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)
-            + struct.pack(">H", msg_len))
+    return src_addr + dst_addr + b"\x00" + six.int2byte(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", msg_len)
 
 
 def udp_checksum(msg, src_addr, dst_addr):
@@ -325,7 +315,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # If the packet is too big, the checksum is undefined since len(msg)
     # won't fit into two bytes. So we just pick our best definition.
     # "Truncate" the message as it appears in the checksum.
-    msg = msg[0:ip_constants.UDP_MAX_LENGTH_THEORETICAL]
+    msg = msg[0 : ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(_udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg)
 
@@ -340,7 +330,7 @@ def hex_str(s):
     Returns:
         str: Hex-formatted string representing s.
     """
-    return ' '.join("{:02x}".format(b) for b in bytearray(s))
+    return " ".join("{:02x}".format(b) for b in bytearray(s))
 
 
 def pause_for_signal():
@@ -371,41 +361,43 @@ def get_time_stamp():
     return s
 
 
-def _indent_all_lines(lines, amount, ch=' '):
+def _indent_all_lines(lines, amount, ch=" "):
     padding = amount * ch
-    return padding + ('\n' + padding).join(lines.split('\n'))
+    return padding + ("\n" + padding).join(lines.split("\n"))
 
 
-def _indent_after_first_line(lines, amount, ch=' '):
+def _indent_after_first_line(lines, amount, ch=" "):
     padding = amount * ch
-    return ('\n' + padding).join(lines.split('\n'))
+    return ("\n" + padding).join(lines.split("\n"))
 
 
-def format_log_msg(msg_type, description=None, data=None, indent_size=2, timestamp=None, truncated=False,
-                   format_type='terminal'):
+def format_log_msg(
+    msg_type, description=None, data=None, indent_size=2, timestamp=None, truncated=False, format_type="terminal"
+):
     curses_mode = False
     if data is None:
-        data = b''
+        data = b""
     if timestamp is None:
         timestamp = get_time_stamp()
-    if format_type == 'curses':
+    if format_type == "curses":
         curses_mode = True
-        format_type = 'html'
+        format_type = "html"
 
-    if description is not None and description != '':
+    if description is not None and description != "":
         msg = description
     elif data is not None and len(data) > 0:
         msg = hex_to_hexstr(input_bytes=data)
     else:
-        msg = ''
+        msg = ""
 
-    msg = test_step_info[msg_type][format_type].format(msg=msg, n=len(data), note='' if not truncated
-                                                       else ' (data truncated for database storage)')
-    msg = _indent_all_lines(msg, (test_step_info[msg_type]['indent']) * indent_size)
-    msg = timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+    msg = test_step_info[msg_type][format_type].format(
+        msg=msg, n=len(data), note="" if not truncated else " (data truncated for database storage)"
+    )
+    msg = _indent_all_lines(msg, (test_step_info[msg_type]["indent"]) * indent_size)
+    msg = timestamp + " " + _indent_after_first_line(msg, len(timestamp) + 1)
 
     if curses_mode:
-        return [msg, test_step_info[msg_type]['curses']]
+        return [msg, test_step_info[msg_type]["curses"]]
 
     return msg
 
@@ -414,7 +406,7 @@ def format_msg(msg, indent_level, indent_size, timestamp=None):
     msg = _indent_all_lines(msg, indent_level * indent_size)
     if timestamp is None:
         timestamp = get_time_stamp()
-    return timestamp + ' ' + _indent_after_first_line(msg, len(timestamp) + 1)
+    return timestamp + " " + _indent_after_first_line(msg, len(timestamp) + 1)
 
 
 def hex_to_hexstr(input_bytes):
@@ -453,7 +445,7 @@ def get_boofuzz_version(boofuzz_class):
     with open(os.path.join(path, "__init__.py")) as search:
         for line in search:
             if line.find("__version__ = ") != -1:
-                return 'v' + re.search(r"'(.*?)'", line).group(1)
+                return "v" + re.search(r'"(.*?)"', line).group(1)
     return "v-.-.-"
 
 

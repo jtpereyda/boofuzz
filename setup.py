@@ -2,6 +2,7 @@
 import ast
 import os
 import re
+import sys
 from io import open
 
 from setuptools import find_packages, setup
@@ -25,67 +26,60 @@ def find_version(*path_elements):
 
 def get_long_description():
     descr = []
-    for fname in 'README.rst', 'CHANGELOG.rst':
-        with open(os.path.join(setup_dir, fname), encoding='utf-8') as f:
+    for fname in "README.rst", "CHANGELOG.rst":
+        with open(os.path.join(setup_dir, fname), encoding="utf-8") as f:
             descr.append(f.read())
-    return '\n\n'.join(descr)
+    return "\n\n".join(descr)
+
+
+extra_requirements = {
+    "dev": ["tox", "flake8", "check-manifest", "mock", "pytest", "pytest-bdd", "netifaces", "ipaddress", "sphinx"]
+}
+if sys.version_info >= (3, 6):
+    extra_requirements["dev"] += ["black"]
 
 
 setup(
-    name='boofuzz',
+    name="boofuzz",
     version=find_version("boofuzz", "__init__.py"),
     description="A fork and successor of the Sulley Fuzzing Framework",
     long_description=get_long_description(),
-    long_description_content_type='text/x-rst',
-    maintainer='Joshua Pereyda',
-    maintainer_email='joshua.t.pereyda@gmail.com',
-    url='https://github.com/jtpereyda/boofuzz',
-    license='GPL',
-    packages=find_packages(exclude=['unit_tests', 'requests', 'examples', 'utils', 'web', 'new_examples']),
-    package_data={'boofuzz': ['web/templates/*',
-                              'web/static/css/*',
-                              'web/static/js/*',
-                              'web/static/favicon.ico']},
+    long_description_content_type="text/x-rst",
+    maintainer="Joshua Pereyda",
+    maintainer_email="joshua.t.pereyda@gmail.com",
+    url="https://github.com/jtpereyda/boofuzz",
+    license="GPL",
+    packages=find_packages(exclude=["unit_tests", "requests", "examples", "utils", "web", "new_examples"]),
+    package_data={"boofuzz": ["web/templates/*", "web/static/css/*", "web/static/js/*", "web/static/favicon.ico"]},
     install_requires=[
-        'attrs',
-        'backports.shutil_get_terminal_size',
-        'click',
-        'colorama',
-        'Flask',
-        'future',
-        'impacket',
-        'ldap3==2.5.1',
-        'psutil',
-        'pyserial',
-        'pydot',
-        'six',
-        'tornado~=5.0'],
-    extras_require={
-        'dev': ['tox',
-                'flake8',
-                'check-manifest',
-                'mock',
-                'pytest',
-                'pytest-bdd',
-                'netifaces',
-                'ipaddress',
-                'sphinx'],
-    },
-    entry_points={
-        'console_scripts': ['boo=boofuzz.cli:main'],
-    },
+        "attrs",
+        "backports.shutil_get_terminal_size",
+        "click",
+        "colorama",
+        "Flask",
+        "future",
+        "impacket",
+        "ldap3==2.5.1",
+        "psutil",
+        "pyserial",
+        "pydot",
+        "six",
+        "tornado~=5.0",
+    ],
+    extras_require=extra_requirements,
+    entry_points={"console_scripts": ["boo=boofuzz.cli:main"]},
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Security',
-        'Topic :: Software Development :: Testing :: Traffic Generation',
-    ]
+        "Development Status :: 4 - Beta",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.6",
+        "Topic :: Security",
+        "Topic :: Software Development :: Testing :: Traffic Generation",
+    ],
 )

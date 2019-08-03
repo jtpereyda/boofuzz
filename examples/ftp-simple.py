@@ -8,9 +8,7 @@ def main():
     This example is a very simple FTP fuzzer. It uses no process monitory
     (procmon) and assumes that the FTP server is already running.
     """
-    session = Session(
-        target=Target(
-            connection=SocketConnection("127.0.0.1", 21, proto='tcp')))
+    session = Session(target=Target(connection=SocketConnection("127.0.0.1", 21, proto="tcp")))
 
     s_initialize("user")
     s_string("USER")

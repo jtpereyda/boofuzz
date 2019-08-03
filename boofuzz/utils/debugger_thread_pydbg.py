@@ -11,8 +11,9 @@ import pydbg.defines
 
 
 class DebuggerThreadPydbg(threading.Thread):
-    def __init__(self, start_commands, process_monitor,
-                 proc_name=None, ignore_pid=None, pid=None, log_level=1, **kwargs):
+    def __init__(
+        self, start_commands, process_monitor, proc_name=None, ignore_pid=None, pid=None, log_level=1, **kwargs
+    ):
         """
         Instantiate a new PyDbg instance and register user and access violation callbacks.
         """
@@ -127,8 +128,10 @@ class DebuggerThreadPydbg(threading.Thread):
         except pydbg.pdx as e:
             self.process_monitor.log("error: pydbg: {0}".format(str(e).rstrip()))
             if "The request is not supported." in str(e):
-                self.process_monitor.log("Are you trying to start a 64-bit process? pydbg as of this writing only"
-                                         " supports targeting 32-bit processes.")
+                self.process_monitor.log(
+                    "Are you trying to start a 64-bit process? pydbg as of this writing only"
+                    " supports targeting 32-bit processes."
+                )
             elif "Access is denied." in str(e):
                 self.process_monitor.log("It may be that your process died before it could be attached.")
         finally:
@@ -142,7 +145,8 @@ class DebuggerThreadPydbg(threading.Thread):
         Update self.pid when found and return.
         """
         self.process_monitor.log(
-            "debugger thread-{0} looking for process name: {1}".format(self.getName(), self.proc_name))
+            "debugger thread-{0} looking for process name: {1}".format(self.getName(), self.proc_name)
+        )
 
         self.pid = self._scan_proc_names_blocking()
 

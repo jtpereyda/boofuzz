@@ -7,6 +7,7 @@ Features
 ^^^^^^^^
 - Pushed Tornado to 5.x and unpinned Flask
 - Added a favicon
+- We are now using `Black` for code style standardization
 
 Fixes
 ^^^^^

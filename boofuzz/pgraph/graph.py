@@ -468,10 +468,10 @@ class Graph(object):
         """
 
         gml = 'Creator "pGRAPH - Pedram Amini <pedram.amini@gmail.com>"\n'
-        gml += 'directed 1\n'
+        gml += "directed 1\n"
 
         # open the graph tag.
-        gml += 'graph [\n'
+        gml += "graph [\n"
 
         # add the nodes to the GML definition.
         for node in listvalues(self.nodes):
@@ -482,7 +482,7 @@ class Graph(object):
             gml += edge.render_edge_gml(self)
 
         # close the graph tag.
-        gml += ']\n'
+        gml += "]\n"
 
         """
         TODO: Complete cluster rendering
@@ -531,16 +531,16 @@ class Graph(object):
         @return: uDraw graph description.
         """
 
-        udraw = '['
+        udraw = "["
 
         # render each of the nodes in the graph.
         # the individual nodes will handle their own edge rendering.
         for node in listvalues(self.nodes):
             udraw += node.render_node_udraw(self)
-            udraw += ','
+            udraw += ","
 
         # trim the extraneous comment and close the graph.
-        udraw = udraw[0:-1] + ']'
+        udraw = udraw[0:-1] + "]"
 
         return udraw
 
@@ -552,18 +552,18 @@ class Graph(object):
         @return: uDraw graph description.
         """
 
-        udraw = '['
+        udraw = "["
 
         for node in listvalues(self.nodes):
             udraw += node.render_node_udraw_update()
-            udraw += ','
+            udraw += ","
 
         for edge in listvalues(self.edges):
             udraw += edge.render_edge_udraw_update()
-            udraw += ','
+            udraw += ","
 
         # trim the extraneous comment and close the graph.
-        udraw = udraw[0:-1] + ']'
+        udraw = udraw[0:-1] + "]"
 
         return udraw
 

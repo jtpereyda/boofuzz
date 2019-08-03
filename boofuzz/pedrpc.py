@@ -15,7 +15,7 @@ class Client(object):
         self.__dbg_flag = False
         self.__server_sock = None
         self.__retry = 0
-        self.NOLINGER = struct.pack('ii', 1, 0)
+        self.NOLINGER = struct.pack("ii", 1, 0)
 
     def __getattr__(self, method_name):
         """
@@ -53,8 +53,10 @@ class Client(object):
                 self.__connect()
             else:
                 raise exception.BoofuzzRpcError(
-                    'PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(self.__host,
-                                                                                                  self.__port, e))
+                    'PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
+                        self.__host, self.__port, e
+                    )
+                )
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
@@ -140,8 +142,10 @@ class Client(object):
                 received += chunk
                 length -= len(chunk)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server '
-                                            '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError(
+                "PED-RPC> unable to connect to server "
+                '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e)
+            )
 
         return pickle.loads(received)
 
@@ -164,8 +168,10 @@ class Client(object):
             self.__server_sock.send(struct.pack("<L", len(data)))
             self.__server_sock.send(data)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server '
-                                            '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError(
+                "PED-RPC> unable to connect to server "
+                '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e)
+            )
 
 
 class Server(object):
@@ -256,7 +262,7 @@ class Server(object):
 
             # accept a client connection.
             while True:
-                readable, writeable, errored = select.select([self.__server], [], [], .1)
+                readable, writeable, errored = select.select([self.__server], [], [], 0.1)
                 if len(readable) > 0:
                     assert readable[0] == self.__server
                     (self.__client_sock, self.__client_address) = self.__server.accept()
