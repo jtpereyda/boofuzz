@@ -2,10 +2,10 @@ from pytest_bdd import given, scenarios, then, when
 
 from boofuzz import Block, Byte, Checksum, DWord, QWord, Request
 
-scenarios('checksum_original_value.feature')
+scenarios("checksum_original_value.feature")
 
 
-@given('A Checksum')
+@given("A Checksum")
 def a_checksum(context):
     request = Request("unit-test-request")
 
@@ -27,7 +27,7 @@ def a_checksum(context):
     context.request = request
 
 
-@given('A UDP Checksum')
+@given("A UDP Checksum")
 def udp_checksum(context):
     request = Request("unit-test-request")
 
@@ -41,13 +41,15 @@ def udp_checksum(context):
     request.push(ipv4_src)
     request.push(ipv4_dst)
 
-    checksum = Checksum(block_name="IPv4 Packet",
-                        ipv4_src_block_name="IPv4 Src Block",
-                        ipv4_dst_block_name="IPv4 Dst Block",
-                        request=request,
-                        fuzzable=True,
-                        algorithm='udp',
-                        name="Checksum block", )
+    checksum = Checksum(
+        block_name="IPv4 Packet",
+        ipv4_src_block_name="IPv4 Src Block",
+        ipv4_dst_block_name="IPv4 Dst Block",
+        request=request,
+        fuzzable=True,
+        algorithm="udp",
+        name="Checksum block",
+    )
     request.push(checksum)
 
     request.pop()
@@ -59,84 +61,84 @@ def udp_checksum(context):
     context.ipv4_dst = ipv4_dst
 
 
-@given('Mutated once')
+@given("Mutated once")
 def mutate_once(context):
     context.uut.mutate()
 
 
-@given('Mutated twice')
+@given("Mutated twice")
 def mutate_twice(context):
     context.uut.mutate()
     context.uut.mutate()
 
 
-@given('Mutated thrice')
+@given("Mutated thrice")
 def mutate_thrice(context):
     context.uut.mutate()
     context.uut.mutate()
     context.uut.mutate()
 
 
-@given('Target block mutated once')
+@given("Target block mutated once")
 def mutate_target_block_once(context):
     context.block.mutate()
 
 
-@given('Target block mutated twice')
+@given("Target block mutated twice")
 def mutate_target_block_twice(context):
     context.block.mutate()
     context.block.mutate()
 
 
-@given('Target block mutated thrice')
+@given("Target block mutated thrice")
 def mutate_target_block_thrice(context):
     context.block.mutate()
     context.block.mutate()
     context.block.mutate()
 
 
-@given('ipv4_src_block_name block mutated twice')
+@given("ipv4_src_block_name block mutated twice")
 def mutate_ipv4_src_block_twice(context):
     context.ipv4_src.mutate()
     context.ipv4_src.mutate()
 
 
-@given('ipv4_dst_block_name block mutated twice')
+@given("ipv4_dst_block_name block mutated twice")
 def mutate_ipv4_dst_block_twice(context):
     context.ipv4_dst.mutate()
     context.ipv4_dst.mutate()
 
 
-@when('Calling original_value')
+@when("Calling original_value")
 def call_original_value(context):
     context.uut.render()  # Ensure UUT object state is updated
     context.result = context.uut.original_value
 
 
-@then('Result equals .render()')
+@then("Result equals .render()")
 def result_equals_render(context):
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after .reset()')
+@then("Result equals .render() after .reset()")
 def result_equals_render_after_reset(context):
     context.uut.reset()
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after target block reset()')
+@then("Result equals .render() after target block reset()")
 def result_equals_render_after_reset_target_block(context):
     context.block.reset()
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after ipv4_src_block_name reset()')
+@then("Result equals .render() after ipv4_src_block_name reset()")
 def result_equals_render_after_reset_ipv4_src(context):
     context.ipv4_src.reset()
     assert context.result == context.uut.render()
 
 
-@then('Result equals .render() after ipv4_dst_block_name reset()')
+@then("Result equals .render() after ipv4_dst_block_name reset()")
 def result_equals_render_after_reset_ipv4_dst(context):
     context.ipv4_dst.reset()
     assert context.result == context.uut.render()

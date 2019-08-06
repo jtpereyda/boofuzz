@@ -1,6 +1,7 @@
 include *.py
 include *.rst
 include *.txt
+include *.toml
 recursive-include boofuzz *.md
 recursive-include boofuzz *.py
 recursive-include boofuzz *.js

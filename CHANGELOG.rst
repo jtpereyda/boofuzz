@@ -7,6 +7,7 @@ Features
 ^^^^^^^^
 - Pushed Tornado to 5.x and unpinned Flask
 - Added a favicon
+- We are now using `Black` for code style standardization
 
 Fixes
 ^^^^^
@@ -16,6 +17,7 @@ Fixes
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
 - SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`
 - Dropped six.binary_type in favor of b"" format
+- Fixed process monitor handling of backslashes in Windows start commands
 
 v0.1.5
 ------

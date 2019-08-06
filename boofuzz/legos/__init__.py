@@ -9,5 +9,5 @@ BIN = {
     "ndr_wstring": dcerpc.NdrWString,
     "ndr_string": dcerpc.NdrString,
     "tag": misc.Tag,
-    "xdr_string": xdr.String
+    "xdr_string": xdr.String,
 }

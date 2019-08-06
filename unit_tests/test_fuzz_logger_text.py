@@ -26,7 +26,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         s = boofuzz.helpers.get_time_stamp()
 
         # Then
-        six.assertRegex(self, s, r'\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]')
+        six.assertRegex(self, s, r"\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]")
 
     def test_hex_to_hexstr(self):
         """
@@ -36,7 +36,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         """
         given = "abc\n123\r\nA\n"
         expected = "61 62 63 0a 31 32 33 0d 0a 41 0a b'abc\\n123\\r\\nA\\n'"
-        self.assertEqual(expected, boofuzz.helpers.hex_to_hexstr(bytes(given, 'latin-1')))
+        self.assertEqual(expected, boofuzz.helpers.hex_to_hexstr(bytes(given, "latin-1")))
 
     def test_hex_to_hexstr_all_bytes(self):
         """
@@ -47,6 +47,8 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         """
         # Use a static map so that future changes are detected by the UT,
         # to avoid Python 3 vs Python 2 errors, etc.
+
+        # fmt: off
         expected_results = {
             0: "b'\\x00'", 1: "b'\\x01'", 2: "b'\\x02'", 3: "b'\\x03'",
             4: "b'\\x04'", 5: "b'\\x05'", 6: "b'\\x06'", 7: "b'\\x07'",
@@ -112,12 +114,13 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
             244: "b'\\xf4'", 245: "b'\\xf5'", 246: "b'\\xf6'", 247: "b'\\xf7'",
             248: "b'\\xf8'", 249: "b'\\xf9'", 250: "b'\\xfa'", 251: "b'\\xfb'",
             252: "b'\\xfc'", 253: "b'\\xfd'", 254: "b'\\xfe'", 255: "b'\\xff'",
-
         }
+        # fmt: on
+
         for c in range(0, 255):
-            self.assertEqual("{:02x} {}".format(c, expected_results[c]),
-                             boofuzz.helpers.hex_to_hexstr(bytes(chr(c), 'latin-1'))
-                             )
+            self.assertEqual(
+                "{:02x} {}".format(c, expected_results[c]), boofuzz.helpers.hex_to_hexstr(bytes(chr(c), "latin-1"))
+            )
 
 
 class TestFuzzLoggerText(unittest.TestCase):
@@ -134,8 +137,8 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.some_log_pass_msg = "it works so far!"
         self.some_log_error_msg = "D:"
 
-        self.some_recv_data = bytes('A B C', 'ascii')
-        self.some_send_data = bytes('123', 'ascii')
+        self.some_recv_data = bytes("A B C", "ascii")
+        self.some_send_data = bytes("123", "ascii")
 
     def test_open_test_case(self):
         """
@@ -293,11 +296,11 @@ class TestFuzzLoggerText(unittest.TestCase):
         Then: open_test_case logs with a zero-length test case id.
         """
         # When
-        self.logger.open_test_case('', self.some_test_case_name, self.some_test_case_index)
+        self.logger.open_test_case("", self.some_test_case_name, self.some_test_case_index)
 
         # Then
         self.virtual_file.seek(0)
-        self.assertTrue('case' in self.virtual_file.readline().lower())
+        self.assertTrue("case" in self.virtual_file.readline().lower())
 
     def test_open_test_step_empty(self):
         """
@@ -308,12 +311,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.open_test_step('')
+        self.logger.open_test_step("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('step' in self.virtual_file.readline().lower())
+        self.assertTrue("step" in self.virtual_file.readline().lower())
 
     def test_log_check_empty(self):
         """
@@ -324,12 +327,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_check('')
+        self.logger.log_check("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('check' in self.virtual_file.readline().lower())
+        self.assertTrue("check" in self.virtual_file.readline().lower())
 
     def test_log_error_empty(self):
         """
@@ -340,12 +343,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_error('')
+        self.logger.log_error("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('error' in self.virtual_file.readline().lower())
+        self.assertTrue("error" in self.virtual_file.readline().lower())
 
     def test_log_recv_empty(self):
         """
@@ -356,7 +359,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_recv(bytes('', 'ascii'))
+        self.logger.log_recv(bytes("", "ascii"))
 
         # Then
         self.virtual_file.seek(0)
@@ -372,12 +375,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_send(bytes('', 'ascii'))
+        self.logger.log_send(bytes("", "ascii"))
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue(str(len(bytes('', 'ascii'))) in self.virtual_file.readline().lower())
+        self.assertTrue(str(len(bytes("", "ascii"))) in self.virtual_file.readline().lower())
 
     def test_log_info_empty(self):
         """
@@ -388,12 +391,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_info('')
+        self.logger.log_info("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('info' in self.virtual_file.readline().lower())
+        self.assertTrue("info" in self.virtual_file.readline().lower())
 
     def test_log_fail_empty(self):
         """
@@ -404,12 +407,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_fail('')
+        self.logger.log_fail("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        self.assertTrue('fail' in self.virtual_file.readline().lower())
+        self.assertTrue("fail" in self.virtual_file.readline().lower())
 
     def test_log_pass_empty(self):
         """
@@ -420,12 +423,12 @@ class TestFuzzLoggerText(unittest.TestCase):
         """
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
-        self.logger.log_pass('')
+        self.logger.log_pass("")
 
         # Then
         self.virtual_file.seek(0)
         self.assertTrue(self.some_test_case_id in self.virtual_file.readline())
-        assert 'ok' in self.virtual_file.readline().lower()
+        assert "ok" in self.virtual_file.readline().lower()
 
     def test_several(self):
         """
@@ -482,8 +485,7 @@ class TestFuzzLoggerText(unittest.TestCase):
         def hex_to_str(hex_data):
             return hex_data.decode()
 
-        self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file,
-                                                      bytes_to_str=hex_to_str)
+        self.logger = fuzz_logger_text.FuzzLoggerText(file_handle=self.virtual_file, bytes_to_str=hex_to_str)
         # When
         self.logger.open_test_case(self.some_test_case_id, self.some_test_case_name, self.some_test_case_index)
         self.logger.log_recv(self.some_recv_data)
@@ -494,5 +496,5 @@ class TestFuzzLoggerText(unittest.TestCase):
         self.assertTrue(hex_to_str(self.some_recv_data) in self.virtual_file.readline())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

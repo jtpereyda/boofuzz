@@ -19,7 +19,7 @@ class FuzzLogger(IFuzzLogger):
             fuzz_loggers = []
         self._fuzz_loggers = fuzz_loggers
 
-        self._cur_test_case_id = ''
+        self._cur_test_case_id = ""
         self.failed_test_cases = {}
         self.error_test_cases = {}
         self.passed_test_cases = {}
@@ -90,10 +90,10 @@ class FuzzLogger(IFuzzLogger):
 
         if len(self.failed_test_cases) > 0:
             summary += "FAILED: {0} test cases:\n".format(len(self.failed_test_cases))
-            summary += "{0}\n".format('\n'.join(map(str, self.failed_test_cases)))
+            summary += "{0}\n".format("\n".join(map(str, self.failed_test_cases)))
 
         if len(self.error_test_cases) > 0:
             summary += "Errors on {0} test cases:\n".format(len(self.error_test_cases))
-            summary += "{0}".format('\n'.join(map(str, self.error_test_cases)))
+            summary += "{0}".format("\n".join(map(str, self.error_test_cases)))
 
         return summary

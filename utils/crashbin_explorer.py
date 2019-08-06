@@ -11,9 +11,11 @@ from boofuzz import pgraph, utils
 sys.path.append(r"../../../paimei")
 
 
-USAGE = "\nUSAGE: crashbin_explorer.py <xxx.crashbin>"                                      \
-        "\n    [-t|--test #]     dump the crash synopsis for a specific test case number"   \
-        "\n    [-g|--graph name] generate a graph of all crash paths, save to 'name'.udg\n"
+USAGE = (
+    "\nUSAGE: crashbin_explorer.py <xxx.crashbin>"
+    "\n    [-t|--test #]     dump the crash synopsis for a specific test case number"
+    "\n    [-g|--graph name] generate a graph of all crash paths, save to 'name'.udg\n"
+)
 
 #
 # parse command line options.

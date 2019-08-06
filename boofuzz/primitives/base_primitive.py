@@ -91,7 +91,7 @@ class BasePrimitive(IFuzzable):
         self._value = self._original_value
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, repr(self._value))
+        return "<%s %s>" % (self.__class__.__name__, repr(self._value))
 
     def __len__(self):
         return len(self._value)

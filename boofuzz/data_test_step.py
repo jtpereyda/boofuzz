@@ -21,7 +21,7 @@ class DataTestStep(object):
             data=self.data,
             timestamp=self.timestamp,
             truncated=self.truncated,
-            format_type='terminal',
+            format_type="terminal",
         )
 
     @property
@@ -32,9 +32,9 @@ class DataTestStep(object):
             data=self.data,
             timestamp=self.timestamp,
             truncated=self.truncated,
-            format_type='html',
+            format_type="html",
         )
 
     @property
     def css_class(self):
-        return helpers.test_step_info[self.type]['css_class']
+        return helpers.test_step_info[self.type]["css_class"]

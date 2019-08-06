@@ -8,6 +8,7 @@ from io import open
 
 import impacket
 import impacket.ImpactDecoder
+
 # noinspection PyUnresolvedReferences
 import pcapy
 
@@ -63,7 +64,7 @@ Network Device List:
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.
-                pcapy_device = pcapy_device[pcapy_device.index("{"):pcapy_device.index("}") + 1]
+                pcapy_device = pcapy_device[pcapy_device.index("{") : pcapy_device.index("}") + 1]
                 subkey = r"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s" % pcapy_device
                 key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
 

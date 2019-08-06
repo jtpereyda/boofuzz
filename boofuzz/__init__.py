@@ -17,55 +17,115 @@ from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .itarget_connection import ITargetConnection
-from .primitives import (BasePrimitive, BitField, Byte, Delim, DWord, FromFile, Group, Mirror, QWord, RandomData,
-                         Static, String, Word)
+from .primitives import (
+    BasePrimitive,
+    BitField,
+    Byte,
+    Delim,
+    DWord,
+    FromFile,
+    Group,
+    Mirror,
+    QWord,
+    RandomData,
+    Static,
+    String,
+    Word,
+)
 from .serial_connection import SerialConnection
 from .sessions import open_test_run, Session, Target
 from .socket_connection import SocketConnection
 
-__all__ = ['blocks', 'legos', 'pedrpc', 'primitives', 'exception',
-           'REQUESTS', 'Block', 'Checksum', 'Repeat', 'Request', 'Size',
-           'BIG_ENDIAN', 'LITTLE_ENDIAN', 'DEFAULT_PROCMON_PORT',
-           'EventHook',
-           'FuzzLogger', 'FuzzLoggerCsv', 'FuzzLoggerText', 'FuzzLoggerCurses', 'IFuzzLogger', 'IFuzzLoggerBackend',
-           'ITargetConnection',
-           'BasePrimitive', 'Delim', 'Group', 'RandomData', 'Static', 'String', 'BitField', 'Byte', 'Word', 'DWord',
-           'QWord', 'FromFile', 'Mirror',
-           'SerialConnection', 'SocketConnection',
-           'Session', 'Target', 'open_test_run',
-           'SullyRuntimeError', 'SizerNotUtilizedError', 'MustImplementException',
-           's_get',
-           's_initialize',
-           's_mutate',
-           's_num_mutations',
-           's_render',
-           's_switch',
-           's_block', 's_block_start', 's_block_end',
-           's_checksum',
-           's_repeat', 's_repeater',
-           's_size', 's_sizer',
-           's_update',
-           's_binary',
-           's_delim',
-           's_group',
-           's_lego',
-           's_random',
-           's_static', 's_dunno', 's_raw', 's_unknown',
-           's_mirror',
-           's_string',
-           's_from_file',
-           's_bit_field', 's_bit', 's_bits',
-           's_byte', 's_char',
-           's_word', 's_short',
-           's_dword', 's_long', 's_int',
-           's_qword', 's_double',
-           's_intelword',
-           's_bigword',
-           's_cstring',
-           's_hex_dump'
-           ]
+__all__ = [
+    "BasePrimitive",
+    "BIG_ENDIAN",
+    "BitField",
+    "Block",
+    "blocks",
+    "Byte",
+    "Checksum",
+    "DEFAULT_PROCMON_PORT",
+    "Delim",
+    "DWord",
+    "EventHook",
+    "exception",
+    "FromFile",
+    "FuzzLogger",
+    "FuzzLoggerCsv",
+    "FuzzLoggerCurses",
+    "FuzzLoggerText",
+    "Group",
+    "IFuzzLogger",
+    "IFuzzLoggerBackend",
+    "ITargetConnection",
+    "legos",
+    "LITTLE_ENDIAN",
+    "Mirror",
+    "MustImplementException",
+    "open_test_run",
+    "pedrpc",
+    "primitives",
+    "QWord",
+    "RandomData",
+    "Repeat",
+    "Request",
+    "REQUESTS",
+    "s_bigword",
+    "s_binary",
+    "s_bit",
+    "s_bit_field",
+    "s_bits",
+    "s_block",
+    "s_block_end",
+    "s_block_start",
+    "s_byte",
+    "s_char",
+    "s_checksum",
+    "s_cstring",
+    "s_delim",
+    "s_double",
+    "s_dunno",
+    "s_dword",
+    "s_from_file",
+    "s_get",
+    "s_group",
+    "s_hex_dump",
+    "s_initialize",
+    "s_int",
+    "s_intelword",
+    "s_lego",
+    "s_long",
+    "s_mirror",
+    "s_mutate",
+    "s_num_mutations",
+    "s_qword",
+    "s_random",
+    "s_raw",
+    "s_render",
+    "s_repeat",
+    "s_repeater",
+    "s_short",
+    "s_size",
+    "s_sizer",
+    "s_static",
+    "s_string",
+    "s_switch",
+    "s_unknown",
+    "s_update",
+    "s_word",
+    "SerialConnection",
+    "Session",
+    "Size",
+    "SizerNotUtilizedError",
+    "SocketConnection",
+    "Static",
+    "String",
+    "SullyRuntimeError",
+    "Target",
+    "Word",
+]
 
-__version__ = '0.1.5'
+__version__ = "0.1.5"
 
 
 # REQUEST MANAGEMENT
@@ -242,9 +302,16 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fuzzable=True, name=None,
-               ipv4_src_block_name=None,
-               ipv4_dst_block_name=None):
+def s_checksum(
+    block_name,
+    algorithm="crc32",
+    length=0,
+    endian=LITTLE_ENDIAN,
+    fuzzable=True,
+    name=None,
+    ipv4_src_block_name=None,
+    ipv4_dst_block_name=None,
+):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
     currently open blocks.
@@ -278,9 +345,17 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
     if block_name in blocks.CURRENT.block_stack:
         raise exception.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
-    checksum = Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
-                        ipv4_src_block_name=ipv4_src_block_name,
-                        ipv4_dst_block_name=ipv4_dst_block_name)
+    checksum = Checksum(
+        block_name,
+        blocks.CURRENT,
+        algorithm,
+        length,
+        endian,
+        fuzzable,
+        name,
+        ipv4_src_block_name=ipv4_src_block_name,
+        ipv4_dst_block_name=ipv4_dst_block_name,
+    )
     blocks.CURRENT.push(checksum)
 
 
@@ -312,8 +387,18 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     blocks.CURRENT.push(repeat)
 
 
-def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False,
-           math=None, fuzzable=True, name=None):
+def s_size(
+    block_name,
+    offset=0,
+    length=4,
+    endian=LITTLE_ENDIAN,
+    output_format="binary",
+    inclusive=False,
+    signed=False,
+    math=None,
+    fuzzable=True,
+    name=None,
+):
     """
     Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
     currently open blocks.
@@ -566,8 +651,9 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
 
 
 # noinspection PyTypeChecker
-def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False,
-                fuzzable=True, name=None):
+def s_bit_field(
+    value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a variable length bit field onto the current block stack.
 
@@ -595,8 +681,9 @@ def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", sign
     blocks.CURRENT.push(bit_field)
 
 
-def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-           name=None):
+def s_byte(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a byte onto the current block stack.
 
@@ -622,8 +709,9 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     blocks.CURRENT.push(byte)
 
 
-def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-           name=None):
+def s_word(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a word onto the current block stack.
 
@@ -649,8 +737,9 @@ def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     blocks.CURRENT.push(word)
 
 
-def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-            name=None):
+def s_dword(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a double word onto the current block stack.
 
@@ -676,8 +765,9 @@ def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, f
     blocks.CURRENT.push(dword)
 
 
-def s_qword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-            name=None):
+def s_qword(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a quad word onto the current block stack.
 

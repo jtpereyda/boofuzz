@@ -53,9 +53,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # ensure the target block exists.
         if self.block_name not in self.request.names:
-            raise exception.SullyRuntimeError(
-                "Can't add repeater for non-existent block: %s!" % self.block_name
-            )
+            raise exception.SullyRuntimeError("Can't add repeater for non-existent block: %s!" % self.block_name)
 
         # ensure the user specified either a variable to tie this repeater to or a min/max val.
         if self.variable is None and self.max_reps is None:
@@ -108,9 +106,7 @@ class Repeat(ifuzzable.IFuzzable):
 
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
-            raise exception.SullyRuntimeError(
-                "Can't apply repeater to unclosed block: %s" % self.block_name
-            )
+            raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
 
         # if we've run out of mutations, raise the completion flag.
         if self.mutant_index == self.num_mutations():

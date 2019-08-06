@@ -94,4 +94,4 @@ class External:
         @return: Synopsis of last recorded crash.
         """
 
-        return 'External instrumentation detects a crash...\n'
+        return "External instrumentation detects a crash...\n"

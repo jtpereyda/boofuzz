@@ -51,7 +51,7 @@ class SerialConnection(itarget_connection.ITargetConnection):
         self.message_separator_time = message_separator_time
         self.content_checker = content_checker
 
-        self._leftover_bytes = b''
+        self._leftover_bytes = b""
 
     def close(self):
         """
@@ -80,12 +80,12 @@ class SerialConnection(itarget_connection.ITargetConnection):
             Received data.
         """
 
-        self._connection.timeout = min(.001, self.message_separator_time, self.timeout)
+        self._connection.timeout = min(0.001, self.message_separator_time, self.timeout)
 
         start_time = last_byte_time = time.time()
 
         data = self._leftover_bytes
-        self._leftover_bytes = b''
+        self._leftover_bytes = b""
 
         while len(data) < max_bytes:
             # Update timer for message_separator_time
@@ -131,4 +131,4 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
     @property
     def info(self):
-        return 'port: {port}, baudrate: {baudrate}'.format(port=self._port, baudrate=self._baudrate)
+        return "port: {port}, baudrate: {baudrate}".format(port=self._port, baudrate=self._baudrate)

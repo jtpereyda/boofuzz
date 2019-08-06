@@ -11,8 +11,7 @@ class String(BasePrimitive):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1,
-                 name=None):
+    def __init__(self, value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -50,145 +49,137 @@ class String(BasePrimitive):
         self.encoding = encoding
         self._fuzzable = fuzzable
         self._name = name
-        self.this_library = \
-            [
-                self._value * 2,
-                self._value * 10,
-                self._value * 100,
-
-                # UTF-8
-                # TODO: This can't actually convert these to unicode strings...
-                self._value * 2 + b"\xfe",
-                self._value * 10 + b"\xfe",
-                self._value * 100 + b"\xfe",
-            ]
+        self.this_library = [
+            self._value * 2,
+            self._value * 10,
+            self._value * 100,
+            # UTF-8
+            # TODO: This can't actually convert these to unicode strings...
+            self._value * 2 + b"\xfe",
+            self._value * 10 + b"\xfe",
+            self._value * 100 + b"\xfe",
+        ]
         if not self._fuzz_library:
-            self._fuzz_library = \
-                [
-                    "",
-                    # strings ripped from spike (and some others I added)
-                    "/.:/" + "A" * 5000 + "\x00\x00",
-                    "/.../" + "B" * 5000 + "\x00\x00",
-                    "/.../.../.../.../.../.../.../.../.../.../",
-                    "/../../../../../../../../../../../../etc/passwd",
-                    "/../../../../../../../../../../../../boot.ini",
-                    "..:..:..:..:..:..:..:..:..:..:..:..:..:",
-                    "\\\\*",
-                    "\\\\?\\",
-                    "/\\" * 5000,
-                    "/." * 5000,
-                    "!@#$%%^#$%#$@#$%$$@#$%^^**(()",
-                    "%01%02%03%04%0a%0d%0aADSF",
-                    "%01%02%03@%04%0a%0d%0aADSF",
-                    "\x01\x02\x03\x04",
-                    "/%00/",
-                    "%00/",
-                    "%00",
-                    "%u0000",
-                    "%\xfe\xf0%\x00\xff",
-                    "%\xfe\xf0%\x01\xff" * 20,
-
-                    # format strings.
-                    "%n" * 100,
-                    "%n" * 500,
-                    "\"%n\"" * 500,
-                    "%s" * 100,
-                    "%s" * 500,
-                    "\"%s\"" * 500,
-
-                    # command injection.
-                    "|touch /tmp/SULLEY",
-                    ";touch /tmp/SULLEY;",
-                    "|notepad",
-                    ";notepad;",
-                    "\nnotepad\n",
-                    "|reboot",
-                    ";reboot;",
-                    "\nreboot\n",
-
-                    # fuzzdb command injection
-                    "a)|reboot;",
-                    "CMD=$'reboot';$CMD",
-                    "a;reboot",
-                    "a)|reboot",
-                    "|reboot;",
-                    "'reboot'",
-                    "^CMD=$\"reboot\";$CMD",
-                    "`reboot`",
-                    "%0DCMD=$'reboot';$CMD",
-                    "/index.html|reboot|",
-                    "%0a reboot %0a",
-                    "|reboot|",
-                    "||reboot;",
-                    ";reboot/n",
-                    "id",
-                    ";id",
-                    "a;reboot|",
-                    "&reboot&",
-                    "%0Areboot",
-                    "a);reboot",
-                    "$;reboot",
-                    "&CMD=$\"reboot\";$CMD",
-                    "&&CMD=$\"reboot\";$CMD",
-                    ";reboot",
-                    "id;",
-                    ";reboot;",
-                    "&CMD=$'reboot';$CMD",
-                    "& reboot &",
-                    "; reboot",
-                    "&&CMD=$'reboot';$CMD",
-                    "reboot",
-                    "^CMD=$'reboot';$CMD",
-                    ";CMD=$'reboot';$CMD",
-                    "|reboot",
-                    "<reboot;",
-                    "FAIL||reboot",
-                    "a);reboot|",
-                    "%0DCMD=$\"reboot\";$CMD",
-                    "reboot|",
-                    "%0Areboot%0A",
-                    "a;reboot;",
-                    "CMD=$\"reboot\";$CMD",
-                    "&&reboot",
-                    "||reboot|",
-                    "&&reboot&&",
-                    "^reboot",
-                    ";|reboot|",
-                    "|CMD=$'reboot';$CMD",
-                    "|nid",
-                    "&reboot",
-                    "a|reboot",
-                    "<reboot%0A",
-                    "FAIL||CMD=$\"reboot\";$CMD",
-                    "$(reboot)",
-                    "<reboot%0D",
-                    ";reboot|",
-                    "id|",
-                    "%0Dreboot",
-                    "%0Areboot%0A",
-                    "%0Dreboot%0D",
-                    ";system('reboot')",
-                    "|CMD=$\"reboot\";$CMD",
-                    ";CMD=$\"reboot\";$CMD",
-                    "<reboot",
-                    "a);reboot;",
-                    "& reboot",
-                    "| reboot",
-                    "FAIL||CMD=$'reboot';$CMD",
-                    "<!--#exec cmd=\"reboot\"-->",
-                    "reboot;",
-
-                    # some binary strings.
-                    "\xde\xad\xbe\xef",
-                    "\xde\xad\xbe\xef" * 10,
-                    "\xde\xad\xbe\xef" * 100,
-                    "\xde\xad\xbe\xef" * 1000,
-                    "\xde\xad\xbe\xef" * 10000,
-
-                    # miscellaneous.
-                    "\r\n" * 100,
-                    "<>" * 500,  # sendmail crackaddr (http://lsd-pl.net/other/sendmail.txt)
-                ]
+            self._fuzz_library = [
+                "",
+                # strings ripped from spike (and some others I added)
+                "/.:/" + "A" * 5000 + "\x00\x00",
+                "/.../" + "B" * 5000 + "\x00\x00",
+                "/.../.../.../.../.../.../.../.../.../.../",
+                "/../../../../../../../../../../../../etc/passwd",
+                "/../../../../../../../../../../../../boot.ini",
+                "..:..:..:..:..:..:..:..:..:..:..:..:..:",
+                "\\\\*",
+                "\\\\?\\",
+                "/\\" * 5000,
+                "/." * 5000,
+                "!@#$%%^#$%#$@#$%$$@#$%^^**(()",
+                "%01%02%03%04%0a%0d%0aADSF",
+                "%01%02%03@%04%0a%0d%0aADSF",
+                "\x01\x02\x03\x04",
+                "/%00/",
+                "%00/",
+                "%00",
+                "%u0000",
+                "%\xfe\xf0%\x00\xff",
+                "%\xfe\xf0%\x01\xff" * 20,
+                # format strings.
+                "%n" * 100,
+                "%n" * 500,
+                '"%n"' * 500,
+                "%s" * 100,
+                "%s" * 500,
+                '"%s"' * 500,
+                # command injection.
+                "|touch /tmp/SULLEY",
+                ";touch /tmp/SULLEY;",
+                "|notepad",
+                ";notepad;",
+                "\nnotepad\n",
+                "|reboot",
+                ";reboot;",
+                "\nreboot\n",
+                # fuzzdb command injection
+                "a)|reboot;",
+                "CMD=$'reboot';$CMD",
+                "a;reboot",
+                "a)|reboot",
+                "|reboot;",
+                "'reboot'",
+                '^CMD=$"reboot";$CMD',
+                "`reboot`",
+                "%0DCMD=$'reboot';$CMD",
+                "/index.html|reboot|",
+                "%0a reboot %0a",
+                "|reboot|",
+                "||reboot;",
+                ";reboot/n",
+                "id",
+                ";id",
+                "a;reboot|",
+                "&reboot&",
+                "%0Areboot",
+                "a);reboot",
+                "$;reboot",
+                '&CMD=$"reboot";$CMD',
+                '&&CMD=$"reboot";$CMD',
+                ";reboot",
+                "id;",
+                ";reboot;",
+                "&CMD=$'reboot';$CMD",
+                "& reboot &",
+                "; reboot",
+                "&&CMD=$'reboot';$CMD",
+                "reboot",
+                "^CMD=$'reboot';$CMD",
+                ";CMD=$'reboot';$CMD",
+                "|reboot",
+                "<reboot;",
+                "FAIL||reboot",
+                "a);reboot|",
+                '%0DCMD=$"reboot";$CMD',
+                "reboot|",
+                "%0Areboot%0A",
+                "a;reboot;",
+                'CMD=$"reboot";$CMD',
+                "&&reboot",
+                "||reboot|",
+                "&&reboot&&",
+                "^reboot",
+                ";|reboot|",
+                "|CMD=$'reboot';$CMD",
+                "|nid",
+                "&reboot",
+                "a|reboot",
+                "<reboot%0A",
+                'FAIL||CMD=$"reboot";$CMD',
+                "$(reboot)",
+                "<reboot%0D",
+                ";reboot|",
+                "id|",
+                "%0Dreboot",
+                "%0Areboot%0A",
+                "%0Dreboot%0D",
+                ";system('reboot')",
+                '|CMD=$"reboot";$CMD',
+                ';CMD=$"reboot";$CMD',
+                "<reboot",
+                "a);reboot;",
+                "& reboot",
+                "| reboot",
+                "FAIL||CMD=$'reboot';$CMD",
+                '<!--#exec cmd="reboot"-->',
+                "reboot;",
+                # some binary strings.
+                "\xde\xad\xbe\xef",
+                "\xde\xad\xbe\xef" * 10,
+                "\xde\xad\xbe\xef" * 100,
+                "\xde\xad\xbe\xef" * 1000,
+                "\xde\xad\xbe\xef" * 10000,
+                # miscellaneous.
+                "\r\n" * 100,
+                "<>" * 500,  # sendmail crackaddr (http://lsd-pl.net/other/sendmail.txt)
+            ]
 
             # add some long strings.
             self.add_long_strings("C")
@@ -196,7 +187,7 @@ class String(BasePrimitive):
             self.add_long_strings("<")
             self.add_long_strings(">")
             self.add_long_strings("'")
-            self.add_long_strings("\"")
+            self.add_long_strings('"')
             self.add_long_strings("/")
             self.add_long_strings("\\")
             self.add_long_strings("?")
@@ -236,10 +227,10 @@ class String(BasePrimitive):
         if self.max_len > 0:
             if any(len(s) > self.max_len for s in self.this_library):
                 # Pull out the bad string(s):
-                self.this_library = list(set([t[:self.max_len] for t in self.this_library]))
+                self.this_library = list(set([t[: self.max_len] for t in self.this_library]))
             if any(len(s) > self.max_len for s in self._fuzz_library):
                 # Pull out the bad string(s):
-                self._fuzz_library = list(set([t[:self.max_len] for t in self._fuzz_library]))
+                self._fuzz_library = list(set([t[: self.max_len] for t in self._fuzz_library]))
 
     @property
     def name(self):

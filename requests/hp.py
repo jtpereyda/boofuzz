@@ -11,7 +11,7 @@ def unicode_ftw(val):
     val_list = []
     for char in val:
         val_list.append("\x00")
-        val_list.append(pack('B', ord(char)))
+        val_list.append(pack("B", ord(char)))
 
     ret = ""
     for char in val_list:
@@ -71,7 +71,7 @@ if s_block_start("packet_2"):
     s_string("D" * 32, size=32)
 
     # barhost cookie
-    s_dword(0x7cde7bab, endian="<", fuzzable=False)
+    s_dword(0x7CDE7BAB, endian="<", fuzzable=False)
 
     # random buffer
     s_string("FOO")
