@@ -727,7 +727,7 @@ def s_bytes(
     :type  max_len:      int
     :param max_len:      (Optional, def=None) Maximum string length
     :type  name:         str
-    :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive        
+    :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
     _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
