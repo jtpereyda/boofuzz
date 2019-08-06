@@ -82,7 +82,7 @@ def find_ints(start_address):
     print("Found %d constant values used in compares." % len(constants))
     print("-----------------------------------------------------")
     for i in xrange(0, len(constants), 20):
-        print(constants[i:i + 20])
+        print(constants[i : i + 20])
 
     return constants
 
@@ -135,7 +135,7 @@ def find_strings(start_address):
     print("Found %d string values used in compares." % len(strings))
     print("-----------------------------------------------------")
     for i in xrange(0, len(strings), 5):
-        print(strings[i:i + 5])
+        print(strings[i : i + 5])
 
     return strings
 
@@ -156,13 +156,13 @@ start_address = SegByName(".idata")
 strings = find_strings(start_address)
 
 # write integers
-fh = open(constants_file, 'w+')
+fh = open(constants_file, "w+")
 for c in constants:
     fh.write(c + "\n")
 fh.close()
 
 # write strings
-fh = open(strings_file, 'w+')
+fh = open(strings_file, "w+")
 for s in strings:
     fh.write(s + "\n")
 fh.close()

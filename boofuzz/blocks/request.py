@@ -45,7 +45,7 @@ class Request(IFuzzable):
         if isinstance(value, int):
             self._mutant_index = value
         else:
-            raise TypeError('Expected an Int')
+            raise TypeError("Expected an Int")
 
     @property
     def fuzzable(self):

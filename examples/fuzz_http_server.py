@@ -3,7 +3,7 @@ import sys
 from boofuzz import helpers
 from boofuzz.primitives import Delim, Static, String
 
-sys.path.insert(0, '../')
+sys.path.insert(0, "../")
 
 
 class Group(object):
@@ -30,7 +30,7 @@ class Group(object):
                 self.log_recv(recv_data)
 
     def __repr__(self):
-        return '<%s [%s items]>' % (self.__class__.__name__, len(self.definition))
+        return "<%s [%s items]>" % (self.__class__.__name__, len(self.definition))
 
     # noinspection PyMethodMayBeStatic
     def send_buffer(self, current_value):
@@ -53,9 +53,12 @@ CloseHeader = Group(
         # GET / HTTP/1.1\r\n
         s_static("GET / HTTP/1.1\r\n"),
         # Connection: close
-        s_static("Connection"), s_delim(":"), s_delim(" "), s_string("close"),
-        s_static("\r\n\r\n")
-    ]
+        s_static("Connection"),
+        s_delim(":"),
+        s_delim(" "),
+        s_string("close"),
+        s_static("\r\n\r\n"),
+    ],
 )
 
 OpenHeader = Group(
@@ -64,9 +67,12 @@ OpenHeader = Group(
         # GET / HTTP/1.1\r\n
         Static("GET / HTTP/1.1\r\n"),
         # Connection: close
-        Static("Connection"), Delim(":"), Delim(" "), String("open"),
-        Static("\r\n\r\n")
-    ]
+        Static("Connection"),
+        Delim(":"),
+        Delim(" "),
+        String("open"),
+        Static("\r\n\r\n"),
+    ],
 )
 
 # CloseHeader = Group("HTTP Close Header")

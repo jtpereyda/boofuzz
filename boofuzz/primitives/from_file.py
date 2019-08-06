@@ -5,7 +5,6 @@ from .base_primitive import BasePrimitive
 
 
 class FromFile(BasePrimitive):
-
     def __init__(self, value, encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
         """
         Cycles through a list of "bad" values from a file(s). Takes filename and open the file(s) to read

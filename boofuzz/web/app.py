@@ -21,40 +21,38 @@ def commify(number):
     return number
 
 
-@app.route('/favicon.ico')
+@app.route("/favicon.ico")
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(
+        os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/vnd.microsoft.icon"
+    )
 
 
 @app.route("/togglepause")
 def pause():
     # Flip our state
     app.session.is_paused = not app.session.is_paused
-    return redirect('/')
+    return redirect("/")
 
 
-@app.route('/test-case/<int:crash_id>')
+@app.route("/test-case/<int:crash_id>")
 def test_case(crash_id):
-    return render_template("test-case.html", crashinfo=app.session.procmon_results.get(crash_id, None),
-                           test_case=app.session.test_case_data(crash_id))
+    return render_template(
+        "test-case.html",
+        crashinfo=app.session.procmon_results.get(crash_id, None),
+        test_case=app.session.test_case_data(crash_id),
+    )
 
 
-@app.route('/api/current-test-case')
+@app.route("/api/current-test-case")
 def current_test_case_update():
-    data = {
-        'index': app.session.total_mutant_index,
-        'log_data': _get_log_data(app.session.total_mutant_index),
-    }
+    data = {"index": app.session.total_mutant_index, "log_data": _get_log_data(app.session.total_mutant_index)}
     return flask.jsonify(data)
 
 
-@app.route('/api/test-case/<int:test_case_index>')
+@app.route("/api/test-case/<int:test_case_index>")
 def api_test_case(test_case_index):
-    data = {
-        'index': test_case_index,
-        'log_data': _get_log_data(test_case_id=test_case_index),
-    }
+    data = {"index": test_case_index, "log_data": _get_log_data(test_case_id=test_case_index)}
     return flask.jsonify(data)
 
 
@@ -65,24 +63,28 @@ def _get_log_data(test_case_id):
     except exception.BoofuzzNoSuchTestCase:
         return None
     if case is not None:
-        results.append({'css_class': case.css_class, 'log_line': case.html_log_line})
+        results.append({"css_class": case.css_class, "log_line": case.html_log_line})
         for step in case.steps:
             line = step.html_log_line
-            results.append({'css_class': step.css_class, 'log_line': line})
+            results.append({"css_class": step.css_class, "log_line": line})
     return results
 
 
-@app.route('/api/current-run')
+@app.route("/api/current-run")
 def index_update():
-    data = {'session_info': {
-        'is_paused': app.session.is_paused,
-        'current_index': app.session.total_mutant_index,
-        'num_mutations': app.session.total_num_mutations,
-        'current_index_element': app.session.fuzz_node.mutant_index if app.session.fuzz_node is not None else None,
-        'num_mutations_element': app.session.fuzz_node.num_mutations() if app.session.fuzz_node is not None else None,
-        'current_element': app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
-        'crashes': _crash_summary_info(),
-    }}
+    data = {
+        "session_info": {
+            "is_paused": app.session.is_paused,
+            "current_index": app.session.total_mutant_index,
+            "num_mutations": app.session.total_num_mutations,
+            "current_index_element": app.session.fuzz_node.mutant_index if app.session.fuzz_node is not None else None,
+            "num_mutations_element": app.session.fuzz_node.num_mutations()
+            if app.session.fuzz_node is not None
+            else None,
+            "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
+            "crashes": _crash_summary_info(),
+        }
+    }
 
     return flask.jsonify(data)
 
@@ -111,7 +113,7 @@ def index():
         progress_current = "%.3f%%" % (progress_current * 100)
     else:
         progress_current = 0
-        progress_current_bar = ''
+        progress_current_bar = ""
         mutant_index = 0
         num_mutations = 100  # TODO improve template instead of hard coding fake values
 
@@ -142,7 +144,7 @@ def index():
         "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else "N/A",
     }
 
-    return render_template('index.html', state=state, crashes=crashes)
+    return render_template("index.html", state=state, crashes=crashes)
 
 
 def _crash_summary_info():
@@ -156,10 +158,6 @@ def _crash_summary_info():
         if key in app.session.netmon_results:
             status_bytes = commify(app.session.netmon_results[key])
 
-        crash = {
-            "key": key,
-            "reasons": val,
-            "status_bytes": status_bytes
-        }
+        crash = {"key": key, "reasons": val, "status_bytes": status_bytes}
         crashes.append(crash)
     return crashes

@@ -13,6 +13,7 @@ import threading
 from math import *
 from . import helpers
 from . import ifuzz_logger_backend
+
 if sys.version_info >= (3, 3):
     from shutil import get_terminal_size
 else:
@@ -23,18 +24,21 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     """
     This class formats FuzzLogger data for a console GUI using curses. This hasn't been tested on Windows.
     """
+
     DEFAULT_HEX_TO_STR = helpers.hex_to_hexstr
     INDENT_SIZE = 2
 
-    def __init__(self,
-                 web_port=26000,
-                 window_height=40,
-                 window_width=130,
-                 auto_scoll=True,
-                 max_log_lines=500,
-                 wait_on_quit=True,
-                 min_refresh_rate=1000,
-                 bytes_to_str=DEFAULT_HEX_TO_STR):
+    def __init__(
+        self,
+        web_port=26000,
+        window_height=40,
+        window_width=130,
+        auto_scoll=True,
+        max_log_lines=500,
+        wait_on_quit=True,
+        min_refresh_rate=1000,
+        bytes_to_str=DEFAULT_HEX_TO_STR,
+    ):
         """
         :type web_port: int
         :param web_port: Webinterface port. Default 26000
@@ -128,57 +132,62 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._current_name = name
         self._current_index = kwargs["current_index"]
         self._current_num_mutations = kwargs["current_num_mutations"]
-        self._log_storage.append(helpers.format_log_msg(msg_type='test_case', description=test_case_id,
-                                                        format_type='curses'))
+        self._log_storage.append(
+            helpers.format_log_msg(msg_type="test_case", description=test_case_id, format_type="curses")
+        )
         self._event_log = True
 
     def open_test_step(self, description):
-        self._log_storage.append(helpers.format_log_msg(msg_type='step', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="step", description=description, format_type="curses"))
         self._event_log = True
 
     def log_info(self, description):
-        self._log_storage.append(helpers.format_log_msg(msg_type='info', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="info", description=description, format_type="curses"))
         self._event_log = True
 
     def log_check(self, description):
-        self._log_storage.append(helpers.format_log_msg(msg_type='check', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(
+            helpers.format_log_msg(msg_type="check", description=description, format_type="curses")
+        )
         self._event_log = True
 
     def log_pass(self, description=""):
-        self._log_storage.append(helpers.format_log_msg(msg_type='pass', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="pass", description=description, format_type="curses"))
         self._event_log = True
 
     def log_fail(self, description="", indent_size=INDENT_SIZE):
         # TODO: Why do some fail messages have a trailing whitespace?
-        fail_msg = '#' + str(self._total_index) + \
-                   (4 * indent_size + 1 - len(str(self._total_index))) * ' ' + description.strip()
+        fail_msg = (
+            "#"
+            + str(self._total_index)
+            + (4 * indent_size + 1 - len(str(self._total_index))) * " "
+            + description.strip()
+        )
         self._fail_storage.append([fail_msg, 1])
-        self._log_storage.append(helpers.format_log_msg(msg_type='fail', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="fail", description=description, format_type="curses"))
         self._event_crash = True
         self._event_log = True
 
     def log_error(self, description="", indent_size=INDENT_SIZE):
-        fail_msg = '#' + str(self._total_index) + \
-                   (4 * indent_size + 1 - len(str(self._total_index))) * ' ' + description.strip()
+        fail_msg = (
+            "#"
+            + str(self._total_index)
+            + (4 * indent_size + 1 - len(str(self._total_index))) * " "
+            + description.strip()
+        )
         self._fail_storage.append([fail_msg, 3])
-        self._log_storage.append(helpers.format_log_msg(msg_type='error', description=description,
-                                                        format_type='curses'))
+        self._log_storage.append(
+            helpers.format_log_msg(msg_type="error", description=description, format_type="curses")
+        )
         self._event_crash = True
         self._event_log = True
 
     def log_recv(self, data):
-        self._log_storage.append(helpers.format_log_msg(msg_type='recv', data=data,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="recv", data=data, format_type="curses"))
         self._event_log = True
 
     def log_send(self, data):
-        self._log_storage.append(helpers.format_log_msg(msg_type='send', data=data,
-                                                        format_type='curses'))
+        self._log_storage.append(helpers.format_log_msg(msg_type="send", data=data, format_type="curses"))
         self._event_log = True
 
     def close_test_case(self):
@@ -208,14 +217,14 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             self._min_size_ok = True
 
         # Render title
-        self._stdscr.addstr(0, 0, '=' * self._width)
+        self._stdscr.addstr(0, 0, "=" * self._width)
         start_x_title = int((self._width // 2) - (len(self._title) // 2) - len(self._title) % 2)
         self._stdscr.addstr(0, start_x_title, self._title, curses.color_pair(2) | curses.A_BOLD)
 
         # Render status bar
         self._stdscr.attron(curses.color_pair(7))
-        self._stdscr.addstr(self._height - 1, 0, ' ' * (self._width - 1))
-        self._stdscr.insch(' ')  # Fill bottom right corner
+        self._stdscr.addstr(self._height - 1, 0, " " * (self._width - 1))
+        self._stdscr.insch(" ")  # Fill bottom right corner
         if self._quit:
             self._stdscr.addstr(self._height - 1, 1, "Press 'q' to quit", curses.color_pair(7) | curses.A_BLINK)
         else:
@@ -255,25 +264,33 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._casescr.erase()
         total_indent_size = indent_size * 2 + 1 + 25
 
-        _render_pad(lines=self._log_storage[:self._max_log_lines],
-                    pad=self._casescr,
-                    y_min=2, x_min=1,
-                    y_max=self._height - 18, x_max=self._width - 1,
-                    max_lines=self._max_log_lines,
-                    total_indent_size=total_indent_size,
-                    auto_scroll=self._auto_scroll)
+        _render_pad(
+            lines=self._log_storage[: self._max_log_lines],
+            pad=self._casescr,
+            y_min=2,
+            x_min=1,
+            y_max=self._height - 18,
+            x_max=self._width - 1,
+            max_lines=self._max_log_lines,
+            total_indent_size=total_indent_size,
+            auto_scroll=self._auto_scroll,
+        )
 
     def _draw_crash(self, indent_size=INDENT_SIZE):
         # Crashes Screen
         total_indent_size = indent_size * 5
 
-        _render_pad(lines=self._fail_storage[:self._max_log_lines],
-                    pad=self._crashescr,
-                    y_min=self._height - 16, x_min=1,
-                    y_max=self._height - 8, x_max=self._width - 1,
-                    max_lines=self._max_log_lines,
-                    total_indent_size=total_indent_size,
-                    auto_scroll=self._auto_scroll)
+        _render_pad(
+            lines=self._fail_storage[: self._max_log_lines],
+            pad=self._crashescr,
+            y_min=self._height - 16,
+            x_min=1,
+            y_max=self._height - 8,
+            x_max=self._width - 1,
+            max_lines=self._max_log_lines,
+            total_indent_size=total_indent_size,
+            auto_scroll=self._auto_scroll,
+        )
 
     def _draw_stat(self):
         # Status Screen
@@ -281,6 +298,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._statscr.addstr(1, 1, "Webinterface:")
         self._statscr.addstr(1, self._indent_size, "localhost:{}".format(self._web_port))
         self._statscr.addstr(2, 1, "Case:")
+        # fmt: off
         self._statscr.addstr(2, self._indent_size, _progess_bar(self._current_index,
                                                                 self._current_num_mutations,
                                                                 self._width - self._indent_size))
@@ -288,6 +306,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._statscr.addstr(3, self._indent_size, _progess_bar(self._total_index,
                                                                 self._total_num_mutations,
                                                                 self._width - self._indent_size))
+        # fmt: on
         # TODO: Get paused flag from sessions
         if self._status == 0:
             self._statscr.addstr(4, 1, "Status:")
@@ -307,7 +326,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         k = 0
         wait_for_key = False
         try:
-            while not ((k == ord('q') or not self._wait_on_quit) and self._quit):
+            while not ((k == ord("q") or not self._wait_on_quit) and self._quit):
                 try:
                     if self._event_resize or ms_since_refresh >= self._refresh_interval:
                         self._draw_main()
@@ -368,17 +387,15 @@ def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_
 
     for i in range(len(lines)):
         if total_rows < max_lines - 1:
-            pad.addnstr(total_rows,
-                        0,
-                        lines[i][0],
-                        width,
-                        curses.color_pair(lines[i][1]))
+            pad.addnstr(total_rows, 0, lines[i][0], width, curses.color_pair(lines[i][1]))
             total_rows += 1
         else:
-            pad.addstr(total_rows,
-                       0,
-                       "Maximum number of lines reached for this window! Increase 'max_log_lines'",
-                       curses.color_pair(3))
+            pad.addstr(
+                total_rows,
+                0,
+                "Maximum number of lines reached for this window! Increase 'max_log_lines'",
+                curses.color_pair(3),
+            )
             total_rows += 1
             break
 
@@ -387,10 +404,12 @@ def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_
         if rows >= 1:
             for row in range(1, rows + 1):
                 if total_rows < max_lines - 1:
-                    pad.addstr(total_rows,
-                               total_indent_size,
-                               lines[i][0][width:][(row * columns) - columns:row * columns],
-                               curses.color_pair(lines[i][1]))
+                    pad.addstr(
+                        total_rows,
+                        total_indent_size,
+                        lines[i][0][width:][(row * columns) - columns : row * columns],
+                        curses.color_pair(lines[i][1]),
+                    )
                     total_rows += 1
                 else:
                     break

@@ -14,5 +14,19 @@ from .static import Static
 from .string import String
 from .word import Word
 
-__all__ = ['BasePrimitive', 'BitField', 'Byte', 'Bytes', 'Delim', 'DWord', 'FromFile', 'Group', 'QWord', 'RandomData',
-           'Static', 'String', 'Word', 'Mirror']
+__all__ = [
+    "BasePrimitive",
+    "BitField",
+    "Byte",
+    "Bytes",
+    "Delim",
+    "DWord",
+    "FromFile",
+    "Group",
+    "Mirror",
+    "QWord",
+    "RandomData",
+    "Static",
+    "String",
+    "Word",
+]

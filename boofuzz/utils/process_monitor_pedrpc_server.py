@@ -25,14 +25,16 @@ def _split_command_if_str(command):
         (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
     """
     if isinstance(command, str):
-        return shlex.split(command)
+        return shlex.split(command, posix=(os.name == "posix"))
+
     else:
         return command
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1,
-                 coredump_dir=None):
+    def __init__(
+        self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None
+    ):
         """
         @type  host:           str
         @param host:           Hostname or IP address
@@ -147,11 +149,16 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        self.log('Starting target...')
+        self.log("Starting target...")
         self.log("creating debugger thread", 5)
-        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name,
-                                                   ignore_pid=self.ignore_pid, log_level=self.log_level,
-                                                   coredump_dir=self.coredump_dir)
+        self.debugger_thread = self.debugger_class(
+            self.start_commands,
+            self,
+            proc_name=self.proc_name,
+            ignore_pid=self.ignore_pid,
+            log_level=self.log_level,
+            coredump_dir=self.coredump_dir,
+        )
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
         self.debugger_thread.finished_starting.wait()
@@ -163,7 +170,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
-        self.log('Stopping target...')
+        self.log("Stopping target...")
         # give the debugger thread a chance to exit.
         time.sleep(1)
 
@@ -187,7 +194,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        self.log('Restarting target...')
+        self.log("Restarting target...")
         self.stop_target()
         return self.start_target()
 

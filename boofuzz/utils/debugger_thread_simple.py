@@ -4,9 +4,10 @@ import os
 
 try:
     import resource  # Linux only
+
     resource.setrlimit(  # Equivalent to: ulimit -c unlimited
-        resource.RLIMIT_CORE,
-        (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+        resource.RLIMIT_CORE, (resource.RLIM_INFINITY, resource.RLIM_INFINITY)
+    )
 except ImportError:
     pass
 import signal
@@ -19,11 +20,14 @@ import psutil
 from io import open
 
 if not getattr(__builtins__, "WindowsError", None):
+
     class WindowsError(OSError):
         """Mock WindowsError since Linux Python lacks WindowsError"""
+
         @property
         def winerror(self):
             return self.errno
+
         pass
 
 
@@ -36,8 +40,8 @@ def _get_coredump_path():
     """
     This method returns the path to the coredump file if one was created
     """
-    if sys.platform == 'linux' or sys.platform == 'linux2':
-        path = './core'
+    if sys.platform == "linux" or sys.platform == "linux2":
+        path = "./core"
         if os.path.isfile(path):
             return path
 
@@ -45,8 +49,9 @@ def _get_coredump_path():
 
 
 class DebuggerThreadSimple(threading.Thread):
-    def __init__(self, start_commands, process_monitor,
-                 proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1, **kwargs):
+    def __init__(
+        self, start_commands, process_monitor, proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1, **kwargs
+    ):
         """
         This class isn't actually ran as a thread, only the start_monitoring
         method is. It can spawn/stop a process, wait for it to exit and report on
@@ -88,12 +93,20 @@ class DebuggerThreadSimple(threading.Thread):
             try:
                 self._process = subprocess.Popen(command)
             except WindowsError as e:
-                print('WindowsError {errno}: "{strerror} while starting "{cmd}"'
-                      .format(errno=e.winerror, strerror=e.strerror, cmd=command), file=sys.stderr)
+                print(
+                    'WindowsError {errno}: "{strerror} while starting "{cmd}"'.format(
+                        errno=e.winerror, strerror=e.strerror, cmd=command
+                    ),
+                    file=sys.stderr,
+                )
                 return False
             except OSError as e:
-                print('OSError {errno}: "{strerror} while starting "{cmd}"'
-                      .format(errno=e.errno, strerror=e.strerror, cmd=command), file=sys.stderr)
+                print(
+                    'OSError {errno}: "{strerror} while starting "{cmd}"'.format(
+                        errno=e.errno, strerror=e.strerror, cmd=command
+                    ),
+                    file=sys.stderr,
+                )
                 return False
         if self.proc_name:
             self.log("done. waiting for start command to terminate.")
@@ -124,25 +137,24 @@ class DebuggerThreadSimple(threading.Thread):
             exit_info = os.waitpid(self.pid, 0)
             self.exit_status = exit_info[1]  # [0] is the pid
 
-        default_reason = 'Process died for unknown reason'
+        default_reason = "Process died for unknown reason"
         if self.exit_status is not None:
             if os.WCOREDUMP(self.exit_status):
-                reason = 'Segmentation fault'
+                reason = "Segmentation fault"
             elif os.WIFSTOPPED(self.exit_status):
-                reason = 'Stopped with signal ' + str(os.WTERMSIG(self.exit_status))
+                reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
             elif os.WIFSIGNALED(self.exit_status):
-                reason = 'Terminated with signal ' + str(os.WTERMSIG(self.exit_status))
+                reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
             elif os.WIFEXITED(self.exit_status):
-                reason = 'Exit with code - ' + str(os.WEXITSTATUS(self.exit_status))
+                reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
             else:
                 reason = default_reason
         else:
             reason = default_reason
 
-        self.process_monitor.last_synopsis = '[{0}] Crash. Exit code: {1}. Reason - {2}\n'.format(
-            time.strftime("%I:%M.%S"),
-            self.exit_status if self.exit_status is not None else '<unknown>',
-            reason)
+        self.process_monitor.last_synopsis = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
+            time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason
+        )
 
     def watch(self):
         """
@@ -182,7 +194,7 @@ class DebuggerThreadSimple(threading.Thread):
         if self.isAlive():
             return True
         else:
-            with open(self.process_monitor.crash_filename, 'a') as rec_file:
+            with open(self.process_monitor.crash_filename, "a") as rec_file:
                 rec_file.write(self.process_monitor.last_synopsis.decode())
 
             if self.process_monitor.coredump_dir is not None:

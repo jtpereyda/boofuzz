@@ -92,7 +92,7 @@ class Edge(object):
             "dstNumber": dst.number,
             "gml_arrow": self.gml_arrow,
             "gml_stipple": self.gml_stipple,
-            "gml_line_width": self.gml_line_width
+            "gml_line_width": self.gml_line_width,
         }
 
         return edge
@@ -152,7 +152,6 @@ class Edge(object):
             "dst": self.dst,
             "color": self.color,
             "label": self.label,
-
         }
 
         return udraw

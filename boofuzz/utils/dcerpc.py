@@ -71,7 +71,7 @@ def request(opnum, data):
     num_frags = int(math.ceil(float(len(data)) / float(frag_size)))
 
     for i in xrange(num_frags):
-        chunk = data[i * frag_size:(i + 1) * frag_size]
+        chunk = data[i * frag_size : (i + 1) * frag_size]
         frag_length = struct.pack("<H", len(chunk) + 24)
         alloc_hint = struct.pack("<L", len(chunk))
 

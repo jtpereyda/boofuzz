@@ -13,7 +13,7 @@ s_word(0, endian=">", fuzzable=False)  # additional RRs
 
 # queries
 s_lego("dns_hostname", "_presence._tcp.local")
-s_word(0x000c, endian=">")  # type  = pointer
+s_word(0x000C, endian=">")  # type  = pointer
 s_word(0x8001, endian=">")  # class = flush
 
 s_initialize("trillian 2")
@@ -30,12 +30,12 @@ if s_block_start("pamini.local"):
 
     # queries
     s_lego("dns_hostname", "pamini.local")
-    s_word(0x00ff, endian=">")  # type  = any
+    s_word(0x00FF, endian=">")  # type  = any
     s_word(0x8001, endian=">")  # class = flush
 s_block_end()
 
 s_lego("dns_hostname", "pedram@PAMINI._presence._tcp")
-s_word(0x00ff, endian=">")  # type  = any
+s_word(0x00FF, endian=">")  # type  = any
 s_word(0x8001, endian=">")  # class = flush
 
 
@@ -74,12 +74,12 @@ if s_block_start("pamini.local"):
 
     # queries
     s_lego("dns_hostname", "pamini.local")
-    s_word(0x00ff, endian=">")  # type  = any
+    s_word(0x00FF, endian=">")  # type  = any
     s_word(0x0001, endian=">")  # class = in
 s_block_end()
 
 s_lego("dns_hostname", "pedram@PAMINI._presence._tcp")
-s_word(0x00ff, endian=">")  # type  = any
+s_word(0x00FF, endian=">")  # type  = any
 s_word(0x0001, endian=">")  # class = in
 
 
