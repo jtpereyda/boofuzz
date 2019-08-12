@@ -33,6 +33,7 @@ Features
 - Long lines now wrap in web view; longer lines no longer need to be truncated.
 - Process monitor now stores crash bins in JSON format instead of pickled format.
 - Process monitor in Windows will use `taskkill -F` if `taskkill` fails.
+- Added fuzzer for vulnserver
 
 Fixes
 ^^^^^
