@@ -18,6 +18,7 @@ Fixes
 - Dropped six.binary_type in favor of b"" format
 - Fixed process monitor handling of backslashes in Windows start commands
 - Fixed and documented `boo open`
+- Fixed receive function in `fuzz_logger_curses`
 
 v0.1.5
 ------

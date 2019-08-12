@@ -1,11 +1,58 @@
-*.pyc
-archived_fuzzies/*.session
-docs/_build/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
-.idea/
-testing/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
 .cache
-.tox
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+testing/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Sphinx documentation
+docs/_build/
+
+# PyCharm
+.idea/
+
+# Misc
+archived_fuzzies/*.session
 boofuzz-results/

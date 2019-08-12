@@ -183,7 +183,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._event_log = True
 
     def log_recv(self, data):
-        self._log_storage.append(helpers.format_log_msg(msg_type="recv", data=data, format_type="curses"))
+        self._log_storage.append(helpers.format_log_msg(msg_type="receive", data=data, format_type="curses"))
         self._event_log = True
 
     def log_send(self, data):
