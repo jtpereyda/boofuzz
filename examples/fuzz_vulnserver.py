@@ -64,6 +64,6 @@ TODO
 
 How to use the script:
 
-$ python3 ./fuzz-vulnserver.py -r 172.16.103.129 -p 4444
+$ python3 ./fuzz_vulnserver.py -r 172.16.103.129 -p 4444
 
 """
