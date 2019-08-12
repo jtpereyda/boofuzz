@@ -217,7 +217,7 @@ class SessionInfo(object):
 
     @property
     def total_mutant_index(self):
-        x = self._db_reader.query("""SELECT COUNT(*) FROM cases""").next()[0]
+        x = next(self._db_reader.query("SELECT COUNT(*) FROM cases"))[0]
         return x
 
     def test_case_data(self, index):

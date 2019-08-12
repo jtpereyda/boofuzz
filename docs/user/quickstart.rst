@@ -4,7 +4,8 @@ Quickstart
 ==========
 
 The :class:`Session <boofuzz.Session>` object is the center of your fuzz... session. When you create it,
-you'll pass it a :class:`Target <boofuzz.Target>` object, which will itself receive a :ref:`Connection <connections>` object. For example: ::
+you'll pass it a :class:`Target <boofuzz.Target>` object, which will itself receive a :ref:`Connection <connections>`
+object. For example: ::
 
     session = Session(
         target=Target(
@@ -58,8 +59,13 @@ After that, you are ready to fuzz: ::
 
 Note that at this point you have only a very basic fuzzer. Making it kick butt is up to you.
 
-To do cool stuff like checking responses, you'll want to use :meth:`Session.post_send <boofuzz.Session.post_send>`.
-You may also want be interested in :ref:`custom-blocks`.
+The log data of each run will be saved to a SQLite database located in the **boofuzz-results** directory at your
+current workdir. You can reopen the webinterface on any of those databases at any time with::
+
+    boo open <run-*.db>
+
+To do cool stuff like checking responses, you'll want to use ``post_test_case_callbacks`` in
+:class:`Session <boofuzz.Session>`. You may also be interested in :ref:`custom-blocks`.
 
 Remember boofuzz is all Python, so everything is there for your customization.
 If you are doing crazy cool stuff, check out the :ref:`community info <community>` and consider contributing back!
