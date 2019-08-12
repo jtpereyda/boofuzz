@@ -65,7 +65,7 @@ current workdir. You can reopen the webinterface on any of those databases at an
     boo open <run-*.db>
 
 To do cool stuff like checking responses, you'll want to use ``post_test_case_callbacks`` in
-:class:`Session <boofuzz.Session>`. You may also want be interested in :ref:`custom-blocks`.
+:class:`Session <boofuzz.Session>`. You may also be interested in :ref:`custom-blocks`.
 
 Remember boofuzz is all Python, so everything is there for your customization.
 If you are doing crazy cool stuff, check out the :ref:`community info <community>` and consider contributing back!
