@@ -1,10 +1,10 @@
 fixers:
-  enable: true
+  enable: false
 
 linters:
   black:
     config: ./pyproject.toml
-    fixer: true
+    fixer: false
   flake8:
     config: ./setup.cfg
-    fixer: true
+    fixer: false
