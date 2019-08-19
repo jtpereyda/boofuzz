@@ -31,6 +31,7 @@ from .primitives import (
     Static,
     String,
     Word,
+    Numbers,
 )
 from .serial_connection import SerialConnection
 from .sessions import open_test_run, Session, Target
@@ -62,6 +63,7 @@ __all__ = [
     "LITTLE_ENDIAN",
     "Mirror",
     "MustImplementException",
+    "Numbers",
     "open_test_run",
     "pedrpc",
     "primitives",
@@ -98,6 +100,7 @@ __all__ = [
     "s_mirror",
     "s_mutate",
     "s_num_mutations",
+    "s_numbers",
     "s_qword",
     "s_random",
     "s_raw",
@@ -791,6 +794,30 @@ def s_qword(
 
     qword = primitives.QWord(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(qword)
+
+
+def s_numbers(
+    value, size=-1, max_num=None, signed=False, fuzzable=True, name=None,
+):
+    """ 
+    The bit field primitive represents a number of variable length and is used to define all other integer types.
+
+    @type  value:         str
+    @param value:         Default number value
+    @type  size:          int
+    @param size:          (Optional, def=-1) Static size of this field, leave -1 for dynamic.
+    @type  max_num:       int
+    @param max_num:       Maximum number to iterate up to
+    @type  signed:        bool
+    @param signed:        (Optional, def=False) Make size signed vs. unsigned
+    @type  fuzzable:      bool
+    @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
+    @type  name:          str
+    @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    """
+
+    numbers = primitives.Numbers(value, size, max_num, signed, fuzzable, name)
+    blocks.CURRENT.push(numbers)
 
 
 # ALIASES
