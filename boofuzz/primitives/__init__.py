@@ -12,6 +12,7 @@ from .random_data import RandomData
 from .static import Static
 from .string import String
 from .word import Word
+from .numbers import Numbers
 
 __all__ = [
     "BasePrimitive",
@@ -27,4 +28,5 @@ __all__ = [
     "Static",
     "String",
     "Word",
+    "Numbers",
 ]
