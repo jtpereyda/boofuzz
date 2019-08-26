@@ -7,8 +7,8 @@ from .. import helpers
 class Numbers(BasePrimitive):
     def __init__(self,
         value,
-        size=-1,
-        max_num=None,
+        max_len=-1,
+        padding="",
         signed=False,
         fuzzable=True,
         name=None,
@@ -18,10 +18,10 @@ class Numbers(BasePrimitive):
 
         @type  value:         str
         @param value:         Default number value
-        @type  size:          int
-        @param size:          (Optional, def=-1) Static size of this field, leave -1 for dynamic.
-        @type  max_num:       int
-        @param max_num:       Maximum number to iterate up to
+        @type  max_len:       int
+        @param max_len:       (Optional, def=-1) Max length of strings returned, leave -1 for any length
+        @type  padding:       str
+        @param padding:       (Optional, def="") Return strings left-padded with this string, for use with max_len. Default is " "
         @type  signed:        bool
         @param signed:        (Optional, def=False) Make size signed vs. unsigned
         @type  fuzzable:      bool
@@ -32,15 +32,13 @@ class Numbers(BasePrimitive):
 
         super(Numbers, self).__init__()
 
-        self._value = self._original_value = value
-        self.size = size
-        self.max_num = max_num
+        self.max_len = max_len
+        self.padding = padding
         self.signed = signed
         self._fuzzable = fuzzable
         self._name = name
-
-        if not self._fuzz_library:
-            self._fuzz_library = [
+        
+        nums = [
                 # taken from https://github.com/minimaxir/big-list-of-naughty-strings
                 "0",
                 "1",
@@ -94,57 +92,48 @@ class Numbers(BasePrimitive):
                 "08",
                 "09",
                 "2.2250738585072011e-308",
-            ]
-            signed_nums = [
-                "-1",
-                "-1.00",
-                "-$1.00",
-                "-1/2",
-                "-1E2",
-                "-1E02",
-                "-1E+02",
-                "-2147483648/-1",
-                "-9223372036854775808/-1",
-                "-0",
-                "-0.0",
-                "+0",
-                "+0.0",
-                "--1",
-                "-",
-                "-.",
-                "-,",
-                "-Infinity",
-                "-1#IND",
-            ]
+        ]
 
-            if signed:
-                for num in signed_nums:
-                    self._fuzz_library.append(num)
+        signed_nums = [
+            "-1",
+            "-1.00",
+            "-$1.00",
+            "-1/2",
+            "-1E2",
+            "-1E02",
+            "-1E+02",
+            "-2147483648/-1",
+            "-9223372036854775808/-1",
+            "-0",
+            "-0.0",
+            "+0",
+            "+0.0",
+            "--1",
+            "-",
+            "-.",
+            "-,",
+            "-Infinity",
+            "-1#IND",
+        ]
 
-            bits = 64
-            while bits != 0:
-                self._fuzz_library.append(str(1 << bits))
-                self._fuzz_library.append(str((1 << bits) + 1))
-                self._fuzz_library.append(str((1 << bits) - 1))
-                if signed:
-                    self._fuzz_library.append(str(-(1 << bits)))
-                    self._fuzz_library.append(str(-(1 << bits) + 1))
-                    self._fuzz_library.append(str(-(1 << bits) - 1))
-                bits = bits // 2
+        if not self._fuzz_library:
+            val_list = nums + signed_nums if signed else nums
+            if max_len > -1:
+                for v in val_list:
+                    if len(v) > max_len:
+                        continue
+                    total_pad = max_len - len(v)
+                    if padding:
+                        len_pad = len(padding)
+                        n_pad = total_pad // len_pad
+                        r_pad = total_pad % len_pad
+                        self._fuzz_library.append(padding*n_pad + padding[:r_pad] + v)
+                    else:
+                        self._fuzz_library.append(" "*total_pad + v)
+            else:
+                self._fuzz_library = val_list
+
 
     @property
     def name(self):
         return self._name
-
-    def _render(self, value):
-        """
-        Render string value, properly padded.
-        """
-
-        if isinstance(value, six.text_type):
-            value = helpers.str_to_bytes(value)
-
-        # pad undersized library items.
-        if len(value) < self.size:
-            value += self.padding * (self.size - len(value))
-        return helpers.str_to_bytes(value)
