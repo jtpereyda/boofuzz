@@ -1,18 +1,8 @@
-import six
-
 from .base_primitive import BasePrimitive
-from .. import helpers
 
 
 class Numbers(BasePrimitive):
-    def __init__(self,
-        value,
-        max_len=-1,
-        padding="",
-        signed=False,
-        fuzzable=True,
-        name=None,
-    ):
+    def __init__(self, value, max_len=-1, padding="", signed=False, fuzzable=True, name=None):
         """
         Primitive that cycles through a library of "bad" numbers, represented as strings.
 
@@ -21,7 +11,7 @@ class Numbers(BasePrimitive):
         @type  max_len:       int
         @param max_len:       (Optional, def=-1) Max length of strings returned, leave -1 for any length
         @type  padding:       str
-        @param padding:       (Optional, def="") Return strings left-padded with this string, for use with max_len. Default is " "
+        @param padding:       (Optional, def="") String for left-padding, for use with max_len. Default is " "
         @type  signed:        bool
         @param signed:        (Optional, def=False) Make size signed vs. unsigned
         @type  fuzzable:      bool
@@ -37,61 +27,61 @@ class Numbers(BasePrimitive):
         self.signed = signed
         self._fuzzable = fuzzable
         self._name = name
-        
+
         nums = [
-                # taken from https://github.com/minimaxir/big-list-of-naughty-strings
-                "0",
-                "1",
-                "1.00",
-                "$1.00",
-                "1/2",
-                "1E2",
-                "1E02",
-                "1E+02",
-                "1/0",
-                "0/0",
-                "0.00",
-                "0..0",
-                ".",
-                "0.0.0",
-                "0,00",
-                "0,,0",
-                ",",
-                "0,0,0",
-                "0.0/0",
-                "1.0/0.0",
-                "0.0/0.0",
-                "1,0/0,0",
-                "0,0/0,0",
-                "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
-                "NaN",
-                "Infinity",
-                "INF",
-                "1#INF",
-                "1#QNAN",
-                "1#SNAN",
-                "1#IND",
-                "0x0",
-                "0xffffffff",
-                "0xffffffffffffffff",
-                "0xabad1dea",
-                "123456789012345678901234567890123456789",
-                "1,000.00",
-                "1 000.00",
-                "1'000.00",
-                "1,000,000.00",
-                "1 000 000.00",
-                "1'000'000.00",
-                "1.000,00",
-                "1 000,00",
-                "1'000,00",
-                "1.000.000,00",
-                "1 000 000,00",
-                "1'000'000,00",
-                "01000",
-                "08",
-                "09",
-                "2.2250738585072011e-308",
+            # taken from https://github.com/minimaxir/big-list-of-naughty-strings
+            "0",
+            "1",
+            "1.00",
+            "$1.00",
+            "1/2",
+            "1E2",
+            "1E02",
+            "1E+02",
+            "1/0",
+            "0/0",
+            "0.00",
+            "0..0",
+            ".",
+            "0.0.0",
+            "0,00",
+            "0,,0",
+            ",",
+            "0,0,0",
+            "0.0/0",
+            "1.0/0.0",
+            "0.0/0.0",
+            "1,0/0,0",
+            "0,0/0,0",
+            "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+            "NaN",
+            "Infinity",
+            "INF",
+            "1#INF",
+            "1#QNAN",
+            "1#SNAN",
+            "1#IND",
+            "0x0",
+            "0xffffffff",
+            "0xffffffffffffffff",
+            "0xabad1dea",
+            "123456789012345678901234567890123456789",
+            "1,000.00",
+            "1 000.00",
+            "1'000.00",
+            "1,000,000.00",
+            "1 000 000.00",
+            "1'000'000.00",
+            "1.000,00",
+            "1 000,00",
+            "1'000,00",
+            "1.000.000,00",
+            "1 000 000,00",
+            "1'000'000,00",
+            "01000",
+            "08",
+            "09",
+            "2.2250738585072011e-308",
         ]
 
         signed_nums = [
@@ -127,12 +117,11 @@ class Numbers(BasePrimitive):
                         len_pad = len(padding)
                         n_pad = total_pad // len_pad
                         r_pad = total_pad % len_pad
-                        self._fuzz_library.append(padding*n_pad + padding[:r_pad] + v)
+                        self._fuzz_library.append(padding * n_pad + padding[:r_pad] + v)
                     else:
-                        self._fuzz_library.append(" "*total_pad + v)
+                        self._fuzz_library.append(" " * total_pad + v)
             else:
                 self._fuzz_library = val_list
-
 
     @property
     def name(self):

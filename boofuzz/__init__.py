@@ -796,10 +796,8 @@ def s_qword(
     blocks.CURRENT.push(qword)
 
 
-def s_numbers(
-    value, max_len=-1, padding=" ", signed=True, fuzzable=True, name=None
-):
-    """ 
+def s_numbers(value, max_len=-1, padding=" ", signed=True, fuzzable=True, name=None):
+    """
     The bit field primitive represents a number of variable length and is used to define all other integer types.
 
     @type  value:         str
