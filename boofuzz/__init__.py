@@ -797,7 +797,7 @@ def s_qword(
 
 
 def s_numbers(
-    value, size=-1, max_num=None, signed=False, fuzzable=True, name=None
+    value, max_len=-1, padding=" ", signed=True, fuzzable=True, name=None
 ):
     """ 
     The bit field primitive represents a number of variable length and is used to define all other integer types.
@@ -816,7 +816,7 @@ def s_numbers(
     @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    numbers = primitives.Numbers(value, size, max_num, signed, fuzzable, name)
+    numbers = primitives.Numbers(value, max_len, padding, signed, fuzzable, name)
     blocks.CURRENT.push(numbers)
 
 
