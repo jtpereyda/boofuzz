@@ -800,18 +800,18 @@ def s_numbers(value, max_len=-1, padding=" ", signed=True, fuzzable=True, name=N
     """
     Push potentially conflictive numbers onto the current block stack.
 
-    @type  value:         str
-    @param value:         Default number value
-    @type  size:          int
-    @param size:          (Optional, def=-1) Static size of this field, leave -1 for dynamic.
-    @type  max_num:       int
-    @param max_num:       Maximum number to iterate up to
-    @type  signed:        bool
-    @param signed:        (Optional, def=False) Make size signed vs. unsigned
-    @type  fuzzable:      bool
-    @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
-    @type  name:          str
-    @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type  value:         str
+    :param value:         Default number value
+    :type  size:          int
+    :param size:          (Optional, def=-1) Static size of this field, leave -1 for dynamic.
+    :type  max_num:       int
+    :param max_num:       Maximum number to iterate up to
+    :type  signed:        bool
+    :param signed:        (Optional, def=False) Make size signed vs. unsigned
+    :type  fuzzable:      bool
+    :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
+    :type  name:          str
+    :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
     numbers = primitives.Numbers(value, max_len, padding, signed, fuzzable, name)
