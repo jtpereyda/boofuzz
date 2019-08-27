@@ -1,4 +1,5 @@
 import struct
+import math
 
 import six
 from builtins import range
