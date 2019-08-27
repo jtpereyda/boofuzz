@@ -12,6 +12,7 @@ from .random_data import RandomData
 from .static import Static
 from .string import String
 from .word import Word
+from .integers import Integers
 
 __all__ = [
     "BasePrimitive",
@@ -21,6 +22,7 @@ __all__ = [
     "DWord",
     "FromFile",
     "Group",
+    "Integers",
     "Mirror",
     "QWord",
     "RandomData",

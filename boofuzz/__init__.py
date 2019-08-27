@@ -25,6 +25,7 @@ from .primitives import (
     DWord,
     FromFile,
     Group,
+    Integers,
     Mirror,
     QWord,
     RandomData,
@@ -57,6 +58,7 @@ __all__ = [
     "Group",
     "IFuzzLogger",
     "IFuzzLoggerBackend",
+    "Integers",
     "ITargetConnection",
     "legos",
     "LITTLE_ENDIAN",
@@ -92,6 +94,7 @@ __all__ = [
     "s_hex_dump",
     "s_initialize",
     "s_int",
+    "s_integers",
     "s_intelword",
     "s_lego",
     "s_long",
@@ -791,6 +794,28 @@ def s_qword(
 
     qword = primitives.QWord(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(qword)
+
+
+def s_integers(value, bits=128, max_num=None, signed=True, fuzzable=True, name=None):
+    """
+    Push variable length integers onto the current block stack.
+
+    :type  value:          int
+    :param value:          Default integer value
+    :type  bits:           int
+    :param bits:           Width of integer numbers, in bits. Default: 128
+    :type  max_num:        int
+    :param max_num:        Maximum number to iterate up to. Takes precedence over bits
+    :type  full_range:     bool
+    :param full_range:     (Optional, def=False) If enabled the field mutates through *all* possible values.
+    :type  fuzzable:       bool
+    :param fuzzable:       (Optional, def=True) Enable/disable fuzzing of this primitive
+    :type  name:           str
+    :param name:           (Optional, def=None) Specifying a name gives you direct access to a primitive
+    """
+
+    integers = primitives.Integers(value, bits, max_num, signed, fuzzable, name)
+    blocks.CURRENT.push(integers)
 
 
 # ALIASES
