@@ -1,6 +1,3 @@
-import six
-import struct
-
 from boofuzz.primitives.bit_field import BitField
 
 
