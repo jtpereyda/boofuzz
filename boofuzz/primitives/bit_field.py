@@ -107,7 +107,7 @@ class BitField(BasePrimitive):
                     self._fuzz_library.append(val)
             else:
                 # try only "smart" values.
-                self.add_integer_boundaries(0)
+                self.add_integer_boundaries(0, 10)
                 self.add_integer_boundaries(self.max_num // 2, 10)
                 self.add_integer_boundaries(self.max_num // 3, 10)
                 self.add_integer_boundaries(self.max_num // 4, 10)
