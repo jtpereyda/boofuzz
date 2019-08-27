@@ -107,13 +107,32 @@ class BitField(BasePrimitive):
             else:
                 # try only "smart" values.
                 self.add_integer_boundaries(0)
-                self.add_integer_boundaries(self.max_num // 2)
-                self.add_integer_boundaries(self.max_num // 3)
-                self.add_integer_boundaries(self.max_num // 4)
-                self.add_integer_boundaries(self.max_num // 8)
-                self.add_integer_boundaries(self.max_num // 16)
-                self.add_integer_boundaries(self.max_num // 32)
-                self.add_integer_boundaries(self.max_num)
+                self.add_integer_boundaries(self.max_num // 2, 10)
+                self.add_integer_boundaries(self.max_num // 3, 10)
+                self.add_integer_boundaries(self.max_num // 4, 10)
+                self.add_integer_boundaries(self.max_num // 8, 10)
+                self.add_integer_boundaries(self.max_num // 16, 10)
+                self.add_integer_boundaries(self.max_num // 32, 10)
+                self.add_integer_boundaries(self.max_num, 10)
+
+                power_of_two = math.log(self.max_num, 2)
+                bits = width if not self.max_num else math.floor(power_of_two)
+                tmp = 1 << bits
+                while bits != 0 and tmp != 0:
+                    power_of_two = math.log(self.max_num, 2)
+                    self.add_integer_boundaries(tmp, 1)
+                    if signed:
+                        self.add_integer_boundaries(-tmp, 1)
+                    # check if width is a power of 2. if it isn't, calculate and add numbers near the next
+                    # lower power of two
+                    power_of_two = math.log(width, 2)
+                    if power_of_two != math.floor(power_of_two) and power_of_two > 0:
+                        tmp = 1 << int(power_of_two)
+                        self.add_integer_boundaries(tmp, 1)
+                        if signed:
+                            self.add_integer_boundaries(-tmp, 1)
+                    bits = bits // 2
+                    tmp = 1 << bits
 
             # TODO: Add injectable arbitrary bit fields
 
@@ -121,17 +140,23 @@ class BitField(BasePrimitive):
     def name(self):
         return self._name
 
-    def add_integer_boundaries(self, integer):
+    def add_integer_boundaries(self, integer, rang):
         """
         Add the supplied integer and border cases to the integer fuzz heuristics library.
 
         @type  integer: int
         @param integer: int to append to fuzz heuristics
+        @type  rang: int
+        @param rang: int to calculate a range of numbers
         """
-        for i in range(-10, 10):
+        for i in range(-rang, rang):
             case = integer + i
             # ensure the border case falls within the valid range for this field.
             if 0 <= case < self.max_num:
+                if case not in self._fuzz_library:
+                    self._fuzz_library.append(case)
+            # for signed ints.
+            if self.signed and -self.max_num < case <= 0:
                 if case not in self._fuzz_library:
                     self._fuzz_library.append(case)
 
