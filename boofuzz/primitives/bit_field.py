@@ -117,7 +117,7 @@ class BitField(BasePrimitive):
                 self.add_integer_boundaries(self.max_num, 10)
 
                 power_of_two = math.log(self.max_num, 2)
-                bits = width if not self.max_num else math.floor(power_of_two)
+                bits = width if not self.max_num else int(math.floor(power_of_two))
                 tmp = 1 << bits
                 while bits != 0 and tmp != 0:
                     power_of_two = math.log(self.max_num, 2)
