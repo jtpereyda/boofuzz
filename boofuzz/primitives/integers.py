@@ -24,4 +24,4 @@ class Integers(BitField):
         self.bits = bits
         self.max_num = max_num
 
-        super(Integers, self).__init__(value, width=bits, signed=signed, name=None, output_format="ascii")
+        super(Integers, self).__init__(value, width=bits, signed=signed, name=name, output_format="ascii")
