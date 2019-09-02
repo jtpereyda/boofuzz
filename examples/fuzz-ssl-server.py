@@ -18,11 +18,11 @@ session = Session(
         connection=SocketConnection(
             host="google.de",
             port=443,
-            proto='ssl',
+            proto="ssl",
             server_hostname="google.de",
             # sslcontext=ctx,
-        ),
-    ),
+        )
+    )
 )
 s_initialize("GET Request")
 s_string("GET", name="request method")
