@@ -710,9 +710,8 @@ def s_byte(
     byte = primitives.Byte(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(byte)
 
-def s_bytes(
-    value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None
-):
+
+def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
     """
     Push a bytes field onto the current block stack.
 
@@ -732,6 +731,7 @@ def s_bytes(
 
     _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
     blocks.CURRENT.push(_bytes)
+
 
 def s_word(
     value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None

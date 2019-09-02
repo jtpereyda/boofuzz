@@ -18,81 +18,77 @@ class Bytes(BasePrimitive):
 
     # from https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_debug_values
     _magic_debug_values = [
-        b'\x00\x00\x81#',
-        b'\x00\xfa\xca\xde',
-        b'\x1b\xad\xb0\x02',
-        b'\x8b\xad\xf0\r',
-        b'\xa5\xa5\xa5\xa5',
-        b'\xa5',
-        b'\xab\xab\xab\xab',
-        b'\xab\xad\xba\xbe',
-        b'\xab\xba\xba\xbe',
-        b'\xab\xad\xca\xfe',
-        b'\xb1k\x00\xb5',
-        b'\xba\xad\xf0\r',
-        b'\xba\xaa\xaa\xad',
+        b"\x00\x00\x81#",
+        b"\x00\xfa\xca\xde",
+        b"\x1b\xad\xb0\x02",
+        b"\x8b\xad\xf0\r",
+        b"\xa5\xa5\xa5\xa5",
+        b"\xa5",
+        b"\xab\xab\xab\xab",
+        b"\xab\xad\xba\xbe",
+        b"\xab\xba\xba\xbe",
+        b"\xab\xad\xca\xfe",
+        b"\xb1k\x00\xb5",
+        b"\xba\xad\xf0\r",
+        b"\xba\xaa\xaa\xad",
         b'\xba\xd2""',
-        b'\xba\xdb\xad\xba\xdb\xad',
-        b'\xba\xdc\x0f\xfe\xe0\xdd\xf0\r',
-        b'\xba\xdd\xca\xfe',
-        b'\xbb\xad\xbe\xef',
-        b'\xbe\xef\xca\xce',
-        b'\xc0\x00\x10\xff',
-        b'\xca\xfe\xba\xbe',
-        b'\xca\xfe\xd0\r',
-        b'\xca\xfe\xfe\xed',
-        b'\xcc\xcc\xcc\xcc',
-        b'\xcd\xcd\xcd\xcd',
-        b'\r\x15\xea^',
-        b'\xdd\xdd\xdd\xdd',
-        b'\xde\xad\x10\xcc',
-        b'\xde\xad\xba\xbe',
-        b'\xde\xad\xbe\xef',
-        b'\xde\xad\xca\xfe',
-        b'\xde\xad\xc0\xde',
-        b'\xde\xad\xfa\x11',
-        b'\xde\xad\xf0\r',
-        b'\xde\xfe\xc8\xed',
-        b'\xde\xad\xde\xad',
-        b'\xeb\xeb\xeb\xeb',
-        b'\xfa\xde\xde\xad',
-        b'\xfd\xfd\xfd\xfd',
-        b'\xfe\xe1\xde\xad',
-        b'\xfe\xed\xfa\xce',
-        b'\xfe\xee\xfe\xee'
+        b"\xba\xdb\xad\xba\xdb\xad",
+        b"\xba\xdc\x0f\xfe\xe0\xdd\xf0\r",
+        b"\xba\xdd\xca\xfe",
+        b"\xbb\xad\xbe\xef",
+        b"\xbe\xef\xca\xce",
+        b"\xc0\x00\x10\xff",
+        b"\xca\xfe\xba\xbe",
+        b"\xca\xfe\xd0\r",
+        b"\xca\xfe\xfe\xed",
+        b"\xcc\xcc\xcc\xcc",
+        b"\xcd\xcd\xcd\xcd",
+        b"\r\x15\xea^",
+        b"\xdd\xdd\xdd\xdd",
+        b"\xde\xad\x10\xcc",
+        b"\xde\xad\xba\xbe",
+        b"\xde\xad\xbe\xef",
+        b"\xde\xad\xca\xfe",
+        b"\xde\xad\xc0\xde",
+        b"\xde\xad\xfa\x11",
+        b"\xde\xad\xf0\r",
+        b"\xde\xfe\xc8\xed",
+        b"\xde\xad\xde\xad",
+        b"\xeb\xeb\xeb\xeb",
+        b"\xfa\xde\xde\xad",
+        b"\xfd\xfd\xfd\xfd",
+        b"\xfe\xe1\xde\xad",
+        b"\xfe\xed\xfa\xce",
+        b"\xfe\xee\xfe\xee",
     ]
 
     # This is a list of "interesting" 1,2 and 4 byte binary strings.
     # The lists are used to replace each block of 1, 2 or 4 byte in the original
     # value with each of those "interesting" values.
-    _fuzz_strings_1byte = [
-        b'\x00',
-        b'\x01',
-        b'\x7F',
-        b'\x80',
-        b'\xFF',
-    ] + [i for i in _magic_debug_values if len(i) == 1]
+    _fuzz_strings_1byte = [b"\x00", b"\x01", b"\x7F", b"\x80", b"\xFF"] + [
+        i for i in _magic_debug_values if len(i) == 1
+    ]
 
     _fuzz_strings_2byte = [
-        b'\x00\x00',
-        b'\x01\x00',
-        b'\x00\x01',
-        b'\x7F\xFF',
-        b'\xFF\x7F',
-        b'\xFE\xFF',
-        b'\xFF\xFE',
-        b'\xFF\xFF',
+        b"\x00\x00",
+        b"\x01\x00",
+        b"\x00\x01",
+        b"\x7F\xFF",
+        b"\xFF\x7F",
+        b"\xFE\xFF",
+        b"\xFF\xFE",
+        b"\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 2]
 
     _fuzz_strings_4byte = [
-        b'\x00\x00\x00\x00',
-        b'\x00\x00\x00\x01',
-        b'\x01\x00\x00\x00',
-        b'\x7F\xFF\xFF\xFF',
-        b'\xFF\xFF\xFF\x7F',
-        b'\xFE\xFF\xFF\xFF',
-        b'\xFF\xFF\xFF\xFE',
-        b'\xFF\xFF\xFF\xFF',
+        b"\x00\x00\x00\x00",
+        b"\x00\x00\x00\x01",
+        b"\x01\x00\x00\x00",
+        b"\x7F\xFF\xFF\xFF",
+        b"\xFF\xFF\xFF\x7F",
+        b"\xFE\xFF\xFF\xFF",
+        b"\xFF\xFF\xFF\xFE",
+        b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
     def __init__(self, value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
@@ -115,7 +111,7 @@ class Bytes(BasePrimitive):
 
         super(Bytes, self).__init__()
 
-        assert(isinstance(value, bytes))
+        assert isinstance(value, bytes)
         self._original_value = value
         self._value = self._original_value
         self.size = size
@@ -125,12 +121,7 @@ class Bytes(BasePrimitive):
         self.padding = padding
         self._fuzzable = fuzzable
         self._name = name
-        self.this_library = \
-            [
-                self._value * 2,
-                self._value * 10,
-                self._value * 100,
-            ]
+        self.this_library = [self._value * 2, self._value * 10, self._value * 100]
 
     @property
     def name(self):
@@ -179,21 +170,21 @@ class Bytes(BasePrimitive):
                 if testcase_nr < testcases_2a:
                     j = testcase_nr % len(self._fuzz_strings_1byte)
                     i = testcase_nr // len(self._fuzz_strings_1byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_1byte[j] + self._original_value[i + 1:]
+                    self._value = self._original_value[:i] + self._fuzz_strings_1byte[j] + self._original_value[i + 1 :]
                 elif testcase_nr < testcases_2a + testcases_2b:
                     testcase_nr -= testcases_2a
                     j = testcase_nr % len(self._fuzz_strings_2byte)
                     i = testcase_nr // len(self._fuzz_strings_2byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_2byte[j] + self._original_value[i + 2:]
+                    self._value = self._original_value[:i] + self._fuzz_strings_2byte[j] + self._original_value[i + 2 :]
                 elif testcase_nr < testcases_2a + testcases_2b + testcases_2c:
                     testcase_nr -= testcases_2a
                     testcase_nr -= testcases_2b
                     j = testcase_nr % len(self._fuzz_strings_4byte)
                     i = testcase_nr // len(self._fuzz_strings_4byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_4byte[j] + self._original_value[i + 4:]
+                    self._value = self._original_value[:i] + self._fuzz_strings_4byte[j] + self._original_value[i + 4 :]
                 else:
                     # should not be reachable!
-                    assert(False)
+                    assert False
 
             # increment the mutation count.
             self._mutant_index += 1
@@ -203,7 +194,7 @@ class Bytes(BasePrimitive):
                 continue  # too long, skip this one
             if self.max_len is not None and len(self._value) > self.max_len:
                 # truncate the current value
-                self._value = self._value[:self.max_len]
+                self._value = self._value[: self.max_len]
 
             # _value has now been mutated and therefore we return True to indicate success
             return True
