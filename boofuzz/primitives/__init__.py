@@ -2,6 +2,7 @@
 from .base_primitive import BasePrimitive
 from .bit_field import BitField
 from .byte import Byte
+from .bytes import Bytes
 from .delim import Delim
 from .dword import DWord
 from .from_file import FromFile
@@ -17,6 +18,7 @@ __all__ = [
     "BasePrimitive",
     "BitField",
     "Byte",
+    "Bytes",
     "Delim",
     "DWord",
     "FromFile",

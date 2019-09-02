@@ -8,6 +8,7 @@ from boofuzz import *
 def run():
     signed_tests()
     string_tests()
+    bytes_tests()
     s_mirror_tests()
     # fuzz_extension_tests()
 
@@ -95,6 +96,35 @@ def s_mirror_tests():
         assert int(req.names["size"].render()) == len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8")))
         assert req.names["group_end"].render() == group_start_value
         assert req.names["size_mirror"].render() == req.names["size"].render()
+
+
+def bytes_tests():
+    # test if s_bytes works with empty input
+    s_initialize("test_bytes_empty")
+    s_bytes(b"", name="bytes_empty")
+    req = s_get("test_bytes_empty")
+    while s_mutate():
+        req.names["bytes_empty"].render()
+
+    # test if max_len works
+    s_initialize("test_bytes_max_len")
+    s_bytes(b"12345", name="bytes_max_len", max_len=5)
+    req = s_get("test_bytes_max_len")
+    while s_mutate():
+        assert len(req.names["bytes_max_len"].render()) <= 5
+
+    # test if size works
+    s_initialize("test_bytes_size")
+    s_bytes(b"1234567", name="bytes_size", size=7, padding=b"A")
+    req = s_get("test_bytes_size")
+    while s_mutate():
+        assert len(req.names["bytes_size"].render()) == 7
+
+    # test if fuzzable works
+    s_initialize("test_bytes_fuzzable")
+    s_bytes(b"1234567", name="bytes_fuzzable", fuzzable=False)
+    req = s_get("test_bytes_fuzzable")
+    assert s_mutate() is False
 
 
 def fuzz_extension_tests():

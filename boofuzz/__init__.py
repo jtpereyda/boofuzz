@@ -21,6 +21,7 @@ from .primitives import (
     BasePrimitive,
     BitField,
     Byte,
+    Bytes,
     Delim,
     DWord,
     FromFile,
@@ -43,6 +44,7 @@ __all__ = [
     "Block",
     "blocks",
     "Byte",
+    "Bytes",
     "Checksum",
     "DEFAULT_PROCMON_PORT",
     "Delim",
@@ -79,6 +81,7 @@ __all__ = [
     "s_block_end",
     "s_block_start",
     "s_byte",
+    "s_bytes",
     "s_char",
     "s_checksum",
     "s_cstring",
@@ -126,7 +129,6 @@ __all__ = [
 ]
 
 __version__ = "0.1.5"
-
 
 # REQUEST MANAGEMENT
 def s_get(name=None):
@@ -707,6 +709,28 @@ def s_byte(
 
     byte = primitives.Byte(value, endian, output_format, signed, full_range, fuzzable, name)
     blocks.CURRENT.push(byte)
+
+
+def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
+    """
+    Push a bytes field onto the current block stack.
+
+    :type  value:        bytes
+    :param value:        Default binary value
+    :type  size:         int
+    :param size:         (Optional, def=None) Static size of this field, leave None for dynamic.
+    :type  padding:      chr
+    :param padding:      (Optional, def=b"\\x00") Value to use as padding to fill static field size.
+    :type  fuzzable:     bool
+    :param fuzzable:     (Optional, def=True) Enable/disable fuzzing of this primitive
+    :type  max_len:      int
+    :param max_len:      (Optional, def=None) Maximum string length
+    :type  name:         str
+    :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
+    """
+
+    _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
+    blocks.CURRENT.push(_bytes)
 
 
 def s_word(
