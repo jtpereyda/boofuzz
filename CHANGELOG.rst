@@ -19,6 +19,7 @@ Fixes
 - Fixed process monitor handling of backslashes in Windows start commands
 - Fixed and documented `boo open`
 - Fixed receive function in `fuzz_logger_curses`
+- Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead
 
 v0.1.5
 ------

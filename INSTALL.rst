@@ -12,7 +12,7 @@ Install
 -------
 ::
 
-    pip install boofuzz
+    pip install boofuzz --user
 
 From Source
 -----------
@@ -21,7 +21,7 @@ From Source
 2. Install. Run ``pip`` from within the boofuzz directory:
    ::
 
-       pip install .
+       pip install . --user
 
 Tips:
 
@@ -30,13 +30,13 @@ Tips:
 
    ::
 
-       pip install -e .
+       pip install -e . --user
 
 -  To install developer tools (unit test dependencies, test runners, etc.) as well:
 
    ::
 
-       pip install -e .[dev]
+       pip install -e .[dev] --user
 
 -  If you’re behind a proxy:
 
