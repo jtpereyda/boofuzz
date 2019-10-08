@@ -8,23 +8,20 @@ Boofuzz requires Python. Recommended installation requires ``pip``.
 
 Ubuntu: ``sudo apt-get install python-pip``
 
-Windows: See this `help site`_ but make sure to get Python 2.x instead
-of 3.x (pip is included).
-
 Install
 -------
 ::
 
-    pip install boofuzz
+    pip install boofuzz --user
 
 From Source
 -----------
 
-1. Download source code: `https://github.com/jtpereyda/boofuzz`_
+1. Download source code: https://github.com/jtpereyda/boofuzz
 2. Install. Run ``pip`` from within the boofuzz directory:
+   ::
 
-   -  Ubuntu: ``sudo pip install .``
-   -  Windows: ``pip install .``
+       pip install . --user
 
 Tips:
 
@@ -33,23 +30,19 @@ Tips:
 
    ::
 
-       `sudo pip install -e .`
+       pip install -e . --user
 
 -  To install developer tools (unit test dependencies, test runners, etc.) as well:
 
    ::
 
-       `sudo pip install -e .[dev]`
+       pip install -e .[dev] --user
 
 -  If you’re behind a proxy:
 
    ::
 
-       `set HTTPS_PROXY=http://your.proxy.com:port`
-
-   -  On Linux, also use ``sudo``\ ’s ``-E`` option:
-
-      ``sudo -E pip install -e .``
+       set HTTPS_PROXY=http://your.proxy.com:port
 
 Extras
 ------
