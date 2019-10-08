@@ -56,8 +56,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send()
             to work, and '' for bind host for recv() to work.
         server (bool): Set to True to enable server side fuzzing.
-        keyfile (str): The file to use for the SSL key when server side fuzzing with proto ssl.
-        certfile (str): The file to use for the SSL certificate when server side fuzzing with proto ssl.
+        sslcontext (ssl.SSLContext): Python SSL context to be used. Required if server=True or server_hostname=None.
+        server_hostname (string): server_hostname, required for verifying identity of remote SSL/TLS server.
     """
 
     _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
@@ -81,8 +81,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         l2_dst=b"\xFF" * 6,
         udp_broadcast=False,
         server=False,
-        keyfile=None,
-        certfile=None,
+        sslcontext=None,
+        server_hostname=None,
     ):
         self.MAX_PAYLOADS["udp"] = helpers.get_max_udp_size()
 
@@ -96,8 +96,13 @@ class SocketConnection(itarget_connection.ITargetConnection):
         self.l2_dst = l2_dst
         self._udp_broadcast = udp_broadcast
         self.server = server
-        self.keyfile = keyfile
-        self.certfile = certfile
+        self.sslcontext = sslcontext
+        self.server_hostname = server_hostname
+        if self.proto == "ssl":
+            if self.server is True and self.sslcontext is None:
+                raise ValueError("Parameter sslcontext is required when server=True.")
+            if self.sslcontext is None and self.server_hostname is None:
+                raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
         self._sock = None
         self._udp_client_port = None
@@ -170,14 +175,15 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
-            if self.server:
-                ssl_sock = ssl.SSLContext.wrap_socket(
-                    self._sock, keyfile=self.keyfile, certfile=self.certfile, server_side=True
-                )
-                self._sock = ssl_sock
-            else:
-                ssl_sock = ssl.SSLContext.wrap_socket(self._sock)
-                self._sock = ssl_sock
+            # If boofuzz is the SSL client and user did not give us a SSLContext,
+            # then we just use a default one.
+            if self.server is False and self.sslcontext is None:
+                self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+                self.sslcontext.check_hostname = True
+                self.sslcontext.verify_mode = ssl.CERT_REQUIRED
+            self._sock = self.sslcontext.wrap_socket(
+                self._sock, server_side=self.server, server_hostname=self.server_hostname
+            )
 
     def recv(self, max_bytes):
         """

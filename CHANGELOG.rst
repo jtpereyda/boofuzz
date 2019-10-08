@@ -16,6 +16,7 @@ Fixes
 - Some code style changes to meet PEP8
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
+- SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`
 - Dropped six.binary_type in favor of b"" format
 - Fixed process monitor handling of backslashes in Windows start commands
 - Fixed and documented `boo open`
