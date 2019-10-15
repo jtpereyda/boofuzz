@@ -7,7 +7,6 @@
  @url https://raw.githubusercontent.com/mitshell/libmich/master/libmich/utils/CRC16.py
 """
 
-from array import array
 
 
 def reflect(crc, bitnum):
