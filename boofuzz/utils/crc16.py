@@ -53,7 +53,7 @@ def crcbitbybit(p):
 
 # CRC-16/DNP : used in DNP3 protocol
 class CRC16_DNP(object):
-    """ 
+    """
     Class interface, like the Python library's cryptographic
     hash functions (which CRC's are definitely not.)
     """
