@@ -46,7 +46,7 @@ class Checksum(primitives.BasePrimitive):
         ipv4_dst_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
     """
 
-    checksum_lengths = {"crc16_dnp": 2,"crc32": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
+    checksum_lengths = {"crc16_dnp": 2, "crc32": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
 
     def __init__(
         self,
@@ -175,7 +175,7 @@ class Checksum(primitives.BasePrimitive):
                 check = digest
 
             elif self._algorithm == "crc16_dnp":
-                    return struct.pack(self._endian+"H", CRC16_DNP(data).intchecksum())
+                return struct.pack(self._endian + "H", CRC16_DNP(data).intchecksum())
             else:
                 raise exception.SullyRuntimeError("INVALID CHECKSUM ALGORITHM SPECIFIED: %s" % self._algorithm)
         else:
