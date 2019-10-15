@@ -8,7 +8,6 @@
 """
 
 
-
 def reflect(crc, bitnum):
     # reflects the lower 'bitnum' bits of 'crc'
     j = 1
