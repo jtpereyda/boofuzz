@@ -56,7 +56,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(["recv", len(data), self._format_raw_bytes(data), data.decode()])
 
     def log_send(self, data):
-        self._print_log_msg(["send", len(data), self._format_raw_bytes(data), data.decode()])
+        self._print_log_msg(["send", len(data), self._format_raw_bytes(data),, repr(data)])
 
     def log_info(self, description):
         self._print_log_msg(["info", "", "", description])
