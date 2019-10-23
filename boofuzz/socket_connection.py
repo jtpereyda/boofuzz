@@ -167,7 +167,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     self._serverSock.listen(1)
                     self._sock, addr = self._serverSock.accept()
                 except socket.error as e:
-                    # When connection timeout expires, tear down the server socket so we can re-open it again after restarting target
+                    # When connection timeout expires, tear down the server socket so we can re-open it again after
+                    # restarting the target.
                     self._serverSock.shutdown(socket.SHUT_RDWR)
                     self._serverSock.close()
                     if e.errno in [errno.EAGAIN]:
