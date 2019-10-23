@@ -134,11 +134,13 @@ __all__ = [
 ]
 
 if exclude_curses_logger:
-    __all__.remove('FuzzLoggerCurses')
+    __all__.remove("FuzzLoggerCurses")
 
-__version__ = '0.1.5'
+__version__ = "0.1.5"
 
 # REQUEST MANAGEMENT
+
+
 def s_get(name=None):
     """
     Return the request with the specified name or the current request if name is not specified. Use this to switch from

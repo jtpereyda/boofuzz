@@ -32,6 +32,7 @@ from . import (
     pgraph,
     primitives,
 )
+
 try:
     from . import fuzz_logger_curses
 except ImportError:
