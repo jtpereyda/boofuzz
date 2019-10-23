@@ -12,7 +12,12 @@ from .event_hook import EventHook
 from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
-from .fuzz_logger_curses import FuzzLoggerCurses
+exclude_curses_logger = False
+try:
+    from .fuzz_logger_curses import FuzzLoggerCurses
+except ImportError:
+    exclude_curses_logger = True
+    pass  # allow continuing if fuzz_logger_curses is never used
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
@@ -128,7 +133,10 @@ __all__ = [
     "Word",
 ]
 
-__version__ = "0.1.5"
+if exclude_curses_logger:
+    __all__.remove('FuzzLoggerCurses')
+
+__version__ = '0.1.5'
 
 # REQUEST MANAGEMENT
 def s_get(name=None):
