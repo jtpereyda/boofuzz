@@ -2,10 +2,12 @@ from __future__ import division
 
 import sys
 import time
+import warnings
 
 try:
     import curses
 except ImportError:
+    warnings.warn("Console GUI feature not supported. Install curses to enable.", UserWarning, stacklevel=2)
     pass  # Allow package to be imported on Windows -- will fail if you try to use it
 import signal
 import threading
@@ -17,7 +19,12 @@ from . import ifuzz_logger_backend
 if sys.version_info >= (3, 3):
     from shutil import get_terminal_size
 else:
-    from shutil_backports import get_terminal_size
+    try:
+        from shutil_backports import get_terminal_size
+    except ImportError:
+        def get_terminal_size():
+            return [130, 40]
+        warnings.warn("Console GUI may not function properly. Install shutil_backports for full support.", UserWarning, stacklevel=2)
 
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):

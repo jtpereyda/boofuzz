@@ -27,16 +27,12 @@ from . import (
     event_hook,
     exception,
     fuzz_logger,
+    fuzz_logger_curses,
     fuzz_logger_db,
     fuzz_logger_text,
     pgraph,
     primitives,
 )
-
-try:
-    from . import fuzz_logger_curses
-except ImportError:
-    pass  # allow continuing if fuzz_logger_curses is never used
 from .web.app import app
 
 

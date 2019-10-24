@@ -12,12 +12,7 @@ from .event_hook import EventHook
 from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
-exclude_curses_logger = False
-try:
-    from .fuzz_logger_curses import FuzzLoggerCurses
-except ImportError:
-    exclude_curses_logger = True
-    pass  # allow continuing if fuzz_logger_curses is never used
+from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
@@ -133,14 +128,9 @@ __all__ = [
     "Word",
 ]
 
-if exclude_curses_logger:
-    __all__.remove("FuzzLoggerCurses")
-
 __version__ = "0.1.5"
 
 # REQUEST MANAGEMENT
-
-
 def s_get(name=None):
     """
     Return the request with the specified name or the current request if name is not specified. Use this to switch from
