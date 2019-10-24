@@ -22,9 +22,15 @@ else:
     try:
         from shutil_backports import get_terminal_size
     except ImportError:
+
         def get_terminal_size():
             return [130, 40]
-        warnings.warn("Console GUI may not function properly. Install shutil_backports for full support.", UserWarning, stacklevel=2)
+
+        warnings.warn(
+            "Console GUI may not function properly. Install shutil_backports for full support.",
+            UserWarning,
+            stacklevel=2,
+        )
 
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
