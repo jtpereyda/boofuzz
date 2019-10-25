@@ -7,8 +7,10 @@ import warnings
 try:
     import curses
 except ImportError:
-    warnings.warn("Console GUI feature not supported. Install curses to enable.", UserWarning, stacklevel=2)
-    pass  # Allow package to be imported on Windows -- will fail if you try to use it
+    # Allow fuzz_logger_curses to be imported on Windows -- will fail if you try to use it.
+    warnings.warn("Importing curses failed. Console GUI features will not be available.", UserWarning, stacklevel=2)
+    curses = None
+    pass
 import signal
 import threading
 
@@ -22,12 +24,13 @@ else:
     try:
         from shutil_backports import get_terminal_size
     except ImportError:
-
+        # Allow fuzz_logger_curses to be imported when shutil_backports is not available for install. Will fallback to a
+        # static-sized console window, but warn the user so they can correct the issue.
         def get_terminal_size():
             return [130, 40]
 
         warnings.warn(
-            "Console GUI may not function properly. Install shutil_backports for full support.",
+            "Console GUI will not resize properly. Install shutil_backports for full support.",
             UserWarning,
             stacklevel=2,
         )
