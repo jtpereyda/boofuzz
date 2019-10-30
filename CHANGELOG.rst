@@ -22,6 +22,7 @@ Fixes
 - Fixed and documented `boo open`
 - Fixed receive function in `fuzz_logger_curses`
 - Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead
+- Fixed setting socket timeout options on Windows
 
 v0.1.5
 ------
