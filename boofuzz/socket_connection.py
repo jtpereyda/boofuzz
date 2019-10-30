@@ -198,7 +198,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
         Returns:
             Received data.
         """
-        data = 0
+        data = b""
 
         try:
             if self.proto in ["tcp", "ssl"]:
