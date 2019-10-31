@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import errno
 import math
+import os
 import socket
 import ssl
 import struct
@@ -14,12 +15,17 @@ from . import exception, helpers, ip_constants, itarget_connection
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux if_ether.h docs for more details.
 
 
-def _seconds_to_second_microsecond_struct(seconds):
-    """Convert floating point seconds value to second/useconds struct used by socket library."""
-    microseconds_per_second = 1000000
-    whole_seconds = int(math.floor(seconds))
-    whole_microseconds = int(math.floor((seconds % 1) * microseconds_per_second))
-    return struct.pack("ll", whole_seconds, whole_microseconds)
+def _seconds_to_sockopt_format(seconds):
+    """Convert floating point seconds value to second/useconds struct used by UNIX socket library.
+    For Windows, convert to whole milliseconds.
+    """
+    if os.name == "nt":
+        return int(seconds * 1000)
+    else:
+        microseconds_per_second = 1000000
+        whole_seconds = int(math.floor(seconds))
+        whole_microseconds = int(math.floor((seconds % 1) * microseconds_per_second))
+        return struct.pack("ll", whole_seconds, whole_microseconds)
 
 
 class SocketConnection(itarget_connection.ITargetConnection):
@@ -104,6 +110,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
             if self.sslcontext is None and self.server_hostname is None:
                 raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
+        self._serverSock = None
         self._sock = None
         self._udp_client_port = None
 
@@ -147,12 +154,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         else:
             raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
 
-        self._sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_second_microsecond_struct(self._send_timeout)
-        )
-        self._sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_second_microsecond_struct(self._recv_timeout)
-        )
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_sockopt_format(self._send_timeout))
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_sockopt_format(self._recv_timeout))
 
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -195,6 +198,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         Returns:
             Received data.
         """
+        data = b""
+
         try:
             if self.proto in ["tcp", "ssl"]:
                 data = self._sock.recv(max_bytes)
@@ -241,6 +246,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
         Returns:
             int: Number of bytes actually sent.
         """
+        num_sent = 0
+
         try:
             data = data[: self.MAX_PAYLOADS[self.proto]]
         except KeyError:
