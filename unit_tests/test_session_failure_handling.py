@@ -178,7 +178,7 @@ class TestNoResponseFailure(unittest.TestCase):
 
         # Then
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         self.assertEqual(1, self.restarts)
 

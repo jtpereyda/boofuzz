@@ -264,7 +264,7 @@ class WebApp(object):
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc.
         """
-        if not self._web_interface_thread.isAlive():
+        if not self._web_interface_thread.is_alive():
             # spawn the web interface.
             self._web_interface_thread.start()
 
@@ -1046,7 +1046,7 @@ class Session(pgraph.Graph):
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc.
         """
-        if not self.web_interface_thread.isAlive():
+        if not self.web_interface_thread.is_alive():
             # spawn the web interface.
             self.web_interface_thread.start()
 
