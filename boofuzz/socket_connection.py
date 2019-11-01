@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import time
 import errno
 import math
 import os
@@ -168,13 +169,20 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # Connect is needed only for TCP protocols
         elif self.proto == "tcp" or self.proto == "ssl":
-            try:
-                self._sock.connect((self.host, self.port))
-            except socket.error as e:
-                if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
-                    raise exception.BoofuzzTargetConnectionFailedError(str(e))
-                else:
-                    raise
+            for _ in range(24):
+                try:
+                    self._sock.connect((self.host, self.port))
+                    break
+                except socket.error as e:
+                    if e.errno == errno.EADDRINUSE:
+                        time.sleep(5)
+                        continue
+                    if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
+                        raise exception.BoofuzzTargetConnectionFailedError(str(e))
+                    else:
+                        raise
+            else:
+                raise exception.BoofuzzTargetConnectionFailedError("All sockets are exhausted.")
 
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
