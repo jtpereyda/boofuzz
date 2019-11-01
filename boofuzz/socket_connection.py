@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import time
 import errno
 import math
 import os
