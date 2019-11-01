@@ -1490,7 +1490,7 @@ class Session(pgraph.Graph):
                     self._restart_target(target)
                 except exception.BoofuzzOutOfAvailableSockets:
                     out_of_available_sockets_count += 1
-                    if out_of_available_sockets_count == 48:
+                    if out_of_available_sockets_count == 50:
                         raise exception.BoofuzzError("There are no available sockets. Ending fuzzing.")
                     self._fuzz_data_logger.log_info("There are no available sockets. Waiting for another 5 seconds.")
                     time.sleep(5)
