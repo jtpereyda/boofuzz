@@ -1494,7 +1494,6 @@ class Session(pgraph.Graph):
                         raise exception.BoofuzzError("There are no available sockets. Ending fuzzing.")
                     self._fuzz_data_logger.log_info("There are no available sockets. Waiting for another 5 seconds.")
                     time.sleep(5)
-                    pass
 
     def _sleep(self, seconds):
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)
