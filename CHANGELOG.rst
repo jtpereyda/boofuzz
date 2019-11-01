@@ -9,6 +9,7 @@ Features
 - Added a favicon
 - new primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`)
 - We are now using `Black` for code style standardization
+- Added support for Python 3.8
 
 Fixes
 ^^^^^

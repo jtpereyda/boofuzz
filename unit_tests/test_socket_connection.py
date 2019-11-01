@@ -290,7 +290,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
@@ -325,7 +325,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
@@ -365,7 +365,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
@@ -418,7 +418,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
@@ -478,7 +478,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(expected_server_receive))
@@ -524,7 +524,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
@@ -570,7 +570,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
@@ -623,7 +623,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(raw_packet))
@@ -669,7 +669,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
@@ -717,7 +717,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
