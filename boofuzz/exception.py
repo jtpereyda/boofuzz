@@ -13,6 +13,10 @@ class BoofuzzTargetConnectionFailedError(BoofuzzError):
     pass
 
 
+class BoofuzzOutOfAvailableSockets(BoofuzzError):
+    pass
+
+
 class BoofuzzTargetConnectionReset(BoofuzzError):
     pass
 

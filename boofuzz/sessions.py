@@ -1480,6 +1480,7 @@ class Session(pgraph.Graph):
             target (Target): Target to open.
         """
         if not self._reuse_target_connection:
+            out_of_available_sockets_count = 0
             while True:
                 try:
                     target.open()
@@ -1487,6 +1488,12 @@ class Session(pgraph.Graph):
                 except exception.BoofuzzTargetConnectionFailedError:
                     self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
                     self._restart_target(target)
+                except exception.BoofuzzOutOfAvailableSockets:
+                    if out_of_available_sockets_count == 48:
+                        raise exception.BoofuzzError("There are no available sockets. Ending fuzzing.")
+                    out_of_available_sockets_count += 1
+                    time.sleep(5)
+                    pass
 
     def _sleep(self, seconds):
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)

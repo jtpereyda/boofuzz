@@ -169,20 +169,15 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # Connect is needed only for TCP protocols
         elif self.proto == "tcp" or self.proto == "ssl":
-            is_connected = False
-            for _ in range(48):
-                try:
-                    self._sock.connect((self.host, self.port))
-                    is_connected = True
-                    break
-                except socket.error as e:
-                    if e.errno == errno.EADDRINUSE:
-                        time.sleep(5)
-                        continue
-                    if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
-                        raise exception.BoofuzzTargetConnectionFailedError(str(e))
-                    else:
-                        raise
+            try:
+                self._sock.connect((self.host, self.port))
+            except socket.error as e:
+                if e.errno == errno.EADDRINUSE:
+                    raise exception.BoofuzzOutOfAvailableSockets()
+                if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
+                    raise exception.BoofuzzTargetConnectionFailedError(str(e))
+                else:
+                    raise
 
             if not is_connected:
                 raise exception.BoofuzzTargetConnectionFailedError("All sockets are exhausted.")
