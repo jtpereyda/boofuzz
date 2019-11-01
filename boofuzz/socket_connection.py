@@ -169,9 +169,11 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # Connect is needed only for TCP protocols
         elif self.proto == "tcp" or self.proto == "ssl":
+            is_connected = False
             for _ in range(48):
                 try:
                     self._sock.connect((self.host, self.port))
+                    is_connected = True
                     break
                 except socket.error as e:
                     if e.errno == errno.EADDRINUSE:
@@ -181,7 +183,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
                         raise exception.BoofuzzTargetConnectionFailedError(str(e))
                     else:
                         raise
-            else:
+
+            if not is_connected:
                 raise exception.BoofuzzTargetConnectionFailedError("All sockets are exhausted.")
 
         # if SSL is requested, then enable it.
