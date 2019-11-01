@@ -169,7 +169,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         # Connect is needed only for TCP protocols
         elif self.proto == "tcp" or self.proto == "ssl":
-            for _ in range(24):
+            for _ in range(48):
                 try:
                     self._sock.connect((self.host, self.port))
                     break
