@@ -179,9 +179,6 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 else:
                     raise
 
-            if not is_connected:
-                raise exception.BoofuzzTargetConnectionFailedError("All sockets are exhausted.")
-
         # if SSL is requested, then enable it.
         if self.proto == "ssl":
             # If boofuzz is the SSL client and user did not give us a SSLContext,
