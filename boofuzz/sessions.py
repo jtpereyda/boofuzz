@@ -1435,6 +1435,7 @@ class Session(pgraph.Graph):
             )
         )
 
+
         if target.procmon:
             self._fuzz_data_logger.open_test_step("Calling procmon pre_send()")
             target.procmon.pre_send(self.total_mutant_index)
