@@ -12,6 +12,8 @@ jobs:
     - stage: Test
       python: 2.7
       env: TOXENV=py27-unix
+    - python: 3.5
+      env: TOXENV=py35-unix
     - python: 3.6
       env: TOXENV=py36-unix
     - python: 3.7
