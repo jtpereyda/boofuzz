@@ -67,7 +67,7 @@ setup(
         "tornado~=5.0",
     ],
     extras_require=extra_requirements,
-    python_requires="2.7, >= 3.5",
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     entry_points={"console_scripts": ["boo=boofuzz.cli:main"]},
     classifiers=[
         "Development Status :: 4 - Beta",
