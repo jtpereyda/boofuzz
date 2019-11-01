@@ -24,6 +24,7 @@ Fixes
 - Fixed receive function in `fuzz_logger_curses`
 - Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead
 - Fixed setting socket timeout options on Windows
+- If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing
 
 v0.1.5
 ------

@@ -171,6 +171,8 @@ class SocketConnection(itarget_connection.ITargetConnection):
             try:
                 self._sock.connect((self.host, self.port))
             except socket.error as e:
+                if e.errno == errno.EADDRINUSE:
+                    raise exception.BoofuzzOutOfAvailableSockets()
                 if e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
                     raise exception.BoofuzzTargetConnectionFailedError(str(e))
                 else:
