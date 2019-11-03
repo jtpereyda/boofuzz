@@ -27,6 +27,19 @@ Why?
 Sulley has been the preeminent open source fuzzer for some time, but has
 fallen out of maintenance.
 
+Where?
+------
+
+boofuzz has been used to implement the following open source fuzzers (these libraries are not warranted to provide full protocol coverage):
+
+- `boofuzz-ftp`_
+- `boofuzz-http`_
+- dragonfuzz_ (WPA3 SAE)
+- wapifuzz_ (Web API Fuzzing)
+- BACnet-fuzzer_ (`blog post <https://www.vdalabs.com/2019/03/21/building-a-bacnet-fuzzer-in-python-with-boofuzz/>`_)
+
+If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
+
 Features
 --------
 

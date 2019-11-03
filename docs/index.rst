@@ -83,11 +83,13 @@ User Guide
 Public Protocol Libraries
 -------------------------
 
-The following protocol libraries are free and open source, but the implementations are not at all close to full protocol
-coverage:
+The following protocol libraries are free and open source, but are not warranted to provide full protocol coverage:
 
 - `boofuzz-ftp`_
 - `boofuzz-http`_
+- dragonfuzz_ (WPA3 SAE)
+- wapifuzz_ (Web API Fuzzing)
+- BACnet-fuzzer_ (`blog post <https://www.vdalabs.com/2019/03/21/building-a-bacnet-fuzzer-in-python-with-boofuzz/>`_)
 
 If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
 
@@ -132,6 +134,9 @@ For updates, follow `@fuzztheplanet`_ on Twitter.
 .. _@fuzztheplanet: https://twitter.com/fuzztheplanet
 .. _boofuzz-ftp: https://github.com/jtpereyda/boofuzz-ftp
 .. _boofuzz-http: https://github.com/jtpereyda/boofuzz-http
+.. _dragonfuzz: https://github.com/NikolaiT/dragonfuzz
+.. _wapifuzz: https://github.com/ysoftdevs/wapifuzz
+.. _BACnet-fuzzer: https://github.com/VDA-Labs/BACnet-fuzzer
 
 
 Indices and tables
