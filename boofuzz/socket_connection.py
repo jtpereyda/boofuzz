@@ -250,6 +250,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 data = b""
             else:
                 raise
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BooFuzzTargetConnectionFailedError(e.reason))
 
         return data
 
@@ -314,6 +317,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             else:
                 raise
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BooFuzzTargetConnectionFailedError(e.reason))
+
         return num_sent
 
     @property

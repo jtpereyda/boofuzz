@@ -1117,6 +1117,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_fail(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
+        except exception.BoofuzzTargetConnectionFailedError as e:
+            self._fuzz_data_logger.log_fail(str(e))
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1162,6 +1164,8 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_info(msg)
             pass
+        except exception.BoofuzzTargetConnectionFailedError as e:
+            self._fuzz_data_logger.log_fail(str(e))
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
