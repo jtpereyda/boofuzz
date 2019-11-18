@@ -168,8 +168,7 @@ class SocketConnection(itarget_connection.ITargetConnection):
                     self._sock, addr = self._serverSock.accept()
                 except socket.error as e:
                     # When connection timeout expires, tear down the server socket so we can re-open it again after
-                    # restarting the target.
-                    self._serverSock.shutdown(socket.SHUT_RDWR)
+                    # restarting the target. Can't call self.close() because we don't have a valid self._sock.
                     self._serverSock.close()
                     if e.errno in [errno.EAGAIN]:
                         raise exception.BoofuzzTargetConnectionFailedError(str(e))
