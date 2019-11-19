@@ -2,11 +2,11 @@ import hashlib
 import struct
 import zlib
 from functools import wraps
-from ..utils.crc16 import CRC16_DNP
 import six
 
 from .. import exception, helpers, primitives
 from ..constants import LITTLE_ENDIAN
+from ..utils.crc16 import CRC16_DNP
 
 
 def _may_recurse(f):
