@@ -11,7 +11,11 @@ class DataTestStep(object):
     description = attr.ib()
     data = attr.ib()
     timestamp = attr.ib()
-    truncated = attr.ib(type=bool)
+    try:
+        truncated = attr.ib(type=bool)
+    except TypeError:
+        # in case attr version is too old
+        truncate = attr.ib()
 
     @property
     def text_render(self):
