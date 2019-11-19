@@ -1095,6 +1095,9 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             else:
                 self._fuzz_data_logger.log_fail(msg)
+        except exception.BoofuzzSSLError as e:
+            self._fuzz_data_logger.log_fail(str(e))
+
         try:  # recv
             if self._receive_data_after_each_request:
                 self.last_recv = self.targets[0].recv()
@@ -1118,6 +1121,8 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_info(msg)
         except exception.BoofuzzTargetConnectionFailedError as e:
+            self._fuzz_data_logger.log_fail(str(e))
+        except exception.BoofuzzSSLError as e:
             self._fuzz_data_logger.log_fail(str(e))
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
@@ -1148,6 +1153,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             else:
                 self._fuzz_data_logger.log_fail(msg)
+        except exception.BoofuzzSSLError as e:
+            self._fuzz_data_logger.log_fail(str(e))
 
         try:  # recv
             if self._receive_data_after_fuzz:
@@ -1165,6 +1172,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             pass
         except exception.BoofuzzTargetConnectionFailedError as e:
+            self._fuzz_data_logger.log_fail(str(e))
+        except exception.BoofuzzSSLError as e:
             self._fuzz_data_logger.log_fail(str(e))
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
@@ -1529,6 +1538,8 @@ class Session(pgraph.Graph):
                 )
             except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
+            except exception.BooFuzzSSLError as e:
+                self._fuzz_data_logger.log_fail(str(e))
             except Exception:
                 self._fuzz_data_logger.log_error(
                     constants.ERR_CALLBACK_FUNC.format(func_name="post_send") + traceback.format_exc()
