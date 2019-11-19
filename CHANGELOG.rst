@@ -25,6 +25,7 @@ Fixes
 - Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead
 - Fixed setting socket timeout options on Windows
 - If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing
+- Fixed CSV logger send and receive data decoding
 
 v0.1.5
 ------
