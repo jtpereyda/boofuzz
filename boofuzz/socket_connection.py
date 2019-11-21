@@ -159,12 +159,28 @@ class SocketConnection(itarget_connection.ITargetConnection):
 
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self._sock.bind((self.host, self.port))
+            try:
+                self._sock.bind((self.host, self.port))
+            except socket.error as e:
+                # Handle when socket is in TIME_WAIT state.
+                if e.errno == errno.EADDRINUSE:
+                    raise exception.BoofuzzOutOfAvailableSockets()
+                else:
+                    raise
 
             if self.proto == "tcp" or self.proto == "ssl":
                 self._serverSock = self._sock
-                self._serverSock.listen(1)
-                self._sock, addr = self._serverSock.accept()
+                try:
+                    self._serverSock.listen(1)
+                    self._sock, addr = self._serverSock.accept()
+                except socket.error as e:
+                    # When connection timeout expires, tear down the server socket so we can re-open it again after
+                    # restarting the target.
+                    self.close()
+                    if e.errno in [errno.EAGAIN]:
+                        raise exception.BoofuzzTargetConnectionFailedError(str(e))
+                    else:
+                        raise
 
         # Connect is needed only for TCP protocols
         elif self.proto == "tcp" or self.proto == "ssl":
