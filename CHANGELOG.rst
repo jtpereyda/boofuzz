@@ -26,6 +26,7 @@ Fixes
 - Fixed setting socket timeout options on Windows
 - If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing
 - Fixed CSV logger send and receive data decoding
+- Fixed `s_from_file` decoding in Python 2 (the encoding parameter is now depreciated)
 
 v0.1.5
 ------

@@ -637,7 +637,7 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :type  value:    str
     :param value:    Default string value
     :type  encoding: str
-    :param encoding: (Optonal, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
+    :param encoding: (DEPRECIATED, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  max_len:  int
@@ -648,7 +648,7 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :param filename: (Mandatory) Specify filename where to read fuzz list
     """
 
-    s = primitives.FromFile(value, encoding, fuzzable, max_len, name, filename)
+    s = primitives.FromFile(value, fuzzable, max_len, name, filename)
     blocks.CURRENT.push(s)
 
 
