@@ -179,7 +179,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + ","
                 + fuzz_logger_csv.DEFAULT_HEX_TO_STR(self.some_recv_data)
                 + ","
-                + self.some_recv_data.decode()
+                + repr(self.some_recv_data)
                 + "\r\n"
             ),
         )
@@ -215,7 +215,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + ","
                 + fuzz_logger_csv.DEFAULT_HEX_TO_STR(self.some_send_data)
                 + ","
-                + self.some_send_data.decode()
+                + repr(self.some_send_data)
                 + "\r\n"
             ),
         )
@@ -399,7 +399,8 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         six.assertRegex(
             self,
             self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("recv,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + ",\r\n"),
+            LOGGER_PREAMBLE
+            + re.escape("recv,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + "," + repr(b"") + "\r\n"),
         )
 
     def test_log_send_empty(self):
@@ -425,7 +426,8 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         six.assertRegex(
             self,
             self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("send,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + ",\r\n"),
+            LOGGER_PREAMBLE
+            + re.escape("send,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + "," + repr(b"") + "\r\n"),
         )
 
     def test_log_info_empty(self):
@@ -545,7 +547,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + ","
                 + fuzz_logger_csv.DEFAULT_HEX_TO_STR(self.some_recv_data)
                 + ","
-                + self.some_recv_data.decode()
+                + repr(self.some_recv_data)
                 + "\r\n"
             ),
         )
@@ -559,7 +561,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + ","
                 + fuzz_logger_csv.DEFAULT_HEX_TO_STR(self.some_send_data)
                 + ","
-                + self.some_send_data.decode()
+                + repr(self.some_send_data)
                 + "\r\n"
             ),
         )
@@ -597,7 +599,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Given
         def hex_to_str(hex_data):
-            return hex_data.decode()
+            return repr(hex_data)
 
         self.logger = fuzz_logger_csv.FuzzLoggerCsv(file_handle=self.virtual_file, bytes_to_str=hex_to_str)
         # When
@@ -623,7 +625,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + ","
                 + hex_to_str(self.some_recv_data)
                 + ","
-                + self.some_recv_data.decode()
+                + repr(self.some_recv_data)
                 + "\r\n"
             ),
         )
