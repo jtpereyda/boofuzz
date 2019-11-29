@@ -1,9 +1,16 @@
 import hashlib
 import struct
+import warnings
 import zlib
-import crc32c  # for checksum algorithm crc32c (Castagnoli)
 from functools import wraps
 
+try:
+    import crc32c
+except ImportError:
+    # Import guard for systems without crc32c support.
+    warnings.warn("Importing crc32c package failed. Using crc32c checksums will fail.", UserWarning, stacklevel=2)
+    crc32c = None
+    pass
 import six
 
 from .. import exception, helpers, primitives
