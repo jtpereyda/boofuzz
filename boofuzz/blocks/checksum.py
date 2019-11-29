@@ -1,6 +1,7 @@
 import hashlib
 import struct
 import zlib
+import crc32c  # for checksum algorithm crc32c (Castagnoli)
 from functools import wraps
 
 import six
@@ -46,7 +47,7 @@ class Checksum(primitives.BasePrimitive):
         ipv4_dst_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
     """
 
-    checksum_lengths = {"crc32": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
+    checksum_lengths = {"crc32": 4, "crc32c": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
 
     def __init__(
         self,
@@ -142,6 +143,9 @@ class Checksum(primitives.BasePrimitive):
         if isinstance(self._algorithm, six.string_types):
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
+
+            elif self._algorithm == "crc32c":
+                check = struct.pack(self._endian + "L", crc32c.crc32(data))
 
             elif self._algorithm == "adler32":
                 check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFF))
