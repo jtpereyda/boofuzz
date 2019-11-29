@@ -318,6 +318,7 @@ class Session(pgraph.Graph):
         ignore_connection_issues_when_sending_fuzz_data (bool): Ignore fuzz data transmission failures. Default True.
                                 This is usually a helpful setting to enable, as targets may drop connections once a
                                 message is clearly invalid.
+        ignore_connection_ssl_errors (bool): Log SSL related errors as "info" instead of failures. Default False.
         reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
@@ -358,9 +359,9 @@ class Session(pgraph.Graph):
         ignore_connection_reset=False,
         ignore_connection_aborted=False,
         ignore_connection_issues_when_sending_fuzz_data=True,
+        ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
-        ignore_connection_ssl_errors=False,
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -1125,8 +1126,6 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_fail(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
-        except (exception.BoofuzzTargetConnectionFailedError) as e:
-            self._fuzz_data_logger.log_fail(str(e))
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
@@ -1182,8 +1181,6 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_info(msg)
             pass
-        except (exception.BoofuzzTargetConnectionFailedError) as e:
-            self._fuzz_data_logger.log_fail(str(e))
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
