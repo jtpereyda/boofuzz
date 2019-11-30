@@ -49,3 +49,7 @@ class SizerNotUtilizedError(Exception):
 
 class MustImplementException(Exception):
     pass
+
+
+class BoofuzzSSLError(BoofuzzError):
+    pass

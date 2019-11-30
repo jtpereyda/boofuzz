@@ -202,9 +202,13 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
                 self.sslcontext.check_hostname = True
                 self.sslcontext.verify_mode = ssl.CERT_REQUIRED
-            self._sock = self.sslcontext.wrap_socket(
-                self._sock, server_side=self.server, server_hostname=self.server_hostname
-            )
+
+            try:
+                self._sock = self.sslcontext.wrap_socket(
+                    self._sock, server_side=self.server, server_hostname=self.server_hostname
+                )
+            except ssl.SSLError as e:
+                raise exception.BoofuzzTargetConnectionFailedError(str(e))
 
     def recv(self, max_bytes):
         """
@@ -250,6 +254,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 data = b""
             else:
                 raise
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BooFuzzSSLError(e.reason))
 
         return data
 
@@ -314,6 +321,10 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             else:
                 raise
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BooFuzzSSLError(e.reason))
+
         return num_sent
 
     @property
