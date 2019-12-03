@@ -1,8 +1,16 @@
 import hashlib
 import struct
+import warnings
 import zlib
 from functools import wraps
 
+try:
+    import crc32c
+except ImportError:
+    # Import guard for systems without crc32c support.
+    warnings.warn("Importing crc32c package failed. Using crc32c checksums will fail.", UserWarning, stacklevel=2)
+    crc32c = None
+    pass
 import six
 
 from .. import exception, helpers, primitives
@@ -35,7 +43,7 @@ class Checksum(primitives.BasePrimitive):
     Args:
         block_name (str): Name of target block for checksum calculations.
         request (s_request): Request this block belongs to.
-        algorithm (str, function, optional): Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+        algorithm (str, function, optional): Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
             Pass a function to use a custom algorithm. This function has to take and return byte-type data.
         length (int, optional): Length of checksum, auto-calculated by default.
             Must be specified manually when using custom algorithm.
@@ -47,7 +55,7 @@ class Checksum(primitives.BasePrimitive):
         ipv4_dst_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
     """
 
-    checksum_lengths = {"crc32": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
+    checksum_lengths = {"crc32": 4, "crc32c": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
 
     def __init__(
         self,
@@ -141,6 +149,9 @@ class Checksum(primitives.BasePrimitive):
         if isinstance(self._algorithm, six.string_types):
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
+
+            elif self._algorithm == "crc32c":
+                check = struct.pack(self._endian + "L", crc32c.crc32(data))
 
             elif self._algorithm == "adler32":
                 check = struct.pack(self._endian + "L", (zlib.adler32(data) & 0xFFFFFFFF))

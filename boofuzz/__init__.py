@@ -323,7 +323,7 @@ def s_checksum(
     :param block_name: Name of block for checksum calculations
 
     :type  algorithm:  str, function
-    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
                        Pass a function to use a custom algorithm. This function has to take and return byte-type data.
 
     :type  length:     int
