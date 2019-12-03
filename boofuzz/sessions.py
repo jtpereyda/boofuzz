@@ -318,6 +318,7 @@ class Session(pgraph.Graph):
         ignore_connection_issues_when_sending_fuzz_data (bool): Ignore fuzz data transmission failures. Default True.
                                 This is usually a helpful setting to enable, as targets may drop connections once a
                                 message is clearly invalid.
+        ignore_connection_ssl_errors (bool): Log SSL related errors as "info" instead of failures. Default False.
         reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
@@ -358,6 +359,7 @@ class Session(pgraph.Graph):
         ignore_connection_reset=False,
         ignore_connection_aborted=False,
         ignore_connection_issues_when_sending_fuzz_data=True,
+        ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
     ):
@@ -365,6 +367,7 @@ class Session(pgraph.Graph):
         self._ignore_connection_aborted = ignore_connection_aborted
         self._ignore_connection_issues_when_sending_fuzz_data = ignore_connection_issues_when_sending_fuzz_data
         self._reuse_target_connection = reuse_target_connection
+        self._ignore_connection_ssl_errors = ignore_connection_ssl_errors
         _ = log_level
         _ = logfile
         _ = logfile_level
@@ -1095,6 +1098,12 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             else:
                 self._fuzz_data_logger.log_fail(msg)
+        except exception.BoofuzzSSLError as e:
+            if self._ignore_connection_ssl_errors:
+                self._fuzz_data_logger.log_info(str(e))
+            else:
+                self._fuzz_data_logger.log_fail(str(e))
+
         try:  # recv
             if self._receive_data_after_each_request:
                 self.last_recv = self.targets[0].recv()
@@ -1117,6 +1126,11 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_fail(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
+        except exception.BoofuzzSSLError as e:
+            if self._ignore_connection_ssl_errors:
+                self._fuzz_data_logger.log_info(str(e))
+            else:
+                self._fuzz_data_logger.log_fail(str(e))
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1146,6 +1160,11 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(msg)
             else:
                 self._fuzz_data_logger.log_fail(msg)
+        except exception.BoofuzzSSLError as e:
+            if self._ignore_connection_ssl_errors:
+                self._fuzz_data_logger.log_info(str(e))
+            else:
+                self._fuzz_data_logger.log_fail(str(e))
 
         try:  # recv
             if self._receive_data_after_fuzz:
@@ -1162,6 +1181,11 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_info(msg)
             pass
+        except exception.BoofuzzSSLError as e:
+            if self._ignore_connection_ssl_errors:
+                self._fuzz_data_logger.log_info(str(e))
+            else:
+                self._fuzz_data_logger.log_fail(str(e))
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
@@ -1525,6 +1549,11 @@ class Session(pgraph.Graph):
                 )
             except exception.BoofuzzTargetConnectionFailedError:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
+            except exception.BoofuzzSSLError as e:
+                if self._ignore_connection_ssl_errors:
+                    self._fuzz_data_logger.log_info(str(e))
+                else:
+                    self._fuzz_data_logger.log_fail(str(e))
             except Exception:
                 self._fuzz_data_logger.log_error(
                     constants.ERR_CALLBACK_FUNC.format(func_name="post_send") + traceback.format_exc()
