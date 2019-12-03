@@ -32,7 +32,7 @@ class FromFile(BasePrimitive):
         list_of_files = glob.glob(self._filename)
         for fname in list_of_files:
             with open(fname, "rb") as _file_handle:
-                self._fuzz_library.extend(_file_handle.readlines())
+                self._fuzz_library.extend(list(filter(None, _file_handle.read().splitlines())))
 
         # TODO: Make this more clear
         if max_len > 0:
