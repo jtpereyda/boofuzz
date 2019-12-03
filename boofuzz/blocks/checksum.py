@@ -43,7 +43,8 @@ class Checksum(primitives.BasePrimitive):
     Args:
         block_name (str): Name of target block for checksum calculations.
         request (s_request): Request this block belongs to.
-        algorithm (Union[str, function], optional): Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+        algorithm (Union[str, function], optional): Checksum algorithm to use.
+            (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
         length (int, optional): Length of checksum, auto-calculated by default.
             Must be specified manually when using custom algorithm.
         endian (str, optional): Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >).

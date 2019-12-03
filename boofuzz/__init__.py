@@ -322,7 +322,7 @@ def s_checksum(
     :param block_name: Name of block to apply sizer to
 
     :type  algorithm:  str
-    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
 
     :type  length:     int
     :param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
