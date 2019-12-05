@@ -11,15 +11,15 @@ jobs:
   include:
     - stage: Test
       python: 2.7
-      env: TOXENV=py27-unix
+      env: TOXENV=py27-Linux
     - python: 3.5
-      env: TOXENV=py35-unix
+      env: TOXENV=py35-Linux
     - python: 3.6
-      env: TOXENV=py36-unix
+      env: TOXENV=py36-Linux
     - python: 3.7
-      env: TOXENV=py37-unix
+      env: TOXENV=py37-Linux
     - python: 3.8
-      env: TOXENV=py38-unix
+      env: TOXENV=py38-Linux
 
     - stage: Deploy
       install: true

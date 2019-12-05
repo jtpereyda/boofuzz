@@ -29,6 +29,7 @@ Fixes
 - Fixed CSV logger send and receive data decoding
 - Handle SSL-related exception. Added `ignore_connection_ssl_errors` session attribute that can
   be set to True to ignore SSL-related error on a test case.
+- Fixed issue with tornado on Python 3.8 and Windows
 
 v0.1.5
 ------
