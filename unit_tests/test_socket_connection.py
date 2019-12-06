@@ -15,6 +15,7 @@ import six
 
 from boofuzz import helpers, ip_constants, socket_connection
 from boofuzz.socket_connection import SocketConnection
+from boofuzz.raw_l3_socket_connection import ETH_P_IP
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -22,7 +23,7 @@ ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs
 UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
-ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet frame EtherType for IPv4
+ETHER_TYPE_IPV4 = struct.pack(">H", ETH_P_IP)  # Ethernet frame EtherType for IPv4
 
 RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l2"]
 RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l3"]

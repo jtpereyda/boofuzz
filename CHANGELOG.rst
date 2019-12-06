@@ -11,6 +11,7 @@ Features
 - We are now using `Black` for code style standardization
 - Added support for Python 3.8
 - added crc32c as checksum algorithm (Castagnoli)
+- raw-l2 sockets can now be bound to an interface and support specifying the ethernet_proto 
 
 Fixes
 ^^^^^
