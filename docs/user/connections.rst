@@ -14,9 +14,44 @@ ITargetConnection
     :undoc-members:
     :show-inheritance:
 
-SocketConnection
-================
-.. autoclass:: boofuzz.SocketConnection
+BaseSocketConnection
+====================
+.. autoclass:: boofuzz.BaseSocketConnection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+TCPSocketConnection
+===================
+.. autoclass:: boofuzz.TCPSocketConnection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+UDPSocketConnection
+===================
+.. autoclass:: boofuzz.UDPSocketConnection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+SSLSocketConnection
+===================
+.. autoclass:: boofuzz.SSLSocketConnection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+RawL2SocketConnection
+=====================
+.. autoclass:: boofuzz.RawL2SocketConnection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+RawL3SocketConnection
+=====================
+.. autoclass:: boofuzz.RawL3SocketConnection
     :members:
     :undoc-members:
     :show-inheritance:

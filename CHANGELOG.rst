@@ -14,6 +14,7 @@ Features
 - Added crc32c as checksum algorithm (Castagnoli).
 - Added favicon for web interface.
 - Pushed Tornado to 5.x and unpinned Flask.
+- raw-l2 sockets can now be bound to an interface and support specifying the ethernet_proto 
 
 Fixes
 ^^^^^

@@ -9,10 +9,10 @@ object. For example: ::
 
     session = Session(
         target=Target(
-            connection=SocketConnection("127.0.0.1", 8021, proto='tcp')))
+            connection=TCPSocketConnection("127.0.0.1", 8021)))
 
 Connection objects implement :class:`ITargetConnection <boofuzz.ITargetConnection>`. Available options include
-:class:`SocketConnection <boofuzz.SocketConnection>` and :class:`SerialConnection <boofuzz.SerialConnection>`.
+:class:`TCPSocketConnection <boofuzz.TCPSocketConnection>` and its sister classes for UDP, SSL and raw sockets, and :class:`SerialConnection <boofuzz.SerialConnection>`.
 
 With a Session object ready, you next need to define the messages in your protocol. Once you've read the requisite
 RFC, tutorial, etc., you should be confident enough in the format to define your protocol using the various
