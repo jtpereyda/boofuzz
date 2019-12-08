@@ -12,7 +12,7 @@ def trend_xor_encode(string):
     Simple bidirectional XOR "encryption" routine used by this service.
     """
     key = 0xA8534344
-    ret = ""
+    ret = b""
 
     # pad to 4 byte boundary.
     pad = 4 - (len(string) % 4)
@@ -35,7 +35,7 @@ def trend_xor_encode(string):
 # crap ass trend xor "encryption" routine for control manager (20901)
 def trend_xor_decode(string):
     key = 0xA8534344
-    ret = ""
+    ret = b""
 
     while string:
         dword = struct.unpack("<L", string[:4])[0]

@@ -7,8 +7,8 @@ recursive-include boofuzz *.py
 recursive-include boofuzz *.js
 recursive-include examples *.py
 recursive-include examples *.md
-recursive-include requests *.html
-recursive-include requests *.py
+recursive-include request_definitions *.html
+recursive-include request_definitions *.py
 recursive-include unit_tests *.feature
 recursive-include unit_tests *.py
 recursive-include utils *.py

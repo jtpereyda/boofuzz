@@ -130,7 +130,7 @@ class Graph(object):
         """
 
         if not graph_id:
-            graph_id = (src << 32) + dst
+            graph_id = (src << 32) + dst  # pytype: disable=unsupported-operands
 
         if graph_id in self.edges:
             del self.edges[graph_id]

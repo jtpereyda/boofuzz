@@ -9,7 +9,7 @@ import time
 import unittest
 import zlib
 
-import netifaces
+import netifaces  # pytype: disable=import-error
 import pytest
 import six
 
@@ -259,6 +259,8 @@ class TestSocketConnection(unittest.TestCase):
     hardware or network dependent.
     """
 
+    # TODO: Remove pytype ignore when SocketConnection is removed
+    # pytype: disable=attribute-error
     def test_tcp_client(self):
         """
         Given: A SocketConnection 'tcp' object and a TCP server.
@@ -772,6 +774,7 @@ class TestSocketConnection(unittest.TestCase):
         """
         # This method tests bad argument lists. Therefore we ignore
         # PyArgumentList inspections.
+        # pytype: disable=missing-parameter
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
             SocketConnection(port=5)
@@ -790,6 +793,7 @@ class TestSocketConnection(unittest.TestCase):
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
             SocketConnection(port=5, proto="raw-l3")
+        # pytype: enable=missing-parameter
 
 
 if __name__ == "__main__":

@@ -6,8 +6,8 @@ import sys
 import threading
 import time
 
-import pydbg
-import pydbg.defines
+import pydbg  # pytype: disable=import-error
+import pydbg.defines  # pytype: disable=import-error
 
 
 class DebuggerThreadPydbg(threading.Thread):

@@ -15,11 +15,11 @@ if os.name != "nt":
 
 try:
     # noinspection PyUnresolvedReferences
-    from win32api import GetShortPathName
+    from win32api import GetShortPathName  # pytype: disable=import-error
 
     # noinspection PyUnresolvedReferences
-    from win32com.shell import shell
-except Exception:
+    from win32com.shell import shell  # pytype: disable=import-error
+except ImportError:
     if os.name == "nt":
         print("[!] Failed to import win32api/win32com modules, please install these! Bailing...")
         sys.exit(1)

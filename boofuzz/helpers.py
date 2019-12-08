@@ -175,19 +175,25 @@ def uuid_bin_to_str(uuid):
 
 
 def uuid_str_to_bin(uuid):
-    """Converts a UUID string to binary form.
+    """
+    Converts a UUID string to binary form.
 
     Expected string input format is same as uuid_bin_to_str()'s output format.
 
     Ripped from Core Impacket.
 
-    @param uuid: UUID string to convert to bytes.
+    :param uuid: UUID string to convert to bytes.
+    :type uuid: str
+    :return: UUID as bytes.
+    :rtype: bytes
     """
     uuid_re = r"([\dA-Fa-f]{8})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})-([\dA-Fa-f]{4})([\dA-Fa-f]{8})"
 
     matches = re.match(uuid_re, uuid)
 
+    # pytype: disable=attribute-error
     (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: int(x, 16), matches.groups())
+    # pytype: enable=attribute-error
 
     uuid = struct.pack("<LHH", uuid1, uuid2, uuid3)
     uuid += struct.pack(">HHL", uuid4, uuid5, uuid6)
@@ -365,7 +371,7 @@ def format_log_msg(
     else:
         msg = ""
 
-    msg = test_step_info[msg_type][format_type].format(
+    msg = test_step_info[msg_type][format_type].format(  # pytype: disable=attribute-error
         msg=msg, n=len(data), note="" if not truncated else " (data truncated for database storage)"
     )
     msg = _indent_all_lines(msg, (test_step_info[msg_type]["indent"]) * indent_size)
@@ -420,7 +426,7 @@ def get_boofuzz_version(boofuzz_class):
     with open(os.path.join(path, "__init__.py")) as search:
         for line in search:
             if line.find("__version__ = ") != -1:
-                return "v" + re.search(r'"(.*?)"', line).group(1)
+                return "v" + re.search(r'"(.*?)"', line).group(1)  # pytype: disable=attribute-error
     return "v-.-.-"
 
 

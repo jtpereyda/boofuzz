@@ -15,7 +15,7 @@ class DataTestStep(object):
         truncated = attr.ib(type=bool)
     except TypeError:
         # in case attr version is too old
-        truncate = attr.ib()
+        truncated = attr.ib()
 
     @property
     def text_render(self):

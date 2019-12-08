@@ -11,6 +11,10 @@ Features
 - Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 - Moved connection related modules into new `connections` subpacket
 
+Fixes
+^^^^^
+- Fixed various potential type errors
+
 v0.1.6
 ------
 Features

@@ -10,7 +10,7 @@ class DataTestCase(object):
     name = attr.ib()
     index = attr.ib()
     timestamp = attr.ib()
-    steps = attr.ib(default={})
+    steps = attr.ib(default=[])
 
     @property
     def text_render(self):
