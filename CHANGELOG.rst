@@ -29,6 +29,7 @@ Fixes
 - Fixed CSV logger send and receive data decoding
 - Handle SSL-related exception. Added `ignore_connection_ssl_errors` session attribute that can
   be set to True to ignore SSL-related error on a test case.
+- Fixed `s_from_file` decoding in Python 2 (the encoding parameter is now depreciated)
 
 v0.1.5
 ------
