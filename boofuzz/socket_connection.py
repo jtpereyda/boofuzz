@@ -241,6 +241,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
         except socket.timeout:
             data = b""
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BoofuzzSSLError(e.reason))
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(
@@ -254,9 +257,6 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 data = b""
             else:
                 raise
-        except ssl.SSLError as e:
-            # If an SSL error is thrown the connection should be treated as lost
-            raise_(exception.BooFuzzSSLError(e.reason))
 
         return data
 
@@ -305,6 +305,9 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 num_sent = self._sock.sendto(data, (self.host, self.ethernet_proto, 0, 0, self.l2_dst))
             else:
                 raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % self.proto)
+        except ssl.SSLError as e:
+            # If an SSL error is thrown the connection should be treated as lost
+            raise_(exception.BoofuzzSSLError(e.reason))
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(
@@ -321,9 +324,6 @@ class SocketConnection(itarget_connection.ITargetConnection):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             else:
                 raise
-        except ssl.SSLError as e:
-            # If an SSL error is thrown the connection should be treated as lost
-            raise_(exception.BooFuzzSSLError(e.reason))
 
         return num_sent
 
