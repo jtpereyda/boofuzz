@@ -1522,9 +1522,13 @@ class Session(pgraph.Graph):
                 except exception.BoofuzzTargetConnectionFailedError:
                     self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
                     if unable_to_connect_count == self.restart_threshold:
-                        raise exception.BoofuzzTargetConnectionFailedError("Unable to reconnect target: Reached threshold. Ending fuzzing.")
+                        raise exception.BoofuzzTargetConnectionFailedError(
+                            "Unable to reconnect target: Reached threshold. Ending fuzzing."
+                        )
                     if self.restart_timeout and time.time() > initial_time + self.restart_timeout:
-                        raise exception.BoofuzzTargetConnectionFailedError("Unable to reconnect target: Reached restart timeout. Ending fuzzing.")
+                        raise exception.BoofuzzTargetConnectionFailedError(
+                            "Unable to reconnect target: Reached restart timeout. Ending fuzzing."
+                        )
 
                     self._restart_target(target)
                     unable_to_connect_count += 1
