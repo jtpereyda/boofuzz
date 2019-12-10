@@ -293,6 +293,8 @@ class Session(pgraph.Graph):
         restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
                                            Default None.
         restart_threshold (int):    Maximum number of retries on lost target connection. Default -1 (indefinitely).
+        restart_timeout (float):    Time in seconds for that a connection attempt should be retried. Default None
+                                   (indefinitely).
         pre_send_callbacks (list of method): The registered method will be called prior to each fuzz request.
                                             Default None.
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
@@ -347,6 +349,7 @@ class Session(pgraph.Graph):
         restart_sleep_time=5,
         restart_callbacks=None,
         restart_threshold=-1,
+        restart_timeout=None,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
         fuzz_data_logger=None,
@@ -388,6 +391,7 @@ class Session(pgraph.Graph):
         self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
         self.restart_threshold = restart_threshold
+        self.restart_timeout = restart_timeout
         if fuzz_data_logger is not None:
             raise exception.BoofuzzError("Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!")
         if fuzz_loggers is None:
@@ -1509,6 +1513,8 @@ class Session(pgraph.Graph):
         if not self._reuse_target_connection:
             out_of_available_sockets_count = 0
             unable_to_connect_count = 0
+            initial_time = time.time()
+
             while True:
                 try:
                     target.open()
@@ -1517,6 +1523,8 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
                     if unable_to_connect_count == self.restart_threshold:
                         raise exception.BoofuzzTargetConnectionFailedError("Unable to reconnect target: Reached threshold. Ending fuzzing.")
+                    if self.restart_timeout and time.time() > initial_time + self.restart_timeout:
+                        raise exception.BoofuzzTargetConnectionFailedError("Unable to reconnect target: Reached restart timeout. Ending fuzzing.")
 
                     self._restart_target(target)
                     unable_to_connect_count += 1
