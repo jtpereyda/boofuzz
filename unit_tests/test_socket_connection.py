@@ -555,7 +555,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = raw_packet[:uut.max_send_size]
+        expected_server_receive = raw_packet[: uut.max_send_size]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -701,7 +701,7 @@ class TestSocketConnection(unittest.TestCase):
         # Assemble packet...
         raw_packet = data_to_send
         expected_server_receive = (
-            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[:uut.packet_size]
+            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[: uut.packet_size]
         )
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
