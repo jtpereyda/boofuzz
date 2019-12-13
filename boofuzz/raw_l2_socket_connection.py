@@ -4,7 +4,7 @@ import socket
 import sys
 
 from future.utils import raise_
-from . import exception, ip_constants, base_socket_connection
+from . import exception, base_socket_connection
 
 
 class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
@@ -26,14 +26,14 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
     """
 
     def __init__(
-        self, interface, send_timeout=5.0, recv_timeout=5.0, ethernet_proto=None, mtu=1518, has_framecheck=True
+        self, interface, send_timeout=5.0, recv_timeout=5.0, ethernet_proto=0, mtu=1518, has_framecheck=True
     ):
-        super().__init__(send_timeout, recv_timeout)
+        super(RawL2SocketConnection, self).__init__(send_timeout, recv_timeout)
 
         self.interface = interface
         self.ethernet_proto = ethernet_proto
         self.mtu = mtu
-        self.has_framecheck = True
+        self.has_framecheck = has_framecheck
         self.max_send_size = mtu
         if self.has_framecheck:
             self.max_send_size -= 4
@@ -45,13 +45,10 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
         Returns:
             None
         """
-        if self.ethernet_proto is not None:
-            self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(self.ethernet_proto))
-            self._sock.bind((self.interface, self.ethernet_proto))
-        else:
-            self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+        self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(self.ethernet_proto))
+        self._sock.bind((self.interface, self.ethernet_proto))
 
-        super().open()
+        super(RawL2SocketConnection, self).open()
 
     def recv(self, max_bytes):
         """
@@ -74,7 +71,7 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
         try:
             data = self._sock.recv(self.mtu)
 
-            if max_bytes > 0 and max_bytes < len(data):
+            if 0 < len(data) < max_bytes:
                 data = data[:max_bytes]
         except socket.timeout:
             data = b""
@@ -86,7 +83,7 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
                     sys.exc_info()[2],
                 )
             elif e.errno in [errno.ECONNRESET, errno.ENETRESET, errno.ETIMEDOUT]:
-                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info[2])
+                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:
                 data = b""
             else:
@@ -111,10 +108,7 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
         data = data[: self.max_send_size]
 
         try:
-            if self.ethernet_protocol is None:
-                num_sent = self._sock.sendto(data, (self.interface, None))
-            else:
-                num_sent = self._sock.send(data)
+            num_sent = self._sock.send(data)
 
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:

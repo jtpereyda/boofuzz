@@ -15,7 +15,8 @@ import six
 
 from boofuzz import helpers, ip_constants, socket_connection
 from boofuzz.socket_connection import SocketConnection
-from boofuzz.raw_l3_socket_connection import ETH_P_IP
+from boofuzz.raw_l3_socket_connection import ETH_P_IP, RawL3SocketConnection
+from boofuzz.raw_l2_socket_connection import RawL2SocketConnection
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -24,9 +25,6 @@ UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
 ETHER_TYPE_IPV4 = struct.pack(">H", ETH_P_IP)  # Ethernet frame EtherType for IPv4
-
-RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l2"]
-RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l3"]
 
 TEST_ERR_NO_NON_LOOPBACK_IPV4 = "No local non-loopback IPv4 address found."
 
@@ -499,15 +497,15 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"1" * RAW_L2_MAX_PAYLOAD
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        uut = RawL2SocketConnection(interface="lo")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"1" * uut.max_send_size
 
         # Assemble packet...
         raw_packet = data_to_send
@@ -528,7 +526,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
@@ -545,7 +543,6 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the first RAW_L2_MAX_PAYLOAD bytes of raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"F" * (RAW_L2_MAX_PAYLOAD + 1)
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
@@ -554,10 +551,11 @@ class TestSocketConnection(unittest.TestCase):
 
         uut = SocketConnection(host="lo", proto="raw-l2")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"F" * (uut.max_send_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = raw_packet[:RAW_L2_MAX_PAYLOAD]
+        expected_server_receive = raw_packet[:uut.max_send_size]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -574,7 +572,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
@@ -629,7 +627,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(raw_packet))
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, raw_packet)
 
     @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
     def test_raw_l3_max_size(self):
@@ -644,15 +642,15 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"0" * RAW_L3_MAX_PAYLOAD
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l3")
+        uut = RawL3SocketConnection(interface="lo")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"0" * uut.packet_size
 
         # Assemble packet...
         raw_packet = data_to_send
@@ -673,9 +671,9 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.packet_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, data_to_send)
 
     @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
     def test_raw_l3_oversized(self):
@@ -690,20 +688,20 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"D" * (RAW_L3_MAX_PAYLOAD + 1)
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l3")
+        uut = RawL3SocketConnection(interface="lo")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"D" * (uut.packet_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
         expected_server_receive = (
-            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[:RAW_L3_MAX_PAYLOAD]
+            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[:uut.packet_size]
         )
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -721,9 +719,9 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.packet_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, data_to_send[:-1])
 
     def test_required_args_port(self):
         """

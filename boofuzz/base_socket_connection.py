@@ -32,7 +32,7 @@ class BaseSocketConnection(with_metaclass(abc.ABCMeta, itarget_connection.ITarge
         recv_timeout (float): Seconds to wait for recv before timing out. Default 5.0.
     """
 
-    def __init__(self, socket, send_timeout, recv_timeout):
+    def __init__(self, send_timeout, recv_timeout):
         self._send_timeout = send_timeout
         self._recv_timeout = recv_timeout
 

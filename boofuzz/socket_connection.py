@@ -4,9 +4,6 @@ import warnings
 
 from . import (
     exception,
-    helpers,
-    ip_constants,
-    itarget_connection,
     udp_socket_connection,
     tcp_socket_connection,
     raw_l2_socket_connection,
@@ -36,6 +33,8 @@ def SocketConnection(
     """ITargetConnection implementation using sockets.
 
     Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
+
+    .. warning:: SocketConnection is deprecated and will be removed in a future version of Boofuzz. Use the classes derived from BaseSocketConnection instead.
 
     Examples::
 
@@ -68,6 +67,8 @@ def SocketConnection(
         server (bool): Set to True to enable server side fuzzing.
         sslcontext (ssl.SSLContext): Python SSL context to be used. Required if server=True or server_hostname=None.
         server_hostname (string): server_hostname, required for verifying identity of remote SSL/TLS server.
+
+
     """
 
     warnings.warn(
@@ -93,4 +94,7 @@ def SocketConnection(
     elif proto == "raw-l2":
         return raw_l2_socket_connection.RawL2SocketConnection(host, send_timeout, recv_timeout)
     elif proto == "raw-l3":
+        if ethernet_proto is None:
+            ethernet_proto = raw_l3_socket_connection.ETH_P_IP
+
         return raw_l3_socket_connection.RawL3SocketConnection(host, send_timeout, recv_timeout, ethernet_proto, l2_dst)

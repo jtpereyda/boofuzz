@@ -4,7 +4,7 @@ import socket
 import sys
 
 from future.utils import raise_
-from . import exception, helpers, ip_constants, base_socket_connection
+from . import exception, base_socket_connection
 
 
 class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
@@ -20,7 +20,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
     """
 
     def __init__(self, host, port, send_timeout=5.0, recv_timeout=5.0, server=False):
-        super().__init__(send_timeout, recv_timeout)
+        super(TCPSocketConnection, self).__init__(send_timeout, recv_timeout)
 
         self.host = host
         self.port = port
@@ -28,7 +28,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         self._serverSock = None
 
     def close(self):
-        super().close()
+        super(TCPSocketConnection, self).close()
 
         if self.server:
             self._serverSock.close()
@@ -37,7 +37,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # call superclass to set timeout sockopt
-        super().open()
+        super(TCPSocketConnection, self).open()
 
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -67,7 +67,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         except socket.error as e:
             if e.errno == errno.EADDRINUSE:
                 raise exception.BoofuzzOutOfAvailableSockets()
-            elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRES, errno.ETIMEDOUT]:
+            elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
                 raise exception.BoofuzzTargetConnectionFailedError(str(e))
             else:
                 raise
@@ -101,6 +101,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
                 data = b""
             else:
                 raise
+        return data
 
     def send(self, data):
         """

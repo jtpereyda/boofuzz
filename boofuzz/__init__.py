@@ -45,6 +45,7 @@ from .raw_l3_socket_connection import RawL3SocketConnection
 
 __all__ = [
     "BasePrimitive",
+    "BaseSocketConnection",
     "BIG_ENDIAN",
     "BitField",
     "Block",
@@ -75,6 +76,8 @@ __all__ = [
     "primitives",
     "QWord",
     "RandomData",
+    "RawL2SocketConnection",
+    "RawL3SocketConnection",
     "Repeat",
     "Request",
     "REQUESTS",
@@ -127,14 +130,18 @@ __all__ = [
     "Size",
     "SizerNotUtilizedError",
     "SocketConnection",
+    "SSLSocketConnection",
     "Static",
     "String",
     "SullyRuntimeError",
     "Target",
+    "TCPSocketConnection",
+    "UDPSocketConnection",
     "Word",
 ]
 
 __version__ = "0.1.6"
+
 
 
 # REQUEST MANAGEMENT

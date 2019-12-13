@@ -8,13 +8,16 @@ v0.1.6
 ------
 Features
 ^^^^^^^^
+<<<<<<< HEAD
 - New primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`).
 - We are now using `Black` for code style standardization.
 - Compatibility for Python 3.8
 - Added crc32c as checksum algorithm (Castagnoli).
 - Added favicon for web interface.
 - Pushed Tornado to 5.x and unpinned Flask.
-- raw-l2 sockets can now be bound to an interface and support specifying the ethernet_proto 
+- Rewrote and split the SocketConnection class into individual classes per socket type.
+- Added support for receiving on raw Layer 2 and Layer 3 connections
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 
 Fixes
 ^^^^^

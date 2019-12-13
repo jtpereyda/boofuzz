@@ -4,7 +4,7 @@ import socket
 import sys
 
 from future.utils import raise_
-from . import exception, ip_constants, base_socket_connection
+from . import exception, base_socket_connection
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux <net/if_ether.h> docs for more details.
 
@@ -19,7 +19,8 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         ethernet_proto (int): Ethernet protocol to bind to. Defaults to ETH_P_IP (0x0800).
         l2_dst (str): Layer2 destination address (e.g. MAC address). Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast)
         packet_size (int): Maximum packet size (in bytes). Default 1500 if the underlying interface uses
-            standard ethernet for layer 2. Otherwise, a different packet size may apply (e.g. Jumboframes, 802.5 Token Ring, 802.11 wifi, ...) that must be specified.
+            standard ethernet for layer 2. Otherwise, a different packet size may apply (e.g. Jumboframes, 
+            802.5 Token Ring, 802.11 wifi, ...) that must be specified.
     """
 
     def __init__(
@@ -31,7 +32,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         l2_dst=b"\xff" * 6,
         packet_size=1500,
     ):
-        super().__init__(send_timeout, recv_timeout)
+        super(RawL3SocketConnection, self).__init__(send_timeout, recv_timeout)
 
         self.interface = interface
         self.ethernet_proto = ethernet_proto
@@ -40,10 +41,9 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
 
     def open(self):
         self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM)
-
-        super().open()
-
         self._sock.bind((self.interface, self.ethernet_proto))
+
+        super(RawL3SocketConnection, self).open()
 
     def recv(self, max_bytes):
         """
@@ -62,7 +62,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         try:
             data = self._sock.recv(self.packet_size)
 
-            if max_bytes > 0 and max_bytes < self.packet_size:
+            if 0 < max_bytes < self.packet_size:
                 data = data[: self._packet_size]
 
         except socket.timeout:
@@ -75,7 +75,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
                     sys.exc_info()[2],
                 )
             elif e.errno in [errno.ECONNRESET, errno.ENETRESET, errno.ETIMEDOUT]:
-                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info[2])
+                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:
                 data = b""
             else:

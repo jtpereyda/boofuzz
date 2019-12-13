@@ -15,10 +15,9 @@ from boofuzz import *
 
 session = Session(
     target=Target(
-        connection=SocketConnection(
+        connection=SSLSocketConnection(
             host="google.de",
             port=443,
-            proto="ssl",
             server_hostname="google.de",
             # sslcontext=ctx,
         )

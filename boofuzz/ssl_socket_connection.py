@@ -1,10 +1,8 @@
 from __future__ import absolute_import
-import errno
-import socket
 import ssl
 
 from future.utils import raise_
-from . import exception, helpers, ip_constants, tcp_socket_connection
+from . import exception, tcp_socket_connection
 
 
 class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
@@ -23,7 +21,10 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
     def __init__(
         self, host, port, send_timeout=5.0, recv_timeout=5.0, server=False, sslcontext=None, server_hostname=None
     ):
-        super().__init__(host, port, send_timeout, recv_timeout, server)
+        super(SSLSocketConnection, self).__init__(host, port, send_timeout, recv_timeout, server)
+
+        self.sslcontext = sslcontext
+        self.server_hostname = server_hostname
 
         if self.server is True and self.sslcontext is None:
             raise ValueError("Parameter sslcontext is required when server=True.")
@@ -31,7 +32,7 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
     def open(self):
-        super().open()
+        super(SSLSocketConnection, self).open()
 
         # If boofuzz is the SSL client and user did not give us a SSLContext,
         # then we just use a default one.
@@ -58,10 +59,10 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             Received data.
         """
         try:
-            super().recv(max_bytes)
+            super(SSLSocketConnection, self).recv(max_bytes)
         except ssl.SSLError as e:
             # If an SSL error is thrown the connection should be treated as lost
-            raise_(exception.BooFuzzSSLError(e.reason))
+            raise_(exception.BoofuzzSSLError(e.reason))
         # all other exceptions should be handled / raised / re-raised by the parent class
 
     def send(self, data):
@@ -75,12 +76,14 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             int: Number of bytes actually sent.
         """
 
-        num_bytes = 0
+        num_sent = 0
 
         if len(data) > 0:
             try:
-                num_bytes = super().send(data)
+                num_sent = super(SSLSocketConnection, self).send(data)
             except ssl.SSLError as e:
                 # If an SSL error is thrown the connection should be treated as lost.
                 # All other exceptions should be handled / raised / re-raised by the parent class.
                 raise_(exception.BoofuzzSSLError(e.reason))
+
+        return num_sent
