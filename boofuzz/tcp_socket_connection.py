@@ -1,11 +1,13 @@
 from __future__ import absolute_import
+
 import errno
 import socket
-import sys
 import ssl
+import sys
 
 from future.utils import raise_
-from . import exception, base_socket_connection
+
+from . import base_socket_connection, exception
 
 
 class TCPSocketConnection(base_socket_connection.BaseSocketConnection):

@@ -9,10 +9,10 @@ import struct
 import time
 import warnings
 import zlib
+from builtins import int
 from functools import reduce
 
 import six
-from builtins import int
 from colorama import Back, Fore, Style
 from past.builtins import map, range
 

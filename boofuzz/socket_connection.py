@@ -4,13 +4,12 @@ import warnings
 
 from . import (
     exception,
-    udp_socket_connection,
-    tcp_socket_connection,
     raw_l2_socket_connection,
     raw_l3_socket_connection,
     ssl_socket_connection,
+    tcp_socket_connection,
+    udp_socket_connection,
 )
-
 
 _PROTOCOLS = ["tcp", "ssl", "udp", "raw-l2", "raw-l3"]
 _PROTOCOLS_PORT_REQUIRED = ["tcp", "ssl", "udp"]

@@ -1,10 +1,12 @@
 from __future__ import absolute_import
+
 import errno
 import socket
 import sys
 
 from future.utils import raise_
-from . import exception, base_socket_connection
+
+from . import base_socket_connection, exception
 
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux <net/if_ether.h> docs for more details.
 

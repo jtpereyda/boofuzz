@@ -6,6 +6,7 @@ import six
 from past.builtins import map
 
 from . import blocks, exception, legos, pedrpc, primitives
+from .base_socket_connection import BaseSocketConnection
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
@@ -33,15 +34,14 @@ from .primitives import (
     String,
     Word,
 )
+from .raw_l2_socket_connection import RawL2SocketConnection
+from .raw_l3_socket_connection import RawL3SocketConnection
 from .serial_connection import SerialConnection
 from .sessions import open_test_run, Session, Target
 from .socket_connection import SocketConnection
-from .base_socket_connection import BaseSocketConnection
+from .ssl_socket_connection import SSLSocketConnection
 from .tcp_socket_connection import TCPSocketConnection
 from .udp_socket_connection import UDPSocketConnection
-from .ssl_socket_connection import SSLSocketConnection
-from .raw_l2_socket_connection import RawL2SocketConnection
-from .raw_l3_socket_connection import RawL3SocketConnection
 
 __all__ = [
     "BasePrimitive",

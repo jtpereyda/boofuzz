@@ -1,12 +1,14 @@
 from __future__ import absolute_import
+
+import ctypes
 import errno
+import platform
 import socket
 import sys
-import platform
-import ctypes
 
 from future.utils import raise_
-from . import exception, ip_constants, base_socket_connection
+
+from . import base_socket_connection, exception, ip_constants
 
 
 class UDPSocketConnection(base_socket_connection.BaseSocketConnection):

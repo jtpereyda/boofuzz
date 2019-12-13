@@ -1,7 +1,9 @@
 from __future__ import absolute_import
+
 import ssl
 
 from future.utils import raise_
+
 from . import exception, tcp_socket_connection
 
 
@@ -39,7 +41,7 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
         if self.server is False and self.sslcontext is None:
             self.sslcontext = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
             self.sslcontext.check_hostname = True
-            self.sslcontext.verify_flags = ssl.CERT_REQUIRED
+            self.sslcontext.verify_mode = ssl.CERT_REQUIRED
 
         try:
             self._sock = self.sslcontext.wrap_socket(
@@ -62,8 +64,8 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             super(SSLSocketConnection, self).recv(max_bytes)
         except ssl.SSLError as e:
             # If an SSL error is thrown the connection should be treated as lost
+            # All other exceptions should be handled / raised / re-raised by the parent class.
             raise_(exception.BoofuzzSSLError(e.reason))
-        # all other exceptions should be handled / raised / re-raised by the parent class
 
     def send(self, data):
         """

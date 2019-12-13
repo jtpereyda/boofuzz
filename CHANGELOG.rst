@@ -3,30 +3,22 @@ Changelog
 
 Upcoming
 --------
+Features
+^^^^^^^^
+- Rewrote and split the SocketConnection class into individual classes per socket type.
+- Added support for receiving on raw Layer 2 and Layer 3 connections
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 
 v0.1.6
 ------
 Features
 ^^^^^^^^
-<<<<<<< HEAD
-<<<<<<< HEAD
 - New primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`).
 - We are now using `Black` for code style standardization.
 - Compatibility for Python 3.8
 - Added crc32c as checksum algorithm (Castagnoli).
 - Added favicon for web interface.
 - Pushed Tornado to 5.x and unpinned Flask.
-=======
-- Pushed Tornado to 5.x and unpinned Flask
-- Added a favicon
-- new primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`)
-- We are now using `Black` for code style standardization
-- Added support for Python 3.8
-- added crc32c as checksum algorithm (Castagnoli)
->>>>>>> 661f6ecc41079291bcd8d398537fc74fe5e1d513
-- Rewrote and split the SocketConnection class into individual classes per socket type.
-- Added support for receiving on raw Layer 2 and Layer 3 connections
-- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 
 Fixes
 ^^^^^

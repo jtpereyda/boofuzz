@@ -1,10 +1,12 @@
 from __future__ import absolute_import
+
 import errno
 import socket
 import sys
 
 from future.utils import raise_
-from . import exception, base_socket_connection
+
+from . import base_socket_connection, exception
 
 
 class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
@@ -61,7 +63,8 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
         """
         if self.ethernet_proto is None:
             raise Exception(
-                "Receiving on Raw Layer 2 sockets is only supported if the socket is bound to an interface and protocol."
+                "Receiving on Raw Layer 2 sockets is only supported if the socket "
+                "is bound to an interface and protocol."
             )
 
         data = b""

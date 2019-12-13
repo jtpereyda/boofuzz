@@ -6,8 +6,8 @@ import os
 import socket
 import struct
 
-
 from future.utils import with_metaclass
+
 from . import itarget_connection
 
 
