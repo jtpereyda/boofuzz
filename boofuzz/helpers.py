@@ -118,7 +118,8 @@ def get_max_udp_size():
         @return: The maximum length of a UDP packet the current platform supports
     """
     warnings.warn(
-        "get_max_udp_size() is deprecated and will be removed in a future version of boofuzz. Use UDPSocketConnection.max_payload() instead.",
+        "get_max_udp_size() is deprecated and will be removed in a future version of boofuzz. "
+        "Use UDPSocketConnection.max_payload() instead.",
         DeprecationWarning,
     )
 

@@ -19,7 +19,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         ethernet_proto (int): Ethernet protocol to bind to. Defaults to ETH_P_IP (0x0800).
         l2_dst (str): Layer2 destination address (e.g. MAC address). Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast)
         packet_size (int): Maximum packet size (in bytes). Default 1500 if the underlying interface uses
-            standard ethernet for layer 2. Otherwise, a different packet size may apply (e.g. Jumboframes, 
+            standard ethernet for layer 2. Otherwise, a different packet size may apply (e.g. Jumboframes,
             802.5 Token Ring, 802.11 wifi, ...) that must be specified.
     """
 

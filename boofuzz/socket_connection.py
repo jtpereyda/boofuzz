@@ -34,7 +34,8 @@ def SocketConnection(
 
     Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
 
-    .. warning:: SocketConnection is deprecated and will be removed in a future version of Boofuzz. Use the classes derived from BaseSocketConnection instead.
+    .. warning:: SocketConnection is deprecated and will be removed in a future version of Boofuzz.
+        Use the classes derived from BaseSocketConnection instead.
 
     Examples::
 
@@ -72,7 +73,8 @@ def SocketConnection(
     """
 
     warnings.warn(
-        "SocketConnection is deprecated and will be removed in a future version of Boofuzz. Use the classes derived from BaseSocketConnection instead.",
+        "SocketConnection is deprecated and will be removed in a future version of Boofuzz. "
+        "Use the classes derived from BaseSocketConnection instead.",
         DeprecationWarning,
     )
     if proto not in _PROTOCOLS:
