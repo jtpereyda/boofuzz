@@ -56,6 +56,10 @@ RawL3SocketConnection
     :undoc-members:
     :show-inheritance:
 
+SocketConnection
+================
+.. automethod:: boofuzz.socket_connection.SocketConnection
+
 SerialConnection
 ================
 .. autoclass:: boofuzz.SerialConnection

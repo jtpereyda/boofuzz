@@ -26,7 +26,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
     _max_payload = None
 
     def __init__(self, host, port, send_timeout=5.0, recv_timeout=5.0, server=False, bind=None, broadcast=False):
-        super().__init__(send_timeout, recv_timeout)
+        super(UDPSocketConnection, self).__init__(send_timeout, recv_timeout)
 
         self.host = host
         self.port = port
@@ -56,7 +56,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         if self.broadcast:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, True)
 
-        super().open(self)
+        super(UDPSocketConnection, self).open()
 
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -75,7 +75,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
 
         try:
             if self.bind or self.server:
-                data, self._udp_client_port = self.sock.recvfrom(max_bytes)
+                data, self._udp_client_port = self._sock.recvfrom(max_bytes)
             else:
                 raise exception.SullyRuntimeError(
                     "UDPSocketConnection.recv() requires a bind address/port." " Current value: {}".format(self.bind)
@@ -90,7 +90,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
                     sys.exc_info()[2],
                 )
             elif e.errno in [errno.ECONNRESET, errno.ENETRESET, errno.ETIMEDOUT]:
-                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info[2])
+                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:
                 data = b""
             else:

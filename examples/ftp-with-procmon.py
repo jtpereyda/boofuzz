@@ -17,7 +17,7 @@ def main():
     start_cmd = ["python", "C:\\ftpd\\ftpd.py"]
     session = Session(
         target=Target(
-            connection=SocketConnection(target_ip, 21, proto="tcp"),
+            connection=TCPSocketConnection(target_ip, 21),
             procmon=pedrpc.Client(target_ip, 26002),
             procmon_options={"start_commands": [start_cmd]},
         ),
