@@ -143,8 +143,6 @@ __all__ = [
 __version__ = "0.1.6"
 
 
-
-
 # REQUEST MANAGEMENT
 def s_get(name=None):
     """
