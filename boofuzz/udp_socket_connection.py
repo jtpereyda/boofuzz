@@ -52,7 +52,6 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         if self.bind:
-            # TODO: should this be try/except'd?
             self._sock.bind(self.bind)
 
         if self.broadcast:

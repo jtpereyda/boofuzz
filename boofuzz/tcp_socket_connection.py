@@ -92,13 +92,6 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         except socket.timeout:
             data = b""
         except socket.error as e:
-            # Issue 348, PR 361: SSLError handling on python < 3.3
-            # Before Python 3.3, SSLError used to be a subtype of socket.error.
-            # To ensure it is properly handled in SSLSocketConnection, we have to
-            # re-raise it here if we're handling a ssl.SSLErorr.
-            if type(e) is ssl.SSLError:
-                raise
-
             if e.errno == errno.ECONNABORTED:
                 raise_(
                     exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
@@ -111,6 +104,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
                 data = b""
             else:
                 raise
+
         return data
 
     def send(self, data):

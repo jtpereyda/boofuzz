@@ -1,4 +1,5 @@
 import functools
+import ipaddress
 import logging
 import socket
 import struct
@@ -8,15 +9,15 @@ import time
 import unittest
 import zlib
 
-import ipaddress
 import netifaces
 import pytest
 import six
 
-from boofuzz import helpers, ip_constants, socket_connection
+from boofuzz import helpers, ip_constants
+from boofuzz.raw_l3_socket_connection import ETH_P_IP
+
+# noinspection PyDeprecation
 from boofuzz.socket_connection import SocketConnection
-from boofuzz.raw_l3_socket_connection import ETH_P_IP, RawL3SocketConnection
-from boofuzz.raw_l2_socket_connection import RawL2SocketConnection
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
@@ -278,6 +279,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -313,6 +315,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -351,6 +354,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(
             host=socket.gethostname(), port=server.active_port, proto="udp", bind=(socket.gethostname(), 0)
         )
@@ -400,6 +404,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(
             host=broadcast_addr,
             port=server.active_port,
@@ -450,7 +455,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -503,7 +509,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = RawL2SocketConnection(interface="lo")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
         data_to_send = b"1" * uut.max_send_size
 
@@ -549,7 +556,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
         data_to_send = b"F" * (uut.max_send_size + 1)
 
@@ -599,6 +607,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -648,7 +657,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = RawL3SocketConnection(interface="lo")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
         data_to_send = b"0" * uut.packet_size
 
@@ -694,7 +704,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = RawL3SocketConnection(interface="lo")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
         data_to_send = b"D" * (uut.packet_size + 1)
 
@@ -723,6 +734,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, data_to_send[:-1])
 
+    # noinspection PyDeprecation
     def test_required_args_port(self):
         """
         Given: No preconditions.
@@ -740,6 +752,7 @@ class TestSocketConnection(unittest.TestCase):
         with self.assertRaises(Exception):
             SocketConnection(host="127.0.0.1", proto="ssl")
 
+    # noinspection PyDeprecation
     def test_optional_args_port(self):
         """
         Given: No preconditions.
@@ -751,6 +764,7 @@ class TestSocketConnection(unittest.TestCase):
         SocketConnection(host="127.0.0.1", proto="raw-l2")
         SocketConnection(host="127.0.0.1", proto="raw-l3")
 
+    # noinspection PyDeprecation
     def test_required_args_host(self):
         """
         Given: No preconditions.

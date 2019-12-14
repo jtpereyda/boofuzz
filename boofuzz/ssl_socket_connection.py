@@ -60,12 +60,16 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
         Returns:
             Received data.
         """
+        data = b""
+
         try:
-            super(SSLSocketConnection, self).recv(max_bytes)
+            data = super(SSLSocketConnection, self).recv(max_bytes)
         except ssl.SSLError as e:
             # If an SSL error is thrown the connection should be treated as lost
             # All other exceptions should be handled / raised / re-raised by the parent class.
-            raise_(exception.BoofuzzSSLError(e.reason))
+            raise_(exception.BoofuzzSSLError(str(e)))
+
+        return data
 
     def send(self, data):
         """
@@ -77,7 +81,6 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
         Returns:
             int: Number of bytes actually sent.
         """
-
         num_sent = 0
 
         if len(data) > 0:
@@ -86,6 +89,6 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             except ssl.SSLError as e:
                 # If an SSL error is thrown the connection should be treated as lost.
                 # All other exceptions should be handled / raised / re-raised by the parent class.
-                raise_(exception.BoofuzzSSLError(e.reason))
+                raise_(exception.BoofuzzSSLError(str(e)))
 
         return num_sent

@@ -58,7 +58,6 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         Returns:
             Received data
         """
-
         data = b""
 
         try:
