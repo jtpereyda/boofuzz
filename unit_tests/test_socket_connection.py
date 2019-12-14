@@ -162,6 +162,7 @@ class MiniTestServer(object):
         self.proto = proto
         self.host = host
         self.timeout = 5  # Timeout while waiting for the unit test packets.
+        self.exception = None
 
     def bind(self):
         """
@@ -172,7 +173,7 @@ class MiniTestServer(object):
         elif self.proto == "udp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         elif self.proto == "raw":
-            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
@@ -245,8 +246,9 @@ class MiniTestServer(object):
                         if not self.stay_silent:
                             self.server_socket.sendto(self.data_to_send, addr)
                         break
-                except socket.timeout:
-                    break
+                except Exception as e:
+                    self.exception = e
+                    raise
                 elapsed_time = time.time() - start_time
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
@@ -602,9 +604,10 @@ class TestSocketConnection(unittest.TestCase):
             b'"And pray where in earth or heaven are there any prudent marriages?""'
         )
 
+        data_to_receive = b"Procuring education on consulted assurance in do."
+
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
         server.bind()
 
         # noinspection PyDeprecation
@@ -612,12 +615,19 @@ class TestSocketConnection(unittest.TestCase):
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
-        raw_packet = ip_packet(
+        raw_packet_send = ip_packet(
             payload=udp_packet(payload=data_to_send, src_port=server.active_port + 1, dst_port=server.active_port),
             src_ip=b"\x7F\x00\x00\x01",
             dst_ip=b"\x7F\x00\x00\x01",
         )
-        expected_server_receive = b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet
+        expected_server_receive = b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet_send
+
+        expected_client_receive = ip_packet(
+            payload=udp_packet(payload=data_to_receive, src_port=server.active_port, dst_port=server.active_port + 1),
+            src_ip=b"\x7F\x00\x00\x01",
+            dst_ip=b"\x7F\x00\x00\x01",
+        )
+        server.data_to_send = b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + expected_client_receive
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -625,18 +635,20 @@ class TestSocketConnection(unittest.TestCase):
 
         # When
         uut.open()
-        send_result = uut.send(data=raw_packet)
+        send_result = uut.send(data=raw_packet_send)
+        _ = uut.recv(10000)  # Receiving the sent package. Will not work on a busy socket!
         received = uut.recv(10000)
         uut.close()
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
         self.assertFalse(t.is_alive())
+        self.assertIsNone(server.exception)
 
         # Then
-        self.assertEqual(send_result, len(raw_packet))
+        self.assertEqual(send_result, len(raw_packet_send))
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, raw_packet)
+        self.assertEqual(received, expected_client_receive)
 
     @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
     def test_raw_l3_max_size(self):

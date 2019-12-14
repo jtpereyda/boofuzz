@@ -42,7 +42,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         self.packet_size = packet_size
 
     def open(self):
-        self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM)
+        self._sock = socket.socket(socket.AF_PACKET, socket.SOCK_DGRAM, socket.htons(self.ethernet_proto))
         self._sock.bind((self.interface, self.ethernet_proto))
 
         super(RawL3SocketConnection, self).open()
