@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import errno
 import socket
-import ssl
 import sys
 
 from future.utils import raise_
