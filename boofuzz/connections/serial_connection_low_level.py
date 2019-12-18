@@ -1,6 +1,6 @@
 import serial
 
-from . import iserial_like
+from boofuzz.connections import iserial_like
 
 
 class SerialConnectionLowLevel(iserial_like.ISerialLike):

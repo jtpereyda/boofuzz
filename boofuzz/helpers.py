@@ -16,7 +16,7 @@ import six
 from colorama import Back, Fore, Style
 from past.builtins import map, range
 
-from boofuzz import ip_constants, udp_socket_connection
+from boofuzz.connections import ip_constants, udp_socket_connection
 
 test_step_info = {
     "test_case": {

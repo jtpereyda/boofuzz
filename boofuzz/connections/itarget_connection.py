@@ -53,7 +53,8 @@ class ITargetConnection(with_metaclass(abc.ABCMeta, object)):
         """
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def info(self):
         """Return description of connection info.
 

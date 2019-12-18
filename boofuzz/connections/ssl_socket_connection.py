@@ -4,7 +4,8 @@ import ssl
 
 from future.utils import raise_
 
-from . import exception, tcp_socket_connection
+from boofuzz import exception
+from boofuzz.connections import tcp_socket_connection
 
 
 class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):

@@ -13,14 +13,11 @@ import netifaces
 import pytest
 import six
 
-from boofuzz import helpers, ip_constants
-from boofuzz.raw_l3_socket_connection import ETH_P_IP
-
-# noinspection PyDeprecation
-from boofuzz.socket_connection import SocketConnection
+from boofuzz import helpers
+from boofuzz.connections import ip_constants, SocketConnection
+from boofuzz.connections.raw_l3_socket_connection import ETH_P_ALL, ETH_P_IP
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
-ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
 
 UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
@@ -172,7 +169,7 @@ class MiniTestServer(object):
         elif self.proto == "udp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         elif self.proto == "raw":
-            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(ETH_P_ALL))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 

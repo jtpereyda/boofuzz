@@ -6,7 +6,8 @@ import sys
 
 from future.utils import raise_
 
-from . import base_socket_connection, exception
+from boofuzz import exception
+from boofuzz.connections import base_socket_connection
 
 
 class TCPSocketConnection(base_socket_connection.BaseSocketConnection):

@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import warnings
 
-from . import (
-    exception,
+from boofuzz import exception
+from boofuzz.connections import (
     raw_l2_socket_connection,
     raw_l3_socket_connection,
     ssl_socket_connection,

@@ -8,7 +8,7 @@ import struct
 
 from future.utils import with_metaclass
 
-from . import itarget_connection
+from boofuzz.connections import itarget_connection
 
 
 def _seconds_to_sockopt_format(seconds):

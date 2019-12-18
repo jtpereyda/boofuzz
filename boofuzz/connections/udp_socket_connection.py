@@ -8,7 +8,8 @@ import sys
 
 from future.utils import raise_
 
-from . import base_socket_connection, exception, ip_constants
+from boofuzz import exception
+from boofuzz.connections import base_socket_connection, ip_constants
 
 
 class UDPSocketConnection(base_socket_connection.BaseSocketConnection):

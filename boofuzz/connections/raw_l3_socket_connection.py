@@ -6,8 +6,10 @@ import sys
 
 from future.utils import raise_
 
-from . import base_socket_connection, exception
+from boofuzz import exception
+from boofuzz.connections import base_socket_connection
 
+ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
 ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux <net/if_ether.h> docs for more details.
 
 

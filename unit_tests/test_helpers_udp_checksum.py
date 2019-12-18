@@ -8,7 +8,8 @@ import math
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from boofuzz import helpers, ip_constants
+from boofuzz import helpers
+from boofuzz.connections import ip_constants
 
 scenarios("helpers_udp_checksum.feature")
 
