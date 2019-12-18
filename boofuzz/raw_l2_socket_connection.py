@@ -127,4 +127,4 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
 
     @property
     def info(self):
-        return "{0}, type 0x{1:04x}".format(self.interface, self.ethernet_type)
+        return "{0}, type 0x{1:04x}".format(self.interface, self.ethernet_proto)
