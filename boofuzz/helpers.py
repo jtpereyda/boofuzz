@@ -1,23 +1,22 @@
 from __future__ import absolute_import, unicode_literals
 
-import ctypes
 import errno
 import os
-import platform
 import re
 import signal
 import socket
 import struct
 import time
+import warnings
 import zlib
+from builtins import int
 from functools import reduce
 
 import six
-from builtins import int
 from colorama import Back, Fore, Style
 from past.builtins import map, range
 
-from boofuzz import ip_constants
+from boofuzz import ip_constants, udp_socket_connection
 
 test_step_info = {
     "test_case": {
@@ -115,43 +114,19 @@ def get_max_udp_size():
     """
     Crazy CTypes magic to do a getsockopt() which determines the max UDP payload size in a platform-agnostic way.
 
-        @rtype:  long
-        @return: The maximum length of a UDP packet the current platform supports
+    .. warning:: get_max_udp_size is deprecated and will be removed in a future version of Boofuzz.
+        Use UDPSocketConnection.max_payload() instead.
+
+    Returns:
+        int: The maximum length of a UDP packet the current platform supports
     """
-    windows = platform.uname()[0] == "Windows"
-    mac = platform.uname()[0] == "Darwin"
-    linux = platform.uname()[0] == "Linux"
-    openbsd = platform.uname()[0] == "OpenBSD"
-    lib = None
+    warnings.warn(
+        "get_max_udp_size() is deprecated and will be removed in a future version of boofuzz. "
+        "Use UDPSocketConnection.max_payload() instead.",
+        DeprecationWarning,
+    )
 
-    if windows:
-        sol_socket = ctypes.c_int(0xFFFF)
-        sol_max_msg_size = 0x2003
-        lib = ctypes.WinDLL("Ws2_32.dll")
-        opt = ctypes.c_int(sol_max_msg_size)
-    elif linux or mac or openbsd:
-        if mac:
-            lib = ctypes.cdll.LoadLibrary("libc.dylib")
-        elif linux:
-            lib = ctypes.cdll.LoadLibrary("libc.so.6")
-        elif openbsd:
-            lib = ctypes.cdll.LoadLibrary("libc.so")
-        sol_socket = ctypes.c_int(socket.SOL_SOCKET)
-        opt = ctypes.c_int(socket.SO_SNDBUF)
-
-    else:
-        raise Exception("Unknown platform!")
-
-    ulong_size = ctypes.sizeof(ctypes.c_ulong)
-    buf = ctypes.create_string_buffer(ulong_size)
-    bufsize = ctypes.c_int(ulong_size)
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    lib.getsockopt(sock.fileno(), sol_socket, opt, buf, ctypes.pointer(bufsize))
-
-    # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
-    return min(ctypes.c_ulong.from_buffer(buf).value, ip_constants.UDP_MAX_PAYLOAD_IPV4_THEORETICAL)
+    return udp_socket_connection.UDPSocketConnection.max_payload()
 
 
 def calculate_four_byte_padding(string, character="\x00"):

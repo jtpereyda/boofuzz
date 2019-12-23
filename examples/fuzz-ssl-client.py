@@ -15,7 +15,7 @@ ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
 ctx.load_cert_chain(certfile="cert.pem", keyfile="key.pem")
 
 session = Session(
-    target=Target(connection=SocketConnection(host="127.0.0.1", port=443, proto="ssl", sslcontext=ctx, server=True))
+    target=Target(connection=SSLSocketConnection(host="127.0.0.1", port=443, sslcontext=ctx, server=True))
 )
 s_initialize("A")
 s_string("A")

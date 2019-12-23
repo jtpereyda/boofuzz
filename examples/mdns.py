@@ -59,7 +59,7 @@ s_repeat("auth_nameserver", 0, 1000, 40, name="auth_nameservers")
 
 s_word(0)
 
-sess = Session(target=Target(connection=SocketConnection("224.0.0.251", 5353, proto="udp")))
+sess = Session(target=Target(connection=UDPSocketConnection("224.0.0.251", 5353)))
 sess.connect(s_get("query"), callback=insert_questions)
 
 sess.fuzz()
