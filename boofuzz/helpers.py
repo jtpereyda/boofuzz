@@ -114,8 +114,8 @@ def get_max_udp_size():
     """
     Crazy CTypes magic to do a getsockopt() which determines the max UDP payload size in a platform-agnostic way.
 
-    .. warning:: get_max_udp_size is deprecated and will be removed in a future version of Boofuzz.
-        Use UDPSocketConnection.max_payload() instead.
+    .. deprecated:: 0.2.0
+        Use :meth:`UDPSocketConnection.max_payload() <boofuzz.connections.UDPSocketConnection.max_payload>` instead.
 
     Returns:
         int: The maximum length of a UDP packet the current platform supports

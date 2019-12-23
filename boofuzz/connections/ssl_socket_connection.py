@@ -11,6 +11,8 @@ from boofuzz.connections import tcp_socket_connection
 class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
     """BaseSocketConnection implementation for use with SSL Sockets.
 
+    .. versionadded:: 0.2.0
+
     Args:
         host (str): Hostname or IP adress of target system.
         port (int): Port of target service.

@@ -9,6 +9,10 @@ class ITargetConnection(with_metaclass(abc.ABCMeta, object)):
     Interface for connections to fuzzing targets.
     Target connections may be opened and closed multiple times. You must open before using send/recv and close
     afterwards.
+
+    .. versionchanged:: 0.2.0
+        ITargetConnection has been moved into the connections subpackage.
+        The full path is now boofuzz.connections.itarget_connection.ITargetConnection
     """
 
     @abc.abstractmethod

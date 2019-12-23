@@ -16,6 +16,8 @@ ETH_P_IP = 0x0800  # Ethernet protocol: Internet Protocol packet, see Linux <net
 class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
     """BaseSocketConnection implementation for use with Raw Layer 2 Sockets.
 
+    .. versionadded:: 0.2.0
+
     Args:
         interface (str): Interface to send and receive on.
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.

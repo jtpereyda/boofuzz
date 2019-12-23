@@ -10,6 +10,10 @@ class ISerialLike(with_metaclass(abc.ABCMeta, object)):
     the notable difference being that open() must always be called after the object is first created.
 
     Facilitates dependency injection in modules that use pySerial.
+
+    .. versionchanged:: 0.2.0
+        ISerialLike has been moved into the connections subpackage.
+        The full path is now boofuzz.connections.iserial_like.ISerialLike
     """
 
     @abc.abstractmethod

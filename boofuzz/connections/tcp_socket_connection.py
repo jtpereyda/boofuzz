@@ -13,6 +13,8 @@ from boofuzz.connections import base_socket_connection
 class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
     """BaseSocketConnection implementation for use with TCP Sockets.
 
+    .. versionadded:: 0.2.0
+
     Args:
         host (str): Hostname or IP adress of target system.
         port (int): Port of target service.

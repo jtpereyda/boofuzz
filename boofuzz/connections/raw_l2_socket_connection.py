@@ -13,6 +13,8 @@ from boofuzz.connections import base_socket_connection
 class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
     """BaseSocketConnection implementation for use with Raw Layer 2 Sockets.
 
+    .. versionadded:: 0.2.0
+
     Args:
         interface (str): Hostname or IP adress of target system.
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.

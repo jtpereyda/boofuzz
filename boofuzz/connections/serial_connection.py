@@ -31,6 +31,10 @@ class SerialConnection(itarget_connection.ITargetConnection):
 
     If none of these methods are used, your connection may hang forever.
 
+    .. versionchanged:: 0.2.0
+        SerialConnection has been moved into the connections subpackage.
+        The full path is now boofuzz.connections.serial_connection.SerialConnection
+
     Args:
         port (Union[int, str]): Serial port name or number.
         baudrate (int): Baud rate for port.
