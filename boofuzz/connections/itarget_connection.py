@@ -42,6 +42,7 @@ class ITargetConnection(with_metaclass(abc.ABCMeta, object)):
         :type max_bytes: int
 
         :return: Received data. bytes('') if no data is received.
+        :rtype: bytes
         """
         raise NotImplementedError
 
@@ -52,8 +53,8 @@ class ITargetConnection(with_metaclass(abc.ABCMeta, object)):
 
         :param data: Data to send.
 
-        :rtype int
         :return: Number of bytes actually sent.
+        :rtype: int
         """
         raise NotImplementedError
 

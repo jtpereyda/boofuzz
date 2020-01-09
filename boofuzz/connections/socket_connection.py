@@ -33,6 +33,9 @@ def SocketConnection(
 
     Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
 
+    .. note:: SocketConnection is deprecated and will be removed in a future version of Boofuzz.
+        Use the classes derived from :class:`BaseSocketConnection <boofuzz.connections.BaseSocketConnection>` instead.
+
     .. versionchanged:: 0.2.0
         SocketConnection has been moved into the connections subpackage.
         The full path is now boofuzz.connections.socket_connection.SocketConnection
