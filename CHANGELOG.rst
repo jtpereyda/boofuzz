@@ -6,8 +6,10 @@ Upcoming
 Features
 ^^^^^^^^
 - Rewrote and split the SocketConnection class into individual classes per socket type.
+- `SocketConnection` is now deprecated. Use the classes derived from `BaseSocketConnection` instead.
 - Added support for receiving on raw Layer 2 and Layer 3 connections
 - Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
+- Moved connection related modules into new `connections` subpacket
 
 v0.1.6
 ------

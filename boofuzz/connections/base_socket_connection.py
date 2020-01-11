@@ -8,7 +8,7 @@ import struct
 
 from future.utils import with_metaclass
 
-from . import itarget_connection
+from boofuzz.connections import itarget_connection
 
 
 def _seconds_to_sockopt_format(seconds):
@@ -26,6 +26,8 @@ def _seconds_to_sockopt_format(seconds):
 
 class BaseSocketConnection(with_metaclass(abc.ABCMeta, itarget_connection.ITargetConnection)):
     """This class serves as a base for a number of Connections over sockets.
+
+    .. versionadded:: 0.2.0
 
     Args:
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.

@@ -16,7 +16,7 @@ import six
 from colorama import Back, Fore, Style
 from past.builtins import map, range
 
-from boofuzz import ip_constants, udp_socket_connection
+from boofuzz.connections import ip_constants, udp_socket_connection
 
 test_step_info = {
     "test_case": {
@@ -114,8 +114,8 @@ def get_max_udp_size():
     """
     Crazy CTypes magic to do a getsockopt() which determines the max UDP payload size in a platform-agnostic way.
 
-    .. warning:: get_max_udp_size is deprecated and will be removed in a future version of Boofuzz.
-        Use UDPSocketConnection.max_payload() instead.
+    .. deprecated:: 0.2.0
+        Use :meth:`UDPSocketConnection.max_payload() <boofuzz.connections.UDPSocketConnection.max_payload>` instead.
 
     Returns:
         int: The maximum length of a UDP packet the current platform supports

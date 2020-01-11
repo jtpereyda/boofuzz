@@ -6,8 +6,21 @@ import six
 from past.builtins import map
 
 from . import blocks, exception, legos, pedrpc, primitives
-from .base_socket_connection import BaseSocketConnection
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
+from .connections import (
+    BaseSocketConnection,
+    ip_constants,
+    ISerialLike,
+    ITargetConnection,
+    RawL2SocketConnection,
+    RawL3SocketConnection,
+    SerialConnection,
+    SerialConnectionLowLevel,
+    SocketConnection,
+    SSLSocketConnection,
+    TCPSocketConnection,
+    UDPSocketConnection,
+)
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
 from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
@@ -17,7 +30,6 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .itarget_connection import ITargetConnection
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -34,14 +46,7 @@ from .primitives import (
     String,
     Word,
 )
-from .raw_l2_socket_connection import RawL2SocketConnection
-from .raw_l3_socket_connection import RawL3SocketConnection
-from .serial_connection import SerialConnection
 from .sessions import open_test_run, Session, Target
-from .socket_connection import SocketConnection
-from .ssl_socket_connection import SSLSocketConnection
-from .tcp_socket_connection import TCPSocketConnection
-from .udp_socket_connection import UDPSocketConnection
 
 __all__ = [
     "BasePrimitive",
@@ -66,6 +71,8 @@ __all__ = [
     "Group",
     "IFuzzLogger",
     "IFuzzLoggerBackend",
+    "ip_constants",
+    "ISerialLike",
     "ITargetConnection",
     "legos",
     "LITTLE_ENDIAN",
@@ -126,6 +133,7 @@ __all__ = [
     "s_update",
     "s_word",
     "SerialConnection",
+    "SerialConnectionLowLevel",
     "Session",
     "Size",
     "SizerNotUtilizedError",
