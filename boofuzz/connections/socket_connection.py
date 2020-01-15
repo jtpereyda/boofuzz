@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import warnings
 
-from . import (
-    exception,
+from boofuzz import exception
+from boofuzz.connections import (
     raw_l2_socket_connection,
     raw_l3_socket_connection,
     ssl_socket_connection,
@@ -33,8 +33,15 @@ def SocketConnection(
 
     Supports UDP, TCP, SSL, raw layer 2 and raw layer 3 packets.
 
-    .. warning:: SocketConnection is deprecated and will be removed in a future version of Boofuzz.
-        Use the classes derived from BaseSocketConnection instead.
+    .. note:: SocketConnection is deprecated and will be removed in a future version of Boofuzz.
+        Use the classes derived from :class:`BaseSocketConnection <boofuzz.connections.BaseSocketConnection>` instead.
+
+    .. versionchanged:: 0.2.0
+        SocketConnection has been moved into the connections subpackage.
+        The full path is now boofuzz.connections.socket_connection.SocketConnection
+
+    .. deprecated:: 0.2.0
+        Use the classes derived from :class:`BaseSocketConnection <boofuzz.connections.BaseSocketConnection>` instead.
 
     Examples::
 

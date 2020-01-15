@@ -1,11 +1,10 @@
 import time
 import unittest
 
-from boofuzz import iserial_like
-from boofuzz.serial_connection import SerialConnection
+from boofuzz.connections import ISerialLike, SerialConnection
 
 
-class MockSerial(iserial_like.ISerialLike):
+class MockSerial(ISerialLike):
     """
     Mock ISerialLike class.
     Methods include code for unit testing. See each method for details.

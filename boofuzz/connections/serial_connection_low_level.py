@@ -1,6 +1,6 @@
 import serial
 
-from . import iserial_like
+from boofuzz.connections import iserial_like
 
 
 class SerialConnectionLowLevel(iserial_like.ISerialLike):
@@ -9,6 +9,10 @@ class SerialConnectionLowLevel(iserial_like.ISerialLike):
     Separated from SerialConnection to allow for effective unit testing.
 
     Implements serial_like.ISerialLike.
+
+    .. versionchanged:: 0.2.0
+        SerialConnectionLowLevel has been moved into the connections subpackage.
+        The full path is now boofuzz.connections.serial_connection_low_level.SerialConnectionLowLevel
     """
 
     def __init__(self, port, baudrate, timeout=None):

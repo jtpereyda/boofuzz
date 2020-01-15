@@ -4,11 +4,14 @@ import ssl
 
 from future.utils import raise_
 
-from . import exception, tcp_socket_connection
+from boofuzz import exception
+from boofuzz.connections import tcp_socket_connection
 
 
 class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
     """BaseSocketConnection implementation for use with SSL Sockets.
+
+    .. versionadded:: 0.2.0
 
     Args:
         host (str): Hostname or IP adress of target system.

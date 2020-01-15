@@ -1,5 +1,9 @@
 """
 This file contains constants for the IPv4 protocol.
+
+.. versionchanged:: 0.2.0
+    ip_constants has been moved into the connections subpackage.
+    The full path is now boofuzz.connections.ip_constants
 """
 IPV4_PROTOCOL_UDP = 0x11
 #: Theoretical maximum length of a UDP packet, based on constraints in the UDP

@@ -6,11 +6,14 @@ import sys
 
 from future.utils import raise_
 
-from . import base_socket_connection, exception
+from boofuzz import exception
+from boofuzz.connections import base_socket_connection
 
 
 class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
     """BaseSocketConnection implementation for use with TCP Sockets.
+
+    .. versionadded:: 0.2.0
 
     Args:
         host (str): Hostname or IP adress of target system.
