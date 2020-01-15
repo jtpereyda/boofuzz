@@ -8,6 +8,7 @@ Features
 - Rewrote and split the SocketConnection class into individual classes per socket type.
 - Added support for receiving on raw Layer 2 and Layer 3 connections
 - Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
+- Added the ability to repeat sending of packages within a given time or count.
 
 v0.1.6
 ------
