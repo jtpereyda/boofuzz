@@ -53,7 +53,9 @@ class Target(object):
         connection (itarget_connection.ITargetConnection): Connection to system under test.
     """
 
-    def __init__(self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000, repeater=None):
+    def __init__(
+        self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000, repeater=None
+    ):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
@@ -161,7 +163,6 @@ class Target(object):
             self.repeater.reset()
         else:
             num_sent = self._target_connection.send(data=data)
-
 
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_send(data[:num_sent])

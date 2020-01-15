@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import time
 
-class Repeater(ABC):
 
+class Repeater(ABC):
     @abstractmethod
     def start(self):
         pass
@@ -17,7 +17,6 @@ class Repeater(ABC):
 
 
 class TimeRepeater(Repeater):
-
     def __init__(self, time):
         self.time = time
         self._starttime = None
@@ -31,8 +30,8 @@ class TimeRepeater(Repeater):
     def reset(self):
         self._starttime = None
 
-class CountRepeater(Repeater):
 
+class CountRepeater(Repeater):
     def __init__(self, count):
         self.count = count
         self._reps = 0
