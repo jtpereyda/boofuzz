@@ -41,7 +41,7 @@ class MockTimeConnection(ITargetConnection):
         pass
 
     def send(self, data):
-        if self.first == None:
+        if self.first is None:
             self.first = time.time()
         self.last = time.time()
 
