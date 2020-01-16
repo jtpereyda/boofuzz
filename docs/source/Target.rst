@@ -5,3 +5,23 @@ Target
     :members:
     :undoc-members:
     :show-inheritance:
+
+Repeater
+--------
+
+.. autoclass:: boofuzz.repeater.Repeater
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+The following concrete implementations of this interface are available:
+
+.. autoclass:: boofuzz.repeater.TimeRepeater
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: boofuzz.repeater.CountRepeater
+   :members:
+   :undoc-members:
+   :show-inheritance:

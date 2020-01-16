@@ -49,8 +49,11 @@ class Target(object):
     Example:
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
 
-    Args:
-        connection (itarget_connection.ITargetConnection): Connection to system under test.
+    :param connection: Connection to system under test.
+    :type connection: itarget_connection.ITargetConnection
+    :param repeater: Repeater to use for sending. Default None.
+    :type repeater: repeater.Repeater
+
     """
 
     def __init__(
@@ -153,8 +156,13 @@ class Target(object):
         Returns:
             None
         """
+        num_sent = 0
         if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.log_info("Sending {0} bytes...".format(len(data)))
+            repeat = ""
+            if self.repeater is not None:
+                repeat = ", " + self.repeater.log_message()
+
+            self._fuzz_data_logger.log_info("Sending {0} bytes{1}...".format(len(data), repeat))
 
         if self.repeater is not None:
             self.repeater.start()
