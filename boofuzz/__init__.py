@@ -47,6 +47,7 @@ from .primitives import (
     Word,
 )
 from .sessions import open_test_run, Session, Target
+from .repeater import Repeater, CountRepeater, TimeRepeater
 
 __all__ = [
     "BasePrimitive",

@@ -50,6 +50,8 @@ class TimeRepeater(Repeater):
     """
 
     def __init__(self, duration, sleep_time=0):
+        super(TimeRepeater, self).__init__(sleep_time)
+
         if duration <= 0:
             raise ValueError("Time must be a non-negative non-zero value")
 
@@ -86,6 +88,7 @@ class CountRepeater(Repeater):
     """
 
     def __init__(self, count, sleep_time=0):
+        super(CountRepeater, self).__init__(sleep_time)
 
         if count < 1:
             raise ValueError("Count must be greater or equal to 1")
