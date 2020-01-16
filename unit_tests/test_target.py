@@ -1,7 +1,9 @@
-import time, unittest
+import time
+import unittest
 
 from boofuzz.connections import ITargetConnection
 from boofuzz import Target, TimeRepeater, CountRepeater
+
 
 class MockCountConnection(ITargetConnection):
     def __init__(self):
@@ -22,6 +24,7 @@ class MockCountConnection(ITargetConnection):
     @property
     def info(self):
         pass
+
 
 class MockTimeConnection(ITargetConnection):
     def __init__(self):
@@ -45,6 +48,7 @@ class MockTimeConnection(ITargetConnection):
     @property
     def info(self):
         pass
+
 
 class TestTarget(unittest.TestCase):
     def test_count_repeater(self):
