@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union  # noqa: F401
 
 from past.builtins import map
 
