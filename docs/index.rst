@@ -4,7 +4,7 @@ boofuzz: Network Protocol Fuzzing for Humans
 .. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
     :target: https://travis-ci.org/jtpereyda/boofuzz
 .. image:: https://readthedocs.org/projects/boofuzz/badge/?version=latest
-    :target: https://boofuzz.readthedocs.io/en/latest/?badge=latest
+    :target: https://boofuzz.readthedocs.io/
     :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/boofuzz.svg
     :target: https://pypi.org/project/boofuzz/

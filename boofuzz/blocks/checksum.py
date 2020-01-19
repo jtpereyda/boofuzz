@@ -43,8 +43,8 @@ class Checksum(primitives.BasePrimitive):
     Args:
         block_name (str): Name of target block for checksum calculations.
         request (s_request): Request this block belongs to.
-        algorithm (Union[str, function], optional): Checksum algorithm to use.
-            (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
+        algorithm (str, function, optional): Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
+            Pass a function to use a custom algorithm. This function has to take and return byte-type data.
         length (int, optional): Length of checksum, auto-calculated by default.
             Must be specified manually when using custom algorithm.
         endian (str, optional): Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >).
@@ -130,9 +130,7 @@ class Checksum(primitives.BasePrimitive):
         return self._fuzzable and (self._mutant_index != 0) and not self._fuzz_complete
 
     def _get_dummy_value(self):
-        if self._length:
-            return self._length * "\x00"
-        return self.checksum_lengths[self._algorithm] * "\x00"
+        return self._length * "\x00"
 
     @_may_recurse
     def _render_block(self, block_name):
@@ -143,9 +141,9 @@ class Checksum(primitives.BasePrimitive):
         Calculate and return the checksum (in raw bytes) of data.
 
         :param data Data on which to calculate checksum.
-        :type data str
+        :type data bytes
 
-        :rtype:  str
+        :rtype:  bytes
         :return: Checksum.
         """
         if isinstance(self._algorithm, six.string_types):

@@ -1,4 +1,5 @@
 import functools
+import ipaddress
 import logging
 import socket
 import struct
@@ -8,24 +9,20 @@ import time
 import unittest
 import zlib
 
-import ipaddress
 import netifaces
 import pytest
 import six
 
-from boofuzz import helpers, ip_constants, socket_connection
-from boofuzz.socket_connection import SocketConnection
+from boofuzz import helpers
+from boofuzz.connections import ip_constants, SocketConnection
+from boofuzz.connections.raw_l3_socket_connection import ETH_P_ALL, ETH_P_IP
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
-ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
 
 UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
-ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet frame EtherType for IPv4
-
-RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l2"]
-RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS["raw-l3"]
+ETHER_TYPE_IPV4 = struct.pack(">H", ETH_P_IP)  # Ethernet frame EtherType for IPv4
 
 TEST_ERR_NO_NON_LOOPBACK_IPV4 = "No local non-loopback IPv4 address found."
 
@@ -172,7 +169,7 @@ class MiniTestServer(object):
         elif self.proto == "udp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         elif self.proto == "raw":
-            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(ETH_P_ALL))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
@@ -279,6 +276,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -314,6 +312,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -352,6 +351,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(
             host=socket.gethostname(), port=server.active_port, proto="udp", bind=(socket.gethostname(), 0)
         )
@@ -401,6 +401,7 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(
             host=broadcast_addr,
             port=server.active_port,
@@ -451,7 +452,8 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
@@ -498,15 +500,16 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"1" * RAW_L2_MAX_PAYLOAD
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"1" * uut.max_send_size
 
         # Assemble packet...
         raw_packet = data_to_send
@@ -527,7 +530,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
@@ -544,19 +547,20 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the first RAW_L2_MAX_PAYLOAD bytes of raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"F" * (RAW_L2_MAX_PAYLOAD + 1)
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto="raw-l2")
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"F" * (uut.max_send_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = raw_packet[:RAW_L2_MAX_PAYLOAD]
+        expected_server_receive = raw_packet[: uut.max_send_size]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -573,7 +577,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
@@ -600,6 +604,7 @@ class TestSocketConnection(unittest.TestCase):
         server.data_to_send = "GKC"
         server.bind()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
@@ -628,7 +633,7 @@ class TestSocketConnection(unittest.TestCase):
         # Then
         self.assertEqual(send_result, len(raw_packet))
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, raw_packet)
 
     @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_max_size(self):
@@ -643,15 +648,16 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"0" * RAW_L3_MAX_PAYLOAD
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"0" * uut.packet_size
 
         # Assemble packet...
         raw_packet = data_to_send
@@ -672,9 +678,9 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.packet_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, data_to_send)
 
     @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_oversized(self):
@@ -689,20 +695,21 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = b"D" * (RAW_L3_MAX_PAYLOAD + 1)
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
+        # noinspection PyDeprecation
         uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"D" * (uut.packet_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
         expected_server_receive = (
-            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[:RAW_L3_MAX_PAYLOAD]
+            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[: uut.packet_size]
         )
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -720,10 +727,11 @@ class TestSocketConnection(unittest.TestCase):
         self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.packet_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, b"")
+        self.assertEqual(received, data_to_send[:-1])
 
+    # noinspection PyDeprecation
     def test_required_args_port(self):
         """
         Given: No preconditions.
@@ -741,6 +749,7 @@ class TestSocketConnection(unittest.TestCase):
         with self.assertRaises(Exception):
             SocketConnection(host="127.0.0.1", proto="ssl")
 
+    # noinspection PyDeprecation
     def test_optional_args_port(self):
         """
         Given: No preconditions.
@@ -752,6 +761,7 @@ class TestSocketConnection(unittest.TestCase):
         SocketConnection(host="127.0.0.1", proto="raw-l2")
         SocketConnection(host="127.0.0.1", proto="raw-l3")
 
+    # noinspection PyDeprecation
     def test_required_args_host(self):
         """
         Given: No preconditions.

@@ -17,7 +17,7 @@ class Repeat(ifuzzable.IFuzzable):
         modifier MUST come after the block it is being applied to.
 
         @type  block_name: str
-        @param block_name: Name of block to apply sizer to
+        @param block_name: Name of block to repeat
         @type  request:    s_request
         @param request:    Request this block belongs to
         @type  min_reps:   int

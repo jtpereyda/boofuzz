@@ -27,7 +27,7 @@ Instrumentation
 
 IP Constants
 ============
-.. automodule:: boofuzz.ip_constants
+.. automodule:: boofuzz.connections.ip_constants
     :members:
     :undoc-members:
     :show-inheritance:

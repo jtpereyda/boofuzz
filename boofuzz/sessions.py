@@ -11,17 +11,16 @@ import threading
 import time
 import traceback
 import zlib
+from builtins import input
 from io import open
 
 import six
-from builtins import input
 from future.utils import listitems
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
-from boofuzz import helpers
-from . import (
+from boofuzz import (
     blocks,
     constants,
     event_hook,
@@ -30,10 +29,11 @@ from . import (
     fuzz_logger_curses,
     fuzz_logger_db,
     fuzz_logger_text,
+    helpers,
     pgraph,
     primitives,
 )
-from .web.app import app
+from boofuzz.web.app import app
 
 
 class Target(object):

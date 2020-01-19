@@ -5,31 +5,46 @@ Upcoming
 --------
 Features
 ^^^^^^^^
-- Pushed Tornado to 5.x and unpinned Flask
-- Added a favicon
-- new primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`)
-- We are now using `Black` for code style standardization
-- Added support for Python 3.8
-- added crc32c as checksum algorithm (Castagnoli)
+- Rewrote and split the SocketConnection class into individual classes per socket type.
+- `SocketConnection` is now deprecated. Use the classes derived from `BaseSocketConnection` instead.
+- Added support for receiving on raw Layer 2 and Layer 3 connections
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
+- Moved connection related modules into new `connections` subpacket
+
+Fixes
+^^^^^
+- Fixed issue with tornado on Python 3.8 and Windows.
+
+v0.1.6
+------
+Features
+^^^^^^^^
+- New primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`).
+- We are now using `Black` for code style standardization.
+- Compatibility for Python 3.8
+- Added crc32c as checksum algorithm (Castagnoli).
+- Added favicon for web interface.
+- Pushed Tornado to 5.x and unpinned Flask.
 
 Fixes
 ^^^^^
 - Test cases were not being properly closed when using the check_message() functionality.
-- Some code style changes to meet PEP8
+- Some code style changes to meet PEP8.
 - `s_group` primitive was not accepting empty default value.
 - Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
-- SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`
-- Dropped six.binary_type in favor of b"" format
-- Fixed process monitor handling of backslashes in Windows start commands
-- Fixed and documented `boo open`
-- Fixed receive function in `fuzz_logger_curses`
-- Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead
-- Fixed setting socket timeout options on Windows
-- If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing
-- Fixed CSV logger send and receive data decoding
+- SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`.
+- Dropped six.binary_type in favor of b"" format.
+- Fixed process monitor handling of backslashes in Windows start commands.
+- Fixed and documented `boo open`.
+- Fixed receive function in `fuzz_logger_curses`.
+- Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead.
+- Fixed setting socket timeout options on Windows.
+- If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing.
+- Fixed CSV logger send and receive data decoding.
 - Handle SSL-related exception. Added `ignore_connection_ssl_errors` session attribute that can
   be set to True to ignore SSL-related error on a test case.
-- Fixed issue with tornado on Python 3.8 and Windows
+- Fixed `s_from_file` decoding in Python 2 (the encoding parameter is now depreciated).
+- Updated documentation of `s_checksum`. It is possible to use a custom algorithm with this block.
 
 v0.1.5
 ------
