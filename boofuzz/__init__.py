@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import functools
+import sys
 
 import six
 from past.builtins import map
@@ -47,6 +48,13 @@ from .primitives import (
     Word,
 )
 from .sessions import open_test_run, Session, Target
+
+# workaround to make Tornado work in Python 3.8
+# https://github.com/tornadoweb/tornado/issues/2608
+if sys.platform == "win32" and sys.version_info >= (3, 8):
+    import asyncio
+
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 __all__ = [
     "BasePrimitive",

@@ -428,7 +428,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
@@ -489,7 +489,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(raw_packet, server.received)
         self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2_max_size(self):
         """
         Test 'raw-l2' max packet size.
@@ -536,7 +536,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2_oversized(self):
         """
         Test 'raw-l2' oversized packet handling.
@@ -583,7 +583,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
@@ -637,7 +637,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, raw_packet)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_max_size(self):
         """
         Test 'raw-l3' max packet size.
@@ -684,7 +684,7 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(expected_server_receive, server.received)
         self.assertEqual(received, data_to_send)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_oversized(self):
         """
         Test 'raw-l3' max packet size.
