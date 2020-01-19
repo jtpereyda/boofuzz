@@ -19,6 +19,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+from datetime import datetime
 
 
 # -- General configuration ------------------------------------------------
@@ -46,7 +47,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"boofuzz"
-copyright = u"2017, Joshua Pereyda"
+copyright = u"{}, Joshua Pereyda".format(datetime.now().year)
 author = u"Joshua Pereyda"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -82,13 +83,20 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "description": "Network Protocol Fuzzing for Humans",
+    "body_max_width": "inherit",
+    "page_width": "1200px",
+    "sidebar_width": "250px",
+    "github_user": "jtpereyda",
+    "github_repo": "boofuzz",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
