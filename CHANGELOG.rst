@@ -13,6 +13,7 @@ Features
 
 Fixes
 ^^^^^
+- Fixed issue with tornado on Python 3.8 and Windows.
 - Fixed various potential type errors
 
 v0.1.6

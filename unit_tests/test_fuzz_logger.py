@@ -178,7 +178,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.assertEqual(["FAILURE 1"], self.logger.error_test_cases["a"])
 
         # Use a number to verify that non-string keys can work
-        self.logger.open_test_case(test_case_id="5", name=self.some_other_text, index=self.some_int)
+        self.logger.open_test_case(test_case_id=5, name=self.some_other_text, index=self.some_int)
 
         line1 = "Sit here and rot, high, fat, all day, you boys,"
         line2 = "Far lengths hide pain, mother's sobs, children's bones"
@@ -186,7 +186,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_error(line1)
         self.logger.log_error(line2)
         self.logger.log_error(line3)
-        self.assertEqual([line1, line2, line3], self.logger.error_test_cases["5"])
+        self.assertEqual([line1, line2, line3], self.logger.error_test_cases[5])
 
         self.assertEqual(0, len(self.logger.passed_test_cases))
         self.assertEqual(0, len(self.logger.failed_test_cases))
@@ -210,7 +210,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_pass("Good to go")
         self.assertEqual(["Good to go"], self.logger.passed_test_cases["a"])
 
-        self.logger.open_test_case(test_case_id="-1", name=self.some_other_text, index=self.some_int)
+        self.logger.open_test_case(test_case_id=-1, name=self.some_other_text, index=self.some_int)
 
         line1 = "Yes"
         line2 = "Yes"
@@ -218,7 +218,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_pass(line1)
         self.logger.log_pass(line2)
         self.logger.log_pass(line3)
-        self.assertEqual([line1, line2, line3], self.logger.passed_test_cases["-1"])
+        self.assertEqual([line1, line2, line3], self.logger.passed_test_cases[-1])
 
         self.assertEqual(0, len(self.logger.failed_test_cases))
         self.assertEqual(0, len(self.logger.error_test_cases))
