@@ -91,6 +91,7 @@ html_theme = "alabaster"
 #
 html_theme_options = {
     "description": "Network Protocol Fuzzing for Humans",
+    "body_min_width": "300px",
     "body_max_width": "inherit",
     "page_width": "1200px",
     "sidebar_width": "250px",

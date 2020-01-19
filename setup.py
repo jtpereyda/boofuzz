@@ -33,18 +33,7 @@ def get_long_description():
 
 
 extra_requirements = {
-    "dev": [
-        "tox",
-        "flake8",
-        "check-manifest",
-        "mock",
-        "pytest",
-        "pytest-bdd",
-        "netifaces",
-        "ipaddress",
-        "sphinx",
-        "sphinx_rtd_theme",
-    ]
+    "dev": ["tox", "flake8", "check-manifest", "mock", "pytest", "pytest-bdd", "netifaces", "ipaddress", "sphinx"]
 }
 if sys.version_info >= (3, 6):
     extra_requirements["dev"] += ["black"]
