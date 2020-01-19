@@ -11,6 +11,10 @@ Features
 - Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 - Moved connection related modules into new `connections` subpacket
 
+Fixes
+^^^^^
+- Fixed issue with tornado on Python 3.8 and Windows.
+
 v0.1.6
 ------
 Features
