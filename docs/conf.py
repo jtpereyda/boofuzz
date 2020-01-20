@@ -19,6 +19,7 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+from datetime import datetime
 
 
 # -- General configuration ------------------------------------------------
@@ -46,7 +47,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"boofuzz"
-copyright = u"2017, Joshua Pereyda"
+copyright = u"{}, Joshua Pereyda".format(datetime.now().year)
 author = u"Joshua Pereyda"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -88,7 +89,15 @@ html_theme = "alabaster"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "description": "Network Protocol Fuzzing for Humans",
+    "body_min_width": "300px",
+    "body_max_width": "inherit",
+    "page_width": "1200px",
+    "sidebar_width": "250px",
+    "github_user": "jtpereyda",
+    "github_repo": "boofuzz",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

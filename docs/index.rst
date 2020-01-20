@@ -69,16 +69,13 @@ User Guide
 
 
 .. toctree::
+    :caption: User Guide
     :maxdepth: 2
 
     user/install
     user/quickstart
     user/contributing
 
-.. toctree::
-    :maxdepth: 1
-
-    user/changelog
 
 Public Protocol Libraries
 -------------------------
@@ -95,6 +92,7 @@ API Documentation
 -----------------
 
 .. toctree::
+    :caption: API Documentation
     :maxdepth: 2
 
     source/Session
@@ -103,6 +101,11 @@ API Documentation
     user/logging
     user/static-protocol-definition
     user/other-modules
+
+.. toctree::
+    :maxdepth: 1
+
+    user/changelog
 
 Contributions
 -------------
