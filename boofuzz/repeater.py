@@ -1,6 +1,7 @@
-from abc import abstractmethod, ABCMeta
-from six import with_metaclass
 import time
+from abc import ABCMeta, abstractmethod
+
+from six import with_metaclass
 
 
 class Repeater(with_metaclass(ABCMeta, object)):

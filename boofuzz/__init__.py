@@ -46,8 +46,8 @@ from .primitives import (
     String,
     Word,
 )
+from .repeater import CountRepeater, Repeater, TimeRepeater
 from .sessions import open_test_run, Session, Target
-from .repeater import Repeater, CountRepeater, TimeRepeater
 
 __all__ = [
     "BasePrimitive",
@@ -146,8 +146,8 @@ __all__ = [
     "String",
     "SullyRuntimeError",
     "Target",
-    "TimeRepeater",
     "TCPSocketConnection",
+    "TimeRepeater",
     "UDPSocketConnection",
     "Word",
 ]
