@@ -47,6 +47,7 @@ from .primitives import (
     String,
     Word,
 )
+from .repeater import CountRepeater, Repeater, TimeRepeater
 from .sessions import open_test_run, Session, Target
 
 # workaround to make Tornado work in Python 3.8
@@ -66,6 +67,7 @@ __all__ = [
     "Byte",
     "Bytes",
     "Checksum",
+    "CountRepeater",
     "DEFAULT_PROCMON_PORT",
     "Delim",
     "DWord",
@@ -94,6 +96,7 @@ __all__ = [
     "RawL2SocketConnection",
     "RawL3SocketConnection",
     "Repeat",
+    "Repeater",
     "Request",
     "REQUESTS",
     "s_bigword",
@@ -152,6 +155,7 @@ __all__ = [
     "SullyRuntimeError",
     "Target",
     "TCPSocketConnection",
+    "TimeRepeater",
     "UDPSocketConnection",
     "Word",
 ]

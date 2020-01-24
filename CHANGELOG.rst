@@ -10,6 +10,7 @@ Features
 - Added support for receiving on raw Layer 2 and Layer 3 connections
 - Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
 - Moved connection related modules into new `connections` subpacket
+- Added the ability to repeat sending of packages within a given time or count.
 
 Fixes
 ^^^^^
