@@ -166,7 +166,6 @@ class DebuggerThreadPydbg(threading.Thread):
 
     def stop_target(self):
         try:
-            os.system("taskkill /pid %d" % self.pid)
             exit_code = os.system("taskkill /pid %d" % self.pid)
             if exit_code != 0:
                 os.system("taskkill -F /pid %d" % self.pid)
