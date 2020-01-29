@@ -15,8 +15,10 @@
 
 import pydot
 
+from ..ifuzzable import IFuzzable
 
-class Node(object):
+
+class Node(IFuzzable):
     id = 0
     number = 0
 
@@ -46,6 +48,7 @@ class Node(object):
         # general graph attributes
         self.color = 0xEEF7FF
         self.border_color = 0xEEEEEE
+        self._name = ""
         self.label = ""
         self.shape = "box"
 
@@ -57,6 +60,14 @@ class Node(object):
         self.gml_line_width = 1.0
         self.gml_type = "rectangle"
         self.gml_width_shape = 1.0
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     def render_node_gml(self):
         """

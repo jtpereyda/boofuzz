@@ -5,7 +5,7 @@ import zlib
 from functools import wraps
 
 try:
-    import crc32c
+    import crc32c  # pytype: disable=import-error
 except ImportError:
     # Import guard for systems without crc32c support.
     warnings.warn("Importing crc32c package failed. Using crc32c checksums will fail.", UserWarning, stacklevel=2)

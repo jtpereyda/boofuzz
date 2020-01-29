@@ -30,8 +30,8 @@ class DNSHostname(blocks.Block):
         new_str = b""
 
         # replace dots (.) with the substring length.
-        for part in self._rendered.split("."):
-            new_str += str(len(part)) + part
+        for part in self._rendered.split(b"."):
+            new_str += bytes(len(part)) + part
 
         # be sure to null terminate too.
         self._rendered = new_str + b"\x00"

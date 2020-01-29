@@ -1259,7 +1259,7 @@ class Session(pgraph.Graph):
 
             self.fuzz_node = self.nodes[path[-1].dst]
             self.total_mutant_index += 1
-            yield (path,)
+            yield path,
 
             for x in self._iterate_messages_recursive(self.fuzz_node, path):
                 yield x
@@ -1333,7 +1333,7 @@ class Session(pgraph.Graph):
         # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
         while self.fuzz_node.mutate():
             self.total_mutant_index += 1
-            yield (path,)
+            yield path,
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False

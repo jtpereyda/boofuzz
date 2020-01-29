@@ -10,7 +10,7 @@ import impacket
 import impacket.ImpactDecoder
 
 # noinspection PyUnresolvedReferences
-import pcapy
+import pcapy  # pytype: disable=import-error
 
 from boofuzz import helpers, pedrpc
 
@@ -60,7 +60,7 @@ Network Device List:
     for index, pcapy_device in enumerate(ifs):
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
-            import _winreg
+            import _winreg  # pytype: disable=import-error
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.

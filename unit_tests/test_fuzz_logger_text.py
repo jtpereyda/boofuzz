@@ -5,11 +5,7 @@ import unittest
 import six
 from builtins import bytes, chr
 
-try:
-    from StringIO import StringIO
-# probably because python 3
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 import boofuzz.helpers
 from boofuzz import fuzz_logger_text

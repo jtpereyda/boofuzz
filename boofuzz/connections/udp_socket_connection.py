@@ -161,6 +161,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         openbsd = platform.uname()[0] == "OpenBSD"
         lib = None
 
+        # pytype: disable=attribute-error,module-attr
         if windows:
             sol_socket = ctypes.c_int(0xFFFF)
             sol_max_msg_size = 0x2003
@@ -186,6 +187,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         lib.getsockopt(sock.fileno(), sol_socket, opt, buf, ctypes.pointer(bufsize))
+        # pytype: enable=attribute-error,module-attr
 
         # Sanity filter against UDP_MAX_PAYLOAD_IPV4_THEORETICAL
         cls._max_payload = min(ctypes.c_ulong.from_buffer(buf).value, ip_constants.UDP_MAX_PAYLOAD_IPV4_THEORETICAL)

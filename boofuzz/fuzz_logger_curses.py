@@ -5,7 +5,7 @@ import time
 import warnings
 
 try:
-    import curses
+    import curses  # pytype: disable=import-error
 except ImportError:
     # Allow fuzz_logger_curses to be imported on Windows -- will fail if you try to use it.
     warnings.warn("Importing curses failed. Console GUI features will not be available.", UserWarning, stacklevel=2)
@@ -250,6 +250,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._stdscr.refresh()
 
         # Initialise test case window
+        # pytype: disable=module-attr
         self._casescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._casescr_frame.nodelay(1)
         self._casescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
@@ -266,6 +267,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._crashescr_frame.refresh(0, 0, self._height - 17, 0, self._height - 8, self._width)
         self._crashescr = self._crashescr_frame.subpad(self._max_log_lines, self._width - 2, 1, 1)
         self._draw_crash()
+        # pytype: enable=module-attr
 
         # Initialise status window
         self._statscr = curses.newwin(6, self._width, self._height - 7, 0)

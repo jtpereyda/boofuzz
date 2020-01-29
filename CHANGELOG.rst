@@ -15,6 +15,8 @@ Features
 Fixes
 ^^^^^
 - Fixed issue with tornado on Python 3.8 and Windows.
+- Fixed various potential type errors
+- Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
 
 v0.1.6
 ------
