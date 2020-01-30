@@ -1,3 +1,5 @@
+from typing import Union  # noqa: F401
+
 from past.builtins import map
 
 from .ifuzz_logger import IFuzzLogger
@@ -19,7 +21,7 @@ class FuzzLogger(IFuzzLogger):
             fuzz_loggers = []
         self._fuzz_loggers = fuzz_loggers
 
-        self._cur_test_case_id = ""
+        self._cur_test_case_id = ""  # type: Union[int, str]
         self.failed_test_cases = {}
         self.error_test_cases = {}
         self.passed_test_cases = {}

@@ -6,8 +6,8 @@ import sys
 import threading
 import time
 
-import pydbg
-import pydbg.defines
+import pydbg  # pytype: disable=import-error
+import pydbg.defines  # pytype: disable=import-error
 
 
 class DebuggerThreadPydbg(threading.Thread):
@@ -166,7 +166,6 @@ class DebuggerThreadPydbg(threading.Thread):
 
     def stop_target(self):
         try:
-            os.system("taskkill /pid %d" % self.pid)
             exit_code = os.system("taskkill /pid %d" % self.pid)
             if exit_code != 0:
                 os.system("taskkill -F /pid %d" % self.pid)

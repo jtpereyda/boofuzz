@@ -40,23 +40,27 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
        to eliminate them and add a generator function in their place.
     """
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def mutant_index(self):
         """Index of current mutation. 0 => normal value. 1 => first mutation.
         """
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def original_value(self):
         """Original, non-mutated value of element."""
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self):
         """Element name, should be specific for each instance."""
         return

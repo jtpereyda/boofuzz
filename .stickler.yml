@@ -8,3 +8,6 @@ linters:
   flake8:
     config: ./setup.cfg
     fixer: true
+  pytype:
+    config: ./setup.cfg
+    fixer: false

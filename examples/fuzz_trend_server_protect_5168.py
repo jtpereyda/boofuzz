@@ -19,10 +19,13 @@
 # uncomment the req/num to do a single test case.
 #
 
-# noinspection PyUnresolvedReferences
-from requests import trend  # noqa: F401
-
 from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, utils
+
+# noinspection PyUnresolvedReferences
+# pytype: disable=import-error
+from request_definitions import trend  # noqa: F401
+
+# pytype: enable=import-error
 
 req = num = None
 # req = "5168: op-3"

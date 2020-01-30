@@ -3,6 +3,20 @@ Changelog
 
 Upcoming
 --------
+Features
+^^^^^^^^
+- Rewrote and split the SocketConnection class into individual classes per socket type.
+- `SocketConnection` is now deprecated. Use the classes derived from `BaseSocketConnection` instead.
+- Added support for receiving on raw Layer 2 and Layer 3 connections
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
+- Moved connection related modules into new `connections` subpacket
+- Added the ability to repeat sending of packages within a given time or count.
+
+Fixes
+^^^^^
+- Fixed issue with tornado on Python 3.8 and Windows.
+- Fixed various potential type errors
+- Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
 
 v0.1.6
 ------

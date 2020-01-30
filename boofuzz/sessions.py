@@ -11,17 +11,16 @@ import threading
 import time
 import traceback
 import zlib
+from builtins import input
 from io import open
 
 import six
-from builtins import input
 from future.utils import listitems
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
-from boofuzz import helpers
-from . import (
+from boofuzz import (
     blocks,
     constants,
     event_hook,
@@ -30,10 +29,11 @@ from . import (
     fuzz_logger_curses,
     fuzz_logger_db,
     fuzz_logger_text,
+    helpers,
     pgraph,
     primitives,
 )
-from .web.app import app
+from boofuzz.web.app import app
 
 
 class Target(object):
@@ -49,17 +49,23 @@ class Target(object):
     Example:
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
 
-    Args:
-        connection (itarget_connection.ITargetConnection): Connection to system under test.
+    :param connection: Connection to system under test.
+    :type connection: itarget_connection.ITargetConnection
+    :param repeater: Repeater to use for sending. Default None.
+    :type repeater: repeater.Repeater
+
     """
 
-    def __init__(self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000):
+    def __init__(
+        self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000, repeater=None
+    ):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
         self.procmon = procmon
         self.netmon = netmon
         self.max_recv_bytes = max_recv_bytes
+        self.repeater = repeater
 
         # set these manually once target is instantiated.
         self.vmcontrol = None
@@ -150,10 +156,21 @@ class Target(object):
         Returns:
             None
         """
+        num_sent = 0
         if self._fuzz_data_logger is not None:
-            self._fuzz_data_logger.log_info("Sending {0} bytes...".format(len(data)))
+            repeat = ""
+            if self.repeater is not None:
+                repeat = ", " + self.repeater.log_message()
 
-        num_sent = self._target_connection.send(data=data)
+            self._fuzz_data_logger.log_info("Sending {0} bytes{1}...".format(len(data), repeat))
+
+        if self.repeater is not None:
+            self.repeater.start()
+            while self.repeater.repeat():
+                num_sent = self._target_connection.send(data=data)
+            self.repeater.reset()
+        else:
+            num_sent = self._target_connection.send(data=data)
 
         if self._fuzz_data_logger is not None:
             self._fuzz_data_logger.log_send(data[:num_sent])
@@ -1249,7 +1266,7 @@ class Session(pgraph.Graph):
 
             self.fuzz_node = self.nodes[path[-1].dst]
             self.total_mutant_index += 1
-            yield (path,)
+            yield path,
 
             for x in self._iterate_messages_recursive(self.fuzz_node, path):
                 yield x
@@ -1323,7 +1340,7 @@ class Session(pgraph.Graph):
         # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
         while self.fuzz_node.mutate():
             self.total_mutant_index += 1
-            yield (path,)
+            yield path,
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False

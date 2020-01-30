@@ -42,9 +42,9 @@ class Client(object):
         self.__disconnect()
 
         # connect to the server, timeout on failure.
+        self.__server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__server_sock.settimeout(3.0)
         try:
-            self.__server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__server_sock.settimeout(3.0)
             self.__server_sock.connect((self.__host, self.__port))
         except socket.error as e:
             if self.__retry != 5:

@@ -18,10 +18,13 @@
 #     launch trillian on the fuzz box with rendezvous enabled. otherwise the target will drop the connection.
 #
 
-# noinspection PyUnresolvedReferences
-from requests import jabber  # noqa: F401
-
 from boofuzz import pedrpc, s_get, sessions
+
+# noinspection PyUnresolvedReferences
+# pytype: disable=import-error
+from request_definitions import jabber  # noqa: F401
+
+# pytype: enable=import-error
 
 
 def init_message(sock):

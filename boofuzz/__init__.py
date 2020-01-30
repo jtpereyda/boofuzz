@@ -1,12 +1,27 @@
 from __future__ import absolute_import
 
 import functools
+import sys
 
 import six
 from past.builtins import map
 
 from . import blocks, exception, legos, pedrpc, primitives
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
+from .connections import (
+    BaseSocketConnection,
+    ip_constants,
+    ISerialLike,
+    ITargetConnection,
+    RawL2SocketConnection,
+    RawL3SocketConnection,
+    SerialConnection,
+    SerialConnectionLowLevel,
+    SocketConnection,
+    SSLSocketConnection,
+    TCPSocketConnection,
+    UDPSocketConnection,
+)
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
 from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
@@ -16,7 +31,6 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .itarget_connection import ITargetConnection
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -33,12 +47,19 @@ from .primitives import (
     String,
     Word,
 )
-from .serial_connection import SerialConnection
+from .repeater import CountRepeater, Repeater, TimeRepeater
 from .sessions import open_test_run, Session, Target
-from .socket_connection import SocketConnection
+
+# workaround to make Tornado work in Python 3.8
+# https://github.com/tornadoweb/tornado/issues/2608
+if sys.platform == "win32" and sys.version_info >= (3, 8):
+    import asyncio
+
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 __all__ = [
     "BasePrimitive",
+    "BaseSocketConnection",
     "BIG_ENDIAN",
     "BitField",
     "Block",
@@ -46,6 +67,7 @@ __all__ = [
     "Byte",
     "Bytes",
     "Checksum",
+    "CountRepeater",
     "DEFAULT_PROCMON_PORT",
     "Delim",
     "DWord",
@@ -59,6 +81,8 @@ __all__ = [
     "Group",
     "IFuzzLogger",
     "IFuzzLoggerBackend",
+    "ip_constants",
+    "ISerialLike",
     "ITargetConnection",
     "legos",
     "LITTLE_ENDIAN",
@@ -69,7 +93,10 @@ __all__ = [
     "primitives",
     "QWord",
     "RandomData",
+    "RawL2SocketConnection",
+    "RawL3SocketConnection",
     "Repeat",
+    "Repeater",
     "Request",
     "REQUESTS",
     "s_bigword",
@@ -117,14 +144,19 @@ __all__ = [
     "s_update",
     "s_word",
     "SerialConnection",
+    "SerialConnectionLowLevel",
     "Session",
     "Size",
     "SizerNotUtilizedError",
     "SocketConnection",
+    "SSLSocketConnection",
     "Static",
     "String",
     "SullyRuntimeError",
     "Target",
+    "TCPSocketConnection",
+    "TimeRepeater",
+    "UDPSocketConnection",
     "Word",
 ]
 
