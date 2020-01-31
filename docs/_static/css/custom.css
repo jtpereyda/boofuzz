@@ -1,0 +1,12 @@
+/*@import '../alabaster.css';  /* for Alabaster */
+@import 'theme.css';       /* for the Read the Docs theme */
+
+
+.wy-side-nav-search {
+  background-color: revert;
+}
+
+.wy-side-nav-search > div.version {
+  /* color: rgba(255,255,255,0.3); */
+  color: rgba(255,255,255,0.5);
+}

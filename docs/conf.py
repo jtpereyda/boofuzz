@@ -72,7 +72,7 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+pygments_style = "stata-dark"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -83,21 +83,17 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    "description": "Network Protocol Fuzzing for Humans",
-    "body_min_width": "300px",
-    "body_max_width": "inherit",
-    "page_width": "1200px",
-    "sidebar_width": "250px",
-    "github_user": "jtpereyda",
-    "github_repo": "boofuzz",
+    "display_version": True,
 }
+
+html_style = "css/custom.css"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

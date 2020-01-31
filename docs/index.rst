@@ -1,17 +1,17 @@
 boofuzz: Network Protocol Fuzzing for Humans
 ============================================
 
-.. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
+.. image:: https://img.shields.io/travis/jtpereyda/boofuzz/master?style=flat-square
     :target: https://travis-ci.org/jtpereyda/boofuzz
-.. image:: https://readthedocs.org/projects/boofuzz/badge/?version=latest
+.. image:: https://img.shields.io/readthedocs/boofuzz/latest?style=flat-square
     :target: https://boofuzz.readthedocs.io/
     :alt: Documentation Status
-.. image:: https://img.shields.io/pypi/v/boofuzz.svg
+.. image:: https://img.shields.io/pypi/v/boofuzz?style=flat-square
     :target: https://pypi.org/project/boofuzz/
-.. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
+.. image:: https://img.shields.io/gitter/room/jtpereyda/boofuzz?style=flat-square
     :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
     :target: https://gitter.im/jtpereyda/boofuzz
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
     :target: https://github.com/psf/black
 
 Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
@@ -64,10 +64,6 @@ Boofuzz installs as a Python library used to build fuzzer scripts. See
 :ref:`install` for advanced and detailed instructions.
 
 
-User Guide
-----------
-
-
 .. toctree::
     :caption: User Guide
     :maxdepth: 2
@@ -87,9 +83,6 @@ coverage:
 - `boofuzz-http`_
 
 If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
-
-API Documentation
------------------
 
 .. toctree::
     :caption: API Documentation
@@ -138,7 +131,7 @@ For updates, follow `@b00fuzz`_ on Twitter.
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
