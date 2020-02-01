@@ -1,17 +1,17 @@
 boofuzz: Network Protocol Fuzzing for Humans
 ============================================
 
-.. image:: https://img.shields.io/travis/jtpereyda/boofuzz/master?style=flat-square
+.. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
     :target: https://travis-ci.org/jtpereyda/boofuzz
-.. image:: https://img.shields.io/readthedocs/boofuzz/latest?style=flat-square
+.. image:: https://readthedocs.org/projects/boofuzz/badge/?version=latest
     :target: https://boofuzz.readthedocs.io/
     :alt: Documentation Status
-.. image:: https://img.shields.io/pypi/v/boofuzz?style=flat-square
+.. image:: https://img.shields.io/pypi/v/boofuzz.svg
     :target: https://pypi.org/project/boofuzz/
-.. image:: https://img.shields.io/gitter/room/jtpereyda/boofuzz?style=flat-square
+.. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
     :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
     :target: https://gitter.im/jtpereyda/boofuzz
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
 Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
