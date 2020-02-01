@@ -309,9 +309,9 @@ class Session(pgraph.Graph):
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
                                            Default None.
-        restart_threshold (int):    Maximum number of retries on lost target connection. Default -1 (indefinitely).
+        restart_threshold (int):    Maximum number of retries on lost target connection. Default None (indefinitely).
         restart_timeout (float):    Time in seconds for that a connection attempt should be retried. Default None
-                                   (indefinitely).
+                                    (indefinitely).
         pre_send_callbacks (list of method): The registered method will be called prior to each fuzz request.
                                             Default None.
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
@@ -1537,22 +1537,24 @@ class Session(pgraph.Graph):
                     target.open()
                     break  # break if no exception
                 except exception.BoofuzzTargetConnectionFailedError:
-                    self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
                     if self.restart_threshold and unable_to_connect_count >= self.restart_threshold:
-                        raise exception.BoofuzzTargetConnectionFailedError(
-                            "Unable to reconnect target: Reached threshold of {0} retries. Ending fuzzing.".format(
+                        self._fuzz_data_logger.log_info(
+                            "Unable to reconnect to target: Reached threshold of {0} retries. Ending fuzzing.".format(
                                 self.restart_threshold
                             )
                         )
-                    if self.restart_timeout and time.time() >= initial_time + self.restart_timeout:
-                        raise exception.BoofuzzTargetConnectionFailedError(
-                            "Unable to reconnect target: Reached restart timeout of {0} s. Ending fuzzing.".format(
+                        raise
+                    elif self.restart_timeout and time.time() >= initial_time + self.restart_timeout:
+                        self._fuzz_data_logger.log_info(
+                            "Unable to reconnect to target: Reached restart timeout of {0}s. Ending fuzzing.".format(
                                 self.restart_timeout
                             )
                         )
-
-                    self._restart_target(target)
-                    unable_to_connect_count += 1
+                        raise
+                    else:
+                        self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
+                        self._restart_target(target)
+                        unable_to_connect_count += 1
                 except exception.BoofuzzOutOfAvailableSockets:
                     out_of_available_sockets_count += 1
                     if out_of_available_sockets_count == 50:
