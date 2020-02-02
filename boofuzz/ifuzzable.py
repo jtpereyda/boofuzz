@@ -2,6 +2,7 @@ import abc
 
 from builtins import object
 from future.utils import listitems, with_metaclass
+from .pgraph import Node
 
 
 class DocStringInheritor(type):
@@ -32,7 +33,7 @@ class DocStringInheritor(type):
 
 
 # DocStringInheritor is the metaclass in python 2 and 3
-class IFuzzable(with_metaclass(DocStringInheritor, object)):
+class IFuzzable(with_metaclass(DocStringInheritor, Node)):
     """Describes a fuzzable message element or message.
 
     Design Notes:

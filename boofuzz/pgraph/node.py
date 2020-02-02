@@ -15,10 +15,8 @@
 
 import pydot
 
-from ..ifuzzable import IFuzzable
 
-
-class Node(IFuzzable):
+class Node(object):
     id = 0
     number = 0
 
@@ -48,7 +46,6 @@ class Node(IFuzzable):
         # general graph attributes
         self.color = 0xEEF7FF
         self.border_color = 0xEEEEEE
-        self._name = ""
         self.label = ""
         self.shape = "box"
 
@@ -60,14 +57,6 @@ class Node(IFuzzable):
         self.gml_line_width = 1.0
         self.gml_type = "rectangle"
         self.gml_width_shape = 1.0
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     def render_node_gml(self):
         """
@@ -145,11 +134,11 @@ class Node(IFuzzable):
 
         dot_node = pydot.Node(self.id)
 
-        dot_node.label = '<<font face="lucida console">%s</font>>' % self.label.rstrip("\r\n")
-        dot_node.label = dot_node.label.replace("\\n", "<br/>")
-        dot_node.shape = self.shape
-        dot_node.color = "#%06x" % self.color
-        dot_node.fillcolor = "#%06x" % self.color
+        dot_node.obj_dict['attributes']['label'] = '<<font face="lucida console">%s</font>>' % self.label.rstrip("\r\n")
+        dot_node.obj_dict['attributes']['label'] = dot_node.obj_dict['attributes']['label'].replace("\\n", "<br/>")
+        dot_node.obj_dict['attributes']['shape'] = self.shape
+        dot_node.obj_dict['attributes']['color'] = "#%06x" % self.color
+        dot_node.obj_dict['attributes']['fillcolor'] = "#%06x" % self.color
 
         return dot_node
 
