@@ -1,25 +1,13 @@
-include *.py
-include *.rst
-include *.txt
-include *.toml
-recursive-include boofuzz *.md
-recursive-include boofuzz *.py
-recursive-include boofuzz *.js
-recursive-include examples *.py
-recursive-include examples *.md
-recursive-include request_definitions *.html
-recursive-include request_definitions *.py
-recursive-include unit_tests *.feature
-recursive-include unit_tests *.py
-recursive-include utils *.py
-include tox.ini
-
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
+include *.py *.rst *.toml *.txt tox.ini
+include docs/Makefile
 
 recursive-include _static *.png
-recursive-include docs *.png
+recursive-include boofuzz/doc *.md
+recursive-include docs *.bat *.png *.py *.rst
+recursive-include examples *.md *.py
+recursive-include request_definitions *.html *.py
+recursive-include unit_tests *.feature *.py
+recursive-include utils *.py
 
+exclude .travis.yml
 prune docs/_build
