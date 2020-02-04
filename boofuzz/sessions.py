@@ -309,6 +309,9 @@ class Session(pgraph.Graph):
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
                                            Default None.
+        restart_threshold (int):    Maximum number of retries on lost target connection. Default None (indefinitely).
+        restart_timeout (float):    Time in seconds for that a connection attempt should be retried. Default None
+                                    (indefinitely).
         pre_send_callbacks (list of method): The registered method will be called prior to each fuzz request.
                                             Default None.
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
@@ -362,6 +365,8 @@ class Session(pgraph.Graph):
         crash_threshold_element=3,
         restart_sleep_time=5,
         restart_callbacks=None,
+        restart_threshold=None,
+        restart_timeout=None,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
         fuzz_data_logger=None,
@@ -402,6 +407,8 @@ class Session(pgraph.Graph):
         self._crash_threshold_node = crash_threshold_request
         self._crash_threshold_element = crash_threshold_element
         self.restart_sleep_time = restart_sleep_time
+        self.restart_threshold = restart_threshold
+        self.restart_timeout = restart_timeout
         if fuzz_data_logger is not None:
             raise exception.BoofuzzError("Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!")
         if fuzz_loggers is None:
@@ -1522,13 +1529,32 @@ class Session(pgraph.Graph):
         """
         if not self._reuse_target_connection:
             out_of_available_sockets_count = 0
+            unable_to_connect_count = 0
+            initial_time = time.time()
+
             while True:
                 try:
                     target.open()
                     break  # break if no exception
                 except exception.BoofuzzTargetConnectionFailedError:
-                    self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
-                    self._restart_target(target)
+                    if self.restart_threshold and unable_to_connect_count >= self.restart_threshold:
+                        self._fuzz_data_logger.log_info(
+                            "Unable to reconnect to target: Reached threshold of {0} retries. Ending fuzzing.".format(
+                                self.restart_threshold
+                            )
+                        )
+                        raise
+                    elif self.restart_timeout and time.time() >= initial_time + self.restart_timeout:
+                        self._fuzz_data_logger.log_info(
+                            "Unable to reconnect to target: Reached restart timeout of {0}s. Ending fuzzing.".format(
+                                self.restart_timeout
+                            )
+                        )
+                        raise
+                    else:
+                        self._fuzz_data_logger.log_info(constants.WARN_CONN_FAILED_TERMINAL)
+                        self._restart_target(target)
+                        unable_to_connect_count += 1
                 except exception.BoofuzzOutOfAvailableSockets:
                     out_of_available_sockets_count += 1
                     if out_of_available_sockets_count == 50:
