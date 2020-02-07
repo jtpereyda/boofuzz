@@ -4,8 +4,8 @@ Installing boofuzz
 Prerequisites
 -------------
 
-Boofuzz requires Python 2.7 or ≥3.5. Recommended installation requires ``pip``.
-To ensure forward compatibility, python 3 is recommended. As a base
+Boofuzz requires Python 2.7 or ≥ 3.5. Recommended installation requires ``pip``.
+To ensure forward compatibility, Python 3 is recommended. As a base
 requirement, the following packages are needed:
 
 Ubuntu/Debian
@@ -19,40 +19,40 @@ CentOS
 Install
 -------
 It is strongly recommended to set up boofuzz in a `virtual environment
-(virtualenv) <https://docs.python.org/3/tutorial/venv.html>`_. First, create a
+(venv) <https://docs.python.org/3/tutorial/venv.html>`_. First, create a
 directory that will hold our boofuzz install:
 
-::
+.. code-block:: bash
 
     $ mkdir boofuzz && cd boofuzz
     $ python3 -m venv env
 
 This creates a new virtual environment env in the current folder. Note that the
-python version in a virtual environment is fixed and chosen at its creation.
+Python version in a virtual environment is fixed and chosen at its creation.
 Unlike global installs, within a virtual environment ``python`` is aliased to
-the python version of the virtual environment.
+the Python version of the virtual environment.
 
 Next, activate the virtual environment:
 
-::
+.. code-block:: bash
 
     $ source env/bin/activate
 
 Or, if you are on Windows:
 
-::
+.. code-block:: batch
 
-    $ env\Scripts\activate.bat
+    > env\Scripts\activate.bat
 
 Ensure you have the latest version of both ``pip`` and ``setuptools``:
 
-::
+.. code-block:: bash
 
     (env) $ pip install -U pip setuptools
 
 Finally, install boofuzz:
 
-::
+.. code-block:: bash
 
     (env) $ pip install boofuzz
 
@@ -68,38 +68,40 @@ From Source
    to upgrade ``setuptools`` and ``pip``.
 2. Download the source code. You can either grab a zip from https://github.com/jtpereyda/boofuzz
    or directly clone it with git:
-   ::
+
+   .. code-block:: bash
 
       $ git clone https://github.com/jtpereyda/boofuzz.git
 
 3. Install. Run ``pip`` from within the boofuzz directory after activating the virtual
    environment:
-   ::
 
-       pip install .
+   .. code-block:: bash
+
+       $ pip install .
 
 Tips:
 
 -  Use the ``-e`` option for developer mode, which allows changes to be
    seen automatically without reinstalling:
 
-   ::
+   .. code-block:: bash
 
-       pip install -e .
+       $ pip install -e .
 
 -  To install developer tools (unit test dependencies, test runners, etc.) as well:
 
-   ::
+   .. code-block:: bash
 
-       pip install -e .[dev]
+       $ pip install -e .[dev]
 
-   Note that ``black`` needs python ≥3.6.
+   Note that `black <https://github.com/psf/black>`_ needs Python ≥ 3.6.
 
 -  If you’re behind a proxy:
 
-   ::
+   .. code-block:: bash
 
-       set HTTPS_PROXY=http://your.proxy.com:port
+       $ set HTTPS_PROXY=http://your.proxy.com:port
 
 - If you're planning on developing boofuzz itself, you can save a directory and
   create your virtual environment after you've cloned the source code (so ``env/``
@@ -112,10 +114,10 @@ process\_monitor.py (Windows only)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. warning::
-   Currently, the process monitor is python2 only due to a dependency on
+   Currently, the process monitor is Python 2 only due to a dependency on
    ``pydbg``. See the discussion in `Issue #370
    <https://github.com/jtpereyda/boofuzz/issues/370#issuecomment-578423069>`_
-   for more information regarding python 3 support.
+   for more information regarding Python 3 support.
 
    As always, contributions are welcome!
 
@@ -143,7 +145,7 @@ If you want to use process\_monitor.py, follow these additional steps:
 
 3. Verify that process\_monitor.py runs:
 
-    ::
+    .. code-block:: batch
 
         C:\Users\IEUser\Downloads\boofuzz>python process_monitor.py -h
         usage: procmon [-h] [--debug] [--quiet] [-f STR] [-c FILENAME] [-i PID]
