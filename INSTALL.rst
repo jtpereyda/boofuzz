@@ -9,18 +9,19 @@ To ensure forward compatibility, Python 3 is recommended. As a base
 requirement, the following packages are needed:
 
 Ubuntu/Debian
-  ``sudo apt-get install python3-pip python3-venv``
+  ``sudo apt-get install python3-pip python3-venv build-essential``
 OpenSuse
-  ``sudo zypper install python3-pip python3-virtualenv``
+  ``sudo zypper install python3-devel gcc``
 CentOS
-  ``sudo yum install python36 python3-pip``
-
+  ``sudo yum install python3-devel gcc``
 
 Install
 -------
 It is strongly recommended to set up boofuzz in a `virtual environment
-(venv) <https://docs.python.org/3/tutorial/venv.html>`_. First, create a
-directory that will hold our boofuzz install:
+(venv) <https://docs.python.org/3/tutorial/venv.html>`_. However, the ``venv``
+module is only available for Python 3. For Python 2.7, please use the
+older `virtualenv package <https://virtualenv.pypa.io/en/latest/userguide.html#usage>`_.
+First, create a directory that will hold our boofuzz install:
 
 .. code-block:: bash
 
