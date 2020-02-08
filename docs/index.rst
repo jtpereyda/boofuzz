@@ -57,7 +57,7 @@ Installation
 ------------
 ::
 
-    pip install boofuzz --user
+    pip install boofuzz
 
 
 Boofuzz installs as a Python library used to build fuzzer scripts. See
