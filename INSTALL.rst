@@ -20,7 +20,7 @@ Install
 It is strongly recommended to set up boofuzz in a `virtual environment
 (venv) <https://docs.python.org/3/tutorial/venv.html>`_. However, the ``venv``
 module is only available for Python 3. For Python 2.7, please use the
-older `virtualenv package <https://virtualenv.pypa.io/en/latest/userguide.html#usage>`_.
+older `virtualenv package <https://virtualenv.pypa.io/en/stable/user_guide.html>`_.
 First, create a directory that will hold our boofuzz install:
 
 .. code-block:: bash
