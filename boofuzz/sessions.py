@@ -909,6 +909,7 @@ class Session(pgraph.Graph):
         Returns:
             bool: True if falures were found. False otherwise.
         """
+        has_crashed = False
         if len(target.monitors) > 0:
             self._fuzz_data_logger.open_test_step("Contact target monitors")
             # So, we need to run through the array two times. First, we check
@@ -917,7 +918,6 @@ class Session(pgraph.Graph):
             # a monitor can provide a crash synopsis, but in any case, we'll
             # check. In the second run, we try to get crash synopsis from the
             # monitors that did not detect a crash as supplemental information.
-            has_crashed = False
             finished_monitors = []
             for monitor in target.monitors:
                 if not monitor.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
