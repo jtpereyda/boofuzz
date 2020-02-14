@@ -5,7 +5,7 @@ import struct
 import sys
 import time
 
-from . import exception
+from boofuzz import exception
 
 
 class Client(object):

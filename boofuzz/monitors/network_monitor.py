@@ -1,5 +1,5 @@
 from .imonitor import IMonitor
-import boofuzz.pedrpc as pedrpc
+from . import pedrpc
 
 # Important: IMonitor needs to come *after* pedrpc.Client in the
 # Inheritance list for the method resolution order to produce
