@@ -1477,10 +1477,6 @@ class Session(pgraph.Graph):
         try:
             self._open_connection_keep_trying(target)
 
-            for monitor in target.monitors:
-                self._fuzz_data_logger.open_test_step("Calling pre_send() on monitor {}".format(monitor.__class__.__name__))
-                monitor.pre_send(self.total_mutant_index)
-
             self._pre_send(target)
 
             for e in path[:-1]:
