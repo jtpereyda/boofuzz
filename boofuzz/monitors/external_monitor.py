@@ -1,5 +1,6 @@
 from .imonitor import IMonitor
 
+
 class External(IMonitor):
     """
     External instrumentation class

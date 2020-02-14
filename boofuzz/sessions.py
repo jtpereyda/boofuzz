@@ -16,7 +16,6 @@ from builtins import input
 from io import open
 
 import six
-from future.utils import listitems
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
@@ -35,8 +34,8 @@ from boofuzz import (
     primitives,
 )
 from boofuzz.web.app import app
-from boofuzz.monitors.imonitor import IMonitor
 from boofuzz.utils.callbacks import apply_callback
+
 
 class Target(object):
     """Target descriptor container.
@@ -75,7 +74,6 @@ class Target(object):
         if "procmon" in kwargs.keys():
             warnings.warn(
                 "Target(procmon=...) is deprecated. Please change your code"
-                " and add it to the monitors argument. For now, we do this "
                 "for you, but this will be removed in the future.",
                 DeprecationWarning,
             )
@@ -541,7 +539,8 @@ class Session(pgraph.Graph):
     @property
     def netmon_results(self):
         raise NotImplementedError(
-            "netmon_results is now part of monitor_results and thus can't be accessed directly. Please update your code."
+            "netmon_results is now part of monitor_results and thus can't be accessed directly."
+            " Please update your code."
         )
 
     def add_node(self, node):
@@ -958,7 +957,7 @@ class Session(pgraph.Graph):
                     len(data),
                     self.total_mutant_index,
                 )
-                if not self.total_mutant_index in self.monitor_data:
+                if self.total_mutant_index not in self.monitor_data:
                     self.monitor_data[self.total_mutant_index] = []
 
                 self.monitor_data[self.total_mutant_index] += [data]
