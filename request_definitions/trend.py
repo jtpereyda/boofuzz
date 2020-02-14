@@ -124,7 +124,7 @@ for op, submax in [(0x1, 22), (0x2, 19), (0x3, 85), (0x5, 25), (0xA, 49), (0x1F,
     s_initialize("5168: op-%x" % op)
     if s_block_start("everything", encoder=rpc_request_encoder):
         # [in] long trend_req_num,
-        s_group("subs", values=map(chr, range(1, submax)))
+        s_group("subs", values=list(map(chr, range(1, submax))))
         s_static("\x00")  # subs is actually a little endian word
         s_static(struct.pack("<H", op))  # opcode
 

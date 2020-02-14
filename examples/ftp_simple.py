@@ -1,5 +1,6 @@
-#!/usr/bin/env python
-# Designed for use with boofuzz v0.0.8
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.1.7
+
 from boofuzz import *
 
 

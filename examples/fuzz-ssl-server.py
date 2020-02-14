@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
-# designed for use with boofuzz
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.1.7
 #
-# minimal example which fuzzes a remote HTTPS server
-# use this as a starting point for SSL/TLS server fuzzing
+# Minimal example which fuzzes a remote HTTPS server
+# Use this as a starting point for SSL/TLS server fuzzing
 
 from boofuzz import *
 
