@@ -2,6 +2,7 @@ import abc
 
 from future.utils import with_metaclass
 
+
 class IMonitor(with_metaclass(abc.ABCMeta, object)):
     """
     Interface for Target monitors.
@@ -48,6 +49,7 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
         :returns: Bool
         """
         pass
+
 
 class MonitorError(Exception):
     pass

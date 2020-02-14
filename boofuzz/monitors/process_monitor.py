@@ -2,8 +2,10 @@ from .imonitor import IMonitor
 import boofuzz.pedrpc as pedrpc
 
 # Important: IMonitor needs to come *before* pedrpc.Client in the
-# Inheritance list for the method resolution order to produce 
+# Inheritance list for the method resolution order to produce
 # correct results.
+
+
 class ProcessMonitor(IMonitor, pedrpc.Client):
     def __init__(self, host, port):
         super(pedrpc.Client, self).__init__(host, port)
