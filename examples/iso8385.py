@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Designed for use with boofuzz v0.1.7
-# 
+#
 # Fuzz iso8385 protocol
 # Author Fakhir Karim Reda
 # kf@cyber-defense.ma / www.cyber-defense.ma

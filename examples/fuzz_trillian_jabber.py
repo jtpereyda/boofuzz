@@ -2,7 +2,7 @@
 # Designed for use with boofuzz v0.1.7
 
 # Original author:
-# 
+#
 # pedram amini <pamini@tippingpoint.com>
 #
 # on vmware:
