@@ -522,7 +522,7 @@ class Session(pgraph.Graph):
 
     @property
     def netmon_results(self):
-        raise NotImplementedException("netmon_results is now part of monitor_results and thus can't be accessed directly. Please update your code.")
+        raise NotImplementedError("netmon_results is now part of monitor_results and thus can't be accessed directly. Please update your code.")
 
     def add_node(self, node):
         """
