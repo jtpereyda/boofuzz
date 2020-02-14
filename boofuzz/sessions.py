@@ -507,20 +507,12 @@ class Session(pgraph.Graph):
         self.add_node(self.root)
 
         if target is not None:
-            original_callback = target.monitor_alive
-
-            # This basically constructs a method that's in the scope of this constructor,
-            # to be able to access original_callback and prepend the execution of it with
-            # a function that sets the option crash_filename.
-            # Afterwards, we apply the original function.
             def apply_options(monitor):
                 monitor.set_options(crash_filename=self._crash_filename)
 
-                if original_callback is not None:
-                    return original_callback(monitor)
                 return
 
-            target.monitor_alive = apply_options
+            target.monitor_alive.append(apply_options)
 
             try:
                 self.add_target(target)
