@@ -1,8 +1,14 @@
-class External:
+from .imonitor import IMonitor
+
+class External(IMonitor):
     """
     External instrumentation class
     Monitor a target which doesn't support a debugger, allowing external
-    commands to be called
+    commands to be called.
+
+    .. deprecated:: 1.0
+       This class is a shortcut with limited capabilities. It should be
+       subistuted by custom classes that implement IMonitor.
     """
 
     def __init__(self, pre=None, post=None, start=None, stop=None):
@@ -40,8 +46,14 @@ class External:
         if self.__dbg_flag:
             print("EXT-INSTR> %s" % msg)
 
+    def set_options(self, *args, **kwargs):
+        return
+
+    def retrieve_data(self):
+        return b""
+
     # noinspection PyUnusedLocal
-    def pre_send(self, test_number):
+    def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         This routine is called before the fuzzer transmits a test case and ensure the target is alive.
 
@@ -52,7 +64,7 @@ class External:
         if self.pre:
             self.pre()
 
-    def post_send(self):
+    def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         This routine is called after the fuzzer transmits a test case and returns the status of the target.
 
@@ -84,6 +96,10 @@ class External:
 
         if self.stop:
             self.stop()
+
+    def restart_target(self):
+        self.stop_target()
+        return self.start_target()
 
     # noinspection PyMethodMayBeStatic
     def get_crash_synopsis(self):

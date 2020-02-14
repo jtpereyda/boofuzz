@@ -6,7 +6,7 @@ import boofuzz.pedrpc as pedrpc
 # correct results.
 
 
-class ProcessMonitor(IMonitor, pedrpc.Client):
+class NetworkMonitor(IMonitor, pedrpc.Client):
     def __init__(self, host, port):
         super(pedrpc.Client, self).__init__(host, port)
 

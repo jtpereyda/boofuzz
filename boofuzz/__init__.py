@@ -31,6 +31,7 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
+from .monitors import IMonitor, NetworkMonitor, ProcessMonitor
 from .primitives import (
     BasePrimitive,
     BitField,
