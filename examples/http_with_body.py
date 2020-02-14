@@ -5,7 +5,7 @@ from boofuzz import *
 
 
 def main():
-    session = Session(target=Target(connection=SocketConnection("127.0.0.1", 80, proto="tcp")),)
+    session = Session(target=Target(connection=TCPSocketConnection("127.0.0.1", 80)),)
 
     s_initialize(name="Request")
     with s_block("Request-Line"):
