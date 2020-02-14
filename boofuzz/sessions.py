@@ -63,9 +63,7 @@ class Target(object):
 
     """
 
-    def __init__(
-        self, connection, monitors = [], monitor_alive = [], max_recv_bytes=10000, repeater=None, **kwargs
-    ):
+    def __init__(self, connection, monitors=[], monitor_alive=[], max_recv_bytes=10000, repeater=None, **kwargs):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
@@ -75,15 +73,21 @@ class Target(object):
         self.monitor_alive = monitor_alive
 
         if "procmon" in kwargs.keys():
-            warnings.warn("Target(procmon=...) is deprecated. Please change your code"
-                          " and add it to the monitors argument. For now, we do this "
-                          "for you, but this will be removed in the future.", DeprecationWarning)
+            warnings.warn(
+                "Target(procmon=...) is deprecated. Please change your code"
+                " and add it to the monitors argument. For now, we do this "
+                "for you, but this will be removed in the future.",
+                DeprecationWarning,
+            )
             self.monitors.append(kwargs["procmon"])
 
         if "netmon" in kwargs.keys():
-            warnings.warn("Target(netmon=...) is deprecated. Please change your code"
-                          " and add it to the monitors argument. For now, we do this "
-                          "for you, but this will be removed in the future.", DeprecationWarning)
+            warnings.warn(
+                "Target(netmon=...) is deprecated. Please change your code"
+                " and add it to the monitors argument. For now, we do this "
+                "for you, but this will be removed in the future.",
+                DeprecationWarning,
+            )
             self.monitors.append(kwargs["netmon"])
 
         # set these manually once target is instantiated.
@@ -92,11 +96,15 @@ class Target(object):
 
     @property
     def netmon_options(self):
-        raise NotImplementedError("This property is not supported; grab netmon from monitors and use set_options(**dict)")
+        raise NotImplementedError(
+            "This property is not supported; grab netmon from monitors and use set_options(**dict)"
+        )
 
     @property
     def procmon_options(self):
-        raise NotImplementedError("This property is not supported; grab procmon frim monitors and use set_options(**dict)")
+        raise NotImplementedError(
+            "This property is not supported; grab procmon frim monitors and use set_options(**dict)"
+        )
 
     def close(self):
         """
@@ -119,8 +127,11 @@ class Target(object):
         self._fuzz_data_logger.log_info("Connection opened.")
 
     def pedrpc_connect(self):
-        warnings.warn("pedrpc_connect has been renamed to monitors_alive. "
-                      "This alias will stop working in a future version of boofuzz.", DeprecationWarning)
+        warnings.warn(
+            "pedrpc_connect has been renamed to monitors_alive. "
+            "This alias will stop working in a future version of boofuzz.",
+            DeprecationWarning,
+        )
 
         return self.monitors_alive()
 
@@ -244,16 +255,19 @@ class SessionInfo(object):
 
     @property
     def procmon_results(self):
-        warnings.warn("procmon_results has been renamed to monitor_results."
-                      "This alias will stop working in a future version of boofuzz",
-                      DeprecationWarning)
+        warnings.warn(
+            "procmon_results has been renamed to monitor_results."
+            "This alias will stop working in a future version of boofuzz",
+            DeprecationWarning,
+        )
         return self.monitor_results
 
     @property
     def netmon_results(self):
-        warnings.warn("netmon_results is now part of monitor_data"
-                      "This alias will stop working in a future version of boofuzz",
-                      DeprecationWarning)
+        warnings.warn(
+            "netmon_results is now part of monitor_data" "This alias will stop working in a future version of boofuzz",
+            DeprecationWarning,
+        )
         return self.monitor_data
 
     @property
@@ -488,7 +502,8 @@ class Session(pgraph.Graph):
         self.fuzz_node = None
         self.targets = []
         self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
-        self.monitor_data = {}     # map of test case indices to list of supplement captured data (all cases where data was captured)
+        # map of test case indices to list of supplement captured data (all cases where data was captured)
+        self.monitor_data = {}
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
@@ -507,6 +522,7 @@ class Session(pgraph.Graph):
         self.add_node(self.root)
 
         if target is not None:
+
             def apply_options(monitor):
                 monitor.set_options(crash_filename=self._crash_filename)
 
@@ -522,7 +538,9 @@ class Session(pgraph.Graph):
 
     @property
     def netmon_results(self):
-        raise NotImplementedError("netmon_results is now part of monitor_results and thus can't be accessed directly. Please update your code.")
+        raise NotImplementedError(
+            "netmon_results is now part of monitor_results and thus can't be accessed directly. Please update your code."
+        )
 
     def add_node(self, node):
         """
@@ -904,9 +922,11 @@ class Session(pgraph.Graph):
             for monitor in target.monitors:
                 if not monitor.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
                     has_crashed = True
-                    self._fuzz_data_logger.log_fail("{0} detected crash on test case #{1}: {2}".format(
-                        str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
-                    ))
+                    self._fuzz_data_logger.log_fail(
+                        "{0} detected crash on test case #{1}: {2}".format(
+                            str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
+                        )
+                    )
                     finished_monitors.append(monitor)
 
             if not has_crashed:
@@ -918,24 +938,28 @@ class Session(pgraph.Graph):
 
                     synopsis = monitor.get_crash_synopsis()
                     if len(synopsis) > 0:
-                        self._fuzz_data_logger.log_fail("{0} provided additional information for crash on #{1}: {2}".format(
-                            str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
-                        ))
+                        self._fuzz_data_logger.log_fail(
+                            "{0} provided additional information for crash on #{1}: {2}".format(
+                                str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
+                            )
+                        )
         return has_crashed
 
     def _get_monitor_data(self, target):
-            # query monitors for any data they may want to add to this test case.
-            for monitor in target.monitors:
-                data = monitor.retrieve_data()
-                if len(data) > 0:
-                    self._fuzz_data_logger.log_info(
-                            "{0} captured {1} bytes of additional data for test case #{2}",
-                            str(monitor), len(data), self.total_mutant_index
-                        )
-                    if not self.total_mutant_index in self.monitor_data:
-                        self.monitor_data[self.total_mutant_index] = []
+        # query monitors for any data they may want to add to this test case.
+        for monitor in target.monitors:
+            data = monitor.retrieve_data()
+            if len(data) > 0:
+                self._fuzz_data_logger.log_info(
+                    "{0} captured {1} bytes of additional data for test case #{2}",
+                    str(monitor),
+                    len(data),
+                    self.total_mutant_index,
+                )
+                if not self.total_mutant_index in self.monitor_data:
+                    self.monitor_data[self.total_mutant_index] = []
 
-                    self.monitor_data[self.total_mutant_index] += [data]
+                self.monitor_data[self.total_mutant_index] += [data]
 
     def _process_failures(self, target):
         """Process any failures in self.crash_synopses.
@@ -1060,8 +1084,9 @@ class Session(pgraph.Graph):
                 monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_current_case, session=self)
         except Exception:
             self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor))) + traceback.format_exc()
-                )
+                constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
+                + traceback.format_exc()
+            )
 
         if len(self._pre_send_methods) > 0:
             try:
@@ -1102,7 +1127,8 @@ class Session(pgraph.Graph):
             for monitor in target.monitors:
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target():
-                    self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in") #TODO: doesn't this belong in the process monitor?
+                    # TODO: doesn't this belong in the process monitor?
+                    self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
                     time.sleep(3)
 
             # no monitor can restart
