@@ -6,7 +6,7 @@ import sys
 import six
 from past.builtins import map
 
-from . import blocks, exception, legos, pedrpc, primitives
+from . import blocks, exception, legos, primitives
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
 from .connections import (
     BaseSocketConnection,
@@ -31,7 +31,7 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .monitors import IMonitor, NetworkMonitor, ProcessMonitor
+from .monitors import IMonitor, NetworkMonitor, ProcessMonitor, pedrpc
 from .primitives import (
     BasePrimitive,
     BitField,
