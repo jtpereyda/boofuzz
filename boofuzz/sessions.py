@@ -1100,7 +1100,7 @@ class Session(pgraph.Graph):
         # if we have a connected process monitor, restart the target process.
         elif len(target.monitors) > 0:
             for monitor in target.monitors:
-            self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
+                self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target():
                     self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in") #TODO: doesn't this belong in the process monitor?
                     time.sleep(3)
