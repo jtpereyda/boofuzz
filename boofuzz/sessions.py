@@ -490,9 +490,9 @@ class Session(pgraph.Graph):
             self._pre_send_methods = pre_send_callbacks
 
         if post_test_case_callbacks is None:
-            self._post_test_case_methods = post_test_case_callbacks
-        else:
             self._post_test_case_methods = []
+        else:
+            self._post_test_case_methods = post_test_case_callbacks
 
         if restart_callbacks is None:
             self._restart_methods = []
