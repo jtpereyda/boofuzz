@@ -18,13 +18,6 @@ Helpers
     :undoc-members:
     :show-inheritance:
 
-Instrumentation
-===============
-.. automodule:: boofuzz.instrumentation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 IP Constants
 ============
 .. automodule:: boofuzz.connections.ip_constants
