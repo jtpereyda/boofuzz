@@ -122,7 +122,7 @@ class Target(object):
         warnings.warn("pedrpc_connect has been renamed to monitors_alive. "
                       "This alias will stop working in a future version of boofuzz.", DeprecationWarning)
 
-        return self.monitor_alive()
+        return self.monitors_alive()
 
     def monitors_alive(self):
         """
@@ -550,7 +550,7 @@ class Session(pgraph.Graph):
         """
 
         # pass specified target parameters to the PED-RPC server.
-        target.pedrpc_connect()
+        target.monitors_alive()
         target.set_fuzz_data_logger(fuzz_data_logger=self._fuzz_data_logger)
 
         # add target to internal list.
@@ -1135,7 +1135,7 @@ class Session(pgraph.Graph):
             time.sleep(self.restart_sleep_time)
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
-        target.pedrpc_connect()
+        target.monitors_alive()
 
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc.
