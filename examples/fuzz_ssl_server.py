@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.1.7
+# Designed for use with boofuzz v0.2.0
 #
 # Minimal example which fuzzes a remote HTTPS server
 # Use this as a starting point for SSL/TLS server fuzzing

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.1.7
+# Designed for use with boofuzz v0.2.0
 
 from boofuzz import *
 
@@ -15,6 +15,10 @@ def main():
         s_delim(" ", name="space-2")
         s_string("HTTP/1.1", name="HTTP-Version")
         s_static("\r\n", name="Request-Line-CRLF")
+        s_string("Host:", name="Host-Line")
+        s_delim(" ", name="space-3")
+        s_string("example.com", name="Host-Line-Value")
+        s_static("\r\n", name="Host-Line-CRLF")
     s_static("\r\n", "Request-CRLF")
 
     session.connect(s_get("Request"))

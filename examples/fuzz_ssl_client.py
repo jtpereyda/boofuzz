@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.1.7
+# Designed for use with boofuzz v0.2.0
 #
 # Minimal example which act as a TLS server
 # It will listen on localhost and fuzz the connecting TLS client
