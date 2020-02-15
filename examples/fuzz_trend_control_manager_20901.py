@@ -17,7 +17,7 @@ from request_definitions import trend  # noqa: F401
 # pytype: enable=import-error
 
 
-sess = Session(session_filename="audits/trend_server_protect_20901.session", sleep_time=0.25, log_level=10)
+sess = Session(session_filename="audits/trend_server_protect_20901.session", sleep_time=0.25)
 sess.add_target(Target(connection=TCPSocketConnection("127.0.0.1", 20901)))
 
 sess.connect(s_get("20901"))

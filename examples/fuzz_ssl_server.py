@@ -16,9 +16,9 @@ from boofuzz import *
 session = Session(
     target=Target(
         connection=SSLSocketConnection(
-            host="google.de",
+            host="127.0.0.1",
             port=443,
-            server_hostname="google.de",
+            server_hostname="example.com",  # Hostname must match the remote certificate
             # sslcontext=ctx,
         )
     )

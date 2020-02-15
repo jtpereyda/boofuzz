@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # Designed for use with boofuzz v0.2.0
 
+# More advanced request definitions can be found in the request_definitions directory.
+
 from boofuzz import *
 
 

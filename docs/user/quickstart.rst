@@ -57,7 +57,10 @@ After that, you are ready to fuzz: ::
 
     session.fuzz()
 
-Note that at this point you have only a very basic fuzzer. Making it kick butt is up to you.
+Note that at this point you have only a very basic fuzzer. Making it kick butt is up to you. There are some
+`examples <https://github.com/jtpereyda/boofuzz/tree/master/examples>`_ and
+`request_definitions <https://github.com/jtpereyda/boofuzz/tree/master/request_definitions>`_ in the repository that
+might help you get started.
 
 The log data of each run will be saved to a SQLite database located in the **boofuzz-results** directory at your
 current workdir. You can reopen the webinterface on any of those databases at any time with::
