@@ -43,6 +43,7 @@ Primitive Definition
 .. autofunction:: boofuzz.s_from_file
 .. autofunction:: boofuzz.s_bit_field
 .. autofunction:: boofuzz.s_byte
+.. autofunction:: boofuzz.s_bytes
 .. autofunction:: boofuzz.s_word
 .. autofunction:: boofuzz.s_dword
 .. autofunction:: boofuzz.s_qword
