@@ -1,5 +1,7 @@
-#!c:\\python\\python.exe
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
 
+# Original author:
 #
 # pedram amini <pamini@tippingpoint.com>
 #
@@ -19,7 +21,7 @@
 # uncomment the req/num to do a single test case.
 #
 
-from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, utils
+from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, utils, TCPSocketConnection
 
 # noinspection PyUnresolvedReferences
 # pytype: disable=import-error
@@ -64,7 +66,7 @@ def do_single(req, num):
 
 def do_fuzz():
     sess = sessions.Session(session_filename="audits/trend_server_protect_5168.session")
-    target = sessions.Target("192.168.181.133", 5168)
+    target = sessions.Target(connection=TCPSocketConnection("192.168.181.133", 5168))
 
     target.netmon = pedrpc.Client("192.168.181.133", 26001)
     target.procmon = pedrpc.Client("192.168.181.133", 26002)

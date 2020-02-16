@@ -1,5 +1,7 @@
-#!c:\\python\\python.exe
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
 
+# Original author:
 #
 # pedram amini <pamini@tippingpoint.com>
 #
@@ -18,7 +20,7 @@
 #     launch trillian on the fuzz box with rendezvous enabled. otherwise the target will drop the connection.
 #
 
-from boofuzz import pedrpc, s_get, sessions
+from boofuzz import pedrpc, s_get, sessions, TCPSocketConnection
 
 # noinspection PyUnresolvedReferences
 # pytype: disable=import-error
@@ -36,7 +38,7 @@ def init_message(sock):
 
 
 sess = sessions.Session(session_filename="audits/trillian.session")
-target = sessions.Target("152.67.137.126", 5298)
+target = sessions.Target(connection=TCPSocketConnection("152.67.137.126", 5298))
 target.netmon = pedrpc.Client("152.67.137.126", 26001)
 target.procmon = pedrpc.Client("152.67.137.126", 26002)
 target.vmcontrol = pedrpc.Client("127.0.0.1", 26003)

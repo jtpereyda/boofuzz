@@ -1,8 +1,8 @@
-#!/usr/bin/env python2
-# designed for use with boofuzz
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
 #
-# minimal example which fuzzes a remote HTTPS server
-# use this as a starting point for SSL/TLS server fuzzing
+# Minimal example which fuzzes a remote HTTPS server
+# Use this as a starting point for SSL/TLS server fuzzing
 
 from boofuzz import *
 
@@ -16,9 +16,9 @@ from boofuzz import *
 session = Session(
     target=Target(
         connection=SSLSocketConnection(
-            host="google.de",
+            host="127.0.0.1",
             port=443,
-            server_hostname="google.de",
+            server_hostname="example.com",  # Hostname must match the remote certificate
             # sslcontext=ctx,
         )
     )

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
+#
 # Fuzz iso8385 protocol
 # Author Fakhir Karim Reda
 # kf@cyber-defense.ma / www.cyber-defense.ma
@@ -125,7 +128,7 @@ start_cmd = ["MYDI_SID", "030001"]
 
 sess = Session(session_filename=mysession_filename, crash_threshold_element=20)
 
-target = Target(target_ip, 6771)
+target = Target(connection=TCPSocketConnection(target_ip, 6771))
 target.netmon = pedrpc.Client("127.0.0.1", 26001)
 target.procmon = pedrpc.Client(target_ip, 26013)
 target.procmon_options = {

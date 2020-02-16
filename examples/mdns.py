@@ -1,6 +1,7 @@
-#!/usr/bin/python
-
-# A partial MDNS fuzzer.  Could be made to be a DNS fuzzer trivially
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
+#
+# A partial MDNS fuzzer. Could be made to be a DNS fuzzer trivially
 # Charlie Miller <cmiller@securityevaluators.com>
 
 from boofuzz import *
