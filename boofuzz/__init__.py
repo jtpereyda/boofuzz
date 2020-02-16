@@ -748,7 +748,7 @@ def s_byte(
 
 def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
     """
-    Push a bytes field onto the current block stack.
+    Push a bytes field of arbitrary length onto the current block stack.
 
     :type  value:        bytes
     :param value:        Default binary value
