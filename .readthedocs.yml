@@ -1,0 +1,24 @@
+# Read the Docs configuration file
+
+# The version of the spec to be use
+version: 2
+
+# Formats of the documentation to be built
+# Default: []
+formats:
+  - htmlzip
+  - epub
+  - pdf
+
+python:
+   version: 3
+   install:
+      - method: pip
+        path: .
+        extra_requirements:
+           - docs
+
+sphinx:
+  # The path to the conf.py file
+  # Default: rtd will try to find it | project config
+  configuration: docs/conf.py

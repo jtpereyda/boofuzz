@@ -3,11 +3,11 @@ include docs/Makefile
 
 recursive-include _static *.png
 recursive-include boofuzz/doc *.md
-recursive-include docs *.bat *.png *.py *.rst
+recursive-include docs *.bat *.css *.png *.py *.rst
 recursive-include examples *.md *.py
 recursive-include request_definitions *.html *.py
 recursive-include unit_tests *.feature *.py
 recursive-include utils *.py
 
-exclude .travis.yml
+exclude .readthedocs.yml .travis.yml
 prune docs/_build

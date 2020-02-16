@@ -1,0 +1,31 @@
+/*@import '../alabaster.css';  /* for Alabaster */
+@import 'theme.css';       /* for the Read the Docs theme */
+
+.wy-nav-side {
+  /* background: #343131; */
+  background: #303030;
+}
+
+.wy-side-nav-search {
+  background-color: revert;
+}
+
+.wy-side-nav-search > div.version {
+  /* color: rgba(255,255,255,0.3); */
+  color: rgba(255,255,255,0.5);
+}
+
+.wy-menu-vertical header, .wy-menu-vertical p.caption {
+  /* color: #3a7ca8; */
+  color: #3091d1;
+}
+
+code, .rst-content tt, .rst-content code {
+  /* background: #fff; */
+  background: #232629;
+}
+
+.rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
+  /* color: #E74C3C; */
+  color: #ccc;
+}

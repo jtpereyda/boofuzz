@@ -64,10 +64,6 @@ Boofuzz installs as a Python library used to build fuzzer scripts. See
 :ref:`install` for advanced and detailed instructions.
 
 
-User Guide
-----------
-
-
 .. toctree::
     :caption: User Guide
     :maxdepth: 2
@@ -87,9 +83,6 @@ coverage:
 - `boofuzz-http`_
 
 If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
-
-API Documentation
------------------
 
 .. toctree::
     :caption: API Documentation
@@ -138,7 +131,7 @@ For updates, follow `@b00fuzz`_ on Twitter.
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
