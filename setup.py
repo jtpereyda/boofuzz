@@ -43,9 +43,10 @@ extra_requirements = {
         "netifaces",
         "ipaddress",
         "sphinx",
+        "sphinx_rtd_theme",
         "pygments>=2.4.0",
     ],
-    "docs": ["sphinx", "pygments>=2.4.0"],
+    "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
 }
 if sys.version_info >= (3, 6):
     extra_requirements["dev"] += ["black"]
