@@ -33,6 +33,7 @@ from boofuzz import (
     pgraph,
     primitives,
 )
+from boofuzz.monitors import CallbackMonitor
 from boofuzz.web.app import app
 from boofuzz.utils.callbacks import apply_callback
 
@@ -482,7 +483,6 @@ class Session(pgraph.Graph):
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
-
         if pre_send_callbacks is None:
             pre_send_methods = []
         else:
@@ -498,7 +498,11 @@ class Session(pgraph.Graph):
         else:
             restart_methods = restart_callbacks
 
-        self._callback_monitor = CallbackMonitor(pre_send_methods, post_send_methods, restart_methods)
+        self._callback_monitor = CallbackMonitor(
+                on_pre_send=pre_send_methods,
+                on_post_send=post_test_case_methods,
+                on_restart_target=restart_methods
+            )
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
@@ -538,7 +542,6 @@ class Session(pgraph.Graph):
             except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
-
 
     @property
     def netmon_results(self):

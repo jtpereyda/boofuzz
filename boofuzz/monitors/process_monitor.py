@@ -38,5 +38,5 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
     def stop_target(self):
         return super(pedrpc.Client, self).stop_target()  # pytype: disable=attribute-error
 
-    def restart_target(self):
+    def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return super(pedrpc.Client, self).restart_target()  # pytype: disable=attribute-error

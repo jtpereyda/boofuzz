@@ -26,5 +26,5 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         for arg, value in kwargs.items():
             eval("super(pedrpc.Client, self).set_{0}(kwargs['{0}']".format(arg))
 
-    def restart_target(self):
+    def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return False  # this Monitor can't restart

@@ -108,7 +108,7 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
         return False
 
     @abc.abstractmethod
-    def restart_target(self):
+    def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         """
         Restart a target. Must return True if restart was successful, False if it was unsucessful
         or this monitor cannot restart a Target, which causes the next monitor in the chain

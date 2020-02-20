@@ -98,7 +98,7 @@ class External(IMonitor):
         if self.stop:
             self.stop()
 
-    def restart_target(self):
+    def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         self.stop_target()
         return self.start_target()
 
