@@ -20,7 +20,7 @@ jobs:
           - os: windows-latest
             python-version: 3.5
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
@@ -41,3 +41,7 @@ jobs:
       env:
         TOXENV: ${{ format('py{0}-{1}', steps.py_tox_version.outputs.replaced, runner.os) }}
       run: tox --skip-missing-interpreters false
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
