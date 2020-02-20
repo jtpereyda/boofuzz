@@ -62,14 +62,15 @@ class Target(object):
 
     """
 
-    def __init__(self, connection, monitors=[], monitor_alive=[], max_recv_bytes=10000, repeater=None, **kwargs):
+    def __init__(self, connection, monitors=None, monitor_alive=None, max_recv_bytes=10000, repeater=None, **kwargs):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
         self.max_recv_bytes = max_recv_bytes
         self.repeater = repeater
-        self.monitors = monitors
-        self.monitor_alive = monitor_alive
+        self.monitors = monitors if monitors is not None else []
+        self.monitor_alive = monitor_alive if monitor_alive is not None else []
+
 
         if "procmon" in kwargs.keys():
             warnings.warn(
@@ -952,10 +953,10 @@ class Session(pgraph.Graph):
             data = monitor.retrieve_data()
             if len(data) > 0:
                 self._fuzz_data_logger.log_info(
-                    "{0} captured {1} bytes of additional data for test case #{2}",
+                    "{0} captured {1} bytes of additional data for test case #{2}".format(
                     str(monitor),
                     len(data),
-                    self.total_mutant_index,
+                    self.total_mutant_index)
                 )
                 if self.total_mutant_index not in self.monitor_data:
                     self.monitor_data[self.total_mutant_index] = []
@@ -1079,15 +1080,15 @@ class Session(pgraph.Graph):
             target (session.target): Target we are sending data to
         """
 
-        try:
-            for monitor in target.monitors:
+        for monitor in target.monitors:
+            try:
                 self._fuzz_data_logger.open_test_step("Monitor {}.pre_send()".format(str(monitor)))
                 monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_current_case, session=self)
-        except Exception:
-            self._fuzz_data_logger.log_error(
-                constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
-                + traceback.format_exc()
-            )
+            except Exception:
+                self._fuzz_data_logger.log_error(
+                    constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
+                    + traceback.format_exc()
+                )
 
         if len(self._pre_send_methods) > 0:
             try:
@@ -1532,7 +1533,7 @@ class Session(pgraph.Graph):
             else:
                 print("PASS: {0}".format(test_case_name))
 
-            self._get_monitor_data()
+            self._get_monitor_data(target)
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 

@@ -9,6 +9,9 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
     to this specification.
     """
 
+    def __init__(self):
+        return
+
     @abc.abstractmethod
     def alive(self):
         """
