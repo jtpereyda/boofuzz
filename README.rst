@@ -13,6 +13,8 @@ boofuzz: Network Protocol Fuzzing for Humans
     :target: https://gitter.im/jtpereyda/boofuzz
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
+.. image:: https://codecov.io/gh/jtpereyda/boofuzz/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/jtpereyda/boofuzz
 
 Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility.
