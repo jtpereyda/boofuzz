@@ -483,20 +483,23 @@ class Session(pgraph.Graph):
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
+
         if pre_send_callbacks is None:
-            self._pre_send_methods = []
+            pre_send_methods = []
         else:
-            self._pre_send_methods = pre_send_callbacks
+            pre_send_methods = pre_send_callbacks
 
         if post_test_case_callbacks is None:
-            self._post_test_case_methods = []
+            post_test_case_methods = []
         else:
-            self._post_test_case_methods = post_test_case_callbacks
+            post_test_case_methods = post_test_case_callbacks
 
         if restart_callbacks is None:
-            self._restart_methods = []
+            restart_methods = []
         else:
-            self._restart_methods = restart_callbacks
+            restart_methods = restart_callbacks
+
+        self._callback_monitor = CallbackMonitor(pre_send_methods, post_send_methods, restart_methods)
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
@@ -537,6 +540,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_error(str(e))
                 raise
 
+
     @property
     def netmon_results(self):
         raise NotImplementedError(
@@ -572,6 +576,9 @@ class Session(pgraph.Graph):
         # pass specified target parameters to the PED-RPC server.
         target.monitors_alive()
         target.set_fuzz_data_logger(fuzz_data_logger=self._fuzz_data_logger)
+
+        if self._callback_monitor not in target.monitors:
+            target.monitors.append(self._callback_monitor)
 
         # add target to internal list.
         self.targets.append(target)
@@ -1044,7 +1051,7 @@ class Session(pgraph.Graph):
         Args:
             method (function): A method with the same parameters as :func:`~Session.post_send`
             """
-        self._post_test_case_methods.append(method)
+        self._callback_monitor.on_post_send.append(method)
 
     # noinspection PyUnusedLocal
     def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
@@ -1090,16 +1097,6 @@ class Session(pgraph.Graph):
                     + traceback.format_exc()
                 )
 
-        if len(self._pre_send_methods) > 0:
-            try:
-                for f in self._pre_send_methods:
-                    self._fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except Exception:
-                self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="pre_send") + traceback.format_exc()
-                )
-
     def _restart_target(self, target):
         """
         Restart the fuzz target. If a VMControl is available revert the snapshot, if a process monitor is available
@@ -1135,25 +1132,6 @@ class Session(pgraph.Graph):
 
             # no monitor can restart
             raise exception.BoofuzzRestartFailedError()
-
-        # if we have custom restart methods, execute them
-        elif len(self._restart_methods) > 0:
-            try:
-                for f in self._restart_methods:
-                    self._fuzz_data_logger.open_test_step('Target restart callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except exception.BoofuzzRestartFailedError:
-                raise
-            except Exception:
-                self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="restart_target") + traceback.format_exc()
-                )
-            finally:
-                self._fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
-                target.close()
-                if self._reuse_target_connection:
-                    self._fuzz_data_logger.open_test_step("Reopening target connection")
-                    target.open()
 
         # otherwise all we can do is wait a while for the target to recover on its own.
         else:
