@@ -22,7 +22,7 @@ def apply_callback_all(callbacks, *args, **kwargs):
     :param callbacks: List of functions
     :returns: List
     """
-    ret =  []
+    ret = []
 
     for callback in callbacks:
         ret.append(callback(*args, **kwargs))

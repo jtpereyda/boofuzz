@@ -482,7 +482,6 @@ class Session(pgraph.Graph):
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
-
         if pre_send_callbacks is None:
             pre_send_methods = []
         else:
@@ -538,7 +537,6 @@ class Session(pgraph.Graph):
             except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
-
 
     @property
     def netmon_results(self):

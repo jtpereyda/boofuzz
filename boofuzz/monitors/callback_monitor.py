@@ -1,19 +1,20 @@
 from .imonitor import IMonitor
 from boofuzz.utils.callbacks import apply_callback, apply_callback_all
 
+
 class CallbackMonitor(IMonitor):
     """New-Style Callback monitor that is used in Session to provide callback-arrays."""
 
-    def __init__(self, on_pre_send = None, on_post_send = None, on_restart_target = None)
-        self.on_pre_send = on_pre_send if on_pre_send is not None else []
+    def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None)
+       self.on_pre_send = on_pre_send if on_pre_send is not None else []
         self.on_post_send = on_post_send if on_post_send is not None else []
         self.on_restart_target = on_restart_target if on_restart_target is not None else []
 
     def alive(self):
         return
 
-    def pre_send(self, target = None, fuzz_data_logger = None, session = None)
-        try:
+    def pre_send(self, target=None, fuzz_data_logger=None, session=None)
+       try:
             for f in self.on_pre_send:
                 fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
                 f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
@@ -22,8 +23,8 @@ class CallbackMonitor(IMonitor):
                 constants.ERR_CALLBACK_FUNC.format(func_name="pre_send") + traceback.format_exc()
             )
 
-    def post_send(self, target = None, fuzz_data_logger = None, session = None)
-        try:
+    def post_send(self, target= None, fuzz_data_logger = None, session = None)
+       try:
             for f in self.on_post_send:
                 self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
                 f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
