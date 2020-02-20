@@ -499,10 +499,10 @@ class Session(pgraph.Graph):
             restart_methods = restart_callbacks
 
         self._callback_monitor = CallbackMonitor(
-                on_pre_send=pre_send_methods,
-                on_post_send=post_test_case_methods,
-                on_restart_target=restart_methods
-            )
+            on_pre_send=pre_send_methods,
+            on_post_send=post_test_case_methods,
+            on_restart_target=restart_methods
+        )
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0

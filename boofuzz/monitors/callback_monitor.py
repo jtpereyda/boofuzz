@@ -2,7 +2,6 @@ import traceback
 
 from .imonitor import IMonitor
 from boofuzz import constants, exception
-from boofuzz.utils.callbacks import apply_callback, apply_callback_all
 
 
 class CallbackMonitor(IMonitor):
@@ -16,8 +15,8 @@ class CallbackMonitor(IMonitor):
     def alive(self):
         return
 
-    def pre_send(self, target=None, fuzz_data_logger=None, session=None)
-       try:
+    def pre_send(self, target=None, fuzz_data_logger=None, session=None):
+        try:
             for f in self.on_pre_send:
                 fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
                 f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
@@ -26,8 +25,8 @@ class CallbackMonitor(IMonitor):
                 constants.ERR_CALLBACK_FUNC.format(func_name="pre_send") + traceback.format_exc()
             )
 
-    def post_send(self, target= None, fuzz_data_logger = None, session = None)
-       try:
+    def post_send(self, target=None, fuzz_data_logger=None, session=None):
+        try:
             for f in self.on_post_send:
                 self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
                 f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
