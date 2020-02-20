@@ -12,13 +12,13 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         super(pedrpc.Client, self).__init__(host, port)
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
-        return super(pedrpc.Client, self).pre_send(session.total_mutant_index) # pytype: disable=attribute-error
+        return super(pedrpc.Client, self).pre_send(session.total_mutant_index)  # pytype: disable=attribute-error
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
-        return super(pedrpc.Client, self).post_send() # pytype: disable=attribute-error
+        return super(pedrpc.Client, self).post_send()  # pytype: disable=attribute-error
 
     def retrieve_data(self):
-        return super(pedrpc.Client, self).retrieve() # pytype: disable=attribute-error
+        return super(pedrpc.Client, self).retrieve()  # pytype: disable=attribute-error
 
     def set_options(self, *args, **kwargs):
         # args will be ignored, kwargs will be translated
