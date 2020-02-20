@@ -119,4 +119,3 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
         :returns: Bool
         """
         pass
-
