@@ -71,7 +71,6 @@ class Target(object):
         self.monitors = monitors if monitors is not None else []
         self.monitor_alive = monitor_alive if monitor_alive is not None else []
 
-
         if "procmon" in kwargs.keys():
             warnings.warn(
                 "Target(procmon=...) is deprecated. Please change your code"
@@ -961,9 +960,8 @@ class Session(pgraph.Graph):
             if len(data) > 0:
                 self._fuzz_data_logger.log_info(
                     "{0} captured {1} bytes of additional data for test case #{2}".format(
-                    str(monitor),
-                    len(data),
-                    self.total_mutant_index)
+                        str(monitor), len(data), self.total_mutant_index
+                    )
                 )
                 if self.total_mutant_index not in self.monitor_data:
                     self.monitor_data[self.total_mutant_index] = []
