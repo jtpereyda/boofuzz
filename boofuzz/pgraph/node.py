@@ -90,37 +90,37 @@ class Node(object):
             self.gml_height = len(self.label.split()) * 20
 
         # construct the node definition.
-        node = """
-            node [
-                id %(number)d
-                template "oreas:std:rect"
-                label "<!--%(id)08x--> %(chunked_label)s"
-                graphics [
-                  w %(gml_width)f
-                  h %(gml_height)f
-                  fill "#%(color)06x"
-                  line "#%(border_color)06x"
-                  pattern "%(gml_pattern)s"
-                  stipple %(gml_stipple)d
-                  lineWidth %(gml_line_width)f
-                  type "%(gml_type)s"
-                  width %(gml_width_shape)f
-                ]
-            ]
-            """ % {
-            "number": self.number,
-            "id": self.id,
-            "gml_width": self.gml_width,
-            "gml_height": self.gml_height,
-            "color": self.color,
-            "border_color": self.border_color,
-            "gml_pattern": self.gml_pattern,
-            "gml_stipple": self.gml_stipple,
-            "gml_line_width": self.gml_line_width,
-            "gml_type": self.gml_type,
-            "gml_width_shape": self.gml_width_shape,
-            "chunked_label": chunked_label,
-        }
+        node = (
+            "  node [\n"
+            "    id {number}\n"
+            '    template "oreas:std:rect"\n'
+            '    label "<!--{id:08x}--> {chunked_label}"\n'
+            "    graphics [\n"
+            "      w {gml_width}\n"
+            "      h {gml_height}\n"
+            '      fill "#{color:06x}"\n'
+            '      line "#{border_color:06x}"\n'
+            '      pattern "{gml_pattern}"\n'
+            "      stipple {gml_stipple}\n"
+            "      lineWidth {gml_line_width}\n"
+            '      type "{gml_type}"\n'
+            "      width {gml_width_shape}\n"
+            "    ]\n"
+            "  ]\n".format(
+                number=self.number,
+                id=self.id,
+                gml_width=self.gml_width,
+                gml_height=self.gml_height,
+                color=self.color,
+                border_color=self.border_color,
+                gml_pattern=self.gml_pattern,
+                gml_stipple=self.gml_stipple,
+                gml_line_width=self.gml_line_width,
+                gml_type=self.gml_type,
+                gml_width_shape=self.gml_width_shape,
+                chunked_label=chunked_label,
+            )
+        )
 
         return node
 
@@ -134,11 +134,13 @@ class Node(object):
 
         dot_node = pydot.Node(self.id)
 
-        dot_node.obj_dict['attributes']['label'] = '<<font face="lucida console">%s</font>>' % self.label.rstrip("\r\n")
-        dot_node.obj_dict['attributes']['label'] = dot_node.obj_dict['attributes']['label'].replace("\\n", "<br/>")
-        dot_node.obj_dict['attributes']['shape'] = self.shape
-        dot_node.obj_dict['attributes']['color'] = "#%06x" % self.color
-        dot_node.obj_dict['attributes']['fillcolor'] = "#%06x" % self.color
+        dot_node.obj_dict["attributes"]["label"] = '<<font face="lucida console">{}</font>>'.format(
+            self.label.rstrip("\r\n")
+        )
+        dot_node.obj_dict["attributes"]["label"] = dot_node.obj_dict["attributes"]["label"].replace("\\n", "<br/>")
+        dot_node.obj_dict["attributes"]["shape"] = self.shape
+        dot_node.obj_dict["attributes"]["color"] = "#{:06x}".format(self.color)
+        dot_node.obj_dict["attributes"]["fillcolor"] = "#{:06x}".format(self.color)
 
         return dot_node
 
@@ -159,31 +161,31 @@ class Node(object):
         # if an image was specified for this node, update the shape and include the image tag.
         if self.udraw_image:
             self.shape = "image"
-            udraw_image = 'a("IMAGE","%s"),' % self.udraw_image
+            udraw_image = 'a("IMAGE","{}"),'.format(self.udraw_image)
         else:
             udraw_image = ""
 
-        udraw = """
-          l("%(id)08x",
-            n("",
-              [
-                %(udraw_image)s
-                a("_GO","%(shape)s"),
-                a("COLOR","#%(color)06x"),
-                a("OBJECT","%(label)s"),
-                a("FONTFAMILY","courier"),
-                a("INFO","%(udraw_info)s"),
-                a("BORDER","none")
-              ]
-              [
-        """ % {
-            "id": self.id,
-            "udraw_image": udraw_image,
-            "shape": self.shape,
-            "color": self.color,
-            "label": self.label,
-            "udraw_info": self.udraw_info,
-        }
+        udraw = (
+            '\n  l("{id:08x}",\n'
+            '    n("",\n'
+            "      [\n"
+            "        {udraw_image}\n"
+            '        a("_GO","{shape}"),\n'
+            '        a("COLOR","#{color:08x}"),\n'
+            '        a("OBJECT","{label}"),\n'
+            '        a("FONTFAMILY","courier"),\n'
+            '        a("INFO","{udraw_info}"),\n'
+            '        a("BORDER","none")\n'
+            "      ]\n"
+            "      [\n".format(
+                id=self.id,
+                udraw_image=udraw_image,
+                shape=self.shape,
+                color=self.color,
+                label=self.label,
+                udraw_info=self.udraw_info,
+            )
+        )
 
         edges = graph.edges_from(self.id)
 
@@ -194,7 +196,7 @@ class Node(object):
         if edges:
             udraw = udraw[0:-1]
 
-        udraw += "]))"
+        udraw += "  ]))"
 
         return udraw
 
@@ -212,29 +214,29 @@ class Node(object):
         # if an image was specified for this node, update the shape and include the image tag.
         if self.udraw_image:
             self.shape = "image"
-            udraw_image = 'a("IMAGE","%s"),' % self.udraw_image
+            udraw_image = 'a("IMAGE","{}"),'.format(self.udraw_image)
         else:
             udraw_image = ""
 
-        udraw = """
-        new_node("%(id)08x","",
-            [
-                %(udraw_image)s
-                a("_GO","%(shape)s"),
-                a("COLOR","#%(color)06x"),
-                a("OBJECT","%(label)s"),
-                a("FONTFAMILY","courier"),
-                a("INFO","%(udraw_info)s"),
-                a("BORDER","none")
-            ]
+        udraw = (
+            '\n  new_node("{id:08x}","",\n'
+            "    ["
+            "      {udraw_image}\n"
+            '      a("_GO","{shape}"),'
+            '      a("COLOR","#{color:08x}"),\n'
+            '      a("OBJECT","{label}"),\n'
+            '      a("FONTFAMILY","courier"),\n'
+            '      a("INFO","{udraw_info}"),\n'
+            '      a("BORDER","none")\n'
+            "    ]\n"
+            "  )\n".format(
+                id=self.id,
+                udraw_image=udraw_image,
+                shape=self.shape,
+                color=self.color,
+                label=self.label,
+                udraw_info=self.udraw_info,
+            )
         )
-        """ % {
-            "id": self.id,
-            "udraw_image": udraw_image,
-            "shape": self.shape,
-            "color": self.color,
-            "label": self.label,
-            "udraw_info": self.udraw_info,
-        }
 
         return udraw

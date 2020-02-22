@@ -319,7 +319,7 @@ class Graph(object):
         from_node = self.find_node("id", from_node_id)
 
         if not from_node:
-            print("unable to resolve node %08x" % from_node_id)
+            print("unable to resolve node {:08x}".format(from_node_id))
             raise Exception
 
         levels_to_process = []
@@ -475,14 +475,14 @@ class Graph(object):
 
         # add the nodes to the GML definition.
         for node in listvalues(self.nodes):
-            gml += node.render_node_gml(self)
+            gml += node.render_node_gml()
 
         # add the edges to the GML definition.
         for edge in listvalues(self.edges):
             gml += edge.render_edge_gml(self)
 
         # close the graph tag.
-        gml += "]\n"
+        gml += "\n]\n"
 
         """
         TODO: Complete cluster rendering
@@ -540,7 +540,7 @@ class Graph(object):
             udraw += ","
 
         # trim the extraneous comment and close the graph.
-        udraw = udraw[0:-1] + "]"
+        udraw = udraw[0:-1] + "\n]"
 
         return udraw
 
