@@ -386,12 +386,12 @@ class TestSerialConnection(unittest.TestCase):
         Receive a message that times out with message_separator_time, but which would not time out with only a timeout.
 
         Given: A SerialConnection using MockSerial,
-          and: timeout set to 60ms.
-          and: message_separator_time set 20ms
+          and: timeout set to 120ms.
+          and: message_separator_time set 60ms
 
         When: User calls SerialConnection.recv(60).
          and: MockSerial.recv set to return 1 byte, then 1 byte, then 58 bytes.
-         and: MockSerial.recv set to delay 1ms, then 40ms, then 1ms.
+         and: MockSerial.recv set to delay 1ms, then 80ms, then 1ms.
 
         Then: SerialConnection.recv calls MockSerial.recv twice.
          and: SerialConnection.recv returns only the first two bytes.
