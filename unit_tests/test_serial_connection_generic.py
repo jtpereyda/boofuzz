@@ -397,12 +397,12 @@ class TestSerialConnection(unittest.TestCase):
          and: SerialConnection.recv returns only the first two bytes.
         """
         # Given
-        self.uut = SerialConnection(timeout=0.060, message_separator_time=0.020)
+        self.uut = SerialConnection(timeout=0.120, message_separator_time=0.060)
         self.uut._connection = self.mock
 
         # When
         self.mock.recv_return_queue = [b"1", b"2", b"3" * 58]
-        self.mock.recv_wait_times = [0.001, 0.040, 0.001]
+        self.mock.recv_wait_times = [0.001, 0.080, 0.001]
         data = self.uut.recv(max_bytes=60)
 
         # Then
