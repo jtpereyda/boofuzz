@@ -23,6 +23,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
 
     .. versionadded:: 0.2.0
     """
+
     def __init__(self, host, port):
         super(IMonitor, self).__init__()
         super(pedrpc.Client, self).__init__(host, port)
