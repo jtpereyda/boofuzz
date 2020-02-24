@@ -91,10 +91,10 @@ If you have an open source boofuzz protocol suite to share, please :ref:`let us 
     source/Session
     source/Target
     user/connections
+    user/monitors
     user/logging
     user/static-protocol-definition
     user/other-modules
-    user/monitors
 
 .. toctree::
     :maxdepth: 1
