@@ -31,7 +31,7 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .monitors import IMonitor, pedrpc
+from .monitors import IMonitor, pedrpc, CallbackMonitor, NetworkMonitor, ProcessMonitor
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -67,6 +67,7 @@ __all__ = [
     "blocks",
     "Byte",
     "Bytes",
+    "CallbackMonitor",
     "Checksum",
     "CountRepeater",
     "DEFAULT_PROCMON_PORT",
@@ -90,9 +91,11 @@ __all__ = [
     "LITTLE_ENDIAN",
     "Mirror",
     "MustImplementException",
+    "NetworkMonitor",
     "open_test_run",
     "pedrpc",
     "primitives",
+    "ProcessMonitor",
     "QWord",
     "RandomData",
     "RawL2SocketConnection",

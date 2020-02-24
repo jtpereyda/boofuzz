@@ -7,7 +7,7 @@ class External(IMonitor):
     Monitor a target which doesn't support a debugger, allowing external
     commands to be called.
 
-    .. deprecated:: 1.0
+    .. deprecated:: 0.2.0
        This class is a shortcut with limited capabilities. It should be
        subistuted by custom classes that implement IMonitor.
     """

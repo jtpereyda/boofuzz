@@ -1495,7 +1495,6 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
-            self._post_send(target)
             self._check_for_passively_detected_failures(target)
             if not self._reuse_target_connection:
                 target.close()
@@ -1564,7 +1563,6 @@ class Session(pgraph.Graph):
             self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
             if not self._check_for_passively_detected_failures(target=target):
-                self._post_send(target)
                 self._check_for_passively_detected_failures(target=target)
             if not self._reuse_target_connection:
                 target.close()
@@ -1633,32 +1631,6 @@ class Session(pgraph.Graph):
         else:
             primitive_under_test = "no-name"
         return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
-
-    def _post_send(self, target):
-        if len(self._post_test_case_methods) > 0:
-            try:
-                for f in self._post_test_case_methods:
-                    self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except exception.BoofuzzTargetConnectionReset:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-            except exception.BoofuzzTargetConnectionAborted as e:
-                self._fuzz_data_logger.log_info(
-                    constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
-                )
-            except exception.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
-            except exception.BoofuzzSSLError as e:
-                if self._ignore_connection_ssl_errors:
-                    self._fuzz_data_logger.log_info(str(e))
-                else:
-                    self._fuzz_data_logger.log_fail(str(e))
-            except Exception:
-                self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="post_send") + traceback.format_exc()
-                )
-            finally:
-                self._fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
 
     def _reset_fuzz_state(self):
         """
