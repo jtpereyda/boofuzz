@@ -7,6 +7,8 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
     """
     Interface for Target monitors. All Monitors must adhere
     to this specification.
+
+    .. versionadded:: 0.2.0
     """
 
     def __init__(self):

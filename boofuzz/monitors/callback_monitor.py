@@ -5,7 +5,24 @@ from boofuzz import constants, exception
 
 
 class CallbackMonitor(IMonitor):
-    """New-Style Callback monitor that is used in Session to provide callback-arrays."""
+    """
+    New-Style Callback monitor that is used in Session to provide callback-arrays.
+    It's purpose is to keep the \*_callbacks arguments in the session class while
+    simplifying the implementation of session by forwarding these callbacks to
+    the monitor infrastructure.
+
+    The mapping of arguments to method implementations of this class is as follows:
+
+    - restart_callbacks --> target_restart
+    - pre_send_callbacks --> pre_send
+    - post_test_case_callbacks --> post_send
+
+    All other implemented interface members are stubs only, as no corresponding
+    arguments exist in session. In any case, it is probably wiser to implement
+    a custom Monitor than to use the callback functions.
+
+    .. versionadded:: 0.2.0
+    """
 
     def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None):
         self.on_pre_send = on_pre_send if on_pre_send is not None else []
@@ -13,7 +30,7 @@ class CallbackMonitor(IMonitor):
         self.on_restart_target = on_restart_target if on_restart_target is not None else []
 
     def alive(self):
-        return
+        return True
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         try:

@@ -50,3 +50,11 @@ The network monitor consists of two parts; the ``NetworkMonitor`` class that imp
    :members:
    :undoc-members:
    :show-inheritance:
+
+CallbackMonitor
+===============
+
+.. autoclass:: boofuzz.monitors.CallbackMonitor
+   :members:
+   :undoc-members:
+   :show-inheritance:
