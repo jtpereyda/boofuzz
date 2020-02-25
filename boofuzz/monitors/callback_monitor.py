@@ -66,7 +66,7 @@ class CallbackMonitor(IMonitor):
             )
         finally:
             fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
-        return
+        return True
 
     def retrieve_data(self):
         return
