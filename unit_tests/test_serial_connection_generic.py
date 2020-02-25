@@ -354,30 +354,31 @@ class TestSerialConnection(unittest.TestCase):
         Verify that message_separator_time works correctly.
         Receive a message over time t, where t > message_separator_time, and each part of the message is delayed by
         t' < message_separator_time.
+        No message_separator should be applied.
 
         Given: A SerialConnection using MockSerial,
-          and: timeout set to 60ms.
-          and: message_separator_time set 20ms
+          and: timeout set to 120ms.
+          and: message_separator_time set 60ms
 
-        When: User calls SerialConnection.recv(max_bytes=60).
-         and: MockSerial.recv set to return increasing bytes.
-         and: MockSerial.recv set to delay very briefly on each call (0.001ms (1 microsecond)).
+        When: User calls SerialConnection.recv(max_bytes=2).
+         and: MockSerial.recv set to return 2 bytes.
+         and: MockSerial.recv set to delay very briefly on each call (1ms).
 
-        Then: SerialConnection.recv calls MockSerial.recv multiple times (more than 2).
-         and: SerialConnection.recv returns data with multiple bytes (more than 2).
+        Then: SerialConnection.recv calls MockSerial.recv 2 times.
+         and: SerialConnection.recv returns full message (2 bytes).
         """
         # Given
-        self.uut = SerialConnection(timeout=0.060, message_separator_time=0.020)
+        self.uut = SerialConnection(timeout=0.120, message_separator_time=0.060)
         self.uut._connection = self.mock
 
         # When
-        self.mock.recv_return_queue = [b"1"] * 60
-        self.mock.recv_wait_times = [0.000001] * 60
-        data = self.uut.recv(max_bytes=60)
+        self.mock.recv_return_queue = [b"1", b"2"]
+        self.mock.recv_wait_times = [0.001] * 2
+        data = self.uut.recv(max_bytes=2)
 
         # Then
-        self.assertGreater(len(self.mock.recv_max_bytes_lengths), 2)
-        self.assertGreater(len(data), 2)
+        self.assertEqual(len(self.mock.recv_max_bytes_lengths), 2)
+        self.assertEqual(data, b"12")
 
     def test_recv_message_separator_time_2(self):
         """
@@ -385,23 +386,23 @@ class TestSerialConnection(unittest.TestCase):
         Receive a message that times out with message_separator_time, but which would not time out with only a timeout.
 
         Given: A SerialConnection using MockSerial,
-          and: timeout set to 60ms.
-          and: message_separator_time set 20ms
+          and: timeout set to 120ms.
+          and: message_separator_time set 60ms
 
         When: User calls SerialConnection.recv(60).
          and: MockSerial.recv set to return 1 byte, then 1 byte, then 58 bytes.
-         and: MockSerial.recv set to delay 1ms, then 40ms, then 1ms.
+         and: MockSerial.recv set to delay 1ms, then 80ms, then 1ms.
 
         Then: SerialConnection.recv calls MockSerial.recv twice.
          and: SerialConnection.recv returns only the first two bytes.
         """
         # Given
-        self.uut = SerialConnection(timeout=0.060, message_separator_time=0.020)
+        self.uut = SerialConnection(timeout=0.120, message_separator_time=0.060)
         self.uut._connection = self.mock
 
         # When
         self.mock.recv_return_queue = [b"1", b"2", b"3" * 58]
-        self.mock.recv_wait_times = [0.001, 0.040, 0.001]
+        self.mock.recv_wait_times = [0.001, 0.080, 0.001]
         data = self.uut.recv(max_bytes=60)
 
         # Then
