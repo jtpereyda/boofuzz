@@ -38,7 +38,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         return pedrpc.Client.post_send(self, session.total_mutant_index)  # pytype: disable=attribute-error
 
     def retrieve_data(self):
-        return pedrpc.Client.retrieve(self) # pytype: disable=attribute-error
+        return pedrpc.Client.retrieve(self)  # pytype: disable=attribute-error
 
     def set_options(self, *args, **kwargs):
         """
