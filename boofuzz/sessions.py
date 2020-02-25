@@ -1120,24 +1120,23 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.log_info("Restarting target virtual machine")
             target.vmcontrol.restart_target()
 
-        # if we have a connected process monitor, restart the target process.
-        elif len(target.monitors) > 0:
+        # we always have at least one monitor; a Callback Monitor that handles all callbacks.
+        else:
+            restarted = False
             for monitor in target.monitors:
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
                     # TODO: doesn't this belong in the process monitor?
                     self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
                     time.sleep(3)
+                    restarted = True
 
             # no monitor can restart
-            raise exception.BoofuzzRestartFailedError()
-
-        # otherwise all we can do is wait a while for the target to recover on its own.
-        else:
-            self._fuzz_data_logger.log_info(
-                "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
-            )
-            time.sleep(self.restart_sleep_time)
+            if not restarted:
+                self._fuzz_data_logger.log_info(
+                    "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
+                )
+                time.sleep(self.restart_sleep_time)
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.monitors_alive()

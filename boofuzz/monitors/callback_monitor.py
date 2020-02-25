@@ -71,11 +71,14 @@ class CallbackMonitor(IMonitor):
     def retrieve_data(self):
         return
 
-    def set_options(self):
+    def set_options(self, **kwargs):
         """ This is not a callback in the session class; so it is just a stub here. """
         return
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
+        """
+        This Method tries to restart a 
+        """
         try:
             for f in self.on_restart_target:
                 fuzz_data_logger.open_test_step('Target restart callback: "{0}"'.format(f.__name__))
@@ -93,4 +96,7 @@ class CallbackMonitor(IMonitor):
                 fuzz_data_logger.open_test_step("Reopening target connection")
                 target.open()
 
-        return True
+        if len(self.on_restart_target) > 0:
+            return True
+        else:
+            return False
