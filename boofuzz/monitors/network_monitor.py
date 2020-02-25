@@ -1,5 +1,6 @@
-from .imonitor import IMonitor
 from . import pedrpc
+from .imonitor import IMonitor
+
 
 # Important: IMonitor needs to come *before* pedrpc.Client in the
 # Inheritance list for the method resolution order to produce
@@ -29,7 +30,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         pedrpc.Client.__init__(self, host, port)
 
     def alive(self):
-        return pedrpc.Client.alive(self)
+        return pedrpc.Client.alive(self)  # pytype: disable=attribute-error
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         return pedrpc.Client.pre_send(self, session.total_mutant_index)  # pytype: disable=attribute-error

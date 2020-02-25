@@ -1,13 +1,13 @@
 import traceback
 
-from .imonitor import IMonitor
 from boofuzz import constants, exception
+from .imonitor import IMonitor
 
 
 class CallbackMonitor(IMonitor):
     """
     New-Style Callback monitor that is used in Session to provide callback-arrays.
-    It's purpose is to keep the \*_callbacks arguments in the session class while
+    It's purpose is to keep the \\*_callbacks arguments in the session class while
     simplifying the implementation of session by forwarding these callbacks to
     the monitor infrastructure.
 
@@ -25,6 +25,8 @@ class CallbackMonitor(IMonitor):
     """
 
     def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None):
+        super(CallbackMonitor, self).__init__()
+
         self.on_pre_send = on_pre_send if on_pre_send is not None else []
         self.on_post_send = on_post_send if on_post_send is not None else []
         self.on_restart_target = on_restart_target if on_restart_target is not None else []

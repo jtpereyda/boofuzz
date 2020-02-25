@@ -1,5 +1,6 @@
-from .imonitor import IMonitor
 from . import pedrpc
+from .imonitor import IMonitor
+
 
 # Important: IMonitor needs to come *before* pedrpc.Client in the
 # Inheritance list for the method resolution order to produce

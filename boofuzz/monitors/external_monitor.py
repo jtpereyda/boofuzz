@@ -24,7 +24,8 @@ class External(IMonitor):
         @type  stop:  def
         @param stop:  Callback called to stop the target
         """
-        super(IMonitor, self).__init__()
+        super(External, self).__init__()
+
         self.pre = pre
         self.post = post
         self.start = start
