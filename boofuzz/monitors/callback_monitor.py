@@ -79,7 +79,8 @@ class CallbackMonitor(IMonitor):
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         """
-        This Method tries to restart a 
+        This Method tries to restart a target. If no restart callbacks are set,
+        it returns false; otherwise it returns true.
         """
         try:
             for f in self.on_restart_target:
