@@ -1,5 +1,3 @@
-# pytest is required as an extras_require:
-# noinspection PyPackageRequirements
 import pytest
 
 
