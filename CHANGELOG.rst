@@ -19,6 +19,7 @@ Fixes
 - Fixed various potential type errors
 - Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
 - Examples are up to date with current Boofuzz version
+- Modified timings on serial_connection unit tests to improve test reliability
 
 v0.1.6
 ------
