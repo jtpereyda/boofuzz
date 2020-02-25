@@ -177,7 +177,7 @@ def s_get(name=None):
     :type  name: str
     :param name: (Optional, def=None) Name of request to return or current request if name is None.
 
-    :rtype:  blocks.request
+    :rtype:  blocks.Request
     :return: The requested request.
     """
 

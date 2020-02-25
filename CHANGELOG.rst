@@ -20,6 +20,7 @@ Fixes
 - Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
 - Examples are up to date with current Boofuzz version
 - Modified timings on serial_connection unit tests to improve test reliability
+- Refactored old unit-tests
 
 v0.1.6
 ------
@@ -237,7 +238,7 @@ Features
 ^^^^^^^^
 -  ``s_size`` is now fuzzable by default.
 -  Add new s_fuzz_list primitive to read fuzz value from files.
--  Add new FuzzLoggerCsv to write log in CSV format 
+-  Add new FuzzLoggerCsv to write log in CSV format
 
 Fixes
 ^^^^^
