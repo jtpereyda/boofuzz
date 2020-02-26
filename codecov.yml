@@ -1,13 +1,13 @@
 codecov:
   notify:
     after_n_builds: 8
+
+coverage:
+  range: "50...70"
   status:
     project:
       default:
         informational: True
     patch: off
-
-coverage:
-  range: "50...70"
 
 comment: false
