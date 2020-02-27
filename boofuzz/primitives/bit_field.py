@@ -200,10 +200,10 @@ class BitField(BasePrimitive):
         return _rendered
 
     def __len__(self):
-        if self.format == "binary":
-            return self.width // 8
-        else:
+        if self.format == "ascii":
             return len(str(self._value))
+        else:
+            return self.width // 8
 
     def __bool__(self):
         """

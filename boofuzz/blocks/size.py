@@ -220,10 +220,10 @@ class Size(IFuzzable):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        if self.format == "binary":
-            return self.length
+        if self.format == "ascii":
+            return len(str(self._calculated_length()))
         else:
-            return len(str(len(self.request.names[self.block_name])))
+            return self.length
 
     def __bool__(self):
         """
