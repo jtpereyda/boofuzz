@@ -38,7 +38,7 @@ class CallbackMonitor(IMonitor):
         try:
             for f in self.on_pre_send:
                 fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
-                f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                f(target=target, fuzz_data_logger=fuzz_data_logger, session=session, sock=target)
         except Exception:
             fuzz_data_logger.log_error(
                 constants.ERR_CALLBACK_FUNC.format(func_name="pre_send") + traceback.format_exc()
@@ -47,8 +47,8 @@ class CallbackMonitor(IMonitor):
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
         try:
             for f in self.on_post_send:
-                self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
-                f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                fuzz_data_logger.open_test_step('Post-test case callback: "{0}"'.format(f.__name__))
+                f(target=target, fuzz_data_logger=fuzz_data_logger, session=session, sock=target)
         except exception.BoofuzzTargetConnectionReset:
             fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
         except exception.BoofuzzTargetConnectionAborted as e:
@@ -85,7 +85,7 @@ class CallbackMonitor(IMonitor):
         try:
             for f in self.on_restart_target:
                 fuzz_data_logger.open_test_step('Target restart callback: "{0}"'.format(f.__name__))
-                f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                f(target=target, fuzz_data_logger=fuzz_data_logger, session=session, sock=target)
         except exception.BoofuzzRestartFailedError:
             raise
         except Exception:
