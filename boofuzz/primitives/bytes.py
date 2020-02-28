@@ -3,19 +3,6 @@ from .. import helpers
 
 
 class Bytes(BasePrimitive):
-    # This binary strings will always included as testcases.
-    _fuzz_values = [
-        b"",
-        b"\x00",
-        b"\xFF",
-        b"A" * 10,
-        b"A" * 100,
-        b"A" * 1000,
-        b"A" * 5000,
-        b"A" * 10000,
-        b"A" * 100000,
-    ]
-
     # from https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_debug_values
     _magic_debug_values = [
         b"\x00\x00\x81#",
@@ -122,6 +109,17 @@ class Bytes(BasePrimitive):
         self._fuzzable = fuzzable
         self._name = name
         self.this_library = [self._value * 2, self._value * 10, self._value * 100]
+        self._fuzz_library = [
+            b"",
+            b"\x00",
+            b"\xFF",
+            b"A" * 10,
+            b"A" * 100,
+            b"A" * 1000,
+            b"A" * 5000,
+            b"A" * 10000,
+            b"A" * 100000,
+        ]
 
     @property
     def name(self):
@@ -146,23 +144,23 @@ class Bytes(BasePrimitive):
                 self._value = self._original_value
                 return False
 
-            if self._mutant_index < len(self._fuzz_values):
+            if self._mutant_index < len(self._fuzz_library):
                 # stage 1a: replace with _fuzz_values items
                 alreadyDone = 0
-                self._value = self._fuzz_values[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_values) + len(self.this_library):
+                self._value = self._fuzz_library[self._mutant_index - alreadyDone]
+            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library):
                 # stage 1b: replace with this_library items
-                alreadyDone = len(self._fuzz_values)
+                alreadyDone = len(self._fuzz_library)
                 self._value = self.this_library[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_values) + len(self.this_library) + len(self._magic_debug_values):
+            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values):
                 # stage 1c: replace with _magic_debug_value items
-                alreadyDone = len(self._fuzz_values) + len(self.this_library)
+                alreadyDone = len(self._fuzz_library) + len(self.this_library)
                 self._value = self._magic_debug_values[self._mutant_index - alreadyDone]
             else:
                 # stage 2a: replace every single byte with a value from _fuzz_strings_1byte
                 # stage 2b: replace every double byte block with a value from _fuzz_strings_2byte
                 # stage 2c: replace every four byte block with a value from _fuzz_strings_4byte
-                alreadyDone = len(self._fuzz_values) + len(self.this_library) + len(self._magic_debug_values)
+                alreadyDone = len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values)
                 testcase_nr = self._mutant_index - alreadyDone
                 testcases_2a = len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0)
                 testcases_2b = len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1)
@@ -208,7 +206,7 @@ class Bytes(BasePrimitive):
         """
 
         if self.size:
-            num = sum(len(value) <= self.size for value in self._fuzz_values)
+            num = sum(len(value) <= self.size for value in self._fuzz_library)
             num += sum(len(value) <= self.size for value in self.this_library)
             num += sum(len(value) <= self.size for value in self._magic_debug_values)
         else:
