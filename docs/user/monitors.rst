@@ -14,11 +14,11 @@ forward process depending on the tools you have available on your targets host;
 this holds true especially for embedded devices. Boofuzz provides three main
 monitor implementations:
 
-- *ProcessMonitor*, a Monitor that collects debug info from process on Windows
+- :class:`ProcessMonitor <boofuzz.monitors.ProcessMonitor>`, a Monitor that collects debug info from process on Windows
   and Unix. It also can restart the target process and detect segfaults.
-- *NetworkMonitor*, a Monitor that passively captures network traffic via PCAP
+- :class:`NetworkMonitor <boofuzz.monitors.NetworkMonitor>`, a Monitor that passively captures network traffic via PCAP
   and attaches it to the testcase log.
-- *CallbackMonitor*, which is used to implement the callbacks that can be
+- :class:`CallbackMonitor <boofuzz.monitors.CallbackMonitor>`, which is used to implement the callbacks that can be
   supplied to the Session class.
 
 Monitor Interface (IMonitor)
