@@ -40,6 +40,7 @@ extra_requirements = {
         "mock",
         "pytest",
         "pytest-bdd",
+        "pytest-cov",
         "netifaces",
         "ipaddress",
         "sphinx",
