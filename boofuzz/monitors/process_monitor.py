@@ -66,3 +66,6 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return pedrpc.Client.restart_target(self)  # pytype: disable=attribute-error
+
+    def __repr__(self):
+        return "ProcessMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)

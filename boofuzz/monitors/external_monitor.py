@@ -113,3 +113,6 @@ class External(IMonitor):
         """
 
         return "External instrumentation detects a crash...\n"
+
+    def __repr__(self):
+        return "ExternalMonitor#{}".format(id(self))

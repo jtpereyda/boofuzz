@@ -103,3 +103,11 @@ class CallbackMonitor(IMonitor):
             return True
         else:
             return False
+
+    def __repr__(self):
+        return "CallbackMonitor#{}[pre=[{}],post=[{}],restart=[{}]]".format(
+                id(self),
+                ", ".join([x.__name__ for x in self.on_pre_send]),
+                ", ".join([x.__name__ for x in self.on_post_send]),
+                ", ".join([x.__name__ for x in self.on_restart_target]))
+

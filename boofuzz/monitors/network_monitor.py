@@ -57,3 +57,6 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return False  # this Monitor can't restart
+
+    def __repr__(self):
+        return "NetworkMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
