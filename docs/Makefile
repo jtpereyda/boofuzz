@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    = -TW # -nW optional for more harsh checking
+SPHINXOPTS    = -TW # apply changes to tox.ini accordingly
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = boofuzz
 SOURCEDIR     = .

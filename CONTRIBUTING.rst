@@ -20,17 +20,29 @@ Pull Request Checklist
 
 1. Install python version 2.7.9+ **and** 3.6+
 
-2. Verify tests pass: ::
+2. Verify tests pass:
 
-      tox
+    .. code-block::
 
-   If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
+        tox
 
-3. Format the code to meet our code style requirements (needs python 3.6+): ::
+    .. note::
+        (Re-)creating a tox environment on Linux requires root rights because some of your unit tests work with raw
+        sockets. tox will check if ``cap_net_admin`` and ``cap_net_raw+eip`` are set on the tox environment python
+        interpreter and if not, will do so.
 
-      black .
+        Once the capabilities have been set, running tox won't need extended permissions.
 
-   Use ``# fmt: off`` and ``# fmt: on`` around a block to locally disable formatting
+    .. attention::
+        If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
+
+3. Format the code to meet our code style requirements (needs python 3.6+):
+
+    .. code-block::
+
+        black .
+
+    Use ``# fmt: off`` and ``# fmt: on`` around a block to disable formatting locally.
 
 4. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
 
@@ -63,9 +75,9 @@ Prep
 
 2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
-   1. In ``boofuzz/__init__.py``.
+    1. In ``boofuzz/__init__.py``.
 
-   2. In ``docs/conf.py``.
+    2. In ``docs/conf.py``.
 
 3. Modify CHANGELOG file for publication if needed.
 
