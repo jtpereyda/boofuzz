@@ -66,7 +66,7 @@ On every pull request:
 
 Release Checklist
 -----------------
-Releases are deployed from Travis based on git tags.
+Releases are deployed from GitHub Actions when a new release is created on GitHub.
 
 Prep
 ++++
@@ -86,6 +86,6 @@ Prep
 Release
 +++++++
 
-1. Create release tag in Github.
+1. Create release on Github.
 
-2. Verify Travis deployment succeeds.
+2. Verify GitHub Actions deployment succeeds.
