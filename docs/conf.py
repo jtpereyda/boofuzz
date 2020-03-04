@@ -77,6 +77,12 @@ pygments_style = "stata-dark"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+linkcheck_ignore = [
+    # Requires a more liberal 'Accept: ' HTTP request header:
+    # Ref: https://github.com/sphinx-doc/sphinx/issues/7247
+    r"https://github\.com/jtpereyda/boofuzz/workflows/[^/]+/badge\.svg",
+]
+
 
 # -- Options for HTML output ----------------------------------------------
 
