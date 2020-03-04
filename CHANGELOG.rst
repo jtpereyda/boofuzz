@@ -15,6 +15,7 @@ Features
 
 Fixes
 ^^^^^
+- Fixed size of s_size block when output is ascii.
 - Fixed issue with tornado on Python 3.8 and Windows.
 - Fixed various potential type errors
 - Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
