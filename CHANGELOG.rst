@@ -23,6 +23,7 @@ Fixes
 - Modified timings on serial_connection unit tests to improve test reliability
 - Refactored old unit-tests
 - Removed deprecated session arguments `fuzz_data_logger`, `log_level`, `logfile`, `logfile_level` and `log()`.
+- Removed deprecated logger `FuzzLoggerFile`.
 
 v0.1.6
 ------
