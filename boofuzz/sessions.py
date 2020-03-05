@@ -318,7 +318,6 @@ class Session(pgraph.Graph):
                                                   Default None.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         keep_web_open (bool):     Keep the webinterface open after session completion. Default True.
-        fuzz_data_logger (fuzz_logger.FuzzLogger): DEPRECATED. Use fuzz_loggers instead.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
         fuzz_db_keep_only_n_pass_cases (int): Minimize disk usage by only saving passing test cases
                                               if they are in the n test cases preceding a failure or error.
@@ -342,13 +341,6 @@ class Session(pgraph.Graph):
         reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
-
-        log_level (int):        DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                Was once used to set the log level.
-        logfile (str):          DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                Was once the name of the log file.
-        logfile_level (int):    DEPRECATED Unused. Logger settings are now configured in fuzz_data_logger.
-                                Was once used to set the log level for the logfile. Default logger.INFO.
     """
 
     def __init__(
@@ -369,15 +361,11 @@ class Session(pgraph.Graph):
         restart_timeout=None,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
-        fuzz_data_logger=None,
         fuzz_loggers=None,
         fuzz_db_keep_only_n_pass_cases=0,
         receive_data_after_each_request=True,
         check_data_received_each_request=False,
         receive_data_after_fuzz=False,
-        log_level=logging.INFO,
-        logfile=None,
-        logfile_level=logging.DEBUG,
         ignore_connection_reset=False,
         ignore_connection_aborted=False,
         ignore_connection_issues_when_sending_fuzz_data=True,
@@ -390,9 +378,6 @@ class Session(pgraph.Graph):
         self._ignore_connection_issues_when_sending_fuzz_data = ignore_connection_issues_when_sending_fuzz_data
         self._reuse_target_connection = reuse_target_connection
         self._ignore_connection_ssl_errors = ignore_connection_ssl_errors
-        _ = log_level
-        _ = logfile
-        _ = logfile_level
 
         super(Session, self).__init__()
 
@@ -409,8 +394,6 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = restart_sleep_time
         self.restart_threshold = restart_threshold
         self.restart_timeout = restart_timeout
-        if fuzz_data_logger is not None:
-            raise exception.BoofuzzError("Session fuzz_data_logger is deprecated. Use fuzz_loggers instead!")
         if fuzz_loggers is None:
             fuzz_loggers = []
         if self.console_gui and os.name != "nt":
@@ -797,10 +780,6 @@ class Session(pgraph.Graph):
         self.netmon_results = data["netmon_results"]
         self.procmon_results = data["procmon_results"]
         self.is_paused = data["is_paused"]
-
-    # noinspection PyMethodMayBeStatic
-    def log(self, msg, level=1):
-        raise Exception("Depreciated!")
 
     def num_mutations(self, this_node=None, path=()):
         """

@@ -22,6 +22,7 @@ Fixes
 - Examples are up to date with current Boofuzz version
 - Modified timings on serial_connection unit tests to improve test reliability
 - Refactored old unit-tests
+- Removed deprecated session arguments `fuzz_data_logger`, `log_level`, `logfile`, `logfile_level` and `log()`.
 
 v0.1.6
 ------
