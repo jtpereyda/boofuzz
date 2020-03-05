@@ -21,6 +21,7 @@ Fixes
 - Examples are up to date with current Boofuzz version
 - Modified timings on serial_connection unit tests to improve test reliability
 - Refactored old unit-tests
+- s_string(...) used `b"\x00"` as default padding instead of `"\x00"`. This broke on Python3 if you had set the `size` parameter and a string as `value`.
 
 v0.1.6
 ------
