@@ -1,22 +1,21 @@
-import sys
-import struct
-import time
-import socket
-import cPickle
-
+import pickle
 import select
+import socket
+import struct
+import sys
+import time
 
 from . import exception
 
 
-class Client:
+class Client(object):
     def __init__(self, host, port):
-        self.__host           = host
-        self.__port           = port
-        self.__dbg_flag       = False
-        self.__server_sock    = None
-        self.__retry          = 0
-        self.NOLINGER         = struct.pack('ii', 1, 0)
+        self.__host = host
+        self.__port = port
+        self.__dbg_flag = False
+        self.__server_sock = None
+        self.__retry = 0
+        self.NOLINGER = struct.pack("ii", 1, 0)
 
     def __getattr__(self, method_name):
         """
@@ -43,9 +42,9 @@ class Client:
         self.__disconnect()
 
         # connect to the server, timeout on failure.
+        self.__server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__server_sock.settimeout(3.0)
         try:
-            self.__server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.__server_sock.settimeout(3.0)
             self.__server_sock.connect((self.__host, self.__port))
         except socket.error as e:
             if self.__retry != 5:
@@ -53,8 +52,11 @@ class Client:
                 time.sleep(5)
                 self.__connect()
             else:
-                raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                    self.__host, self.__port, e))
+                raise exception.BoofuzzRpcError(
+                    'PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
+                        self.__host, self.__port, e
+                    )
+                )
         # disable timeouts and lingering.
         self.__server_sock.settimeout(None)
         self.__server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, self.NOLINGER)
@@ -71,7 +73,7 @@ class Client:
 
     def __debug(self, msg):
         if self.__dbg_flag:
-            print "PED-RPC> %s" % msg
+            print("PED-RPC> %s" % msg)
 
     def __method_missing(self, method_name, *args, **kwargs):
         """
@@ -93,7 +95,7 @@ class Client:
         #     x = pedrpc.client(host, port)
         #     if x:
         #         x.do_something()
-        if method_name == "__nonzero__":
+        if method_name == "__bool__":
             return 1
 
         # ignore all other attempts to access a private member.
@@ -133,17 +135,19 @@ class Client:
             return
 
         try:
-            received = ""
+            received = b""
 
             while length:
-                chunk     = self.__server_sock.recv(length)
+                chunk = self.__server_sock.recv(length)
                 received += chunk
-                length   -= len(chunk)
+                length -= len(chunk)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError(
+                "PED-RPC> unable to connect to server "
+                '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e)
+            )
 
-        return cPickle.loads(received)
+        return pickle.loads(received)
 
     def __pickle_send(self, data):
         """
@@ -157,23 +161,25 @@ class Client:
         @raise pdx: An exception is raised if the connection was severed.
         """
 
-        data = cPickle.dumps(data, protocol=2)
+        data = pickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
 
         try:
             self.__server_sock.send(struct.pack("<L", len(data)))
             self.__server_sock.send(data)
         except socket.error as e:
-            raise exception.BoofuzzRpcError('PED-RPC> unable to connect to server {0}:{1}. Error message: "{2}"\n'.format(
-                self.__host, self.__port, e))
+            raise exception.BoofuzzRpcError(
+                "PED-RPC> unable to connect to server "
+                '{0}:{1}. Error message: "{2}"\n'.format(self.__host, self.__port, e)
+            )
 
 
 class Server(object):
     def __init__(self, host, port):
-        self.__host           = host
-        self.__port           = port
-        self.__dbg_flag       = False
-        self.__client_sock    = None
+        self.__host = host
+        self.__port = port
+        self.__dbg_flag = False
+        self.__client_sock = None
         self.__client_address = None
 
         try:
@@ -198,7 +204,7 @@ class Server(object):
 
     def __debug(self, msg):
         if self.__dbg_flag:
-            print "PED-RPC> %s" % msg
+            print("PED-RPC> %s" % msg)
 
     def __pickle_recv(self):
         """
@@ -212,18 +218,18 @@ class Server(object):
         """
 
         try:
-            length   = struct.unpack("<L", self.__client_sock.recv(4))[0]
-            received = ""
+            length = struct.unpack("<L", self.__client_sock.recv(4))[0]
+            received = b""
 
             while length:
-                chunk     = self.__client_sock.recv(length)
+                chunk = self.__client_sock.recv(length)
                 received += chunk
-                length   -= len(chunk)
+                length -= len(chunk)
         except Exception:
             sys.stderr.write("PED-RPC> connection client severed during recv()\n")
             raise Exception
 
-        return cPickle.loads(received)
+        return pickle.loads(received)
 
     def __pickle_send(self, data):
         """
@@ -237,7 +243,7 @@ class Server(object):
         @raise pdx: An exception is raised if the connection was severed.
         """
 
-        data = cPickle.dumps(data, protocol=2)
+        data = pickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
 
         try:
@@ -256,7 +262,7 @@ class Server(object):
 
             # accept a client connection.
             while True:
-                readable, writeable, errored = select.select([self.__server], [], [], .1)
+                readable, writeable, errored = select.select([self.__server], [], [], 0.1)
                 if len(readable) > 0:
                     assert readable[0] == self.__server
                     (self.__client_sock, self.__client_address) = self.__server.accept()

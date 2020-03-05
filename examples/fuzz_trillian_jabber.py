@@ -1,5 +1,7 @@
-#!c:\\python\\python.exe
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
 
+# Original author:
 #
 # pedram amini <pamini@tippingpoint.com>
 #
@@ -18,31 +20,33 @@
 #     launch trillian on the fuzz box with rendezvous enabled. otherwise the target will drop the connection.
 #
 
-from boofuzz import sessions, \
-    pedrpc, \
-    s_get
+from boofuzz import pedrpc, s_get, sessions, TCPSocketConnection
 
 # noinspection PyUnresolvedReferences
-from requests import jabber
+# pytype: disable=import-error
+from request_definitions import jabber  # noqa: F401
+
+# pytype: enable=import-error
 
 
 def init_message(sock):
-    init  = '<?xml version="1.0" encoding="UTF-8" ?>\n'
+    init = '<?xml version="1.0" encoding="UTF-8" ?>\n'
     init += '<stream:stream to="152.67.137.126" xmlns="jabber:client" xmlns:stream="http://etherx.jabber.org/streams">'
 
     sock.send(init)
     sock.recv(1024)
 
-sess                   = sessions.Session(session_filename="audits/trillian.session")
-target                 = sessions.Target("152.67.137.126", 5298)
-target.netmon          = pedrpc.Client("152.67.137.126", 26001)
-target.procmon         = pedrpc.Client("152.67.137.126", 26002)
-target.vmcontrol       = pedrpc.Client("127.0.0.1", 26003)
+
+sess = sessions.Session(session_filename="audits/trillian.session")
+target = sessions.Target(connection=TCPSocketConnection("152.67.137.126", 5298))
+target.netmon = pedrpc.Client("152.67.137.126", 26001)
+target.procmon = pedrpc.Client("152.67.137.126", 26002)
+target.vmcontrol = pedrpc.Client("127.0.0.1", 26003)
 target.procmon_options = {"proc_name": "trillian.exe"}
 
 # start up the target.
 target.vmcontrol.restart_target()
-print "virtual machine up and running"
+print("virtual machine up and running")
 
 sess.add_target(target)
 sess.pre_send = init_message

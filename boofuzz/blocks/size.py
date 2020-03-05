@@ -1,7 +1,7 @@
 from functools import wraps
-from .. import primitives
+
+from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
-from ..blocks import Request
 
 
 def _may_recurse(f):
@@ -21,8 +21,20 @@ class Size(IFuzzable):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, block_name, request, offset=0, length=4, endian="<", output_format="binary", inclusive=False,
-                 signed=False, math=None, fuzzable=True, name=None):
+    def __init__(
+        self,
+        block_name,
+        request,
+        offset=0,
+        length=4,
+        endian="<",
+        output_format="binary",
+        inclusive=False,
+        signed=False,
+        math=None,
+        fuzzable=True,
+        name=None,
+    ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.
@@ -64,18 +76,14 @@ class Size(IFuzzable):
         self._name = name
 
         self.bit_field = primitives.BitField(
-                0,
-                self.length * 8,
-                endian=self.endian,
-                output_format=self.format,
-                signed=self.signed
+            0, self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
         )
-        self._rendered = ""
+        self._rendered = b""
         self._fuzz_complete = False
         self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
-            self.math = lambda (x): x
+            self.math = lambda x: x
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
@@ -155,27 +163,29 @@ class Size(IFuzzable):
         else:
             self._rendered = self._render()
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
 
     def _get_dummy_value(self):
-        return self.length * '\x00'
+        return self.length * "\x00"
 
     def _render(self):
         length = self._calculated_length()
-        return self._length_to_bytes(length)
+        return helpers.str_to_bytes(self._length_to_bytes(length))
 
     def _calculated_length(self):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block
 
     def _length_to_bytes(self, length):
-        return primitives.BitField.render_int(value=self.math(length),
-                                              output_format=self.format,
-                                              bit_width=self.length * 8,
-                                              endian=self.endian,
-                                              signed=self.signed)
+        return primitives.BitField.render_int(
+            value=self.math(length),
+            output_format=self.format,
+            bit_width=self.length * 8,
+            endian=self.endian,
+            signed=self.signed,
+        )
 
     @property
     def _inclusive_length_of_self(self):
@@ -210,9 +220,9 @@ class Size(IFuzzable):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return self.length
+        return len(self._render())
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

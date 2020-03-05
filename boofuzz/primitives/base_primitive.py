@@ -1,5 +1,6 @@
 import abc
 
+from .. import helpers
 from ..ifuzzable import IFuzzable
 
 
@@ -28,11 +29,11 @@ class BasePrimitive(IFuzzable):
         self._fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
         self._mutant_index = 0  # current mutation index into the fuzz library.
         self._original_value = None  # original value of primitive.
-        self._original_value_rendered = None # original value as rendered
+        self._original_value_rendered = None  # original value as rendered
 
         self._fuzz_complete = False  # this flag is raised when the mutations are exhausted.
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
-        self._rendered = ""  # rendered value of primitive.
+        self._rendered = b""  # rendered value of primitive.
         self._value = None  # current value of primitive.
 
     def mutations(self):
@@ -64,11 +65,15 @@ class BasePrimitive(IFuzzable):
 
     def render(self):
         """
-        Nothing fancy on render, simply return the value.
+        Render this instance's value.
+
+        Returns:
+            bytes: Rendered value
         """
 
-        self._rendered = self._render(self._value)
-        return self._rendered
+        value = self._render(self._value)
+        self._rendered = value
+        return helpers.str_to_bytes(value)
 
     def _render(self, value):
         """
@@ -80,7 +85,9 @@ class BasePrimitive(IFuzzable):
         Returns:
             bytes: Rendered value
         """
-        return value
+        if value is None:
+            value = b""
+        return helpers.str_to_bytes(value)
 
     def reset(self):
         self._fuzz_complete = False
@@ -88,12 +95,12 @@ class BasePrimitive(IFuzzable):
         self._value = self._original_value
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, repr(self._value))
+        return "<%s %s>" % (self.__class__.__name__, repr(self._value))
 
     def __len__(self):
         return len(self._value)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

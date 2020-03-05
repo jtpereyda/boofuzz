@@ -4,8 +4,10 @@ import os
 import shlex
 import time
 
-from boofuzz import pedrpc
-from boofuzz import utils
+from builtins import str
+from past.builtins import map
+
+from boofuzz import pedrpc, utils
 
 
 def _split_command_if_str(command):
@@ -22,14 +24,17 @@ def _split_command_if_str(command):
     Returns:
         (:obj:`list` of :obj:`list`: of :obj:`str`): List of lists of command arguments.
     """
-    if isinstance(command, basestring):
-        return shlex.split(command)
+    if isinstance(command, str):
+        return shlex.split(command, posix=(os.name == "posix"))
+
     else:
         return command
 
 
 class ProcessMonitorPedrpcServer(pedrpc.Server):
-    def __init__(self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None):
+    def __init__(
+        self, host, port, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None
+    ):
         """
         @type  host:           str
         @param host:           Hostname or IP address
@@ -37,8 +42,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @param port:           Port to bind server to
         @type  crash_filename: str
         @param crash_filename: Name of file to (un)serialize crash bin to/from
-        @type  proc_name:           str
-        @param proc_name:           (Optional, def=None) Process name to search for and attach to
+        @type  proc_name:      str
+        @param proc_name:      (Optional, def=None) Process name to search for and attach to
         @type  pid_to_ignore:  int
         @param pid_to_ignore:  (Optional, def=None) Ignore this PID when searching for the target process
         @type  level:          int
@@ -144,11 +149,16 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        self.log('Starting target...')
+        self.log("Starting target...")
         self.log("creating debugger thread", 5)
-        self.debugger_thread = self.debugger_class(self.start_commands, self, proc_name=self.proc_name,
-                                                   ignore_pid=self.ignore_pid, log_level=self.log_level,
-                                                   coredump_dir=self.coredump_dir)
+        self.debugger_thread = self.debugger_class(
+            self.start_commands,
+            self,
+            proc_name=self.proc_name,
+            ignore_pid=self.ignore_pid,
+            log_level=self.log_level,
+            coredump_dir=self.coredump_dir,
+        )
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
         self.debugger_thread.finished_starting.wait()
@@ -160,7 +170,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         """
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
-        self.log('Stopping target...')
+        self.log("Stopping target...")
         # give the debugger thread a chance to exit.
         time.sleep(1)
 
@@ -184,7 +194,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
 
         @returns True if successful.
         """
-        self.log('Restarting target...')
+        self.log("Restarting target...")
         self.stop_target()
         return self.start_target()
 
@@ -200,3 +210,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("updating stop commands to: {0}".format(list(new_stop_commands)))
         self.stop_commands = new_stop_commands
         self.stop_commands = map(_split_command_if_str, new_stop_commands)
+
+    def set_crash_filename(self, new_crash_filename):
+        self.log("updating crash bin filename to '%s'" % new_crash_filename)
+        self.crash_filename = new_crash_filename

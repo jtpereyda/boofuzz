@@ -58,7 +58,7 @@ class Delim(BasePrimitive):
         self._fuzz_library.append(":7" * 100)
         self._fuzz_library.append(";")
         self._fuzz_library.append("'")
-        self._fuzz_library.append("\"")
+        self._fuzz_library.append('"')
         self._fuzz_library.append("/")
         self._fuzz_library.append("\\")
         self._fuzz_library.append("?")

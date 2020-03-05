@@ -4,6 +4,7 @@ class EventHook(object):
 
     Based on spassig's solution here: http://stackoverflow.com/a/1094423/461834
     """
+
     def __init__(self):
         self.__handlers = []
 

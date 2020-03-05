@@ -1,7 +1,4 @@
-import ber
-import dcerpc
-import misc
-import xdr
+from . import ber, dcerpc, misc, xdr
 
 # all defined legos must be added to this bin.
 BIN = {
@@ -12,5 +9,5 @@ BIN = {
     "ndr_wstring": dcerpc.NdrWString,
     "ndr_string": dcerpc.NdrString,
     "tag": misc.Tag,
-    "xdr_string": xdr.String
+    "xdr_string": xdr.String,
 }

@@ -4,6 +4,11 @@
 # TippingPoint Security Research Team
 # (C) 2007
 #
+from __future__ import print_function
+
+from io import open
+
+from past.builtins import map, xrange
 
 
 def get_string(ea):
@@ -74,10 +79,10 @@ def find_ints(start_address):
             if "cmp" in mnem and op1 not in constants:
                 constants.append(op1)
 
-    print "Found %d constant values used in compares." % len(constants)
-    print "-----------------------------------------------------"
+    print("Found %d constant values used in compares." % len(constants))
+    print("-----------------------------------------------------")
     for i in xrange(0, len(constants), 20):
-        print constants[i:i + 20]
+        print(constants[i : i + 20])
 
     return constants
 
@@ -96,7 +101,7 @@ def find_strings(start_address):
             xref_cur = DfirstB(xref_start)
             while xref_cur != BADADDR:
 
-                # print "Found call to ", import_name
+                # print("Found call to ", import_name)
                 string_arg = get_arguments(xref_cur)
 
                 if string_arg and string_arg not in strings:
@@ -127,10 +132,10 @@ def find_strings(start_address):
 
                     xref_cur = RnextB(xref_start, xref_cur)
 
-    print "Found %d string values used in compares." % len(strings)
-    print "-----------------------------------------------------"
+    print("Found %d string values used in compares." % len(strings))
+    print("-----------------------------------------------------")
     for i in xrange(0, len(strings), 5):
-        print strings[i:i + 5]
+        print(strings[i : i + 5])
 
     return strings
 
@@ -144,22 +149,22 @@ start_address = SegByName(".text")
 constants = find_ints(start_address)
 constants = map(lambda x: "0x%x" % x, constants)
 
-print
+print()
 
 # get strings
 start_address = SegByName(".idata")
 strings = find_strings(start_address)
 
 # write integers
-fh = open(constants_file, 'w+')
+fh = open(constants_file, "w+")
 for c in constants:
     fh.write(c + "\n")
 fh.close()
 
 # write strings
-fh = open(strings_file, 'w+')
+fh = open(strings_file, "w+")
 for s in strings:
     fh.write(s + "\n")
 fh.close()
 
-print "Done."
+print("Done.")

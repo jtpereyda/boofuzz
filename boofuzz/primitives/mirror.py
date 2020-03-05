@@ -1,5 +1,7 @@
 from functools import wraps
+
 from .base_primitive import BasePrimitive
+from .. import helpers
 
 
 def _may_recurse(f):
@@ -45,7 +47,7 @@ class Mirror(BasePrimitive):
         :return: Rendered value.
         """
         self._rendered = self._render_primitive(self._primitive_name)
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def mutations(self):
         return iter(())  # empty generator
@@ -57,7 +59,14 @@ class Mirror(BasePrimitive):
     @_may_recurse
     def _render_primitive(self, primitive_name):
         return self._request.names[primitive_name].render() if primitive_name is not None else None
-    
+
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name):
         return self._request.names[primitive_name].original_value if primitive_name is not None else None
+
+    @_may_recurse
+    def get_length(self):
+        return len(self._request.names[self._primitive_name]) if self._primitive_name is not None else 0
+
+    def __len__(self):
+        return self.get_length()

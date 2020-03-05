@@ -1,5 +1,7 @@
-#!c:\\python\\python.exe
+#!/usr/bin/env python3
+# Designed for use with boofuzz v0.2.0
 
+# Original author:
 #
 # pedram amini <pamini@tippingpoint.com>
 #
@@ -19,13 +21,17 @@
 # uncomment the req/num to do a single test case.
 #
 
-from boofuzz import utils, s_get, s_mutate, s_render, sessions, pedrpc
+from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, utils, TCPSocketConnection
+
 # noinspection PyUnresolvedReferences
-from requests import trend
+# pytype: disable=import-error
+from request_definitions import trend  # noqa: F401
+
+# pytype: enable=import-error
 
 req = num = None
-#req = "5168: op-3"
-#num = "\x04"
+# req = "5168: op-3"
+# num = "\x04"
 
 
 def rpc_bind(sock):
@@ -53,30 +59,29 @@ def do_single(req, num):
 
         s_mutate()
 
-    print "xmitting single test case"
+    print("xmitting single test case")
     s.send(s_render())
-    print "done."
+    print("done.")
 
 
 def do_fuzz():
-    sess   = sessions.Session(session_filename="audits/trend_server_protect_5168.session")
-    target = sessions.Target("192.168.181.133", 5168)
+    sess = sessions.Session(session_filename="audits/trend_server_protect_5168.session")
+    target = sessions.Target(connection=TCPSocketConnection("192.168.181.133", 5168))
 
-    target.netmon    = pedrpc.Client("192.168.181.133", 26001)
-    target.procmon   = pedrpc.Client("192.168.181.133", 26002)
+    target.netmon = pedrpc.Client("192.168.181.133", 26001)
+    target.procmon = pedrpc.Client("192.168.181.133", 26002)
     target.vmcontrol = pedrpc.Client("127.0.0.1", 26003)
 
-    target.procmon_options = \
-        {
-            "proc_name": "SpntSvc.exe",
-            "stop_commands": ['net stop "trend serverprotect"'],
-            "start_commands": ['net start "trend serverprotect"'],
-        }
+    target.procmon_options = {
+        "proc_name": "SpntSvc.exe",
+        "stop_commands": ['net stop "trend serverprotect"'],
+        "start_commands": ['net start "trend serverprotect"'],
+    }
 
     # start up the target.
     target.vmcontrol.restart_target()
 
-    print "virtual machine up and running"
+    print("virtual machine up and running")
 
     sess.add_target(target)
     sess.pre_send = rpc_bind
@@ -88,7 +93,8 @@ def do_fuzz():
     sess.connect(s_get("5168: op-1f"))
     sess.fuzz()
 
-    print "done fuzzing. web interface still running."
+    print("done fuzzing. web interface still running.")
+
 
 if not req or not num:
     do_fuzz()

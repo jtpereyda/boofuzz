@@ -1,5 +1,7 @@
 import struct
 
+import six
+
 from boofuzz.primitives.bit_field import BitField
 
 
@@ -10,5 +12,5 @@ class QWord(BitField):
 
         super(QWord, self).__init__(value, width, max_num, *args, **kwargs)
 
-        if type(self._value) not in [int, long, list, tuple]:
+        if not isinstance(self._value, (six.integer_types, list, tuple)):
             self._value = struct.unpack(self.endian + "Q", self._value)[0]

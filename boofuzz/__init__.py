@@ -1,35 +1,167 @@
 from __future__ import absolute_import
 
 import functools
+import sys
 
-from . import blocks
-from . import legos
-from . import pedrpc
-from . import primitives
-from . import exception
-from .blocks import REQUESTS
-from .blocks.block import Block
-from .blocks.checksum import Checksum
-from .blocks.repeat import Repeat
-from .blocks.request import Request
-from .blocks.size import Size
-from .constants import BIG_ENDIAN, LITTLE_ENDIAN, DEFAULT_PROCMON_PORT
+import six
+from past.builtins import map
+
+from . import blocks, exception, legos, pedrpc, primitives
+from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
+from .connections import (
+    BaseSocketConnection,
+    ip_constants,
+    ISerialLike,
+    ITargetConnection,
+    RawL2SocketConnection,
+    RawL3SocketConnection,
+    SerialConnection,
+    SerialConnectionLowLevel,
+    SocketConnection,
+    SSLSocketConnection,
+    TCPSocketConnection,
+    UDPSocketConnection,
+)
+from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
+from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
+from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .itarget_connection import ITargetConnection
-from .primitives import (BasePrimitive, Delim, Group,
-                         RandomData, Static, String, BitField,
-                         Byte, Word, DWord, QWord, FromFile, Mirror)
-from .serial_connection import SerialConnection
-from .sessions import Session, Target, open_test_run
-from .exception import SullyRuntimeError, SizerNotUtilizedError, MustImplementException
-from .socket_connection import SocketConnection
+from .primitives import (
+    BasePrimitive,
+    BitField,
+    Byte,
+    Bytes,
+    Delim,
+    DWord,
+    FromFile,
+    Group,
+    Mirror,
+    QWord,
+    RandomData,
+    Static,
+    String,
+    Word,
+)
+from .repeater import CountRepeater, Repeater, TimeRepeater
+from .sessions import open_test_run, Session, Target
 
-__version__ = '0.1.2'
+# workaround to make Tornado work in Python 3.8
+# https://github.com/tornadoweb/tornado/issues/2608
+if sys.platform == "win32" and sys.version_info >= (3, 8):
+    import asyncio
+
+    # noinspection PyUnresolvedReferences
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # pytype: disable=module-attr
+
+__all__ = [
+    "BasePrimitive",
+    "BaseSocketConnection",
+    "BIG_ENDIAN",
+    "BitField",
+    "Block",
+    "blocks",
+    "Byte",
+    "Bytes",
+    "Checksum",
+    "CountRepeater",
+    "DEFAULT_PROCMON_PORT",
+    "Delim",
+    "DWord",
+    "EventHook",
+    "exception",
+    "FromFile",
+    "FuzzLogger",
+    "FuzzLoggerCsv",
+    "FuzzLoggerCurses",
+    "FuzzLoggerText",
+    "Group",
+    "IFuzzLogger",
+    "IFuzzLoggerBackend",
+    "ip_constants",
+    "ISerialLike",
+    "ITargetConnection",
+    "legos",
+    "LITTLE_ENDIAN",
+    "Mirror",
+    "MustImplementException",
+    "open_test_run",
+    "pedrpc",
+    "primitives",
+    "QWord",
+    "RandomData",
+    "RawL2SocketConnection",
+    "RawL3SocketConnection",
+    "Repeat",
+    "Repeater",
+    "Request",
+    "REQUESTS",
+    "s_bigword",
+    "s_binary",
+    "s_bit",
+    "s_bit_field",
+    "s_bits",
+    "s_block",
+    "s_block_end",
+    "s_block_start",
+    "s_byte",
+    "s_bytes",
+    "s_char",
+    "s_checksum",
+    "s_cstring",
+    "s_delim",
+    "s_double",
+    "s_dunno",
+    "s_dword",
+    "s_from_file",
+    "s_get",
+    "s_group",
+    "s_hex_dump",
+    "s_initialize",
+    "s_int",
+    "s_intelword",
+    "s_lego",
+    "s_long",
+    "s_mirror",
+    "s_mutate",
+    "s_num_mutations",
+    "s_qword",
+    "s_random",
+    "s_raw",
+    "s_render",
+    "s_repeat",
+    "s_repeater",
+    "s_short",
+    "s_size",
+    "s_sizer",
+    "s_static",
+    "s_string",
+    "s_switch",
+    "s_unknown",
+    "s_update",
+    "s_word",
+    "SerialConnection",
+    "SerialConnectionLowLevel",
+    "Session",
+    "Size",
+    "SizerNotUtilizedError",
+    "SocketConnection",
+    "SSLSocketConnection",
+    "Static",
+    "String",
+    "SullyRuntimeError",
+    "Target",
+    "TCPSocketConnection",
+    "TimeRepeater",
+    "UDPSocketConnection",
+    "Word",
+]
+
+__version__ = "0.1.6"
 
 
 # REQUEST MANAGEMENT
@@ -39,14 +171,14 @@ def s_get(name=None):
     global function style request manipulation to direct object manipulation. Example::
 
         req = s_get("HTTP BASIC")
-        print req.num_mutations()
+        print(req.num_mutations())
 
     The selected request is also set as the default current. (ie: s_switch(name) is implied).
 
     :type  name: str
     :param name: (Optional, def=None) Name of request to return or current request if name is None.
 
-    :rtype:  blocks.request
+    :rtype:  blocks.Request
     :return: The requested request.
     """
 
@@ -177,8 +309,8 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
 
 def s_block_start(name, *args, **kwargs):
     """
-    Open a new block under the current request. This routine always returns an instance so you can make your fuzzer pretty
-    with indenting::
+    Open a new block under the current request. This routine always returns an instance so you can make your fuzzer
+    pretty with indenting::
 
         if s_block_start("header"):
             s_static("\\x00\\x01")
@@ -206,21 +338,30 @@ def s_block_end(name=None):
     blocks.CURRENT.pop()
 
 
-def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fuzzable=True, name=None,
-               ipv4_src_block_name=None,
-               ipv4_dst_block_name=None):
+def s_checksum(
+    block_name,
+    algorithm="crc32",
+    length=0,
+    endian=LITTLE_ENDIAN,
+    fuzzable=True,
+    name=None,
+    ipv4_src_block_name=None,
+    ipv4_dst_block_name=None,
+):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
     currently open blocks.
 
     :type  block_name: str
-    :param block_name: Name of block to apply sizer to
+    :param block_name: Name of block for checksum calculations
 
-    :type  algorithm:  str
-    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, adler32, md5, sha1, ipv4, udp)
+    :type  algorithm:  str, function
+    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
+                       Pass a function to use a custom algorithm. This function has to take and return byte-type data.
 
     :type  length:     int
-    :param length:     (Optional, def=0) NOT IMPLEMENTED. Length of checksum, specify 0 to auto-calculate
+    :param length:     (Optional, def=0) Length of checksum, auto-calculated by default. Must be specified manually when
+                       using a custom algorithm.
 
     :type  endian:     Character
     :param endian:     (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
@@ -242,9 +383,17 @@ def s_checksum(block_name, algorithm="crc32", length=0, endian=LITTLE_ENDIAN, fu
     if block_name in blocks.CURRENT.block_stack:
         raise exception.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
-    checksum = Checksum(block_name, blocks.CURRENT, algorithm, length, endian, fuzzable, name,
-                        ipv4_src_block_name=ipv4_src_block_name,
-                        ipv4_dst_block_name=ipv4_dst_block_name)
+    checksum = Checksum(
+        block_name,
+        blocks.CURRENT,
+        algorithm,
+        length,
+        endian,
+        fuzzable,
+        name,
+        ipv4_src_block_name=ipv4_src_block_name,
+        ipv4_dst_block_name=ipv4_dst_block_name,
+    )
     blocks.CURRENT.push(checksum)
 
 
@@ -257,7 +406,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     :see: Aliases: s_repeater()
 
     :type  block_name: str
-    :param block_name: Name of block to apply sizer to
+    :param block_name: Name of block to repeat
     :type  min_reps:   int
     :param min_reps:   (Optional, def=0) Minimum number of block repetitions
     :type  max_reps:   int
@@ -276,8 +425,18 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     blocks.CURRENT.push(repeat)
 
 
-def s_size(block_name, offset=0, length=4, endian=LITTLE_ENDIAN, output_format="binary", inclusive=False, signed=False,
-           math=None, fuzzable=True, name=None):
+def s_size(
+    block_name,
+    offset=0,
+    length=4,
+    endian=LITTLE_ENDIAN,
+    output_format="binary",
+    inclusive=False,
+    signed=False,
+    math=None,
+    fuzzable=True,
+    name=None,
+):
     """
     Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
     currently open blocks.
@@ -355,12 +514,12 @@ def s_binary(value, name=None):
     parsed = parsed.replace("0x", "")
     parsed = parsed.replace("\\x", "")
 
-    value = ""
+    value = b""
     while parsed:
         pair = parsed[:2]
         parsed = parsed[2:]
 
-        value += chr(int(pair, 16))
+        value += six.int2byte(int(pair, 16))
 
     static = primitives.Static(value, name)
     blocks.CURRENT.push(static)
@@ -470,20 +629,20 @@ def s_static(value, name=None):
 def s_mirror(primitive_name, name=None):
     """
     Push a mirror of another primitive onto the current block stack.
-    
+
     :type primitive_name:   str
     :param primitive_name:  Name of target primitive
     :type name:             str
     :param name:            (Optional, def=None) Name of current primitive
     """
     if primitive_name not in blocks.CURRENT.names:
-        raise sex.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
+        raise exception.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
 
     mirror = primitives.Mirror(primitive_name, blocks.CURRENT, name)
     blocks.CURRENT.push(mirror)
 
 
-def s_string(value, size=-1, padding="\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a string onto the current block stack.
 
@@ -514,7 +673,7 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :type  value:    str
     :param value:    Default string value
     :type  encoding: str
-    :param encoding: (Optonal, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
+    :param encoding: (DEPRECIATED, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  max_len:  int
@@ -525,13 +684,14 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :param filename: (Mandatory) Specify filename where to read fuzz list
     """
 
-    s = primitives.FromFile(value, encoding, fuzzable, max_len, name, filename)
+    s = primitives.FromFile(value, fuzzable, max_len, name, filename)
     blocks.CURRENT.push(s)
 
 
 # noinspection PyTypeChecker
-def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False,
-                fuzzable=True, name=None):
+def s_bit_field(
+    value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a variable length bit field onto the current block stack.
 
@@ -544,7 +704,7 @@ def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", sign
     :type  endian:         Character
     :param endian:         (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
     :type  output_format:  str
-    :param output_format format:  (Optional, def=binary) Output format, "binary" or "ascii"
+    :param output_format:  (Optional, def=binary) Output format, "binary" or "ascii"
     :type  signed:         bool
     :param signed:         (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
     :type  full_range:     bool
@@ -559,8 +719,9 @@ def s_bit_field(value, width, endian=LITTLE_ENDIAN, output_format="binary", sign
     blocks.CURRENT.push(bit_field)
 
 
-def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-           name=None):
+def s_byte(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a byte onto the current block stack.
 
@@ -586,8 +747,31 @@ def s_byte(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     blocks.CURRENT.push(byte)
 
 
-def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-           name=None):
+def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
+    """
+    Push a bytes field of arbitrary length onto the current block stack.
+
+    :type  value:        bytes
+    :param value:        Default binary value
+    :type  size:         int
+    :param size:         (Optional, def=None) Static size of this field, leave None for dynamic.
+    :type  padding:      chr
+    :param padding:      (Optional, def=b"\\x00") Value to use as padding to fill static field size.
+    :type  fuzzable:     bool
+    :param fuzzable:     (Optional, def=True) Enable/disable fuzzing of this primitive
+    :type  max_len:      int
+    :param max_len:      (Optional, def=None) Maximum string length
+    :type  name:         str
+    :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
+    """
+
+    _bytes = primitives.Bytes(value, size, padding, fuzzable, max_len, name)
+    blocks.CURRENT.push(_bytes)
+
+
+def s_word(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a word onto the current block stack.
 
@@ -613,8 +797,9 @@ def s_word(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, fu
     blocks.CURRENT.push(word)
 
 
-def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-            name=None):
+def s_dword(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a double word onto the current block stack.
 
@@ -640,8 +825,9 @@ def s_dword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, f
     blocks.CURRENT.push(dword)
 
 
-def s_qword(value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
-            name=None):
+def s_qword(
+    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+):
     """
     Push a quad word onto the current block stack.
 

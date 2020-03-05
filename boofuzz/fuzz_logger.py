@@ -1,4 +1,8 @@
-from ifuzz_logger import IFuzzLogger
+from typing import Union  # noqa: F401
+
+from past.builtins import map
+
+from .ifuzz_logger import IFuzzLogger
 
 
 class FuzzLogger(IFuzzLogger):
@@ -17,7 +21,7 @@ class FuzzLogger(IFuzzLogger):
             fuzz_loggers = []
         self._fuzz_loggers = fuzz_loggers
 
-        self._cur_test_case_id = ''
+        self._cur_test_case_id = ""  # type: Union[int, str]
         self.failed_test_cases = {}
         self.error_test_cases = {}
         self.passed_test_cases = {}
@@ -64,11 +68,19 @@ class FuzzLogger(IFuzzLogger):
         self._cur_test_case_id = test_case_id
         self.all_test_cases.append(test_case_id)
         for fuzz_logger in self._fuzz_loggers:
-            fuzz_logger.open_test_case(test_case_id=test_case_id, name=name, index=index)
+            fuzz_logger.open_test_case(test_case_id=test_case_id, name=name, index=index, *args, **kwargs)
 
     def log_send(self, data):
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_send(data=data)
+
+    def close_test_case(self):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.close_test_case()
+
+    def close_test(self):
+        for fuzz_logger in self._fuzz_loggers:
+            fuzz_logger.close_test()
 
     def failure_summary(self):
         """Return test summary string based on fuzz logger results.
@@ -80,10 +92,10 @@ class FuzzLogger(IFuzzLogger):
 
         if len(self.failed_test_cases) > 0:
             summary += "FAILED: {0} test cases:\n".format(len(self.failed_test_cases))
-            summary += "{0}\n".format('\n'.join(map(str, self.failed_test_cases.iterkeys())))
+            summary += "{0}\n".format("\n".join(map(str, self.failed_test_cases)))
 
         if len(self.error_test_cases) > 0:
             summary += "Errors on {0} test cases:\n".format(len(self.error_test_cases))
-            summary += "{0}".format('\n'.join(map(str, self.error_test_cases.iterkeys())))
+            summary += "{0}".format("\n".join(map(str, self.error_test_cases)))
 
         return summary

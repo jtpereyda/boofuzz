@@ -1,5 +1,8 @@
 import abc
 
+from builtins import object
+from future.utils import listitems, with_metaclass
+
 
 class DocStringInheritor(type):
     """
@@ -7,29 +10,29 @@ class DocStringInheritor(type):
     http://groups.google.com/group/comp.lang.python/msg/26f7b4fcb4d66c95
     by Paul McGuire
     """
+
     def __new__(meta, name, bases, clsdict):
-        if not('__doc__' in clsdict and clsdict['__doc__']):
+        if not ("__doc__" in clsdict and clsdict["__doc__"]):
             for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()):
-                doc=mro_cls.__doc__
+                doc = mro_cls.__doc__
                 if doc:
-                    clsdict['__doc__']=doc
+                    clsdict["__doc__"] = doc
                     break
-        for attr, attribute in clsdict.items():
+        for attr, attribute in listitems(clsdict):
             if not attribute.__doc__:
-                for mro_cls in (mro_cls for base in bases for mro_cls in base.mro()
-                                if hasattr(mro_cls, attr)):
-                    doc=getattr(getattr(mro_cls,attr),'__doc__')
+                for mro_cls in (mro_cls for base in bases for mro_cls in base.mro() if hasattr(mro_cls, attr)):
+                    doc = getattr(getattr(mro_cls, attr), "__doc__")
                     if doc:
                         if isinstance(attribute, property):
-                            clsdict[attr] = property(attribute.fget, attribute.fset,
-                                                     attribute.fdel, doc)
+                            clsdict[attr] = property(attribute.fget, attribute.fset, attribute.fdel, doc)
                         else:
                             attribute.__doc__ = doc
                         break
         return type.__new__(meta, name, bases, clsdict)
 
 
-class IFuzzable(object):
+# DocStringInheritor is the metaclass in python 2 and 3
+class IFuzzable(with_metaclass(DocStringInheritor, object)):
     """Describes a fuzzable message element or message.
 
     The core functionality on which boofuzz runs:
@@ -48,9 +51,9 @@ class IFuzzable(object):
     The mutation and original_value functions are the most fundamental.
 
     """
-    __metaclass__ = DocStringInheritor
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
         return
@@ -60,18 +63,21 @@ class IFuzzable(object):
         """Yields mutations."""
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def mutant_index(self):
         """Index of current mutation. 0 => normal value. 1 => first mutation.
         """
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def original_value(self):
         """Original, non-mutated value of element."""
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self):
         """Element name, should be specific for each instance."""
         return
@@ -123,7 +129,7 @@ class IFuzzable(object):
         return
 
     @abc.abstractmethod
-    def __nonzero__(self):
+    def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.
 
         Design Note: Exists in case some wise guy uses `if my_element:` to

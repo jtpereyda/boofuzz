@@ -1,7 +1,7 @@
 import collections
 
-from .. import exception
 from .block import Block
+from .. import exception, helpers
 from ..ifuzzable import IFuzzable
 
 
@@ -23,7 +23,7 @@ class Request(IFuzzable):
         # dictionary of list of sizers / checksums that were unable to complete rendering:
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
-        self._rendered = ""  # rendered block structure.
+        self._rendered = b""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.
@@ -45,7 +45,7 @@ class Request(IFuzzable):
         if isinstance(value, int):
             self._mutant_index = value
         else:
-            raise TypeError('Expected an Int')
+            raise TypeError("Expected an Int")
 
     @property
     def fuzzable(self):
@@ -57,10 +57,10 @@ class Request(IFuzzable):
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = ""
+        self._rendered = b""
 
         for item in self.stack:
-            self._rendered += item.original_value
+            self._rendered += helpers.str_to_bytes(item.original_value)
 
         return self._rendered
 
@@ -125,7 +125,7 @@ class Request(IFuzzable):
         # if the item has a name, add it to the internal dictionary of names.
         if hasattr(item, "name") and item.name:
             # ensure the name doesn't already exist.
-            if item.name in self.names.keys():
+            if item.name in list(self.names):
                 raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
 
             self.names[item.name] = item
@@ -151,7 +151,7 @@ class Request(IFuzzable):
         for item in self.stack:
             self._rendered += item.render()
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """
@@ -197,7 +197,7 @@ class Request(IFuzzable):
             length += len(item)
         return length
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

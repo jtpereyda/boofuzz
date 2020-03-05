@@ -1,22 +1,24 @@
 boofuzz: Network Protocol Fuzzing for Humans
 ============================================
 
-.. image:: https://travis-ci.org/jtpereyda/boofuzz.svg?branch=master
-    :target: https://travis-ci.org/jtpereyda/boofuzz
+.. image:: https://github.com/jtpereyda/boofuzz/workflows/Test/badge.svg?branch=master
+    :target: https://github.com/jtpereyda/boofuzz/actions?query=workflow%3ATest+branch%3Amaster
 .. image:: https://readthedocs.org/projects/boofuzz/badge/?version=latest
-    :target: http://boofuzz.readthedocs.io/en/latest/?badge=latest
+    :target: https://boofuzz.readthedocs.io/
     :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/boofuzz.svg
-    :target: https://pypi.python.org/pypi/boofuzz
+    :target: https://pypi.org/project/boofuzz/
 .. image:: https://badges.gitter.im/jtpereyda/boofuzz.svg
     :alt: Join the chat at https://gitter.im/jtpereyda/boofuzz
-    :target: https://gitter.im/jtpereyda/boofuzz?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+    :target: https://gitter.im/jtpereyda/boofuzz
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
 
 Boofuzz is a fork of and the successor to the venerable `Sulley`_ fuzzing
 framework. Besides numerous bug fixes, boofuzz aims for extensibility.
 The goal: fuzz everything.
 
-.. figure:: _static/boofuzz-screenshot.png
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/_static/boofuzz-screenshot.png
     :alt: boofuzz screenshot
 
 Why?
@@ -50,7 +52,7 @@ Sulley is affectionately named after the giant teal and purple creature
 from Monsters Inc. due to his fuzziness. Boofuzz is likewise named after
 the only creature known to have scared Sulley himself: Boo!
 
-.. figure:: _static/boo.png
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/_static/boo.png
    :alt: Boo from Monsters Inc
 
    Boo from Monsters Inc
@@ -69,7 +71,7 @@ Boofuzz installs as a Python library used to build fuzzer scripts. See
 Documentation
 -------------
 
-Documentation is available at http://boofuzz.readthedocs.io/, including nifty quickstart guides.
+Documentation is available at https://boofuzz.readthedocs.io/, including nifty quickstart guides.
 
 Contributions
 -------------
@@ -95,6 +97,6 @@ For updates, follow `@b00fuzz`_ on Twitter.
 .. _Google Groups: https://groups.google.com/d/forum/boofuzz
 .. _gitter: https://gitter.im/jtpereyda/boofuzz
 .. _@b00fuzz: https://twitter.com/b00fuzz
-.. _documentation: http://boofuzz.readthedocs.io/
+.. _documentation: https://boofuzz.readthedocs.io/
 .. _INSTALL.rst: INSTALL.rst
 .. _CONTRIBUTING.rst: CONTRIBUTING.rst

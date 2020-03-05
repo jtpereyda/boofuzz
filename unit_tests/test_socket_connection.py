@@ -1,39 +1,35 @@
 import functools
-import threading
-import time
+import ipaddress
 import logging
 import socket
 import struct
 import sys
+import threading
+import time
 import unittest
 import zlib
 
+import netifaces  # pytype: disable=import-error
 import pytest
-import ipaddress
-import netifaces
+import six
 
-from boofuzz.socket_connection import SocketConnection
-from boofuzz import socket_connection
-from boofuzz import ip_constants
 from boofuzz import helpers
+from boofuzz.connections import ip_constants, SocketConnection
+from boofuzz.connections.raw_l3_socket_connection import ETH_P_ALL, ETH_P_IP
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
-ETH_P_ALL = 0x0003  # Ethernet protocol: Every packet, see Linux if_ether.h docs for more details.
 
 UDP_HEADER_LEN = 8
 IP_HEADER_LEN = 20
 
-ETHER_TYPE_IPV4 = struct.pack(">H", socket_connection.ETH_P_IP)  # Ethernet frame EtherType for IPv4
+ETHER_TYPE_IPV4 = struct.pack(">H", ETH_P_IP)  # Ethernet frame EtherType for IPv4
 
-RAW_L2_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l2']
-RAW_L3_MAX_PAYLOAD = socket_connection.SocketConnection.MAX_PAYLOADS['raw-l3']
-
-TEST_ERR_NO_NON_LOOPBACK_IPV4 = 'No local non-loopback IPv4 address found.'
+TEST_ERR_NO_NON_LOOPBACK_IPV4 = "No local non-loopback IPv4 address found."
 
 
 def bytes_or_unicode_to_unicode(s):
     if isinstance(s, bytes):
-        return s.decode('utf-8')
+        return six.text_type(s)
     else:
         return s
 
@@ -45,7 +41,7 @@ def get_local_non_loopback_ipv4_addresses_info():
             # Some interfaces have multiple IPv4 addresses:
             for address_info in netifaces.ifaddresses(interface)[netifaces.AF_INET]:
                 # netifaces gives unicode strings in Windows, byte strings in Linux:
-                address_str = bytes_or_unicode_to_unicode(address_info['addr'])
+                address_str = bytes_or_unicode_to_unicode(address_info["addr"])
                 if not ipaddress.IPv4Address(address_str).is_loopback:
                     yield address_info
 
@@ -55,7 +51,7 @@ def udp_packet(payload, src_port, dst_port):
     Create a UDP packet.
 
     :param payload: Payload / next layer protocol.
-    :type payload: str
+    :type payload: bytes
 
     :param src_port: 16-bit source port number.
     :type src_port: int
@@ -64,12 +60,12 @@ def udp_packet(payload, src_port, dst_port):
     :type dst_port: int
 
     :return: UDP packet.
-    :rtype: str
+    :rtype: bytes
     """
     udp_header = struct.pack(">H", src_port)  # Src port
     udp_header += struct.pack(">H", dst_port)  # Dst port
     udp_header += struct.pack(">H", len(payload) + UDP_HEADER_LEN)  # Length
-    udp_header += "\x00\x00"  # Checksum (0 means no checksum)
+    udp_header += b"\x00\x00"  # Checksum (0 means no checksum)
     return udp_header + payload
 
 
@@ -81,36 +77,36 @@ def ones_complement_sum_carry_16(a, b):
     :return: Sum of a and b, ones complement, carry at 16 bits.
     """
     c = a + b
-    return (c & 0xffff) + (c >> 16)
+    return (c & 0xFFFF) + (c >> 16)
 
 
-def ip_packet(payload, src_ip, dst_ip, protocol=chr(ip_constants.IPV4_PROTOCOL_UDP)):
+def ip_packet(payload, src_ip, dst_ip, protocol=six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)):
     """
     Create an IPv4 packet.
 
-    :type payload: str
+    :type payload: bytes
     :param payload: Contents of next layer up.
 
-    :type src_ip: str
+    :type src_ip: bytes
     :param src_ip: 4-byte source IP address.
 
-    :type dst_ip: str
+    :type dst_ip: bytes
     :param dst_ip: 4-byte destination IP address.
 
-    :type protocol: str
+    :type protocol: bytes
     :param protocol: Single-byte string identifying next layer's protocol. Default "\x11" UDP.
 
     :return: IPv4 packet.
-    :rtype: str
+    :rtype: bytes
     """
-    ip_header = "\x45"  # Version | Header Length
-    ip_header += "\x00"  # "Differentiated Services Field"
+    ip_header = b"\x45"  # Version | Header Length
+    ip_header += b"\x00"  # "Differentiated Services Field"
     ip_header += struct.pack(">H", IP_HEADER_LEN + len(payload))  # Length
-    ip_header += "\x00\x01"  # ID Field
-    ip_header += "\x40\x00"  # Flags, Fragment Offset
-    ip_header += "\x40"  # Time to live
+    ip_header += b"\x00\x01"  # ID Field
+    ip_header += b"\x40\x00"  # Flags, Fragment Offset
+    ip_header += b"\x40"  # Time to live
     ip_header += protocol
-    ip_header += "\x00\x00"  # Header checksum (fill in zeros in order to compute checksum)
+    ip_header += b"\x00\x00"  # Header checksum (fill in zeros in order to compute checksum)
     ip_header += src_ip
     ip_header += dst_ip
 
@@ -125,19 +121,19 @@ def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
     Create an Ethernet frame.
 
     :param payload: Network layer content.
-    :type payload: str
+    :type payload: bytes
 
     :param src_mac: 6-byte source MAC address.
-    :type src_mac: str
+    :type src_mac: bytes
 
     :param dst_mac: 6-byte destination MAC address.
-    :type dst_mac: str
+    :type dst_mac: bytes
 
     :param ether_type: EtherType indicating protocol of next layer; default "\x08\x00" IPv4.
-    :type ether_type: str
+    :type ether_type: bytes
 
     :return: Ethernet frame
-    :rtype: str
+    :rtype: bytes
     """
     eth_header = dst_mac
     eth_header += src_mac
@@ -154,10 +150,10 @@ class MiniTestServer(object):
     Small server class for testing SocketConnection.
     """
 
-    def __init__(self, stay_silent=False, proto='tcp', host="0.0.0.0"):
+    def __init__(self, stay_silent=False, proto="tcp", host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = bytes("\xFE\xEB\xDA\xED")
+        self.data_to_send = b"\xFE\xEB\xDA\xED"
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto
@@ -168,18 +164,18 @@ class MiniTestServer(object):
         """
         Bind server, and call listen if using TCP, meaning that the client test code can successfully connect.
         """
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        elif self.proto == 'udp':
+        elif self.proto == "udp":
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        elif self.proto == 'raw':
-            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
+        elif self.proto == "raw":
+            self.server_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(ETH_P_ALL))
         else:
             raise Exception("Invalid protocol type: '{0}'".format(self.proto))
 
         self.server_socket.bind((self.host, 0))  # let OS choose a free port
 
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             self.server_socket.listen(1)
 
         self.active_port = self.server_socket.getsockname()[1]
@@ -191,8 +187,9 @@ class MiniTestServer(object):
         """
         self.server_socket.settimeout(self.timeout)
 
-        if self.proto == 'tcp':
+        if self.proto == "tcp":
             (client_socket, address) = self.server_socket.accept()
+            client_socket.settimeout(self.timeout)
 
             self.received = client_socket.recv(10000)
 
@@ -200,12 +197,12 @@ class MiniTestServer(object):
                 client_socket.send(self.data_to_send)
 
             client_socket.close()
-        elif self.proto == 'udp':
+        elif self.proto == "udp":
             data, addr = self.server_socket.recvfrom(1024)
             self.received = data
             if not self.stay_silent:
                 self.server_socket.sendto(self.data_to_send, addr)
-        elif self.proto == 'raw':
+        elif self.proto == "raw":
             data, addr = self.server_socket.recvfrom(10000)
             self.received = data
             if not self.stay_silent:
@@ -232,7 +229,7 @@ class MiniTestServer(object):
         """
         self.server_socket.settimeout(self.timeout)
 
-        if self.proto == 'raw':
+        if self.proto == "raw":
             # Keep receiving
             elapsed_time = 0
             start_time = time.time()
@@ -262,6 +259,8 @@ class TestSocketConnection(unittest.TestCase):
     hardware or network dependent.
     """
 
+    # TODO: Remove pytype ignore when SocketConnection is removed
+    # pytype: disable=attribute-error
     def test_tcp_client(self):
         """
         Given: A SocketConnection 'tcp' object and a TCP server.
@@ -269,7 +268,7 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns RAW_L3_MAX_PAYLOAD.
          and: Sent and received data is as expected.
         """
-        data_to_send = bytes('uuddlrlrba')
+        data_to_send = b"uuddlrlrba"
 
         # Given
         server = MiniTestServer()
@@ -279,7 +278,8 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='tcp')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # When
@@ -290,7 +290,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
@@ -304,7 +304,7 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns length of payload.
          and: Sent works as expected, and recv() returns bytes('') after timing out.
         """
-        data_to_send = bytes('uuddlrlrba')
+        data_to_send = b"uuddlrlrba"
 
         # Given
         server = MiniTestServer(stay_silent=True)
@@ -314,7 +314,8 @@ class TestSocketConnection(unittest.TestCase):
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='tcp')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto="tcp")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # When
@@ -325,12 +326,12 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, b"")
 
     def test_udp_client(self):
         """
@@ -339,19 +340,23 @@ class TestSocketConnection(unittest.TestCase):
         Then: send() returns length of payload.
          and: Sent and received data is as expected.
         """
-        data_to_send = bytes('"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
-                             ' why, tidiness is a toil for giants."')
+        data_to_send = (
+            b'"Rum idea this is, that tidiness is a timid, quiet sort of thing;'
+            b' why, tidiness is a toil for giants."'
+        )
 
         # Given
-        server = MiniTestServer(proto='udp')
+        server = MiniTestServer(proto="udp")
         server.bind()
 
         t = threading.Thread(target=server.serve_once)
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host=socket.gethostname(), port=server.active_port, proto='udp',
-                               bind=(socket.gethostname(), 0))
+        # noinspection PyDeprecation
+        uut = SocketConnection(
+            host=socket.gethostname(), port=server.active_port, proto="udp", bind=(socket.gethostname(), 0)
+        )
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # When
@@ -362,15 +367,16 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
-    @pytest.mark.skipif(not any(True for _ in get_local_non_loopback_ipv4_addresses_info()),
-                        reason=TEST_ERR_NO_NON_LOOPBACK_IPV4)
+    @pytest.mark.skipif(
+        not any(True for _ in get_local_non_loopback_ipv4_addresses_info()), reason=TEST_ERR_NO_NON_LOOPBACK_IPV4
+    )
     def test_udp_broadcast_client(self):
         """
         Given: A SocketConnection 'udp' object with udp_broadcast set, and a UDP server.
@@ -379,24 +385,32 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            broadcast_addr = get_local_non_loopback_ipv4_addresses_info().next()['broadcast']
+            broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())["broadcast"]
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
 
-        data_to_send = bytes('"Never drink because you need it, for this is rational drinking, and the way to death and'
-                             ' hell. But drink because you do not need it, for this is irrational drinking, and the'
-                             ' ancient health of the world."')
+        data_to_send = helpers.str_to_bytes(
+            '"Never drink because you need it, for this is rational drinking, and the '
+            "way to death and hell. But drink because you do not need it, for this is "
+            'irrational drinking, and the ancient health of the world."'
+        )
 
         # Given
-        server = MiniTestServer(proto='udp', host='')
+        server = MiniTestServer(proto="udp", host="")
         server.bind()
 
         t = threading.Thread(target=server.serve_once)
         t.daemon = True
         t.start()
 
-        uut = SocketConnection(host=broadcast_addr, port=server.active_port, proto='udp',
-                               bind=('', server.active_port + 1), udp_broadcast=True)
+        # noinspection PyDeprecation
+        uut = SocketConnection(
+            host=broadcast_addr,
+            port=server.active_port,
+            proto="udp",
+            bind=("", server.active_port + 1),
+            udp_broadcast=True,
+        )
         uut.logger = logging.getLogger("BoofuzzUTLogger")
 
         # When
@@ -407,15 +421,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(data_to_send))
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, server.data_to_send)
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
@@ -428,29 +441,33 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('"Imagination does not breed insanity. Exactly what does breed insanity is reason.'
-                             ' Poets do not go mad; but chess-players do. Mathematicians go mad, and cashiers;'
-                             ' but creative artists very seldom. "')
+        data_to_send = (
+            b'"Imagination does not breed insanity.'
+            b"Exactly what does breed insanity is reason."
+            b" Poets do not go mad; but chess-players do."
+            b"Mathematicians go mad, and cashiers;"
+            b' but creative artists very seldom. "'
+        )
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l2')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = ethernet_frame(
-                payload=ip_packet(
-                        payload=udp_packet(
-                                payload=data_to_send,
-                                src_port=server.active_port + 1,
-                                dst_port=server.active_port),
-                        src_ip="\x7F\x00\x00\x01",
-                        dst_ip="\x7F\x00\x00\x01"),
-                src_mac="\x00" * 6,
-                dst_mac="\xff" * 6)
+            payload=ip_packet(
+                payload=udp_packet(payload=data_to_send, src_port=server.active_port + 1, dst_port=server.active_port),
+                src_ip=b"\x7F\x00\x00\x01",
+                dst_ip=b"\x7F\x00\x00\x01",
+            ),
+            src_mac=b"\x00" * 6,
+            dst_mac=b"\xff" * 6,
+        )
         expected_server_receive = raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
@@ -465,15 +482,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(expected_server_receive))
         self.assertEqual(raw_packet, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2_max_size(self):
         """
         Test 'raw-l2' max packet size.
@@ -486,15 +502,16 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('1' * RAW_L2_MAX_PAYLOAD)
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l2')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"1" * uut.max_send_size
 
         # Assemble packet...
         raw_packet = data_to_send
@@ -512,15 +529,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l2_oversized(self):
         """
         Test 'raw-l2' oversized packet handling.
@@ -533,19 +549,20 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the first RAW_L2_MAX_PAYLOAD bytes of raw packet data from send().
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('F' * (RAW_L2_MAX_PAYLOAD + 1))
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l2')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"F" * (uut.max_send_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = raw_packet[:RAW_L2_MAX_PAYLOAD]
+        expected_server_receive = raw_packet[: uut.max_send_size]
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -559,15 +576,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L2_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.max_send_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, b"")
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3(self):
         """
         Test 'raw' protocol with the loopback interface 'lo'.
@@ -580,26 +596,27 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('"Imprudent marriages!" roared Michael. "And pray where in earth or heaven are there any'
-                             ' prudent marriages?""')
+        data_to_send = (
+            b'"Imprudent marriages!" roared Michael. '
+            b'"And pray where in earth or heaven are there any prudent marriages?""'
+        )
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l3')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
 
         # Assemble packet...
         raw_packet = ip_packet(
-                payload=udp_packet(
-                        payload=data_to_send,
-                        src_port=server.active_port + 1,
-                        dst_port=server.active_port),
-                src_ip="\x7F\x00\x00\x01",
-                dst_ip="\x7F\x00\x00\x01")
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+            payload=udp_packet(payload=data_to_send, src_port=server.active_port + 1, dst_port=server.active_port),
+            src_ip=b"\x7F\x00\x00\x01",
+            dst_ip=b"\x7F\x00\x00\x01",
+        )
+        expected_server_receive = b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -613,15 +630,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
         self.assertEqual(send_result, len(raw_packet))
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, raw_packet)
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_max_size(self):
         """
         Test 'raw-l3' max packet size.
@@ -634,19 +650,20 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('0' * RAW_L3_MAX_PAYLOAD)
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l3')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"0" * uut.packet_size
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet
+        expected_server_receive = b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -660,15 +677,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
+        self.assertEqual(send_result, uut.packet_size)
         self.assertEqual(expected_server_receive, server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(received, data_to_send)
 
-    @pytest.mark.skipif(sys.platform == 'win32',
-                        reason="Raw sockets not supported on Windows.")
+    @pytest.mark.skipif(sys.platform in ["win32", "darwin"], reason="Raw sockets not supported on Windows/Mac OS.")
     def test_raw_l3_oversized(self):
         """
         Test 'raw-l3' max packet size.
@@ -681,20 +697,22 @@ class TestSocketConnection(unittest.TestCase):
          and: The server receives the raw packet data from send(), with an Ethernet header appended.
          and: SocketConnection.recv() returns bytes('').
         """
-        data_to_send = bytes('D' * (RAW_L3_MAX_PAYLOAD + 1))
 
         # Given
-        server = MiniTestServer(proto='raw', host='lo')
+        server = MiniTestServer(proto="raw", host="lo")
         server.data_to_send = "GKC"
         server.bind()
 
-        uut = SocketConnection(host="lo", proto='raw-l3')
+        # noinspection PyDeprecation
+        uut = SocketConnection(host="lo", proto="raw-l3")
         uut.logger = logging.getLogger("SulleyUTLogger")
+        data_to_send = b"D" * (uut.packet_size + 1)
 
         # Assemble packet...
         raw_packet = data_to_send
-        expected_server_receive = '\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00' + raw_packet[
-                                                                                               :RAW_L3_MAX_PAYLOAD]
+        expected_server_receive = (
+            b"\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x08\x00" + raw_packet[: uut.packet_size]
+        )
 
         t = threading.Thread(target=functools.partial(server.receive_until, expected_server_receive))
         t.daemon = True
@@ -708,14 +726,14 @@ class TestSocketConnection(unittest.TestCase):
 
         # Wait for the other thread to terminate
         t.join(THREAD_WAIT_TIMEOUT)
-        self.assertFalse(t.isAlive())
+        self.assertFalse(t.is_alive())
 
         # Then
-        self.assertEqual(send_result, RAW_L3_MAX_PAYLOAD)
-        self.assertEqual(expected_server_receive,
-                         server.received)
-        self.assertEqual(received, bytes(''))
+        self.assertEqual(send_result, uut.packet_size)
+        self.assertEqual(expected_server_receive, server.received)
+        self.assertEqual(received, data_to_send[:-1])
 
+    # noinspection PyDeprecation
     def test_required_args_port(self):
         """
         Given: No preconditions.
@@ -725,14 +743,15 @@ class TestSocketConnection(unittest.TestCase):
         Then: Constructor raises exception.
         """
         with self.assertRaises(Exception):
-            SocketConnection(host='127.0.0.1')
+            SocketConnection(host="127.0.0.1")
         with self.assertRaises(Exception):
-            SocketConnection(host='127.0.0.1', proto='tcp')
+            SocketConnection(host="127.0.0.1", proto="tcp")
         with self.assertRaises(Exception):
-            SocketConnection(host='127.0.0.1', proto='udp')
+            SocketConnection(host="127.0.0.1", proto="udp")
         with self.assertRaises(Exception):
-            SocketConnection(host='127.0.0.1', proto='ssl')
+            SocketConnection(host="127.0.0.1", proto="ssl")
 
+    # noinspection PyDeprecation
     def test_optional_args_port(self):
         """
         Given: No preconditions.
@@ -741,9 +760,10 @@ class TestSocketConnection(unittest.TestCase):
               no port argument.
         Then: Constructor raises no exception.
         """
-        SocketConnection(host='127.0.0.1', proto='raw-l2')
-        SocketConnection(host='127.0.0.1', proto='raw-l3')
+        SocketConnection(host="127.0.0.1", proto="raw-l2")
+        SocketConnection(host="127.0.0.1", proto="raw-l3")
 
+    # noinspection PyDeprecation
     def test_required_args_host(self):
         """
         Given: No preconditions.
@@ -754,25 +774,27 @@ class TestSocketConnection(unittest.TestCase):
         """
         # This method tests bad argument lists. Therefore we ignore
         # PyArgumentList inspections.
+        # pytype: disable=missing-parameter
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
             SocketConnection(port=5)
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
-            SocketConnection(port=5, proto='tcp')
+            SocketConnection(port=5, proto="tcp")
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
-            SocketConnection(port=5, proto='udp')
+            SocketConnection(port=5, proto="udp")
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
-            SocketConnection(port=5, proto='ssl')
+            SocketConnection(port=5, proto="ssl")
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
-            SocketConnection(port=5, proto='raw-l2')
+            SocketConnection(port=5, proto="raw-l2")
         with self.assertRaises(Exception):
             # noinspection PyArgumentList
-            SocketConnection(port=5, proto='raw-l3')
+            SocketConnection(port=5, proto="raw-l3")
+        # pytype: enable=missing-parameter
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,10 +1,10 @@
 from __future__ import print_function
-import sys
-import datetime
-import csv
 
-from . import helpers
-from . import ifuzz_logger_backend
+import csv
+import datetime
+import sys
+
+from . import helpers, ifuzz_logger_backend
 
 
 def hex_to_hexstr(input_bytes):
@@ -36,7 +36,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
     def __init__(self, file_handle=sys.stdout, bytes_to_str=DEFAULT_HEX_TO_STR):
         """
         Args:
-            file_hanlde (io.TextIOBase): Open file handle for logging. Defaults to sys.stdout.
+            file_handle (io.BinaryIO): Open file handle for logging. Defaults to sys.stdout.
             bytes_to_str (function): Function that converts sent/received bytes data to string for logging.
         """
         self._file_handle = file_handle
@@ -53,10 +53,10 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(["error", "", "", description])
 
     def log_recv(self, data):
-        self._print_log_msg(["recv", len(data), self._format_raw_bytes(data), data])
+        self._print_log_msg(["recv", len(data), self._format_raw_bytes(data), repr(data)])
 
     def log_send(self, data):
-        self._print_log_msg(["send", len(data), self._format_raw_bytes(data), data])
+        self._print_log_msg(["send", len(data), self._format_raw_bytes(data), repr(data)])
 
     def log_info(self, description):
         self._print_log_msg(["info", "", "", description])
@@ -69,6 +69,12 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
 
     def log_pass(self, description=""):
         self._print_log_msg(["pass", "", "", description])
+
+    def close_test_case(self):
+        pass
+
+    def close_test(self):
+        pass
 
     def _print_log_msg(self, msg):
         time_stamp = get_time_stamp()

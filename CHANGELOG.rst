@@ -1,20 +1,126 @@
-v0.1.2
-======
-Features
+Changelog
+=========
+
+Upcoming
 --------
+Features
+^^^^^^^^
+- Rewrote and split the SocketConnection class into individual classes per socket type.
+- `SocketConnection` is now deprecated. Use the classes derived from `BaseSocketConnection` instead.
+- Added support for receiving on raw Layer 2 and Layer 3 connections
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
+- Moved connection related modules into new `connections` subpacket
+- Added the ability to repeat sending of packages within a given time or count.
+- Added optional timeout and threshold to quit infinite connection retries
+
+Fixes
+^^^^^
+- Fixed size of s_size block when output is ascii.
+- Fixed issue with tornado on Python 3.8 and Windows.
+- Fixed various potential type errors
+- Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
+- Examples are up to date with current Boofuzz version
+- Modified timings on serial_connection unit tests to improve test reliability
+- Refactored old unit-tests
+
+v0.1.6
+------
+Features
+^^^^^^^^
+- New primitive `s_bytes` which fuzzes an arbitrary length binary value (similiar to `s_string`).
+- We are now using `Black` for code style standardization.
+- Compatibility for Python 3.8
+- Added crc32c as checksum algorithm (Castagnoli).
+- Added favicon for web interface.
+- Pushed Tornado to 5.x and unpinned Flask.
+
+Fixes
+^^^^^
+- Test cases were not being properly closed when using the check_message() functionality.
+- Some code style changes to meet PEP8.
+- `s_group` primitive was not accepting empty default value.
+- Timeout during opening TCP connection now raises BoofuzzTargetConnectionFailedError exception.
+- SSL/TLS works again. See `examples/fuzz-ssl-server.py` and `examples/fuzz-ssl-client.py`.
+- Dropped six.binary_type in favor of b"" format.
+- Fixed process monitor handling of backslashes in Windows start commands.
+- Fixed and documented `boo open`.
+- Fixed receive function in `fuzz_logger_curses`.
+- Installing boofuzz with `sudo` is no longer recommended, use the `--user` option of pip instead.
+- Fixed setting socket timeout options on Windows.
+- If all sockets are exhausted, repeatedly try fuzzing for 4 minutes before failing.
+- Fixed CSV logger send and receive data decoding.
+- Handle SSL-related exception. Added `ignore_connection_ssl_errors` session attribute that can
+  be set to True to ignore SSL-related error on a test case.
+- Fixed `s_from_file` decoding in Python 2 (the encoding parameter is now depreciated).
+- Updated documentation of `s_checksum`. It is possible to use a custom algorithm with this block.
+
+v0.1.5
+------
+Features
+^^^^^^^^
+- New curses logger class to provide a console gui similar to the webinterface. Use the session option `console_gui` to enable it.
+  This has not been tested under Windows!
+- Compatibility for Python 3
+- Large test cases are now truncated, unless a failure is detected.
+- When a target fails to respond after restart, boofuzz will now continue to restart instead of crashing.
+- New Session option `keep_web_open` to allow analyzing the test results after test completion.
+- Process monitor creates new crash file for each run by default.
+- Long lines now wrap in web view; longer lines no longer need to be truncated.
+- Process monitor now stores crash bins in JSON format instead of pickled format.
+- Process monitor in Windows will use `taskkill -F` if `taskkill` fails.
+
+Fixes
+^^^^^
+- Web server no longer crashes when asked for a non-existing test case.
+- EINPROGRESS socket error is now handled while opening a socket (note: this sometimes-transient error motivated the move to retry upon connection failure)
+
+v0.1.4
+------
+Features
+^^^^^^^^
+- New Session options `restart_callbacks`, `pre_send_callbacks`, and `post_test_case_callbacks` to hand over custom callback functions.
+- New Session option `fuzz_db_keep_only_n_pass_cases`. This allowes saving only n test cases preceding a failure or error to the database.
+- Added logic to find next available port for web interface or disable the web interface.
+- Removed sleep logs when sleep time is zero.
+- Added option to reuse the connection to the target.
+
+Fixes
+^^^^^
+- Windows process monitor now handles combination of proc_name and/or start_commands more reasonably
+- Windows process monitor handles certain errors more gracefully
+- Fixed target close behavior so post send callbacks can use the target.
+- Fixed a dependency issue in installation.
+
+
+v0.1.3
+------
+Features
+^^^^^^^^
+- Socket Connections now allow client fuzzing.
+- Log only the data actually sent, when sending is truncated. Helps reduce database size, especially when fuzzing layer 2 or 3.
+- `Target` `recv` function now accepts a `max_recv_bytes` argument.
+
+Fixes
+^^^^^
+- Fixed install package -- now includes JavaScript files.
+
+v0.1.2
+------
+Features
+^^^^^^^^
 - Clearer error message when procmon is unavailable at fuzz start.
 - Web UI now refreshes current case even when snap-to-current-test-case is disabled.
 
 Fixes
------
+^^^^^
 - Web UI no longer permits negative test cases.
 - Fix Windows procmon regression.
 - Minor fixes and UI tweaks.
 
 v0.1.1
-======
+------
 Features
---------
+^^^^^^^^
 - New `boo open` command can open and inspect saved database log files.
 - Unix procmon now saves coredumps by default.
 - Improved "Cannot connect to target" error message.
@@ -22,14 +128,14 @@ Features
 - Made the global `REQUESTS` map available in top level boofuzz package.
 
 Fixes
------
+^^^^^
 - Handle exceptions when opening crash bin files in process monitor.
 - Fix Block.__len__ to account for custom encoder.
 
 v0.1.0
-======
+------
 Features
---------
+^^^^^^^^
 - Web UI
     - Statistics now auto-update.
     - Test case logs now stream on the main page.
@@ -39,13 +145,13 @@ Features
   invalid messages.
 
 Fixes
------
+^^^^^
 - Text log output would include double titles, e.g. "Test Step: Test Step: ..."
 
 v0.0.13
-=======
+-------
 Features
---------
+^^^^^^^^
 - Web UI
     - Test case numbers are now clickable and link to test case detail view.
     - Test case details now in color!
@@ -59,7 +165,7 @@ Features
     - procmon is now checked for errors before user ``post_send()`` is called, reducing redundant error messages.
     - Improved procmon logging.
     - Process monitor gives more helpful error messages when running 64-bit application (unsupported) or when a process is
-  killed before being attached
+      killed before being attached
 - Logging Improvements
     - ``Target`` ``open()`` and ``close()`` operations are now logged.
     - Added some optional debug output from boofuzz runtime.
@@ -76,7 +182,7 @@ Features
 
 
 Fixes
------
+^^^^^
 - Fixed bug in which failures were not recognized.
 - ``BitField`` blocks with ASCII format reported incorrect sizes.
 - Fixed bug in ``s_update``.
@@ -90,59 +196,59 @@ Fixes
 - Unix and Windows process monitors now share much more code.
 
 Development
------------
+^^^^^^^^^^^
 - Added unit tests for ``BitField``.
 - Cleaned up CSS on web pages.
 - Added a unit test to verify restart on failure behavior
 
 0.0.12
-======
+------
 Features
---------
+^^^^^^^^
 - Test cases now have descriptive names
 - Added Session methods to fuzz a test cae by name: ``fuzz_by_name`` and ``fuzz_single_node_by_path``
 
 Fixes
------
+^^^^^
 - Fixed test case numbers when using ``fuzz_single_case``
 
 0.0.11
-======
+------
 Features
---------
+^^^^^^^^
 -  Set Session ``check_data_received_each_request`` to False to disable receive after send.
 
 Fixes
------
+^^^^^
 -  Dosctring format fixes.
 
 0.0.10
-======
+------
 Features
---------
+^^^^^^^^
 -  Add Session ignore_connection_reset parameter to suppress ECONNRESET errors.
 -  Add Session ignore_connection_aborted parameter to suppress ECONNABORTED errors.
 
 Fixes
------
+^^^^^
 -  Fix Session class docstring formats.
 
 0.0.9
-=====
+-----
 Features
---------
+^^^^^^^^
 -  ``s_size`` is now fuzzable by default.
 -  Add new s_fuzz_list primitive to read fuzz value from files.
--  Add new FuzzLoggerCsv to write log in CSV format 
+-  Add new FuzzLoggerCsv to write log in CSV format
 
 Fixes
------
+^^^^^
 -  Fixed: Add missing dummy value for custom checksum, allowing recursive uses of length/checksum (issue #107)
 
 0.0.8
-=====
+-----
 Features
---------
+^^^^^^^^
 -  Console output - now with colors!
 -  process_monitor_unix.py: added option to move coredumps for later analysis.
 -  The process monitor (procmon) now tracks processes by PID by default rather than searching by name. Therefore,
@@ -156,7 +262,7 @@ Features
 -  Added example fuzz scripts.
 
 Fixes
------
+^^^^^
 -  SIGINT (AKA Ctrl+C) now works to close both boofuzz and process_monitor.py (usually).
 -  Fixed: The pedrpc module was not being properly included in imports.
 -  Made process_monitor.py ``--crash_bin`` optional (as documented).
@@ -165,20 +271,20 @@ Fixes
 -  Fixed a bug in which the procmon would not properly restart a target that had failed without crashing.
 
 0.0.7
-=====
+-----
 Features
---------
+^^^^^^^^
 -  Added several command injection strings from fuzzdb.
 -  Blocks can now be created and nested using ``with s_block("my-block"):``
 
 Fixes
------
+^^^^^
 -  Fixed pydot import error message
 
 0.0.6
-=====
+-----
 Features
---------
+^^^^^^^^
 -  Added ``Request.original_value()`` function to render the request as if it were not fuzzed.
    This will help enable reuse of a fuzz definition to generate valid requests.
 -  ``SocketConnection`` can now send and receive UDP broadcast packets using the ``udp_broadcast`` constructor
@@ -186,7 +292,7 @@ Features
 -  ``Target.recv()`` now logs an entry before receiving data, in order to help debug receiving issues.
 
 Fixes
------
+^^^^^
 -  Maximum UDP payload value was incorrect, causing crashes for tests running over UDP. It now works on some systems,
    but the maximum value may be too high for systems that set it lower than the maximum possible value, 65507.
 -  ``SocketConnection`` class now handles more send and receive errors:  ``ECONNABORTED``, ``ECONNRESET``,
@@ -194,14 +300,14 @@ Fixes
 -  Fixed setup.py to not include superfluous packages.
 
 Development
------------
+^^^^^^^^^^^
 -  Added two exceptions: ``BoofuzzTargetConnectionReset`` and ``BoofuzzTargetConnectionAborted``.
 -  These two exceptions are handled in ``sessions.py`` and may be thrown by any ``ITargetConnection`` implementation.
 
 0.0.5
-=====
-Fixes
 -----
+Fixes
+^^^^^
 -  Boofuzz now properly reports crashes detected by the process monitor. It was calling log_info instead of log_fail.
 -  Boofuzz will no longer crash, but will rather give a helpful error message, if the target refuses socket connections.
 -  Add utils/crash_binning.py to boofuzz/utils, avoiding import errors.
@@ -209,55 +315,55 @@ Fixes
 -  Fix typos in INSTALL.rst.
 
 0.0.4
-=====
+-----
 -  Add Gitter badge to README.
 -  Add default sleep_time and fuzz_data_logger for Session to simplify boilerplate.
 
 0.0.3
-=====
+-----
 -  Fixed deployment from 0.0.2.
 -  Simplify CONTRIBUTING.rst for automated deployment.
 -  tox no longer runs entirely as sudo. The sudo has been moved into tox.ini and is more fine-grained.
 -  Reduced default ``Session.__init__`` ``restart_sleep_time`` from 5 minutes to 5 seconds.
 
 0.0.2
-=====
+-----
 Continuous deployment with Travis.
 
 Development
------------
+^^^^^^^^^^^
 -  Added build and PyPI badges.
 -  Added CONTRIBUTING.rst.
 -  check-manifest now runs in automated build.
 -  Travis now deploys to PyPI!
 
 0.0.1-dev5
-==========
+----------
 Development
------------
+^^^^^^^^^^^
 -  Tests now run on tox.
 -  Added Google Groups and Twitter link.
 
 0.0.1-dev4
-==========
+----------
 
 Fixes
------
+^^^^^
 -  Missing property setters in ``boofuzz.request.Request`` now implemented.
 -  Unit tests now pass on Windows.
 -  Fixed wheel build issue; boofuzz subpackages were missing.
 
 0.0.1-dev3
-==========
+----------
 
 Fixes
------
+^^^^^
 -  Session constructor param ``session_filename`` is now optional.
 
 0.0.1-dev2
-==========
+----------
 New features
-------------
+^^^^^^^^^^^^
 
 -  Now on PyPI! ``pip install boofuzz``
 -  API is now centralized so all classes are available at top level
@@ -270,14 +376,14 @@ New features
    ezOutlet EZ-11b.
 
 Backwards-incompatible
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 -  Target now only takes an ``ITargetConnection``. This separates
    responsibilities and makes our code more flexible with different
    kinds of connections.
 
 Fixes
------
+^^^^^
 
 -  Bugs fixed:
 
@@ -292,7 +398,7 @@ Fixes
       properly.
 
 Back-end Improvements
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 This section took the most work. It has the least visible impact, but
 all of the refactors enable new features, fixes, and unit tests.
@@ -309,14 +415,14 @@ all of the refactors enable new features, fixes, and unit tests.
 -  Many Unit tests added.
 
 Other
------
+^^^^^
 
 -  Continuous integration with Travis is running!
 -  Doc organization improvements.
 -  Can now install with extras ``[dev]``
 
 Initial Development Release - 0.0.1-dev1
-========================================
+----------------------------------------
 
 
 -  Much easier install experience!

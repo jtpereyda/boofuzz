@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
-from ..primitives import BasePrimitive
+from .. import helpers
 from ..ifuzzable import IFuzzable
 
 
 class Block(IFuzzable):
-    def __init__(self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None,
-                 dep_compare="=="):
+    def __init__(
+        self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="
+    ):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
 
@@ -38,7 +39,7 @@ class Block(IFuzzable):
         self.dep_compare = dep_compare
 
         self.stack = []  # block item stack.
-        self._rendered = ""  # rendered block contents.
+        self._rendered = b""  # rendered block contents.
         self._fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
@@ -57,7 +58,7 @@ class Block(IFuzzable):
         original_value = b""
 
         for item in self.stack:
-            original_value += item.original_value
+            original_value += helpers.str_to_bytes(item.original_value)
 
         return original_value
 
@@ -192,47 +193,38 @@ class Block(IFuzzable):
         #
         # if this block is dependant on another field and the value is not met, render nothing.
         #
+        self._rendered = b""
 
         if self.dep:
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
-                    self._rendered = ""
                     return self._rendered
 
                 elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
-                    self._rendered = ""
                     return self._rendered
 
             if self.dep_compare == "!=":
                 if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
-                    self._rendered = ""
                     return self._rendered
 
                 elif self.request.names[self.dep]._value == self.dep_value:
-                    self._rendered = ""
                     return
 
             if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
             if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
-                self._rendered = ""
                 return self._rendered
 
         #
         # otherwise, render and encode as usual.
         #
-
-        self._rendered = ""
 
         for item in self.stack:
             self._rendered += item.render()
@@ -244,7 +236,7 @@ class Block(IFuzzable):
         if self.encoder:
             self._rendered = self.encoder(self._rendered)
 
-        return self._rendered
+        return helpers.str_to_bytes(self._rendered)
 
     def reset(self):
         """
@@ -267,7 +259,7 @@ class Block(IFuzzable):
         else:
             return sum(len(item) for item in self.stack)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """
         Make sure instances evaluate to True even if __len__ is zero.
 

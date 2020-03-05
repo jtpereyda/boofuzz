@@ -18,15 +18,37 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Verify tests pass: ::
+1. Install python version 2.7.9+ **and** 3.6+
 
-      tox
+2. Verify tests pass:
 
-2. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+    .. code-block::
 
-3. Modify CHANGELOG.rst to say what you changed.
+        tox
 
-4. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
+    .. note::
+        (Re-)creating a tox environment on Linux requires root rights because some of your unit tests work with raw
+        sockets. tox will check if ``cap_net_admin`` and ``cap_net_raw+eip`` are set on the tox environment python
+        interpreter and if not, will do so.
+
+        Once the capabilities have been set, running tox won't need extended permissions.
+
+    .. attention::
+        If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
+
+3. Format the code to meet our code style requirements (needs python 3.6+):
+
+    .. code-block::
+
+        black .
+
+    Use ``# fmt: off`` and ``# fmt: on`` around a block to disable formatting locally.
+
+4. If you have PyCharm, use it to see if your changes introduce any new static analysis warnings.
+
+5. Modify CHANGELOG.rst to say what you changed.
+
+6. If adding a new module, consider adding it to the Sphinx docs (see ``docs`` folder).
 
 Maintainers
 ===========
@@ -44,7 +66,7 @@ On every pull request:
 
 Release Checklist
 -----------------
-Releases are deployed from Travis based on git tags.
+Releases are deployed from GitHub Actions when a new release is created on GitHub.
 
 Prep
 ++++
@@ -53,6 +75,10 @@ Prep
 
 2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
+    1. In ``boofuzz/__init__.py``.
+
+    2. In ``docs/conf.py``.
+
 3. Modify CHANGELOG file for publication if needed.
 
 4. Merge release branch.
@@ -60,6 +86,6 @@ Prep
 Release
 +++++++
 
-1. Create release tag in Github.
+1. Create release on Github.
 
-2. Verify Travis deployment succeeds.
+2. Verify GitHub Actions deployment succeeds.

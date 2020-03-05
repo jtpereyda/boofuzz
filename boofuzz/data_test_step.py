@@ -11,6 +11,11 @@ class DataTestStep(object):
     description = attr.ib()
     data = attr.ib()
     timestamp = attr.ib()
+    try:
+        truncated = attr.ib(type=bool)
+    except TypeError:
+        # in case attr version is too old
+        truncated = attr.ib()
 
     @property
     def text_render(self):
@@ -19,7 +24,8 @@ class DataTestStep(object):
             description=self.description,
             data=self.data,
             timestamp=self.timestamp,
-            format_type='terminal',
+            truncated=self.truncated,
+            format_type="terminal",
         )
 
     @property
@@ -29,9 +35,10 @@ class DataTestStep(object):
             description=self.description,
             data=self.data,
             timestamp=self.timestamp,
-            format_type='html',
+            truncated=self.truncated,
+            format_type="html",
         )
 
     @property
     def css_class(self):
-        return helpers.test_step_info[self.type]['css_class']
+        return helpers.test_step_info[self.type]["css_class"]

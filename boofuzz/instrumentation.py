@@ -18,10 +18,10 @@ class External:
         @param stop:  Callback called to stop the target
         """
 
-        self.pre        = pre
-        self.post       = post
-        self.start      = start
-        self.stop       = stop
+        self.pre = pre
+        self.post = post
+        self.start = start
+        self.stop = stop
         self.__dbg_flag = False
 
     # noinspection PyMethodMayBeStatic
@@ -38,7 +38,7 @@ class External:
         """
 
         if self.__dbg_flag:
-            print "EXT-INSTR> %s" % msg
+            print("EXT-INSTR> %s" % msg)
 
     # noinspection PyUnusedLocal
     def pre_send(self, test_number):
@@ -94,4 +94,4 @@ class External:
         @return: Synopsis of last recorded crash.
         """
 
-        return 'External instrumentation detects a crash...\n'
+        return "External instrumentation detects a crash...\n"

@@ -1,0 +1,13 @@
+fixers:
+  enable: true
+
+linters:
+  black:
+    config: ./pyproject.toml
+    fixer: true
+  flake8:
+    config: ./setup.cfg
+    fixer: true
+  pytype:
+    config: ./setup.cfg
+    fixer: false

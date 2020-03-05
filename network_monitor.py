@@ -1,15 +1,18 @@
 #!c:\\python\\python.exe
-import threading
 import getopt
-import time
-import sys
 import os
-# noinspection PyUnresolvedReferences
-import pcapy
+import sys
+import threading
+import time
+from io import open
+
 import impacket
 import impacket.ImpactDecoder
-from boofuzz import pedrpc
-from boofuzz import helpers
+
+# noinspection PyUnresolvedReferences
+import pcapy  # pytype: disable=import-error
+
+from boofuzz import helpers, pedrpc
 
 MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 
@@ -17,8 +20,8 @@ MAX_PACKET_LENGTH = 65535  # Max packet length for IP capture
 def log_error(message=None):
     try:
         sys.stderr.write("ERR> %s\n" % message) or sys.exit(1)
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         sys.exit(1)
 
 
@@ -57,11 +60,11 @@ Network Device List:
     for index, pcapy_device in enumerate(ifs):
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
-            import _winreg
+            import _winreg  # pytype: disable=import-error
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.
-                pcapy_device = pcapy_device[pcapy_device.index("{"):pcapy_device.index("}") + 1]
+                pcapy_device = pcapy_device[pcapy_device.index("{") : pcapy_device.index("}") + 1]
                 subkey = r"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s" % pcapy_device
                 key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
 
@@ -214,7 +217,7 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         """
 
         if self.log_level >= level:
-            print "[%s] %s" % (time.strftime("%I:%M.%S"), msg)
+            print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def retrieve(self, test_number):
         """
@@ -284,6 +287,7 @@ def main():
 
     except Exception:
         pass
+
 
 if __name__ == "__main__":
     main()

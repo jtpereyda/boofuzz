@@ -1,18 +1,23 @@
 from __future__ import absolute_import
+
 import math
 import struct
+
+import six
+from past.builtins import xrange
+
 from ..helpers import crc16
 
 
-def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
+def dnp3(data, control_code=b"\x44", src=b"\x00\x00", dst=b"\x00\x00"):
     num_packets = int(math.ceil(float(len(data)) / 250.0))
     packets = []
 
     for i in xrange(num_packets):
-        packet_slice = data[i * 250:(i + 1) * 250]
+        packet_slice = data[i * 250 : (i + 1) * 250]
 
-        p = "\x05\x64"
-        p += chr(len(packet_slice))
+        p = b"\x05\x64"
+        p += six.int2byte(len(packet_slice))
         p += control_code
         p += dst
         p += src
@@ -34,10 +39,10 @@ def dnp3(data, control_code="\x44", src="\x00\x00", dst="\x00\x00"):
         if i == num_packets - 1:
             frag_number |= 0x80
 
-        p += chr(frag_number)
+        p += six.int2byte(frag_number)
 
         for x in xrange(num_chunks):
-            chunk = packet_slice[i * 16: (i + 1) * 16]
+            chunk = packet_slice[i * 16 : (i + 1) * 16]
             chksum = struct.pack("<H", crc16(chunk))
             p += chksum + chunk
 

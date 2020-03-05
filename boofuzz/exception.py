@@ -13,6 +13,10 @@ class BoofuzzTargetConnectionFailedError(BoofuzzError):
     pass
 
 
+class BoofuzzOutOfAvailableSockets(BoofuzzError):
+    pass
+
+
 class BoofuzzTargetConnectionReset(BoofuzzError):
     pass
 
@@ -22,8 +26,13 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     """
     Raised on `errno.ECONNABORTED`.
     """
+
     socket_errno = attr.ib()
     socket_errmsg = attr.ib()
+
+
+class BoofuzzNoSuchTestCase(BoofuzzError):
+    pass
 
 
 class BoofuzzRpcError(BoofuzzError):
@@ -39,4 +48,8 @@ class SizerNotUtilizedError(Exception):
 
 
 class MustImplementException(Exception):
+    pass
+
+
+class BoofuzzSSLError(BoofuzzError):
     pass
