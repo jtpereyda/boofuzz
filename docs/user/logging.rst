@@ -42,10 +42,6 @@ Console-GUI Logging
     :undoc-members:
     :show-inheritance:
 
-File Logging
-============
-Deprecated: Use FuzzLogger with FuzzLoggerText for typical fuzz logging.
-
 FuzzLogger Object
 =================
 .. autoclass:: boofuzz.FuzzLogger
