@@ -68,7 +68,7 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
     def set_options(self, *args, **kwargs):
         """
         Called to set options for your monitor (e.g. local crash dump storage).
-        \\*args and \\*\\*kwargs can be explicitely specified by implementing classes,
+        \\*args and \\*\\*kwargs can be explicitly specified by implementing classes,
         however you SHOULD ignore any kwargs you do not recognize.
 
         :returns: None
@@ -112,7 +112,7 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         """
-        Restart a target. Must return True if restart was successful, False if it was unsucessful
+        Restart a target. Must return True if restart was successful, False if it was unsuccessful
         or this monitor cannot restart a Target, which causes the next monitor in the chain
         to try to restart.
 

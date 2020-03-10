@@ -5,7 +5,7 @@ Monitors
 ========
 
 Monitors are components that monitor the target for specific behaviour. A
-monitor can be passive and just observe and provide data or behave more active
+monitor can be passive and just observe and provide data or behave more actively,
 interacting directly with the target. Some monitors also have the capability to
 start, stop and restart targets.
 

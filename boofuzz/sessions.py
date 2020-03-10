@@ -75,8 +75,9 @@ class Target(object):
         if "procmon" in kwargs.keys():
             warnings.warn(
                 "Target(procmon=...) is deprecated. Please change your code"
+                " and add it to the monitors argument. For now, we do this "
                 "for you, but this will be removed in the future.",
-                DeprecationWarning,
+                FutureWarning,
             )
             self.monitors.append(kwargs["procmon"])
 
@@ -85,7 +86,7 @@ class Target(object):
                 "Target(netmon=...) is deprecated. Please change your code"
                 " and add it to the monitors argument. For now, we do this "
                 "for you, but this will be removed in the future.",
-                DeprecationWarning,
+                FutureWarning,
             )
             self.monitors.append(kwargs["netmon"])
 
@@ -1088,8 +1089,7 @@ class Session(pgraph.Graph):
 
         for monitor in target.monitors:
             try:
-                self._fuzz_data_logger.open_test_step("Monitor {}.pre_send()".format(str(monitor)))
-                monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_current_case, session=self)
+                monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
             except Exception:
                 self._fuzz_data_logger.log_error(
                     constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
@@ -1130,6 +1130,7 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
                     time.sleep(3)
                     restarted = True
+                    break
 
             # no monitor can restart
             if not restarted:
