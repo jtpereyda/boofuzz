@@ -220,7 +220,7 @@ class Size(IFuzzable):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return self.length
+        return len(self._render())
 
     def __bool__(self):
         """

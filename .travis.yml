@@ -4,8 +4,6 @@ language: python
 
 stages:
   - Test
-  - name: Deploy
-    if: (repo = jtpereyda/boofuzz) AND (fork = false) AND (tag IS present)
 
 jobs:
   include:
@@ -20,21 +18,6 @@ jobs:
       env: TOXENV=py37-Linux
     - python: 3.8
       env: TOXENV=py38-Linux
-
-    - stage: Deploy
-      install: true
-      script: skip
-      deploy:
-        provider: pypi
-        user: jtpereyda
-        password:
-          secure: GD7YRd2CmeSheZ4A85jVFp/aOLGD75M9WjK/Xc7d99OMBp19porIPbkYi+n+X/CQjl4lzUDVGNfvVZKXGVrY+QPxclfAHHIgb7Tc4nXFOWgaXrvw3LWsSfDreANacC105RGC3siGBkAWnMQgO/Q6N3LDHgy7A7XOa8t6sxedxeu1j0cJa0PmrQnvQy6+G+EpxxgrDphy5vwsIwEwRXRD6+4ekFKG81s7aWL1gvGcic/8JSnhc+jpNkbYrcf3edLT8NyMQlTnoplAYNrCMhPaFkNkstFlJvq2m84WlYUiqkTHOyPla07qaJaGPDt89LqqRISX2SNm2BjG5SqJ+6IkloS3Re83kzWL0kSXr9g4sqeCtsvvOhatEeRWEaOzCEE6pK5feLnagZKUL1ZXPu6ywl+yxxK5jcJE2PklvdMCL2KjdlF4CtMp3yg9a6X6VuPunzoXxVUn0cpj7xqenhMz2nDw1s7ZqFrCQ8ed8Pp+TfbmwZfnZ7GSdvywA4CaapOTLOfP4tWcV9GWiLOo0BjIFMac1tJCsHTjuQeRiUO47hpKGHf8+I7qltzlBJJNf/FGUoSqZjzy4o3zbuzfQHQbo2ueI8aS2C5VjjunbivBjp54eoIiu9rPbZl3uHmMWR74Stch0S2Amfj7d0ovZlaljkWWOf4R0tkuxDCtg+vnsy8=
-        distributions: sdist bdist_wheel
-        skip_cleanup: true
-        on:
-          tags: true
-          repo: jtpereyda/boofuzz
-          branch: master
 
 before_install: sudo sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
 install: pip install tox

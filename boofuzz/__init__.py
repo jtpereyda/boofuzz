@@ -56,7 +56,8 @@ from .sessions import open_test_run, Session, Target
 if sys.platform == "win32" and sys.version_info >= (3, 8):
     import asyncio
 
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    # noinspection PyUnresolvedReferences
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # pytype: disable=module-attr
 
 __all__ = [
     "BasePrimitive",
@@ -182,7 +183,7 @@ def s_get(name=None):
     :type  name: str
     :param name: (Optional, def=None) Name of request to return or current request if name is None.
 
-    :rtype:  blocks.request
+    :rtype:  blocks.Request
     :return: The requested request.
     """
 
