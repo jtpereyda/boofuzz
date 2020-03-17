@@ -98,6 +98,11 @@ class Client(object):
         if method_name == "__bool__":
             return 1
 
+        # subprocesses run into this as they call a trampoline method...
+        # not sure if this is the right way to handle it, but it seems to work
+        if method_name.endswith("__method_missing"):
+            return self.__method_missing(*args, **kwargs)
+
         # ignore all other attempts to access a private member.
         if method_name.startswith("__"):
             return
@@ -175,6 +180,8 @@ class Client(object):
 
 
 class Server(object):
+    """ The main PED-RPC Server class. To implement an RPC server, inherit from this class. Call ``serve_forever`` to start listening for RPC commands.
+    """
     def __init__(self, host, port):
         self.__host = host
         self.__port = port
@@ -284,9 +291,8 @@ class Server(object):
                 sys.stderr.write('PED-RPC> remote method "{0}" of {1} cannot be found\n'.format(method_name, self))
                 raise
             ret = method(*args, **kwargs)
-
             # transmit the return value to the client, continue on socket disconnect.
             try:
                 self.__pickle_send(ret)
-            except Exception:
+            except Exception as e:
                 continue

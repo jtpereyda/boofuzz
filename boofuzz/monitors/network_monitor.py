@@ -30,16 +30,16 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         pedrpc.Client.__init__(self, host, port)
 
     def alive(self):
-        return pedrpc.Client.alive(self)  # pytype: disable=attribute-error
+        return self.__method_missing("alive")  # pytype: disable=attribute-error
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
-        return pedrpc.Client.pre_send(self, session.total_mutant_index)  # pytype: disable=attribute-error
+        return self.__method_missing("pre_send", session.total_mutant_index)  # pytype: disable=attribute-error
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
-        return pedrpc.Client.post_send(self, session.total_mutant_index)  # pytype: disable=attribute-error
+        return self.__method_missing("post_send", session.total_mutant_index)  # pytype: disable=attribute-error
 
     def retrieve_data(self):
-        return pedrpc.Client.retrieve(self)  # pytype: disable=attribute-error
+        return self.__method_missing("retrieve")  # pytype: disable=attribute-error
 
     def set_options(self, *args, **kwargs):
         """
@@ -53,7 +53,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         # args will be ignored, kwargs will be translated
 
         for arg, value in kwargs.items():
-            eval("pedrpc.Client.set_{0}(self, kwargs['{0}'])".format(arg))
+            eval("self.__method_missing('set_{0}', kwargs['{0}'])".format(arg))
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return False  # this Monitor can't restart

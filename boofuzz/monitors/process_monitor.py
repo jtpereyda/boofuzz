@@ -6,7 +6,6 @@ from .imonitor import IMonitor
 # Inheritance list for the method resolution order to produce
 # correct results.
 
-
 class ProcessMonitor(IMonitor, pedrpc.Client):
     """
     Proxy class for the process monitor interface.
@@ -30,13 +29,13 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
         pedrpc.Client.__init__(self, host, port)
 
     def alive(self):
-        return pedrpc.Client.alive(self)  # pytype: disable=attribute-error
+        return self.__method_missing("alive")
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
-        return pedrpc.Client.pre_send(self, session.total_mutant_index)  # pytype: disable=attribute-error
+        return self.__method_missing("pre_send", session.total_mutant_index)
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
-        return pedrpc.Client.post_send(self, session.total_mutant_index)  # pytype: disable=attribute-error
+        return self.__method_missing("post_send", session.total_mutant_index)
 
     def retrieve_data(self):
         return b""
@@ -53,19 +52,19 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
         # args will be ignored, kwargs will be translated
 
         for arg, value in kwargs.items():
-            eval("pedrpc.Client.set_{0}(self, kwargs['{0}'])".format(arg))
+            eval("self.__method_missing('set_{0}', (kwargs['{0}'])".format(arg))
 
     def get_crash_synopsis(self):
-        return pedrpc.Client.get_crash_synopsis(self)  # pytype: disable=attribute-error
+        return self.__method_missing("get_crash_synopsis")
 
     def start_target(self):
-        return pedrpc.Client.start_target(self)  # pytype: disable=attribute-error
+        return self.__method_missing("start_target")
 
     def stop_target(self):
-        return pedrpc.Client.stop_target(self)  # pytype: disable=attribute-error
+        return self.__method_missing("stop_target")
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
-        return pedrpc.Client.restart_target(self)  # pytype: disable=attribute-error
+        return self.__method_missing("restart_target")
 
     def __repr__(self):
         return "ProcessMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
