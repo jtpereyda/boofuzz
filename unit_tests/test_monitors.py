@@ -65,7 +65,7 @@ class TestProcessMonitor(unittest.TestCase):
         time.sleep(0.2)  # give the RPC server some time to start up
 
     def tearDown(self):
-        self.rpc_server.kill()
+        self.rpc_server.terminate()
 
     def test_process_monitor_alive(self):
 
@@ -88,7 +88,7 @@ class TestNetworkMonitor(unittest.TestCase):
         time.sleep(0.2)  # give the RPC server some time to start up
 
     def tearDown(self):
-        self.rpc_server.kill()
+        self.rpc_server.terminate()
 
     def test_network_monitor_alive(self):
         network_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
