@@ -58,12 +58,11 @@ def _start_rpc(host, port):
 
 
 class TestProcessMonitor(unittest.TestCase):
-
     def setUp(self):
         self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
         self.rpc_server.start()
 
-        time.sleep(0.2) # give the RPC server some time to start up
+        time.sleep(0.2)  # give the RPC server some time to start up
 
     def tearDown(self):
         self.rpc_server.kill()
@@ -80,17 +79,16 @@ class TestProcessMonitor(unittest.TestCase):
 
         self.assertEqual(self.rpc_server.exitcode, 0)
 
-class TestNetworkMonitor(unittest.TestCase):
 
+class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):
         self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
         self.rpc_server.start()
 
-        time.sleep(0.2) # give the RPC server some time to start up
+        time.sleep(0.2)  # give the RPC server some time to start up
 
     def tearDown(self):
         self.rpc_server.kill()
-
 
     def test_network_monitor_alive(self):
         network_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)

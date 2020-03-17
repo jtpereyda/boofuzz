@@ -6,6 +6,7 @@ from .imonitor import IMonitor
 # Inheritance list for the method resolution order to produce
 # correct results.
 
+
 class ProcessMonitor(IMonitor, pedrpc.Client):
     """
     Proxy class for the process monitor interface.
