@@ -896,7 +896,7 @@ class Session(pgraph.Graph):
         """Check for and log passively detected failures. Return True if any found.
 
         Returns:
-            bool: True if falures were found. False otherwise.
+            bool: True if failures were found. False otherwise.
         """
         has_crashed = False
         if len(target.monitors) > 0:
@@ -921,9 +921,7 @@ class Session(pgraph.Graph):
             if not has_crashed:
                 self._fuzz_data_logger.log_pass("No crash detected.")
             else:
-                for monitor in target.monitors:
-                    if monitor in finished_monitors:
-                        continue
+                for monitor in set(target.monitors) - set(finished_monitors):
 
                     synopsis = monitor.get_crash_synopsis()
                     if len(synopsis) > 0:
