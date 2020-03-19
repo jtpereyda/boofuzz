@@ -97,12 +97,11 @@ class TestProcessMonitor(unittest.TestCase):
 
         self.assertEqual(process_monitor.get_foobar(), "bazbar")
 
-
     def test_set_options_persistant(self):
 
         process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
 
-        process_monitor.set_options(foobar='bazbar')
+        process_monitor.set_options(foobar="bazbar")
 
         self.rpc_server.terminate()
         self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
@@ -110,7 +109,8 @@ class TestProcessMonitor(unittest.TestCase):
         time.sleep(0.2)
 
         self.assertEqual(process_monitor.alive(), True)
-        self.assertEqual(process_monitor.get_foobar(), 'bazbar')
+        self.assertEqual(process_monitor.get_foobar(), "bazbar")
+
 
 class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):
