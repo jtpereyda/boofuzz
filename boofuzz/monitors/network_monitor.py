@@ -60,14 +60,18 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
         return False  # this Monitor can't restart
 
     def set_filter(self, new_filter):
-        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
-                      " Please use set_options(filter=...) instead.")
+        warnings.warn(
+            "This method is deprecated and will be removed in a future Version of boofuzz."
+            " Please use set_options(filter=...) instead."
+        )
 
         return self.set_options(filter=new_filter)
 
     def set_log_path(self, new_log_path):
-        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
-                      " Please use set_options(log_path=...) instead.")
+        warnings.warn(
+            "This method is deprecated and will be removed in a future Version of boofuzz."
+            " Please use set_options(log_path=...) instead."
+        )
 
         return self.set_options(log_path=new_log_path)
 
