@@ -103,7 +103,7 @@ class Target(object):
     @property
     def procmon_options(self):
         raise NotImplementedError(
-            "This property is not supported; grab procmon frim monitors and use set_options(**dict)"
+            "This property is not supported; grab procmon from monitors and use set_options(**dict)"
         )
 
     def close(self):

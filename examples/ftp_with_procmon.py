@@ -16,11 +16,18 @@ def main():
     """
     target_ip = "127.0.0.1"
     start_cmd = ["python", "C:\\ftpd\\ftpd.py"]
+
+    # initialize the process monitor
+    # this assumes that prior to starting boofuzz you started the process monitor
+    # RPC daemon!
+    procmon = ProcessMonitor(target_ip, 26002)
+    procmon.set_options(start_commands=[start_cmd])
+
+    # We configure the session, adding the configured procmon to the monitors.
     session = Session(
         target=Target(
             connection=TCPSocketConnection(target_ip, 21),
-            procmon=pedrpc.Client(target_ip, 26002),
-            procmon_options={"start_commands": [start_cmd]},
+            monitors=[procmon]
         ),
         sleep_time=1,
     )
