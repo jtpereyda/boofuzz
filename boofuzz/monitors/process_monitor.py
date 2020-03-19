@@ -1,3 +1,4 @@
+import warnings
 from . import pedrpc
 from .imonitor import IMonitor
 
@@ -73,6 +74,30 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
     def on_new_server(self, new_uuid):
         for key, val in self.server_options.items():
             self.__hot_transmit(("set_{}".format(key), ((val,), {})))
+
+    def set_proc_name(self, new_proc_name):
+        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
+                      " Please use set_options(log_path=...) instead.")
+
+        return self.set_options(proc_name=new_proc_name)
+
+    def set_start_commands(self, new_start_commands):
+        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
+                      " Please use set_options(log_path=...) instead.")
+
+        return self.set_options(start_commands=new_start_commands)
+
+    def set_stop_commands(self, new_stop_commands):
+        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
+                      " Please use set_options(log_path=...) instead.")
+
+        return self.set_options(stop_commands=new_stop_commands)
+
+    def set_crash_filename(self, new_crash_filename):
+        warnings.warn("This method is deprecated and will be removed in a future Version of boofuzz."
+                      " Please use set_options(log_path=...) instead.")
+
+        return self.set_options(crash_filename=new_crash_filename)
 
     def __repr__(self):
         return "ProcessMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
