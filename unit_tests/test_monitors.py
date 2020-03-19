@@ -14,8 +14,10 @@ RPC_PORT = 31337
 class MockRPCServer(pedrpc.Server):
     def __init__(self, host, port):
         super(MockRPCServer, self).__init__(host, port)
+        self.foobar = "barbaz"
 
     def alive(self):
+        print("alive!")
         return True
 
     def get_crash_synopsis(self):
@@ -51,6 +53,12 @@ class MockRPCServer(pedrpc.Server):
     def shutdown_rpc(self):
         sys.exit(0)
 
+    def set_foobar(self, value):
+        self.foobar = value
+
+    def get_foobar(self):
+        return self.foobar
+
 
 def _start_rpc(host, port):
     server = MockRPCServer(host, port)
@@ -79,6 +87,30 @@ class TestProcessMonitor(unittest.TestCase):
 
         self.assertEqual(self.rpc_server.exitcode, 0)
 
+    def test_set_options(self):
+
+        process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
+
+        self.assertEqual(process_monitor.get_foobar(), "barbaz")
+
+        process_monitor.set_options(foobar="bazbar")
+
+        self.assertEqual(process_monitor.get_foobar(), "bazbar")
+
+
+    def test_set_options_persistant(self):
+
+        process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
+
+        process_monitor.set_options(foobar='bazbar')
+
+        self.rpc_server.terminate()
+        self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
+        self.rpc_server.start()
+        time.sleep(0.2)
+
+        self.assertEqual(process_monitor.alive(), True)
+        self.assertEqual(process_monitor.get_foobar(), 'bazbar')
 
 class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):

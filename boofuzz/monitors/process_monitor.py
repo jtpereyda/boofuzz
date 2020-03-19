@@ -28,6 +28,7 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
     def __init__(self, host, port):
         IMonitor.__init__(self)
         pedrpc.Client.__init__(self, host, port)
+        self.server_options = {}
 
     def alive(self):
         return self.__method_missing("alive")
@@ -53,7 +54,9 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
         # args will be ignored, kwargs will be translated
 
         for arg, value in kwargs.items():
-            eval("self.__method_missing('set_{0}', (kwargs['{0}'])".format(arg))
+            eval("self.__method_missing('set_{0}', kwargs['{0}'])".format(arg))
+
+        self.server_options.update(**kwargs)
 
     def get_crash_synopsis(self):
         return self.__method_missing("get_crash_synopsis")
@@ -66,6 +69,10 @@ class ProcessMonitor(IMonitor, pedrpc.Client):
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         return self.__method_missing("restart_target")
+
+    def on_new_server(self, new_uuid):
+        for key, val in self.server_options.items():
+            self.__hot_transmit(("set_{}".format(key), ((val,), {})))
 
     def __repr__(self):
         return "ProcessMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
