@@ -1,4 +1,4 @@
-class BaseMonitor():
+class BaseMonitor:
     """
     Interface for Target monitors. All Monitors must adhere
     to this specification.
