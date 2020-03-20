@@ -1,9 +1,4 @@
-import abc
-
-from future.utils import with_metaclass
-
-
-class BaseMonitor(with_metaclass(abc.ABCMeta, object)):
+class BaseMonitor():
     """
     Interface for Target monitors. All Monitors must adhere
     to this specification.
