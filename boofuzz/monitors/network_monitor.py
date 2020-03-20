@@ -1,14 +1,14 @@
 import warnings
 from . import pedrpc
-from .imonitor import IMonitor
+from .base_monitor import BaseMonitor
 
 
-# Important: IMonitor needs to come *before* pedrpc.Client in the
+# Important: BaseMonitor needs to come *before* pedrpc.Client in the
 # Inheritance list for the method resolution order to produce
 # correct results.
 
 
-class NetworkMonitor(IMonitor, pedrpc.Client):
+class NetworkMonitor(BaseMonitor, pedrpc.Client):
     """
     Proxy class for the network monitor interface.
 
@@ -18,7 +18,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
     on the RPC partner.
 
     Since 0.2.0, every monitor class must implement the abstract class
-    IMonitor, which defines a common interface among all Monitors. To
+    BaseMonitor, which defines a common interface among all Monitors. To
     aid future typehinting efforts and to make Network- and Process Monitors
     disambiguable, this explicit proxy class has been introduced that
     fast-forwards all calls to the RPC partner.
@@ -27,7 +27,7 @@ class NetworkMonitor(IMonitor, pedrpc.Client):
     """
 
     def __init__(self, host, port):
-        IMonitor.__init__(self)
+        BaseMonitor.__init__(self)
         pedrpc.Client.__init__(self, host, port)
 
     def alive(self):

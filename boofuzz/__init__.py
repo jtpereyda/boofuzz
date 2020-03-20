@@ -31,7 +31,7 @@ from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
-from .monitors import IMonitor, pedrpc, CallbackMonitor, NetworkMonitor, ProcessMonitor
+from .monitors import BaseMonitor, pedrpc, CallbackMonitor, NetworkMonitor, ProcessMonitor
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -60,6 +60,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 8):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # pytype: disable=module-attr
 
 __all__ = [
+    "BaseMonitor",
     "BasePrimitive",
     "BaseSocketConnection",
     "BIG_ENDIAN",
@@ -84,7 +85,6 @@ __all__ = [
     "Group",
     "IFuzzLogger",
     "IFuzzLoggerBackend",
-    "IMonitor",
     "ip_constants",
     "ISerialLike",
     "ITargetConnection",

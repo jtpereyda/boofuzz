@@ -21,10 +21,10 @@ monitor implementations:
 - :class:`CallbackMonitor <boofuzz.monitors.CallbackMonitor>`, which is used to implement the callbacks that can be
   supplied to the Session class.
 
-Monitor Interface (IMonitor)
+Monitor Interface (BaseMonitor)
 ============================
 
-.. autoclass:: boofuzz.monitors.IMonitor
+.. autoclass:: boofuzz.monitors.BaseMonitor
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ ProcessMonitor
 ==============
 
 The process monitor consists of two parts; the ``ProcessMonitor`` class that implements
-``IMonitor`` and a second module that is to be run on the host of your target.
+``BaseMonitor`` and a second module that is to be run on the host of your target.
 
 .. autoclass:: boofuzz.monitors.ProcessMonitor
    :members:
@@ -44,7 +44,7 @@ NetworkMonitor
 ==============
 
 The network monitor consists of two parts; the ``NetworkMonitor`` class that implements
-``IMonitor`` and a second module that is to be run on a host that can monitor the traffic.
+``BaseMonitor`` and a second module that is to be run on a host that can monitor the traffic.
 
 .. autoclass:: boofuzz.monitors.NetworkMonitor
    :members:

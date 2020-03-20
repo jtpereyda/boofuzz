@@ -3,7 +3,7 @@ import abc
 from future.utils import with_metaclass
 
 
-class IMonitor(with_metaclass(abc.ABCMeta, object)):
+class BaseMonitor(with_metaclass(abc.ABCMeta, object)):
     """
     Interface for Target monitors. All Monitors must adhere
     to this specification.
@@ -14,7 +14,6 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
     def __init__(self):
         return
 
-    @abc.abstractmethod
     def alive(self):
         """
         Called when a Target containing this Monitor is added to a session.
@@ -26,20 +25,22 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
         until it becomes alive or throws an exception. You SHOULD handle
         timeouts / connection retry limits in the monitor implementation.
 
+        Defaults to return True.
+
         :returns: Bool
         """
-        pass
+        return True
 
-    @abc.abstractmethod
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         Called before the current fuzz node is transmitted.
 
+        Defaults to no effect.
+
         :returns: None
         """
-        pass
+        return
 
-    @abc.abstractmethod
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         Called after the current fuzz node is transmitted. Use it to collect
@@ -49,11 +50,12 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
         if the Target crashed. If one Monitor reports a crash, the whole testcase
         will be marked as crashing.
 
+        Defaults to return True.
+
         :returns: Bool
         """
-        pass
+        return True
 
-    @abc.abstractmethod
     def retrieve_data(self):
         """
         Called to retrieve data independent of whether the current fuzz node crashed
@@ -61,19 +63,22 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
 
         You SHOULD return any auxillary data that should be recorded. The data MUST
         be serializable, e.g. bytestring.
-        """
-        pass
 
-    @abc.abstractmethod
+        Defaults to return None.
+        """
+        return None
+
     def set_options(self, *args, **kwargs):
         """
         Called to set options for your monitor (e.g. local crash dump storage).
         \\*args and \\*\\*kwargs can be explicitly specified by implementing classes,
         however you SHOULD ignore any kwargs you do not recognize.
 
+        Defaults to no effect.
+
         :returns: None
         """
-        pass
+        return
 
     def get_crash_synopsis(self):
         """
@@ -109,7 +114,6 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
 
         return False
 
-    @abc.abstractmethod
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         """
         Restart a target. Must return True if restart was successful, False if it was unsuccessful
@@ -118,6 +122,10 @@ class IMonitor(with_metaclass(abc.ABCMeta, object)):
 
         The first successful monitor causes the restart chain to stop applying.
 
+        Defaults to call stop and start, retun True if successful.
+
         :returns: Bool
         """
-        pass
+        if self.stop_target():
+            return self.start_target()
+        return False

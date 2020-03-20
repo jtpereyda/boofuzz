@@ -1,10 +1,10 @@
 import traceback
 
 from boofuzz import constants, exception
-from .imonitor import IMonitor
+from .base_monitor import BaseMonitor
 
 
-class CallbackMonitor(IMonitor):
+class CallbackMonitor(BaseMonitor):
     """
     New-Style Callback monitor that is used in Session to provide callback-arrays.
     It's purpose is to keep the \\*_callbacks arguments in the session class while

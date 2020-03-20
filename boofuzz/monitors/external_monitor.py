@@ -1,7 +1,7 @@
-from .imonitor import IMonitor
+from .base_monitor import BaseMonitor
 
 
-class External(IMonitor):
+class External(BaseMonitor):
     """
     External instrumentation class
     Monitor a target which doesn't support a debugger, allowing external
@@ -9,7 +9,7 @@ class External(IMonitor):
 
     .. deprecated:: 0.2.0
        This class is a shortcut with limited capabilities. It should be
-       subistuted by custom classes that implement IMonitor.
+       subistuted by custom classes that implement BaseMonitor.
     """
 
     def __init__(self, pre=None, post=None, start=None, stop=None):
