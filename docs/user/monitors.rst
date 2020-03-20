@@ -22,7 +22,7 @@ monitor implementations:
   supplied to the Session class.
 
 Monitor Interface (BaseMonitor)
-============================
+===============================
 
 .. autoclass:: boofuzz.monitors.BaseMonitor
    :members:
