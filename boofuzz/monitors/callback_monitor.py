@@ -25,7 +25,7 @@ class CallbackMonitor(BaseMonitor):
     """
 
     def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None):
-        super(CallbackMonitor, self).__init__()
+        BaseMonitor.__init__(self)
 
         self.on_pre_send = on_pre_send if on_pre_send is not None else []
         self.on_post_send = on_post_send if on_post_send is not None else []
@@ -52,7 +52,8 @@ class CallbackMonitor(BaseMonitor):
         - :class:`BoofuzzTargetConnectionReset <boofuzz.exception.BoofuzzTargetConnectionReset>` will log a failure
         - :class:`BoofuzzTargetConnectionAborted <boofuzz.exception.BoofuzzTargetConnectionAborted>` will log an info
         - :class:`BoofuzzTargetConnectionFailed <boofuzz.exception.BoofuzzTargetConnectionFailed>` will log a failure
-        - :class:`BoofuzzSSLError <boofuzz.exception.BoofuzzSSLError>` will log either info or failure, depending on if the session ignores SSL/TLS errors.
+        - :class:`BoofuzzSSLError <boofuzz.exception.BoofuzzSSLError>` will log either info or failure, depending on
+          if the session ignores SSL/TLS errors.
         - every other exception is logged as an error.
 
         All exceptions are discarded after handling.
