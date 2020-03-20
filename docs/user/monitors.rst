@@ -38,7 +38,6 @@ The process monitor consists of two parts; the ``ProcessMonitor`` class that imp
 .. autoclass:: boofuzz.monitors.ProcessMonitor
    :members:
    :undoc-members:
-   :show-inheritance:
 
 NetworkMonitor
 ==============
@@ -49,7 +48,6 @@ The network monitor consists of two parts; the ``NetworkMonitor`` class that imp
 .. autoclass:: boofuzz.monitors.NetworkMonitor
    :members:
    :undoc-members:
-   :show-inheritance:
 
 CallbackMonitor
 ===============
@@ -57,4 +55,3 @@ CallbackMonitor
 .. autoclass:: boofuzz.monitors.CallbackMonitor
    :members:
    :undoc-members:
-   :show-inheritance:

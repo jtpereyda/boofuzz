@@ -32,16 +32,16 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         self.server_options = {}
 
     def alive(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("alive")
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("pre_send", session.total_mutant_index)
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("post_send", session.total_mutant_index)
-
-    def retrieve_data(self):
-        return b""
 
     def set_options(self, *args, **kwargs):
         """
@@ -60,22 +60,31 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         self.server_options.update(**kwargs)
 
     def get_crash_synopsis(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("get_crash_synopsis")
 
     def start_target(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("start_target")
 
     def stop_target(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("stop_target")
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("restart_target")
 
     def on_new_server(self, new_uuid):
+        """ Restores all set options to the RPC daemon if it has restarted since the last call. """
         for key, val in self.server_options.items():
             self.__hot_transmit(("set_{}".format(key), ((val,), {})))
 
     def set_proc_name(self, new_proc_name):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(log_path=...) instead."
@@ -84,6 +93,10 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(proc_name=new_proc_name)
 
     def set_start_commands(self, new_start_commands):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(log_path=...) instead."
@@ -92,6 +105,10 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(start_commands=new_start_commands)
 
     def set_stop_commands(self, new_stop_commands):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(log_path=...) instead."
@@ -100,6 +117,10 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(stop_commands=new_stop_commands)
 
     def set_crash_filename(self, new_crash_filename):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(log_path=...) instead."

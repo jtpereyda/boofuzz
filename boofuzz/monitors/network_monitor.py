@@ -30,16 +30,22 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         BaseMonitor.__init__(self)
         pedrpc.Client.__init__(self, host, port)
 
+        self.server_options = {}
+
     def alive(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("alive")  # pytype: disable=attribute-error
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("pre_send", session.total_mutant_index)  # pytype: disable=attribute-error
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("post_send", session.total_mutant_index)  # pytype: disable=attribute-error
 
     def retrieve_data(self):
+        """ This method is forwarded to the RPC daemon. """
         return self.__method_missing("retrieve")  # pytype: disable=attribute-error
 
     def set_options(self, *args, **kwargs):
@@ -50,16 +56,32 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
 
         If you call ``set_options(foobar="barbaz")``, it will result in a call to
         ``set_foobar("barbaz")`` on the RPC partner.
+
+        Additionally, any options set here are cached and re-applied to the RPC
+        server should it restart for whatever reason (e.g. the VM it's running on
+        was restarted).
         """
         # args will be ignored, kwargs will be translated
 
         for arg, value in kwargs.items():
             eval("self.__method_missing('set_{0}', kwargs['{0}'])".format(arg))
 
+        self.server_options.update(**kwargs)
+
+    def on_new_server(self, new_uuid):
+        """ Restores all set options to the RPC daemon if it has restarted since the last call. """
+        for key, val in self.server_options.items():
+            self.__hot_transmit(("set_{}".format(key), ((val,), {})))
+
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
-        return False  # this Monitor can't restart
+        """ Always returns false as this monitor cannot restart a target. """
+        return False
 
     def set_filter(self, new_filter):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(filter=...) instead."
@@ -68,6 +90,10 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(filter=new_filter)
 
     def set_log_path(self, new_log_path):
+        """ .. deprecated :: 0.2.0
+
+            This option should be set via ``set_options``.
+        """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
             " Please use set_options(log_path=...) instead."

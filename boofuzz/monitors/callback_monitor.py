@@ -32,6 +32,10 @@ class CallbackMonitor(BaseMonitor):
         self.on_restart_target = on_restart_target if on_restart_target is not None else []
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method iterates over all supplied pre send callbacks and executes them.
+        Their return values are discarded, exceptions are catched and logged, but otherwise
+        discarded.
+        """
         try:
             for f in self.on_pre_send:
                 fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
@@ -42,6 +46,17 @@ class CallbackMonitor(BaseMonitor):
             )
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
+        """ This method iterates over all supplied post send callbacks and executes them.
+        Their return values are discarded, exceptions are catched and logged:
+
+        - :class:`BoofuzzTargetConnectionReset <boofuzz.exception.BoofuzzTargetConnectionReset>` will log a failure
+        - :class:`BoofuzzTargetConnectionAborted <boofuzz.exception.BoofuzzTargetConnectionAborted>` will log an info
+        - :class:`BoofuzzTargetConnectionFailed <boofuzz.exception.BoofuzzTargetConnectionFailed>` will log a failure
+        - :class:`BoofuzzSSLError <boofuzz.exception.BoofuzzSSLError>` will log either info or failure, depending on if the session ignores SSL/TLS errors.
+        - every other exception is logged as an error.
+
+        All exceptions are discarded after handling.
+        """
         try:
             for f in self.on_post_send:
                 fuzz_data_logger.open_test_step('Post-test case callback: "{0}"'.format(f.__name__))
