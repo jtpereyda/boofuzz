@@ -31,9 +31,6 @@ class CallbackMonitor(BaseMonitor):
         self.on_post_send = on_post_send if on_post_send is not None else []
         self.on_restart_target = on_restart_target if on_restart_target is not None else []
 
-    def alive(self):
-        return True
-
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         try:
             for f in self.on_pre_send:
@@ -70,17 +67,12 @@ class CallbackMonitor(BaseMonitor):
             fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
         return True
 
-    def retrieve_data(self):
-        return
-
-    def set_options(self, **kwargs):
-        """ This is not a callback in the session class; so it is just a stub here. """
-        return
-
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
         """
         This Method tries to restart a target. If no restart callbacks are set,
         it returns false; otherwise it returns true.
+
+        :returns: bool
         """
         try:
             for f in self.on_restart_target:

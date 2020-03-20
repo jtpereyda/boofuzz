@@ -3,4 +3,4 @@ from .base_monitor import BaseMonitor
 from .network_monitor import NetworkMonitor
 from .process_monitor import ProcessMonitor
 
-__all__ = ["IMonitor", "ProcessMonitor", "NetworkMonitor", "CallbackMonitor"]
+__all__ = ["BaseMonitor", "ProcessMonitor", "NetworkMonitor", "CallbackMonitor"]

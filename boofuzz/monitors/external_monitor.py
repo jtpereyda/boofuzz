@@ -32,14 +32,6 @@ class External(BaseMonitor):
         self.stop = stop
         self.__dbg_flag = False
 
-    # noinspection PyMethodMayBeStatic
-    def alive(self):
-        """
-        Check if this script is alive. Always True.
-        """
-
-        return True
-
     def debug(self, msg):
         """
         Print a debug mesage.
@@ -47,12 +39,6 @@ class External(BaseMonitor):
 
         if self.__dbg_flag:
             print("EXT-INSTR> %s" % msg)
-
-    def set_options(self, *args, **kwargs):
-        return
-
-    def retrieve_data(self):
-        return b""
 
     # noinspection PyUnusedLocal
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
