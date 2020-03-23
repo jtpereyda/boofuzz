@@ -35,7 +35,6 @@ from boofuzz import (
 )
 from boofuzz.monitors import CallbackMonitor
 from boofuzz.web.app import app
-from boofuzz.utils.callbacks import apply_callback
 
 
 class Target(object):
@@ -150,7 +149,8 @@ class Target(object):
                 time.sleep(1)
 
             if self.monitor_alive:
-                apply_callback(self.monitor_alive, monitor)
+                for cb in self.monitor_alive:
+                    cb(monitor)
 
     def recv(self, max_bytes=None):
         """
@@ -1066,6 +1066,7 @@ class Session(pgraph.Graph):
 
         for monitor in target.monitors:
             try:
+                self._fuzz_data_logger.open_test_step("Monitor {}.pre_send()".format(str(monitor)))
                 monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
             except Exception:
                 self._fuzz_data_logger.log_error(
