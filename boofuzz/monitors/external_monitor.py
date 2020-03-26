@@ -9,7 +9,7 @@ class External(BaseMonitor):
 
     .. deprecated:: 0.2.0
        This class is a shortcut with limited capabilities. It should be
-       subistuted by custom classes that implement BaseMonitor.
+       substituted by custom classes that implement BaseMonitor.
     """
 
     def __init__(self, pre=None, post=None, start=None, stop=None):
@@ -34,7 +34,7 @@ class External(BaseMonitor):
 
     def debug(self, msg):
         """
-        Print a debug mesage.
+        Print a debug message.
         """
 
         if self.__dbg_flag:
@@ -44,9 +44,6 @@ class External(BaseMonitor):
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         This routine is called before the fuzzer transmits a test case and ensure the target is alive.
-
-        @type  test_number: Integer
-        @param test_number: Test number.
         """
 
         if self.pre:

@@ -3,13 +3,13 @@ import time
 import unittest
 from multiprocessing import Process
 
-
-from boofuzz.monitors import ProcessMonitor, pedrpc
+from boofuzz.monitors import pedrpc, ProcessMonitor
 
 RPC_HOST = "localhost"
 RPC_PORT = 31337
 
 
+# noinspection PyMethodMayBeStatic
 class MockRPCServer(pedrpc.Server):
     def __init__(self, host, port):
         super(MockRPCServer, self).__init__(host, port)

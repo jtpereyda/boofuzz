@@ -47,7 +47,7 @@ class CallbackMonitor(BaseMonitor):
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """ This method iterates over all supplied post send callbacks and executes them.
-        Their return values are discarded, exceptions are catched and logged:
+        Their return values are discarded, exceptions are caught and logged:
 
         - :class:`BoofuzzTargetConnectionReset <boofuzz.exception.BoofuzzTargetConnectionReset>` will log a failure
         - :class:`BoofuzzTargetConnectionAborted <boofuzz.exception.BoofuzzTargetConnectionAborted>` will log an info

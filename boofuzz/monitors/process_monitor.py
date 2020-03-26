@@ -1,4 +1,5 @@
 import warnings
+
 from . import pedrpc
 from .base_monitor import BaseMonitor
 
@@ -19,8 +20,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
 
     Since 0.2.0, every monitor class must implement the abstract class
     BaseMonitor, which defines a common interface among all Monitors. To
-    aid future typehinting efforts and to make Network- and Process Monitors
-    disambiguable, this explicit proxy class has been introduced that
+    aid future typehinting efforts and to disambiguate Network- and Process Monitors,
+    this explicit proxy class has been introduced that
     fast-forwards all calls to the RPC partner.
 
     .. versionadded:: 0.2.0

@@ -56,7 +56,7 @@ class BaseMonitor:
         Called to retrieve data independent of whether the current fuzz node crashed
         the target or not. Called before the fuzzer proceeds to a new testcase.
 
-        You SHOULD return any auxillary data that should be recorded. The data MUST
+        You SHOULD return any auxiliary data that should be recorded. The data MUST
         be serializable, e.g. bytestring.
 
         Defaults to return None.
@@ -117,7 +117,7 @@ class BaseMonitor:
 
         The first successful monitor causes the restart chain to stop applying.
 
-        Defaults to call stop and start, retun True if successful.
+        Defaults to call stop and start, return True if successful.
 
         :returns: Bool
         """

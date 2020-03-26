@@ -183,7 +183,7 @@ class Client(object):
 
         @raise pdx: An exception is raised if the connection was severed.
         """
-        print(data)
+
         data = pickle.dumps(data, protocol=2)
         self.__debug("sending %d bytes" % len(data))
 
@@ -204,6 +204,7 @@ class Client(object):
 class Server(object):
     """ The main PED-RPC Server class. To implement an RPC server, inherit from this class. Call ``serve_forever`` to start listening for RPC commands.
     """
+
     def __init__(self, host, port):
         self.__host = host
         self.__port = port
@@ -224,7 +225,7 @@ class Server(object):
         # to re-send any initialisation code. This is implemented by the server
         # generating a random uuid on startup and sending it to each new connection.
         #
-        # In a perfect world, this protocol wouldn't reconnect for every comamnd
+        # In a perfect world, this protocol wouldn't reconnect for every command
         # and options were associated with a connection, but at the moment I don't
         # feel like cleaning up this mess.
         self.__instance = uuid.uuid4()

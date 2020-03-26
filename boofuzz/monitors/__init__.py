@@ -1,5 +1,5 @@
-from .callback_monitor import CallbackMonitor
 from .base_monitor import BaseMonitor
+from .callback_monitor import CallbackMonitor
 from .network_monitor import NetworkMonitor
 from .process_monitor import ProcessMonitor
 

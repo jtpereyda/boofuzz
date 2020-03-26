@@ -129,7 +129,7 @@ class Target(object):
         warnings.warn(
             "pedrpc_connect has been renamed to monitors_alive. "
             "This alias will stop working in a future version of boofuzz.",
-            DeprecationWarning,
+            FutureWarning,
         )
 
         return self.monitors_alive()
@@ -258,7 +258,7 @@ class SessionInfo(object):
         warnings.warn(
             "procmon_results has been renamed to monitor_results."
             "This alias will stop working in a future version of boofuzz",
-            DeprecationWarning,
+            FutureWarning,
         )
         return self.monitor_results
 
@@ -266,7 +266,7 @@ class SessionInfo(object):
     def netmon_results(self):
         warnings.warn(
             "netmon_results is now part of monitor_data" "This alias will stop working in a future version of boofuzz",
-            DeprecationWarning,
+            FutureWarning,
         )
         return self.monitor_data
 

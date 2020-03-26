@@ -24,13 +24,15 @@ def main():
     procmon.set_options(start_commands=[start_cmd])
 
     # We configure the session, adding the configured procmon to the monitors.
+    # fmt: off
     session = Session(
         target=Target(
             connection=TCPSocketConnection(target_ip, 21),
-            monitors=[procmon]
+            monitors=[procmon],
         ),
         sleep_time=1,
     )
+    # fmt: on
 
     s_initialize("user")
     s_string("USER")
