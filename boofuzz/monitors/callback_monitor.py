@@ -51,7 +51,8 @@ class CallbackMonitor(BaseMonitor):
 
         - :class:`BoofuzzTargetConnectionReset <boofuzz.exception.BoofuzzTargetConnectionReset>` will log a failure
         - :class:`BoofuzzTargetConnectionAborted <boofuzz.exception.BoofuzzTargetConnectionAborted>` will log an info
-        - :class:`BoofuzzTargetConnectionFailed <boofuzz.exception.BoofuzzTargetConnectionFailed>` will log a failure
+        - :class:`BoofuzzTargetConnectionFailedError <boofuzz.exception.BoofuzzTargetConnectionFailedError>` will log a
+          failure
         - :class:`BoofuzzSSLError <boofuzz.exception.BoofuzzSSLError>` will log either info or failure, depending on
           if the session ignores SSL/TLS errors.
         - every other exception is logged as an error.

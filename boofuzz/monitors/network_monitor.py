@@ -20,8 +20,8 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
 
     Since 0.2.0, every monitor class must implement the abstract class
     BaseMonitor, which defines a common interface among all Monitors. To
-    aid future typehinting efforts and to make Network- and Process Monitors
-    disambiguable, this explicit proxy class has been introduced that
+    aid future typehinting efforts and to disambiguate Network- and Process Monitors,
+    this explicit proxy class has been introduced that
     fast-forwards all calls to the RPC partner.
 
     .. versionadded:: 0.2.0
@@ -37,11 +37,11 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
 
     def alive(self):
         """ This method is forwarded to the RPC daemon. """
-        return self.__method_missing("alive")  # pytype: disable=attribute-error
+        return self.__method_missing("alive")
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """ This method is forwarded to the RPC daemon. """
-        return self.__method_missing("pre_send", session.total_mutant_index)  # pytype: disable=attribute-error
+        return self.__method_missing("pre_send", session.total_mutant_index)
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """ This method is forwarded to the RPC daemon. """
@@ -49,7 +49,7 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
 
     def retrieve_data(self):
         """ This method is forwarded to the RPC daemon. """
-        return self.__method_missing("retrieve")  # pytype: disable=attribute-error
+        return self.__method_missing("retrieve")
 
     def set_options(self, *args, **kwargs):
         """
@@ -87,7 +87,8 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(filter=...) instead."
+            " Please use set_options(filter=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(filter=new_filter)
@@ -99,7 +100,8 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(log_path=...) instead."
+            " Please use set_options(log_path=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(log_path=new_log_path)

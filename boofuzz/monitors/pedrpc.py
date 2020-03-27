@@ -154,7 +154,7 @@ class Client(object):
             #       gotta track this down at some point.
             recvd = self.__server_sock.recv(4)
             length = struct.unpack("<L", recvd)[0]
-        except Exception as e:
+        except Exception:
             return
 
         try:
@@ -202,7 +202,9 @@ class Client(object):
 
 
 class Server(object):
-    """ The main PED-RPC Server class. To implement an RPC server, inherit from this class. Call ``serve_forever`` to start listening for RPC commands.
+    """
+    The main PED-RPC Server class. To implement an RPC server, inherit from this class. Call ``serve_forever`` to start
+    listening for RPC commands.
     """
 
     def __init__(self, host, port):
@@ -337,5 +339,5 @@ class Server(object):
             # transmit the return value to the client, continue on socket disconnect.
             try:
                 self.__pickle_send(ret)
-            except Exception as e:
+            except Exception:
                 continue

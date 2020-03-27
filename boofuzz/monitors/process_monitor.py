@@ -30,6 +30,7 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
     def __init__(self, host, port):
         BaseMonitor.__init__(self)
         pedrpc.Client.__init__(self, host, port)
+
         self.server_options = {}
         self.host = host
         self.port = port
@@ -90,7 +91,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(log_path=...) instead."
+            " Please use set_options(log_path=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(proc_name=new_proc_name)
@@ -102,7 +104,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(log_path=...) instead."
+            " Please use set_options(log_path=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(start_commands=new_start_commands)
@@ -114,7 +117,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(log_path=...) instead."
+            " Please use set_options(log_path=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(stop_commands=new_stop_commands)
@@ -126,7 +130,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
-            " Please use set_options(log_path=...) instead."
+            " Please use set_options(log_path=...) instead.",
+            FutureWarning,
         )
 
         return self.set_options(crash_filename=new_crash_filename)
