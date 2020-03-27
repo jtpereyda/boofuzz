@@ -770,7 +770,7 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
-            for monitor in self.monitors:
+            for monitor in self.targets[0].monitors:
                 monitor.start_target()
 
             if self._reuse_target_connection:
