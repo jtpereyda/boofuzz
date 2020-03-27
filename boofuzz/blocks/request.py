@@ -1,6 +1,7 @@
 import collections
 
 from .block import Block
+from .aligned import Aligned
 from .. import exception, helpers
 from ..ifuzzable import IFuzzable
 
@@ -137,7 +138,7 @@ class Request(IFuzzable):
             self.block_stack[-1].push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block):
+        if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
     def _render(self, mutations_map):

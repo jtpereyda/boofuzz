@@ -38,7 +38,7 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     The core functionality on which boofuzz runs:
 
     1. mutations() -- iterate mutations.
-    2. mutant_index, render(), reset() are an older interface used to simulate mutations().
+    2. mutant_index, mutate(), render(), reset() are an older interface used to simulate mutations().
     3. render() returns either the normal value or the currently-being-mutated value.
     3. name() -- gets the specific element's name; may be replaced in the future.
     4. fuzzable() -- indicates whether an element should be fuzzed. This used to be checked externally, but is now
@@ -56,10 +56,10 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     name_counter = 0
 
     @property
-    @abc.abstractmethod
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
-        return
+        return self._fuzzable
+
 
     @abc.abstractproperty
     def mutations(self):
@@ -67,7 +67,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         return
 
     @property
-    @abc.abstractmethod
     def mutant_index(self):
         """Index of current mutation. 0 => normal value. 1 => first mutation.
         """
@@ -87,7 +86,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
             self._name = "{0}{1}".format(type(self).__name__, IFuzzable.name_counter)
         return self._name
 
-    @abc.abstractmethod
     def mutate(self):
         """Mutate this element. Returns True each time and False on completion.
 
@@ -115,7 +113,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         """
         return
 
-    @abc.abstractmethod
     def reset(self):
         """Reset element to pre-mutation state."""
         return

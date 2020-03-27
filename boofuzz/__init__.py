@@ -7,7 +7,7 @@ import six
 from past.builtins import map
 
 from . import blocks, exception, legos, pedrpc, primitives
-from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
+from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size, Aligned
 from .connections import (
     BaseSocketConnection,
     ip_constants,
@@ -59,6 +59,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 8):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())  # pytype: disable=module-attr
 
 __all__ = [
+    "Aligned",
     "BasePrimitive",
     "BaseSocketConnection",
     "BIG_ENDIAN",
@@ -100,6 +101,7 @@ __all__ = [
     "Repeater",
     "Request",
     "REQUESTS",
+    "s_aligned",
     "s_bigword",
     "s_binary",
     "s_bit",
@@ -305,6 +307,46 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
     block = s_block_start(name, group, encoder, dep, dep_value, dep_values, dep_compare)
 
     return ScopedBlock(block)
+
+
+def s_aligned(name, modulus, pattern=b"\x00"):
+    """
+    Open a new block under the current request. The returned instance supports the "with" interface so it will
+    be automatically closed for you::
+
+        with s_block("header"):
+            s_static("\\x00\\x01")
+            if s_block_start("body"):
+                ...
+
+    :type  name:        str
+    :param name:        Name of block being opened
+    :type  modulus:     int
+    :param modulus:     Pad length of child content to this many bytes
+    :type  pattern:     bytes
+    :param pattern:     Pad using these byte(s)
+    """
+
+    class ScopedAligned(Aligned):
+        def __init__(self, aligned):
+            self.aligned = aligned
+
+        def __enter__(self):
+            """
+            Setup before entering the "with" statement body
+            """
+            return self.aligned
+
+        def __exit__(self, type, value, traceback):
+            """
+            Cleanup after executing the "with" statement body
+            """
+            blocks.CURRENT.pop()
+
+    aligned = Aligned(blocks.CURRENT, name=name, modulus=modulus, pattern=pattern)
+    blocks.CURRENT.push(aligned)
+
+    return ScopedAligned(aligned)
 
 
 def s_block_start(name, *args, **kwargs):

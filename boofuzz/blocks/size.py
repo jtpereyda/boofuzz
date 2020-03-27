@@ -104,22 +104,6 @@ class Size(IFuzzable):
     def _original_calculated_length(self):
         return self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
 
-    def exhaust(self):
-        """
-        Exhaust the possible mutations for this primitive.
-
-        :rtype:  int
-        :return: The number of mutations to reach exhaustion
-        """
-
-        num = self.num_mutations() - self._mutant_index
-
-        self._fuzz_complete = True
-        self._mutant_index = self.num_mutations()
-        self.bit_field._mutant_index = self.num_mutations()
-
-        return num
-
     def mutations(self):
         for value, rendered in self.bit_field.mutations():
             yield value, rendered

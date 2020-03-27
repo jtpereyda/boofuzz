@@ -455,6 +455,7 @@ class Session(pgraph.Graph):
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
+        self.mutant_index = 0
         self.fuzz_node = None
         self.targets = []
         self.netmon_results = {}
@@ -921,13 +922,13 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node
             ):
-                skipped = self.fuzz_node.num_mutations() - self.fuzz_node.mutant_index
+                skipped = self.fuzz_node.num_mutations() - self.mutant_index
                 self._skip_current_node_after_current_test_case = True
                 self._fuzz_data_logger.open_test_step(
                     "Crash threshold reached for this request, exhausting {0} mutants.".format(skipped)
                 )
                 self.total_mutant_index += skipped
-                self.fuzz_node.mutant_index += skipped
+                self.mutant_index += skipped
             elif (
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node.mutant] >= self._crash_threshold_element
@@ -935,13 +936,13 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
+                    skipped = self.fuzz_node.mutant.num_mutations() - self.mutant_index
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
                     )
                     self.total_mutant_index += skipped
-                    self.fuzz_node.mutant_index += skipped
+                    self.mutant_index += skipped
 
             self._restart_target(target)
             return True
@@ -1266,7 +1267,7 @@ class Session(pgraph.Graph):
 
             self.fuzz_node = self.nodes[path[-1].dst]
             self.total_mutant_index += 1
-            yield path,
+            yield path, None, None  # TODO kinda weird; just putting in None since there's no mutated content
 
             for x in self._iterate_messages_recursive(self.fuzz_node, path):
                 yield x
@@ -1336,9 +1337,8 @@ class Session(pgraph.Graph):
             sex.SullyRuntimeError:
         """
         self.fuzz_node = self.nodes[path[-1].dst]
-        # Loop through and yield all possible mutations of the fuzz node.
-        # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
-        #while self.fuzz_node.mutate():
+        self.mutant_index = 0
+
         for value, rendered in self.fuzz_node.mutations():
             self.total_mutant_index += 1
             yield path, value, rendered
@@ -1349,7 +1349,6 @@ class Session(pgraph.Graph):
             elif self._skip_current_element_after_current_test_case:
                 self._skip_current_element_after_current_test_case = False
                 self.fuzz_node.skip_element()
-        #self.fuzz_node.reset()
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
@@ -1384,7 +1383,7 @@ class Session(pgraph.Graph):
                 cur_node = next_node
         return edge_path
 
-    def _check_message(self, path):
+    def _check_message(self, path, value, rendered):
         """Sends the current message without fuzzing.
 
         Current test case is controlled by fuzz_case_iterator().
@@ -1404,7 +1403,7 @@ class Session(pgraph.Graph):
             name=test_case_name,
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
-            current_index=self.fuzz_node.mutant_index,
+            current_index=self.mutant_index,
             current_num_mutations=self.fuzz_node.num_mutations(),
         )
 
@@ -1470,7 +1469,7 @@ class Session(pgraph.Graph):
             name=test_case_name,
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
-            current_index=self.fuzz_node.mutant_index,
+            current_index=self.mutant_index,
             current_num_mutations=self.fuzz_node.num_mutations(),
         )
 
@@ -1588,7 +1587,7 @@ class Session(pgraph.Graph):
                 primitive_path = mutated_element.name
         else:
             primitive_path = "no-name"
-        return "{0}.{1}.{2}".format(message_path, primitive_path, self.fuzz_node.mutant_index)
+        return "{0}.{1}.{2}".format(message_path, primitive_path, self.mutant_index)
 
     def _post_send(self, target):
         if len(self._post_test_case_methods) > 0:
