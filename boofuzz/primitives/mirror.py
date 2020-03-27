@@ -36,10 +36,6 @@ class Mirror(BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    @property
-    def name(self):
-        return self._name
-
     def render(self):
         """
         Render the mirror.

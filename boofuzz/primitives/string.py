@@ -232,10 +232,6 @@ class String(BasePrimitive):
                 # Pull out the bad string(s):
                 self._fuzz_library = list(set([t[: self.max_len] for t in self._fuzz_library]))
 
-    @property
-    def name(self):
-        return self._name
-
     def add_long_strings(self, sequence):
         """
         Given a sequence, generate a number of selectively chosen strings lengths of the given sequence and add to the

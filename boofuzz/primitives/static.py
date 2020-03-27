@@ -19,10 +19,6 @@ class Static(BasePrimitive):
         self._value = self._original_value = value
         self._name = name
 
-    @property
-    def name(self):
-        return self._name
-
     def mutate(self):
         """
         Always return false, don't fuzz

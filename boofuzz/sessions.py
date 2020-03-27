@@ -468,8 +468,7 @@ class Session(pgraph.Graph):
 
         # create a root node. we do this because we need to start fuzzing from a single point and the user may want
         # to specify a number of initial requests.
-        self.root = pgraph.Node()
-        self.root.name = "__ROOT_NODE__"
+        self.root = pgraph.Node(name="__ROOT_NODE__")
         self.root.label = self.root.name
         self.last_recv = None
         self.last_send = None

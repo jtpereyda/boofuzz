@@ -41,14 +41,14 @@ class Node(IFuzzable):
     udraw_image = None
     udraw_info = ""
 
-    def __init__(self, node_id=None):
+    def __init__(self, node_id=None, name=None):
         self.id = node_id
         self.number = 0
 
         # general graph attributes
         self.color = 0xEEF7FF
         self.border_color = 0xEEEEEE
-        self._name = ""
+        self._name = name
         self.label = ""
         self.shape = "box"
 
@@ -60,14 +60,6 @@ class Node(IFuzzable):
         self.gml_line_width = 1.0
         self.gml_type = "rectangle"
         self.gml_width_shape = 1.0
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
 
     def render_node_gml(self):
         """

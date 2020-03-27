@@ -6,10 +6,6 @@ scenarios("size_original_value.feature")
 
 
 class SizeChangingBlock(BasePrimitive):
-    @property
-    def name(self):
-        return self._name
-
     def __init__(self, value=b"\x01", name=None):
         """A block that changes size with each mutation.
         """

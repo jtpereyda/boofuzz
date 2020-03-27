@@ -62,10 +62,6 @@ class Block(IFuzzable):
 
         return original_value
 
-    @property
-    def name(self):
-        return self._name
-
     def mutations(self):
         for item in self.stack:
             self.request.mutant = item

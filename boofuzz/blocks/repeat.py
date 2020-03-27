@@ -76,10 +76,6 @@ class Repeat(ifuzzable.IFuzzable):
             self._fuzzable = False
 
     @property
-    def name(self):
-        return self._name
-
-    @property
     def mutant_index(self):
         return self._mutant_index
 

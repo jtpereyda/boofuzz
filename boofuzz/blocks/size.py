@@ -89,10 +89,6 @@ class Size(IFuzzable):
         self._recursion_flag = False
 
     @property
-    def name(self):
-        return self._name
-
-    @property
     def mutant_index(self):
         return self._mutant_index
 

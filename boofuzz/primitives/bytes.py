@@ -123,10 +123,6 @@ class Bytes(BasePrimitive):
         self._name = name
         self.this_library = [self._value * 2, self._value * 10, self._value * 100]
 
-    @property
-    def name(self):
-        return self._name
-
     def mutate(self):
         """
         Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on

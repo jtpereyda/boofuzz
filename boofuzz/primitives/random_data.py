@@ -44,10 +44,6 @@ class RandomData(BasePrimitive):
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
-    @property
-    def name(self):
-        return self._name
-
     def mutations(self):
         """
         Mutate the primitive value returning False on completion.

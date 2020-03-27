@@ -40,7 +40,3 @@ class FromFile(BasePrimitive):
             if any(len(s) > max_len for s in self._fuzz_library):
                 # Pull out only the ones that aren't
                 self._fuzz_library = list(set([s for s in self._fuzz_library if len(s) <= max_len]))
-
-    @property
-    def name(self):
-        return self._name

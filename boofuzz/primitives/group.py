@@ -32,10 +32,6 @@ class Group(BasePrimitive):
         for val in self.values:
             assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
 
-    @property
-    def name(self):
-        return self._name
-
     def mutations(self):
         """
         """

@@ -29,14 +29,6 @@ class Request(IFuzzable):
         self.mutant = None  # current primitive being mutated.
 
     @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
-
-    @property
     def mutant_index(self):
         return self._mutant_index
 

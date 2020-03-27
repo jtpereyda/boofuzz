@@ -71,7 +71,3 @@ class Delim(BasePrimitive):
         self._fuzz_library.append("\r\n" * 64)
         self._fuzz_library.append("\r\n" * 128)
         self._fuzz_library.append("\r\n" * 512)
-
-    @property
-    def name(self):
-        return self._name
