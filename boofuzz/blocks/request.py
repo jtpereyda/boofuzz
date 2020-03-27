@@ -66,8 +66,8 @@ class Request(IFuzzable):
 
     def mutations(self):
         for item in self.stack:
+            self.mutant = item
             for value, rendered in item.mutations():
-                self.mutant = item  # TODO might be able to be moved outside this loop
                 mutations_map = {item.name: (value, rendered)}
                 yield mutations_map, self._render(mutations_map=mutations_map)
 

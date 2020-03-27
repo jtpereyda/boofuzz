@@ -9,10 +9,6 @@ class BasePrimitive(IFuzzable):
     The primitive base class implements common functionality shared across most primitives.
     """
 
-    @abc.abstractproperty
-    def name(self):
-        pass
-
     @property
     def mutant_index(self):
         return self._mutant_index

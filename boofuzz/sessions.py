@@ -1350,7 +1350,7 @@ class Session(pgraph.Graph):
             elif self._skip_current_element_after_current_test_case:
                 self._skip_current_element_after_current_test_case = False
                 self.fuzz_node.skip_element()
-        self.fuzz_node.reset()
+        #self.fuzz_node.reset()
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
@@ -1464,7 +1464,7 @@ class Session(pgraph.Graph):
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name(path, self.fuzz_node.mutant)
+        test_case_name = self._test_case_name(path, self.fuzz_node.mutant, value)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
@@ -1572,13 +1572,24 @@ class Session(pgraph.Graph):
         message_path = "->".join([self.nodes[e.dst].name for e in path])
         return "FEATURE-CHECK->{0}".format(message_path)
 
-    def _test_case_name(self, path, mutated_element):
+    def _test_case_name(self, path, mutated_element, value):
+        """Get long test case name."""
         message_path = "->".join([self.nodes[e.dst].name for e in path])
         if mutated_element.name:
-            primitive_under_test = mutated_element.name
+            # Hack to get primitive path; we probably need a Mutation type
+            if isinstance(value, dict):
+                v = value
+                primitive_names = []
+                while isinstance(v, dict):
+                    key = list(v.keys())[0]
+                    primitive_names.append(key)
+                    v = v[key][0]  # get value of dict item, then get 0th element of the tuple
+                primitive_path = ".".join(primitive_names)
+            else:
+                primitive_path = mutated_element.name
         else:
-            primitive_under_test = "no-name"
-        return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+            primitive_path = "no-name"
+        return "{0}.{1}.{2}".format(message_path, primitive_path, self.fuzz_node.mutant_index)
 
     def _post_send(self, target):
         if len(self._post_test_case_methods) > 0:

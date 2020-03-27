@@ -80,12 +80,11 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         return
 
     @property
-    @abc.abstractmethod
     def name(self):
         """Element name, should be specific for each instance."""
         if self._name is None:
             IFuzzable.name_counter += 1
-            self._name = "{0}:{1}".format(type(self).__name__, IFuzzable.name_counter)
+            self._name = "{0}{1}".format(type(self).__name__, IFuzzable.name_counter)
         return self._name
 
     @abc.abstractmethod

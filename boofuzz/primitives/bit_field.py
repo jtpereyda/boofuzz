@@ -117,10 +117,6 @@ class BitField(BasePrimitive):
 
             # TODO: Add injectable arbitrary bit fields
 
-    @property
-    def name(self):
-        return self._name
-
     def add_integer_boundaries(self, integer):
         """
         Add the supplied integer and border cases to the integer fuzz heuristics library.

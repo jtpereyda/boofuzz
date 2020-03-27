@@ -68,6 +68,7 @@ class Block(IFuzzable):
 
     def mutations(self):
         for item in self.stack:
+            self.request.mutant = item
             for value, rendered in item.mutations():
                 mutations_map = {item.name: (value, rendered)}
                 yield mutations_map, self._render(mutations_map=mutations_map)
