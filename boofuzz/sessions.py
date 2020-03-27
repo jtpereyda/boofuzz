@@ -770,6 +770,9 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
+            for monitor in self.monitors:
+                monitor.start_target()
+
             if self._reuse_target_connection:
                 self.targets[0].open()
             num_cases_actually_fuzzed = 0
