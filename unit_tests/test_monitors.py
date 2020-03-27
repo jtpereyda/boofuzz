@@ -22,9 +22,7 @@ class MockRPCServer(pedrpc.Server):
     def get_crash_synopsis(self):
         return "YES"
 
-    def post_send(self, index):
-        assert index is not None
-
+    def post_send(self):
         return True
 
     def pre_send(self, index):

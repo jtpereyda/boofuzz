@@ -42,7 +42,7 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """ This method is forwarded to the RPC daemon. """
-        return self.__method_missing("post_send", session.total_mutant_index)
+        return self.__method_missing("post_send")
 
     def set_options(self, *args, **kwargs):
         """
