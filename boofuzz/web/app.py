@@ -149,13 +149,13 @@ def index():
 
 def _crash_summary_info():
     crashes = []
-    procmon_result_keys = list(app.session.procmon_results)
+    procmon_result_keys = list(app.session.monitor_results)
     procmon_result_keys.sort()
     for key in procmon_result_keys:
-        val = app.session.procmon_results[key]
+        val = app.session.monitor_results[key]
         status_bytes = "&nbsp;"
 
-        if key in app.session.netmon_results:
+        if key in app.session.monitor_data:
             status_bytes = commify(app.session.netmon_results[key])
 
         crash = {"key": key, "reasons": val, "status_bytes": status_bytes}

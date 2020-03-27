@@ -1,8 +1,15 @@
-class External:
+from .base_monitor import BaseMonitor
+
+
+class External(BaseMonitor):
     """
     External instrumentation class
     Monitor a target which doesn't support a debugger, allowing external
-    commands to be called
+    commands to be called.
+
+    .. deprecated:: 0.2.0
+       This class is a shortcut with limited capabilities. It should be
+       substituted by custom classes that implement BaseMonitor.
     """
 
     def __init__(self, pre=None, post=None, start=None, stop=None):
@@ -17,6 +24,7 @@ class External:
         @type  stop:  def
         @param stop:  Callback called to stop the target
         """
+        super(External, self).__init__()
 
         self.pre = pre
         self.post = post
@@ -24,35 +32,24 @@ class External:
         self.stop = stop
         self.__dbg_flag = False
 
-    # noinspection PyMethodMayBeStatic
-    def alive(self):
-        """
-        Check if this script is alive. Always True.
-        """
-
-        return True
-
     def debug(self, msg):
         """
-        Print a debug mesage.
+        Print a debug message.
         """
 
         if self.__dbg_flag:
             print("EXT-INSTR> %s" % msg)
 
     # noinspection PyUnusedLocal
-    def pre_send(self, test_number):
+    def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         This routine is called before the fuzzer transmits a test case and ensure the target is alive.
-
-        @type  test_number: Integer
-        @param test_number: Test number.
         """
 
         if self.pre:
             self.pre()
 
-    def post_send(self):
+    def post_send(self, target=None, fuzz_data_logger=None, session=None):
         """
         This routine is called after the fuzzer transmits a test case and returns the status of the target.
 
@@ -85,6 +82,10 @@ class External:
         if self.stop:
             self.stop()
 
+    def restart_target(self, target=None, fuzz_data_logger=None, session=None):
+        self.stop_target()
+        return self.start_target()
+
     # noinspection PyMethodMayBeStatic
     def get_crash_synopsis(self):
         """
@@ -95,3 +96,6 @@ class External:
         """
 
         return "External instrumentation detects a crash...\n"
+
+    def __repr__(self):
+        return "ExternalMonitor#{}".format(id(self))

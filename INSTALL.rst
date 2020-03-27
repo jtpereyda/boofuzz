@@ -170,7 +170,7 @@ If you want to use process\_monitor.py, follow these additional steps:
 \*\* Building pydasm on Windows requires the `Visual C++ Compiler for
 Python 2.7`_.
 
-Deprecated: network\_monitor.py
+network\_monitor.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The network monitor was Sulley’s primary tool for recording test data,

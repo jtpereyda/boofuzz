@@ -10,12 +10,12 @@ import socket
 import threading
 import time
 import traceback
+import warnings
 import zlib
 from builtins import input
 from io import open
 
 import six
-from future.utils import listitems
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
@@ -33,6 +33,7 @@ from boofuzz import (
     pgraph,
     primitives,
 )
+from boofuzz.monitors import CallbackMonitor
 from boofuzz.web.app import app
 
 
@@ -51,29 +52,58 @@ class Target(object):
 
     :param connection: Connection to system under test.
     :type connection: itarget_connection.ITargetConnection
+    :param monitors: List of Monitors for this Target.
+    :type monitors: List[Union[IMonitor, pedrpc.Client]]
+    :param monitor_alive: List of Functions that are called when a Monitor is alive. It is passed
+                          the monitor instance that became alive. Use it to e.g. set options
+                          on restart.
     :param repeater: Repeater to use for sending. Default None.
     :type repeater: repeater.Repeater
 
     """
 
-    def __init__(
-        self, connection, procmon=None, procmon_options=None, netmon=None, max_recv_bytes=10000, repeater=None
-    ):
+    def __init__(self, connection, monitors=None, monitor_alive=None, max_recv_bytes=10000, repeater=None, **kwargs):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
-        self.procmon = procmon
-        self.netmon = netmon
         self.max_recv_bytes = max_recv_bytes
         self.repeater = repeater
+        self.monitors = monitors if monitors is not None else []
+        self.monitor_alive = monitor_alive if monitor_alive is not None else []
+
+        if "procmon" in kwargs.keys():
+            warnings.warn(
+                "Target(procmon=...) is deprecated. Please change your code"
+                " and add it to the monitors argument. For now, we do this "
+                "for you, but this will be removed in the future.",
+                FutureWarning,
+            )
+            self.monitors.append(kwargs["procmon"])
+
+        if "netmon" in kwargs.keys():
+            warnings.warn(
+                "Target(netmon=...) is deprecated. Please change your code"
+                " and add it to the monitors argument. For now, we do this "
+                "for you, but this will be removed in the future.",
+                FutureWarning,
+            )
+            self.monitors.append(kwargs["netmon"])
 
         # set these manually once target is instantiated.
         self.vmcontrol = None
-        self.netmon_options = {}
-        if procmon_options is None:
-            procmon_options = {}
-        self.procmon_options = procmon_options
         self.vmcontrol_options = {}
+
+    @property
+    def netmon_options(self):
+        raise NotImplementedError(
+            "This property is not supported; grab netmon from monitors and use set_options(**dict)"
+        )
+
+    @property
+    def procmon_options(self):
+        raise NotImplementedError(
+            "This property is not supported; grab procmon from monitors and use set_options(**dict)"
+        )
 
     def close(self):
         """
@@ -96,32 +126,31 @@ class Target(object):
         self._fuzz_data_logger.log_info("Connection opened.")
 
     def pedrpc_connect(self):
-        """
-        Pass specified target parameters to the PED-RPC server.
-        """
-        # If the process monitor is alive, set it's options
-        if self.procmon:
-            while 1:
-                if self.procmon.alive():
-                    break
+        warnings.warn(
+            "pedrpc_connect has been renamed to monitors_alive. "
+            "This alias will stop working in a future version of boofuzz.",
+            FutureWarning,
+        )
 
+        return self.monitors_alive()
+
+    def monitors_alive(self):
+        """
+        Wait for the monitors to become alive / establish connection to the RPC server.
+        This method is called on every restart of the target and when it's added to a session.
+        After successful probing, a callback is called, passing the monitor.
+
+        :return: None
+        """
+        for monitor in self.monitors:
+            while True:
+                if monitor.alive():
+                    break
                 time.sleep(1)
 
-            # connection established.
-            for key, value in listitems(self.procmon_options):
-                getattr(self.procmon, "set_{0}".format(key))(value)
-
-        # If the network monitor is alive, set it's options
-        if self.netmon:
-            while 1:
-                if self.netmon.alive():
-                    break
-
-                time.sleep(1)
-
-            # connection established.
-            for key in list(self.netmon_options):
-                eval('self.netmon.set_%s(self.netmon_options["%s"])' % (key, key))
+            if self.monitor_alive:
+                for cb in self.monitor_alive:
+                    cb(monitor)
 
     def recv(self, max_bytes=None):
         """
@@ -217,12 +246,29 @@ class SessionInfo(object):
         self._db_reader = fuzz_logger_db.FuzzLoggerDbReader(db_filename=db_filename)
 
     @property
-    def procmon_results(self):
+    def monitor_results(self):
         return self._db_reader.failure_map
 
     @property
+    def monitor_data(self):
+        return {-1, "Monitor Data is not currently saved in the database"}
+
+    @property
+    def procmon_results(self):
+        warnings.warn(
+            "procmon_results has been renamed to monitor_results."
+            "This alias will stop working in a future version of boofuzz",
+            FutureWarning,
+        )
+        return self.monitor_results
+
+    @property
     def netmon_results(self):
-        return {1: "netmon results not saved in current database format"}
+        warnings.warn(
+            "netmon_results is now part of monitor_data" "This alias will stop working in a future version of boofuzz",
+            FutureWarning,
+        )
+        return self.monitor_data
 
     @property
     def fuzz_node(self):
@@ -422,26 +468,31 @@ class Session(pgraph.Graph):
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
 
         if pre_send_callbacks is None:
-            self._pre_send_methods = []
+            pre_send_methods = []
         else:
-            self._pre_send_methods = pre_send_callbacks
+            pre_send_methods = pre_send_callbacks
 
         if post_test_case_callbacks is None:
-            self._post_test_case_methods = []
+            post_test_case_methods = []
         else:
-            self._post_test_case_methods = post_test_case_callbacks
+            post_test_case_methods = post_test_case_callbacks
 
         if restart_callbacks is None:
-            self._restart_methods = []
+            restart_methods = []
         else:
-            self._restart_methods = restart_callbacks
+            restart_methods = restart_callbacks
+
+        self._callback_monitor = CallbackMonitor(
+            on_pre_send=pre_send_methods, on_post_send=post_test_case_methods, on_restart_target=restart_methods
+        )
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
         self.fuzz_node = None
         self.targets = []
-        self.netmon_results = {}
-        self.procmon_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
+        self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
+        # map of test case indices to list of supplement captured data (all cases where data was captured)
+        self.monitor_data = {}
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
@@ -460,12 +511,26 @@ class Session(pgraph.Graph):
         self.add_node(self.root)
 
         if target is not None:
-            target.procmon_options["crash_filename"] = self._crash_filename
+
+            def apply_options(monitor):
+                monitor.set_options(crash_filename=self._crash_filename)
+
+                return
+
+            target.monitor_alive.append(apply_options)
+
             try:
-                self.add_target(target=target)
+                self.add_target(target)
             except exception.BoofuzzRpcError as e:
                 self._fuzz_data_logger.log_error(str(e))
                 raise
+
+    @property
+    def netmon_results(self):
+        raise NotImplementedError(
+            "netmon_results is now part of monitor_results and thus can't be accessed directly."
+            " Please update your code."
+        )
 
     def add_node(self, node):
         """
@@ -493,8 +558,11 @@ class Session(pgraph.Graph):
         """
 
         # pass specified target parameters to the PED-RPC server.
-        target.pedrpc_connect()
+        target.monitors_alive()
         target.set_fuzz_data_logger(fuzz_data_logger=self._fuzz_data_logger)
+
+        if self._callback_monitor not in target.monitors:
+            target.monitors.append(self._callback_monitor)
 
         # add target to internal list.
         self.targets.append(target)
@@ -579,8 +647,7 @@ class Session(pgraph.Graph):
             "crash_threshold": self._crash_threshold_node,
             "total_num_mutations": self.total_num_mutations,
             "total_mutant_index": self.total_mutant_index,
-            "netmon_results": self.netmon_results,
-            "procmon_results": self.procmon_results,
+            "monitor_results": self.monitor_results,
             "is_paused": self.is_paused,
         }
 
@@ -703,6 +770,9 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
+            for monitor in self.targets[0].monitors:
+                monitor.start_target()
+
             if self._reuse_target_connection:
                 self.targets[0].open()
             num_cases_actually_fuzzed = 0
@@ -777,8 +847,7 @@ class Session(pgraph.Graph):
         self._crash_threshold_node = data["crash_threshold"]
         self.total_num_mutations = data["total_num_mutations"]
         self.total_mutant_index = data["total_mutant_index"]
-        self.netmon_results = data["netmon_results"]
-        self.procmon_results = data["procmon_results"]
+        self.monitor_results = data["monitor_results"]
         self.is_paused = data["is_paused"]
 
     def num_mutations(self, this_node=None, path=()):
@@ -826,48 +895,67 @@ class Session(pgraph.Graph):
             else:
                 break
 
-    def _stop_netmon(self, target):
-        if target.netmon:
-            captured_bytes = target.netmon.post_send()
-            self._fuzz_data_logger.log_info(
-                "netmon captured %d bytes for test case #%d" % (captured_bytes, self.total_mutant_index)
-            )
-            self.netmon_results[self.total_mutant_index] = captured_bytes
-
-    def _check_procmon_failures(self, target):
-        """Check for and log any failures from the procmon. Return True if any found.
-
-        Returns:
-            bool: True if failures were found. False otherwise.
-        """
-        if target.procmon:
-            self._fuzz_data_logger.open_test_step("Contact process monitor")
-            self._fuzz_data_logger.log_check("procmon.post_send()")
-            if target.procmon.post_send():
-                self._fuzz_data_logger.log_pass("No crash detected.")
-            else:
-                self._fuzz_data_logger.log_fail(
-                    "procmon detected crash on test case #{0}: {1}".format(
-                        self.total_mutant_index, target.procmon.get_crash_synopsis()
-                    )
-                )
-                return True
-        return False
-
     def _check_for_passively_detected_failures(self, target):
         """Check for and log passively detected failures. Return True if any found.
 
         Returns:
-            bool: True if falures were found. False otherwise.
+            bool: True if failures were found. False otherwise.
         """
-        return self._check_procmon_failures(target=target)
+        has_crashed = False
+        if len(target.monitors) > 0:
+            self._fuzz_data_logger.open_test_step("Contact target monitors")
+            # So, we need to run through the array two times. First, we check
+            # if any of the monitors reported a failure and if so, we need to
+            # gather a crash synopsis from them. We don't know whether
+            # a monitor can provide a crash synopsis, but in any case, we'll
+            # check. In the second run, we try to get crash synopsis from the
+            # monitors that did not detect a crash as supplemental information.
+            finished_monitors = []
+            for monitor in target.monitors:
+                if not monitor.post_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
+                    has_crashed = True
+                    self._fuzz_data_logger.log_fail(
+                        "{0} detected crash on test case #{1}: {2}".format(
+                            str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
+                        )
+                    )
+                    finished_monitors.append(monitor)
+
+            if not has_crashed:
+                self._fuzz_data_logger.log_pass("No crash detected.")
+            else:
+                for monitor in set(target.monitors) - set(finished_monitors):
+
+                    synopsis = monitor.get_crash_synopsis()
+                    if len(synopsis) > 0:
+                        self._fuzz_data_logger.log_fail(
+                            "{0} provided additional information for crash on #{1}: {2}".format(
+                                str(monitor), self.total_mutant_index, monitor.get_crash_synopsis()
+                            )
+                        )
+        return has_crashed
+
+    def _get_monitor_data(self, target):
+        # query monitors for any data they may want to add to this test case.
+        for monitor in target.monitors:
+            data = monitor.retrieve_data()
+            if len(data) > 0:
+                self._fuzz_data_logger.log_info(
+                    "{0} captured {1} bytes of additional data for test case #{2}".format(
+                        str(monitor), len(data), self.total_mutant_index
+                    )
+                )
+                if self.total_mutant_index not in self.monitor_data:
+                    self.monitor_data[self.total_mutant_index] = []
+
+                self.monitor_data[self.total_mutant_index] += [data]
 
     def _process_failures(self, target):
         """Process any failures in self.crash_synopses.
 
         If self.crash_synopses contains any entries, perform these failure-related actions:
          - log failure summary if needed
-         - save failures to self.procmon_results (for website)
+         - save failures to self.monitor_results (for website)
          - exhaust node if crash threshold is reached
          - target restart
 
@@ -893,7 +981,7 @@ class Session(pgraph.Graph):
                 synopsis = "({0} reports) {1}".format(len(crash_synopses), "\n".join(crash_synopses))
             else:
                 synopsis = "\n".join(crash_synopses)
-            self.procmon_results[self.total_mutant_index] = crash_synopses
+            self.monitor_results[self.total_mutant_index] = crash_synopses
             self._fuzz_data_logger.log_info(synopsis)
 
             if (
@@ -943,7 +1031,7 @@ class Session(pgraph.Graph):
         Args:
             method (function): A method with the same parameters as :func:`~Session.post_send`
             """
-        self._post_test_case_methods.append(method)
+        self._callback_monitor.on_post_send.append(method)
 
     # noinspection PyUnusedLocal
     def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
@@ -979,14 +1067,14 @@ class Session(pgraph.Graph):
             target (session.target): Target we are sending data to
         """
 
-        if len(self._pre_send_methods) > 0:
+        for monitor in target.monitors:
             try:
-                for f in self._pre_send_methods:
-                    self._fuzz_data_logger.open_test_step('Pre_Send callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                self._fuzz_data_logger.open_test_step("Monitor {}.pre_send()".format(str(monitor)))
+                monitor.pre_send(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
             except Exception:
                 self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="pre_send") + traceback.format_exc()
+                    constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
+                    + traceback.format_exc()
                 )
 
     def _restart_target(self, target):
@@ -1000,54 +1088,40 @@ class Session(pgraph.Graph):
         @raise exception.BoofuzzRestartFailedError if restart fails.
         """
 
+        # TODO: reuse_target_connection seems to be only handled when using
+        #       a custom callback. wtf?
+
         self._fuzz_data_logger.open_test_step("Restarting target")
         if len(self.on_failure) > 0:
             for f in self.on_failure:
                 self._fuzz_data_logger.open_test_step("Calling registered on_failure method")
                 f(logger=self._fuzz_data_logger)
-        # vm restarting is the preferred method so try that before procmon.
+        # vm restarting is the preferred method so try that before monitors.
         elif target.vmcontrol:
             self._fuzz_data_logger.log_info("Restarting target virtual machine")
             target.vmcontrol.restart_target()
 
-        # if we have a connected process monitor, restart the target process.
-        elif target.procmon:
-            self._fuzz_data_logger.log_info("Restarting target process")
-
-            if not target.procmon.restart_target():
-                raise exception.BoofuzzRestartFailedError()
-
-            self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
-            time.sleep(3)
-
-        # if we have custom restart methods, execute them
-        elif len(self._restart_methods) > 0:
-            try:
-                for f in self._restart_methods:
-                    self._fuzz_data_logger.open_test_step('Target restart callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except exception.BoofuzzRestartFailedError:
-                raise
-            except Exception:
-                self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="restart_target") + traceback.format_exc()
-                )
-            finally:
-                self._fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
-                target.close()
-                if self._reuse_target_connection:
-                    self._fuzz_data_logger.open_test_step("Reopening target connection")
-                    target.open()
-
-        # otherwise all we can do is wait a while for the target to recover on its own.
+        # we always have at least one monitor; a Callback Monitor that handles all callbacks.
         else:
-            self._fuzz_data_logger.log_info(
-                "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
-            )
-            time.sleep(self.restart_sleep_time)
+            restarted = False
+            for monitor in target.monitors:
+                self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
+                if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
+                    # TODO: doesn't this belong in the process monitor?
+                    self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
+                    time.sleep(3)
+                    restarted = True
+                    break
+
+            # no monitor can restart
+            if not restarted:
+                self._fuzz_data_logger.log_info(
+                    "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
+                )
+                time.sleep(self.restart_sleep_time)
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
-        target.pedrpc_connect()
+        target.monitors_alive()
 
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc.
@@ -1387,14 +1461,6 @@ class Session(pgraph.Graph):
         )
 
         try:
-            if target.procmon:
-                self._fuzz_data_logger.open_test_step("Calling procmon pre_send()")
-                target.procmon.pre_send(self.total_mutant_index)
-
-            if target.netmon:
-                self._fuzz_data_logger.open_test_step("Calling netmon pre_send()")
-                target.netmon.pre_send(self.total_mutant_index)
-
             self._open_connection_keep_trying(target)
 
             self._pre_send(target)
@@ -1410,8 +1476,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
-            self._post_send(target)
-            self._check_procmon_failures(target)
+            self._check_for_passively_detected_failures(target)
             if not self._reuse_target_connection:
                 target.close()
 
@@ -1424,7 +1489,8 @@ class Session(pgraph.Graph):
                 print("FAIL: {0}".format(test_case_name))
             else:
                 print("PASS: {0}".format(test_case_name))
-            self._stop_netmon(target)
+
+            self._get_monitor_data(target)
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
@@ -1462,14 +1528,6 @@ class Session(pgraph.Graph):
             )
         )
 
-        if target.procmon:
-            self._fuzz_data_logger.open_test_step("Calling procmon pre_send()")
-            target.procmon.pre_send(self.total_mutant_index)
-
-        if target.netmon:
-            self._fuzz_data_logger.open_test_step("Calling netmon pre_send()")
-            target.netmon.pre_send(self.total_mutant_index)
-
         try:
             self._open_connection_keep_trying(target)
 
@@ -1486,8 +1544,7 @@ class Session(pgraph.Graph):
             self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
 
             if not self._check_for_passively_detected_failures(target=target):
-                self._post_send(target)
-                self._check_procmon_failures(target=target)
+                self._check_for_passively_detected_failures(target=target)
             if not self._reuse_target_connection:
                 target.close()
 
@@ -1496,7 +1553,6 @@ class Session(pgraph.Graph):
                 self._sleep(self.sleep_time)
         finally:
             self._process_failures(target=target)
-            self._stop_netmon(target=target)
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
@@ -1556,32 +1612,6 @@ class Session(pgraph.Graph):
         else:
             primitive_under_test = "no-name"
         return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
-
-    def _post_send(self, target):
-        if len(self._post_test_case_methods) > 0:
-            try:
-                for f in self._post_test_case_methods:
-                    self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
-            except exception.BoofuzzTargetConnectionReset:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
-            except exception.BoofuzzTargetConnectionAborted as e:
-                self._fuzz_data_logger.log_info(
-                    constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
-                )
-            except exception.BoofuzzTargetConnectionFailedError:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_FAILED)
-            except exception.BoofuzzSSLError as e:
-                if self._ignore_connection_ssl_errors:
-                    self._fuzz_data_logger.log_info(str(e))
-                else:
-                    self._fuzz_data_logger.log_fail(str(e))
-            except Exception:
-                self._fuzz_data_logger.log_error(
-                    constants.ERR_CALLBACK_FUNC.format(func_name="post_send") + traceback.format_exc()
-                )
-            finally:
-                self._fuzz_data_logger.open_test_step("Cleaning up connections from callbacks")
 
     def _reset_fuzz_state(self):
         """

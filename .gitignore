@@ -59,3 +59,6 @@ docs/_build/
 .fuzz_strings
 archived_fuzzies/*.session
 boofuzz-results/
+
+# Temporary Files
+*.swp

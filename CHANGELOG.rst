@@ -12,6 +12,8 @@ Features
 - Moved connection related modules into new `connections` subpacket
 - Added the ability to repeat sending of packages within a given time or count.
 - Added optional timeout and threshold to quit infinite connection retries
+- Reworked Monitors, consolidated interface. Breaking change: session no longer has netmon_options and procmon_options.
+- `SessionInfo` has had attributes renamed; procmon_results and netmon_results are deprecated and now aliases for monitor_results and monitor_data respectively.
 
 Fixes
 ^^^^^
