@@ -31,6 +31,8 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         BaseMonitor.__init__(self)
         pedrpc.Client.__init__(self, host, port)
         self.server_options = {}
+        self.host = host
+        self.port = port
 
     def alive(self):
         """ This method is forwarded to the RPC daemon. """
@@ -130,4 +132,4 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(crash_filename=new_crash_filename)
 
     def __repr__(self):
-        return "ProcessMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
+        return "ProcessMonitor#{}[{}:{}]".format(id(self), self.host, self.port)

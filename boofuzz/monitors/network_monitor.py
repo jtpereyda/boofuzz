@@ -32,6 +32,8 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         pedrpc.Client.__init__(self, host, port)
 
         self.server_options = {}
+        self.host = host
+        self.port = port
 
     def alive(self):
         """ This method is forwarded to the RPC daemon. """
@@ -103,4 +105,4 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(log_path=new_log_path)
 
     def __repr__(self):
-        return "NetworkMonitor#{}[{}:{}]".format(id(self), self.__host, self.__port)
+        return "NetworkMonitor#{}[{}:{}]".format(id(self), self.host, self.port)
