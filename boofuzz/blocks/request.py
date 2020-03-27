@@ -64,6 +64,13 @@ class Request(IFuzzable):
 
         return self._rendered
 
+    def mutations(self):
+        for item in self.stack:
+            for value, rendered in item.mutations():
+                self.mutant = item  # TODO might be able to be moved outside this loop
+                mutations_map = {item.name: (value, rendered)}
+                yield mutations_map, self._render(mutations_map=mutations_map)
+
     def mutate(self):
         if self._element_mutant_index is None:
             self._element_mutant_index = 0
@@ -140,6 +147,20 @@ class Request(IFuzzable):
         # add the opened block to the block stack.
         if isinstance(item, Block):
             self.block_stack.append(item)
+
+    def _render(self, mutations_map):
+        # ensure there are no open blocks lingering.
+        if self.block_stack:
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+
+        self._rendered = b""
+        for item in self.stack:
+            if item.name in mutations_map:
+                self._rendered += mutations_map[item.name][1]  # TODO add a render_value function that takes the value and renders it?
+            else:
+                self._rendered += item.render()
+
+        return helpers.str_to_bytes(self._rendered)
 
     def render(self):
         # ensure there are no open blocks lingering.

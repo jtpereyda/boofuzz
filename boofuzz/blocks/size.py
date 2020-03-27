@@ -124,6 +124,10 @@ class Size(IFuzzable):
 
         return num
 
+    def mutations(self):
+        for value, rendered in self.bit_field.mutations():
+            yield value, rendered
+
     def mutate(self):
         """
         Wrap the mutation routine of the internal bit_field primitive.

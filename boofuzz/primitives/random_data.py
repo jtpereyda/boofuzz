@@ -69,7 +69,7 @@ class RandomData(BasePrimitive):
             value = ""
             for _ in xrange(length):
                 value += chr(random.randint(0, 255))
-            yield value
+            yield value, value
 
     def mutate(self):
         """

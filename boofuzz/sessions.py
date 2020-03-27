@@ -711,7 +711,8 @@ class Session(pgraph.Graph):
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
 
         Args:
-            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases.
+            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases and yields "fuzz args". See
+                _iterate_single_node() for details.
 
         Returns:
             None
@@ -1156,7 +1157,7 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_fail(str(e))
 
-    def transmit_fuzz(self, sock, node, edge, callback_data):
+    def transmit_fuzz(self, sock, node, edge, callback_data, rendered):
         """Render and transmit a fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1168,7 +1169,7 @@ class Session(pgraph.Graph):
         if callback_data:
             data = callback_data
         else:
-            data = node.render()
+            data = rendered
 
         try:  # send
             self.targets[0].send(data)
@@ -1338,9 +1339,10 @@ class Session(pgraph.Graph):
         self.fuzz_node = self.nodes[path[-1].dst]
         # Loop through and yield all possible mutations of the fuzz node.
         # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
-        while self.fuzz_node.mutate():
+        #while self.fuzz_node.mutate():
+        for value, rendered in self.fuzz_node.mutations():
             self.total_mutant_index += 1
-            yield path,
+            yield path, value, rendered
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False
@@ -1449,7 +1451,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
-    def _fuzz_current_case(self, path):
+    def _fuzz_current_case(self, path, value, rendered):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
@@ -1504,7 +1506,7 @@ class Session(pgraph.Graph):
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-            self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data, rendered=rendered)
 
             if not self._check_for_passively_detected_failures(target=target):
                 self._post_send(target)

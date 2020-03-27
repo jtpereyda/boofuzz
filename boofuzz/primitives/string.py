@@ -271,7 +271,7 @@ class String(BasePrimitive):
 
         for v in self._fuzz_library + self.this_library:
             if self.size < 0 or len(v) <= self.size:
-                yield self._render(v)
+                yield v, self._render(v)
 
     def mutate(self):
         """

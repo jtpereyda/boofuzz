@@ -38,7 +38,7 @@ class BasePrimitive(IFuzzable):
 
     def mutations(self):
         for val in self._fuzz_library:
-            yield self._render(val)
+            yield val, self._render(val)
 
     def mutate(self):
         fuzz_complete = False

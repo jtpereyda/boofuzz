@@ -43,7 +43,7 @@ class Group(BasePrimitive):
             return
 
         for v in self.values:
-            yield self._render(v)
+            yield v, self._render(v)
 
     def mutate(self):
         """

@@ -66,6 +66,13 @@ class Block(IFuzzable):
     def name(self):
         return self._name
 
+    def mutations(self):
+        for item in self.stack:
+            for value, rendered in item.mutations():
+                mutations_map = {item.name: (value, rendered)}
+                yield mutations_map, self._render(mutations_map=mutations_map)
+
+
     def mutate(self):
         mutated = False
 
@@ -184,6 +191,59 @@ class Block(IFuzzable):
         """
 
         self.stack.append(item)
+
+    def _render(self, mutations_map):
+        """
+        Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
+        """
+
+        #
+        # if this block is dependant on another field and the value is not met, render nothing.
+        #
+        self._rendered = b""
+
+        if self.dep:
+            if self.dep_compare == "==":
+                if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
+                    return self._rendered
+
+                elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
+                    return self._rendered
+
+            if self.dep_compare == "!=":
+                if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
+                    return self._rendered
+
+                elif self.request.names[self.dep]._value == self.dep_value:
+                    return
+
+            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
+                return self._rendered
+
+            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
+                return self._rendered
+
+            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
+                return self._rendered
+
+            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
+                return self._rendered
+
+        #
+        # otherwise, render and encode as usual.
+        #
+
+        for item in self.stack:
+            if item.name in mutations_map:
+                self._rendered += mutations_map[item.name][1]  # TODO add a render_value function that takes the value and renders it?
+            else:
+                self._rendered += item.render()
+
+        # if an encoder was attached to this block, call it.
+        if self.encoder:
+            self._rendered = self.encoder(self._rendered)
+
+        return helpers.str_to_bytes(self._rendered)
 
     def render(self):
         """

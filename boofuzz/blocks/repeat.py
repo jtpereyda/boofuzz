@@ -91,6 +91,20 @@ class Repeat(ifuzzable.IFuzzable):
     def original_value(self):
         return self._original_value
 
+    def mutations(self):
+        # if the target block for this sizer is not closed, raise an exception.
+        if self.block_name not in self.request.closed_blocks:
+            raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
+
+        if not self.fuzzable:
+            return
+        elif self.variable is not None:
+            return  # no need to mutate if the variable block is driving mutations
+        else:
+            for fuzz_value in self._fuzz_library:
+                current_reps = fuzz_value
+                yield current_reps, self._render(value=fuzz_value)
+
     def mutate(self):
         """
         Mutate the primitive by stepping through the fuzz library, return False on completion. If variable-bounding is
@@ -141,6 +155,17 @@ class Repeat(ifuzzable.IFuzzable):
         """
 
         return len(self._fuzz_library)
+
+    def _render(self, value):
+        """
+        Nothing fancy on render, simply return the value.
+        """
+        # if the target block for this sizer is not closed, raise an exception.
+        if self.block_name not in self.request.closed_blocks:
+            raise exception.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
+
+        _rendered = self.request.closed_blocks[self.block_name].render() * value
+        return value, helpers.str_to_bytes(_rendered)
 
     def render(self):
         """

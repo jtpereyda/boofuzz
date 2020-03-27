@@ -41,7 +41,8 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     2. mutant_index, render(), reset() are an older interface used to simulate mutations().
     3. render() returns either the normal value or the currently-being-mutated value.
     3. name() -- gets the specific element's name; may be replaced in the future.
-    4. fuzzable() -- indicates whether an element should be fuzzed.
+    4. fuzzable() -- indicates whether an element should be fuzzed. This used to be checked externally, but is now
+                     checked within mutations()
     5. original_value() -- used to get the default value of the element.
     6. num_mutations() -- Number of mutations that an element yields.
     7. __len__() -- an element should describe its own size when rendered.
@@ -51,6 +52,8 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     The mutation and original_value functions are the most fundamental.
 
     """
+
+    name_counter = 0
 
     @property
     @abc.abstractmethod
@@ -80,7 +83,10 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     @abc.abstractmethod
     def name(self):
         """Element name, should be specific for each instance."""
-        return
+        if self._name is None:
+            IFuzzable.name_counter += 1
+            self._name = "{0}:{1}".format(type(self).__name__, IFuzzable.name_counter)
+        return self._name
 
     @abc.abstractmethod
     def mutate(self):
