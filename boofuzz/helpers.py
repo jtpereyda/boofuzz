@@ -123,7 +123,7 @@ def get_max_udp_size():
     warnings.warn(
         "get_max_udp_size() is deprecated and will be removed in a future version of boofuzz. "
         "Use UDPSocketConnection.max_payload() instead.",
-        DeprecationWarning,
+        FutureWarning,
     )
 
     return udp_socket_connection.UDPSocketConnection.max_payload()
