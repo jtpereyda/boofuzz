@@ -75,40 +75,6 @@ class RandomData(BasePrimitive):
     def _render(self, value):
         return value
 
-    def mutate(self):
-        """
-        Mutate the primitive value returning False on completion.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
-
-        # if we've ran out of mutations, raise the completion flag.
-        if self._mutant_index == self.num_mutations():
-            self._fuzz_complete = True
-
-        # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self._fuzzable or self._fuzz_complete:
-            self._value = self._original_value
-            return False
-
-        # select a random length for this string.
-        if not self.step:
-            length = random.randint(self.min_length, self.max_length)
-        # select a length function of the mutant index and the step.
-        else:
-            length = self.min_length + self._mutant_index * self.step
-
-        # reset the value and generate a random string of the determined length.
-        self._value = b""
-        for i in xrange(length):
-            self._value += six.int2byte(random.randint(0, 255))
-
-        # increment the mutation count.
-        self._mutant_index += 1
-
-        return True
-
     def num_mutations(self):
         """
         Calculate and return the total number of mutations for this individual primitive.

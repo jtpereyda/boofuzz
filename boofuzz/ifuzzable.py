@@ -67,12 +67,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         return
 
     @property
-    def mutant_index(self):
-        """Index of current mutation. 0 => normal value. 1 => first mutation.
-        """
-        return
-
-    @property
     @abc.abstractmethod
     def original_value(self):
         """Original, non-mutated value of element."""
@@ -100,18 +94,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
     def context_path(self, x):
         self._context_path = x
 
-    def mutate(self):
-        """Mutate this element. Returns True each time and False on completion.
-
-        Use reset() after completing mutations to bring back to original state.
-
-        Mutated values available through render().
-
-        Returns:
-            bool: True if there are mutations left, False otherwise.
-        """
-        return
-
     @abc.abstractmethod
     def num_mutations(self):
         """Return the total number of mutations for this element.
@@ -136,10 +118,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
 
     def get_child_data(self, mutation):
         return None
-
-    def reset(self):
-        """Reset element to pre-mutation state."""
-        return
 
     @abc.abstractmethod
     def __repr__(self):

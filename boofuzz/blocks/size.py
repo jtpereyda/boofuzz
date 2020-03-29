@@ -81,17 +81,12 @@ class Size(IFuzzable):
         )
         self._rendered = b""
         self._fuzz_complete = False
-        self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
             self.math = lambda x: x
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
-
-    @property
-    def mutant_index(self):
-        return self._mutant_index
 
     @property
     def fuzzable(self):
@@ -107,22 +102,6 @@ class Size(IFuzzable):
     def mutations(self):
         for mutation in self.bit_field.mutations():
             yield Mutation(mutations={self.qualified_name: mutation.mutations[next(iter(mutation.mutations))]})
-
-    def mutate(self):
-        """
-        Wrap the mutation routine of the internal bit_field primitive.
-
-        :rtype:  Boolean
-        :return: True on success, False otherwise.
-        """
-
-        self._mutant_index += 1
-
-        not_finished_yet = self.bit_field.mutate()
-
-        self._fuzz_complete = not not_finished_yet  # double negatives for the win
-
-        return not_finished_yet
 
     def num_mutations(self):
         """
@@ -191,13 +170,6 @@ class Size(IFuzzable):
         """Return length of target block, including mutations if it is currently mutated."""
         length = len(self.request.names[self.block_name].original_value)
         return length
-
-    def reset(self):
-        """
-        Wrap the reset routine of the internal bit_field primitive.
-        """
-
-        self.bit_field.reset()
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

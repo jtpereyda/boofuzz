@@ -46,10 +46,6 @@ class Block(IFuzzable):
         self._mutant_index = 0  # current mutation index.
 
     @property
-    def mutant_index(self):
-        return self._mutant_index
-
-    @property
     def fuzzable(self):
         return self._fuzzable
 
@@ -68,7 +64,7 @@ class Block(IFuzzable):
             for mutation in item.mutations():
                 yield mutation
 
-    def mutate(self):
+    def mutate(self):  # TODO salvage the group reference behavior from this deprecated method
         mutated = False
 
         # are we done with this block?
@@ -235,18 +231,6 @@ class Block(IFuzzable):
              return self.encoder(child_data)
         else:
             return child_data
-
-    def reset(self):
-        """
-        Reset the primitives on this blocks stack to the starting mutation state.
-        """
-
-        self._fuzz_complete = False
-        self.group_idx = 0
-
-        for item in self.stack:
-            if item.fuzzable:
-                item.reset()
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)

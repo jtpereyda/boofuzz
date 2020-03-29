@@ -273,43 +273,6 @@ class String(BasePrimitive):
     def encode(self, value, **kwargs):
         return self._render(value)
 
-    def mutate(self):
-        """
-        Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
-        completion.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
-
-        # loop through the fuzz library until a suitable match is found.
-        while 1:
-            # if we've ran out of mutations, raise the completion flag.
-            if self._mutant_index == self.num_mutations():
-                self._fuzz_complete = True
-
-            # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-            if not self._fuzzable or self._fuzz_complete:
-                self._value = self._original_value
-                return False
-
-            # update the current value from the fuzz library.
-            self._value = (self._fuzz_library + self.this_library)[self._mutant_index]
-
-            # increment the mutation count.
-            self._mutant_index += 1
-
-            # if the size parameter is disabled, done.
-            if self.size == -1:
-                return True
-
-            # ignore library items greater then user-supplied length.
-            # TODO: might want to make this smarter.
-            if len(self._value) > self.size:
-                continue
-            else:
-                return True
-
     def num_mutations(self):
         """
         Calculate and return the total number of mutations for this individual primitive.

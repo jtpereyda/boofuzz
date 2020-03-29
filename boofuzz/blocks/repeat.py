@@ -77,10 +77,6 @@ class Repeat(ifuzzable.IFuzzable):
             self._fuzzable = False
 
     @property
-    def mutant_index(self):
-        return self._mutant_index
-
-    @property
     def fuzzable(self):
         return self._fuzzable
 
@@ -100,47 +96,6 @@ class Repeat(ifuzzable.IFuzzable):
         else:
             for fuzzed_reps_number in self._fuzz_library:
                 yield Mutation(mutations={self.qualified_name: fuzzed_reps_number})
-
-    def mutate(self):
-        """
-        Mutate the primitive by stepping through the fuzz library, return False on completion. If variable-bounding is
-        specified then fuzzing is implicitly disabled. Instead, the render() routine will properly calculate the
-        correct repetition and return the appropriate data.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
-
-        # render the contents of the block we are repeating.
-        self.request.names[self.block_name].render()
-
-        # if the target block for this sizer is not closed, raise an exception.
-        if self.block_name not in self.request.closed_blocks:
-            raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
-
-        # if we've run out of mutations, raise the completion flag.
-        if self.mutant_index == self.num_mutations():
-            self._fuzz_complete = True
-
-        # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self.fuzzable or self._fuzz_complete:
-            self._value = self.original_value
-            self.current_reps = self.min_reps
-            return False
-
-        if self.variable:
-            self.current_reps = self.variable.render()
-        else:
-            self.current_reps = self._fuzz_library[self.mutant_index]
-
-        # set the current value as a multiple of the rendered block based on the current fuzz library count.
-        block = self.request.closed_blocks[self.block_name]
-        self._value = block.render() * self._fuzz_library[self.mutant_index]
-
-        # increment the mutation count.
-        self._mutant_index += 1
-
-        return True
 
     def num_mutations(self):
         """
@@ -185,14 +140,6 @@ class Repeat(ifuzzable.IFuzzable):
 
         self._rendered = self._value
         return helpers.str_to_bytes(self._rendered)
-
-    def reset(self):
-        """
-        Reset the fuzz state of this primitive.
-        """
-        self._fuzz_complete = False
-        self._mutant_index = 0
-        self._value = self.original_value
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

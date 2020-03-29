@@ -30,17 +30,6 @@ class Request(IFuzzable):
         self.mutant = None  # current primitive being mutated.
 
     @property
-    def mutant_index(self):
-        return self._mutant_index
-
-    @mutant_index.setter
-    def mutant_index(self, value):
-        if isinstance(value, int):
-            self._mutant_index = value
-        else:
-            raise TypeError("Expected an Int")
-
-    @property
     def fuzzable(self):
         return True
 
@@ -62,27 +51,6 @@ class Request(IFuzzable):
             self.mutant = item
             for mutation in item.mutations():
                 yield mutation
-
-    def mutate(self):
-        if self._element_mutant_index is None:
-            self._element_mutant_index = 0
-
-        mutated = False
-
-        while self._element_mutant_index < len(self.stack):
-            item = self.stack[self._element_mutant_index]
-            if item.fuzzable and item.mutate():
-                mutated = True
-                if not isinstance(item, Block):
-                    self.mutant = item
-                break
-            else:
-                self._element_mutant_index += 1
-
-        if mutated:
-            self._mutant_index += 1
-
-        return mutated
 
     def skip_element(self):
         self.stack[self._element_mutant_index].reset()
@@ -156,19 +124,6 @@ class Request(IFuzzable):
             _rendered += item.render_mutated(mutation=mutation)
 
         return helpers.str_to_bytes(_rendered)
-
-    def reset(self):
-        """
-        Reset every block and primitives mutant state under this request.
-        """
-
-        self._element_mutant_index = None
-        self._mutant_index = 1
-        self.closed_blocks = {}
-
-        for item in self.stack:
-            if item.fuzzable:
-                item.reset()
 
     def walk(self, stack=None):
         """

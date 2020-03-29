@@ -129,12 +129,10 @@ __all__ = [
     "s_lego",
     "s_long",
     "s_mirror",
-    "s_mutate",
     "s_num_mutations",
     "s_qword",
     "s_random",
     "s_raw",
-    "s_render",
     "s_repeat",
     "s_repeater",
     "s_short",
@@ -211,17 +209,6 @@ def s_initialize(name):
     blocks.CURRENT = blocks.REQUESTS[name]
 
 
-def s_mutate():
-    """
-    Mutate the current request and return False if mutations are exhausted, in which case the request has been reverted
-    back to its normal form.
-
-    :rtype:  bool
-    :return: True on mutation success, False if mutations exhausted.
-    """
-    return blocks.CURRENT.mutate()
-
-
 def s_num_mutations():
     """
     Determine the number of repetitions we will be making.
@@ -231,17 +218,6 @@ def s_num_mutations():
     """
 
     return blocks.CURRENT.num_mutations()
-
-
-def s_render():
-    """
-    Render out and return the entire contents of the current request.
-
-    :rtype:  Raw
-    :return: Rendered contents
-    """
-
-    return blocks.CURRENT.render()
 
 
 def s_switch(name):

@@ -45,30 +45,9 @@ class Group(BasePrimitive):
     def encode(self, value, **kwargs):
         return self._render(value)
 
-    def mutate(self):
-        """
-        Move to the next item in the values list.
-
-        @rtype:  bool
-        @return: False
-        """
-        # TODO: See if num_mutations() can be done away with (me thinks yes).
-        if self._mutant_index == self.num_mutations():
-            self._fuzz_complete = True
-
-        # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self._fuzzable or self._fuzz_complete:
-            self._value = self._original_value
-            return False
-
-        # step through the value list.
-        # TODO: break this into a get_value() function, so we can keep mutate as close to standard as possible.
-        self._value = self.values[self._mutant_index]
-
-        # increment the mutation count.
-        self._mutant_index += 1
-
-        return True
+    def mutations(self):
+        for value in self.values:
+            yield value
 
     def num_mutations(self):
         """
