@@ -63,18 +63,6 @@ class BasePrimitive(IFuzzable):
     def num_mutations(self):
         return len(self._fuzz_library)
 
-    def render(self):
-        """
-        Render this instance's value.
-
-        Returns:
-            bytes: Rendered value
-        """
-
-        value = self._render(self._value)
-        self._rendered = value
-        return helpers.str_to_bytes(value)
-
     def _render(self, value):
         """
         Render an arbitrary value.

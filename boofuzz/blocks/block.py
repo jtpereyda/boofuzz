@@ -236,60 +236,6 @@ class Block(IFuzzable):
         else:
             return child_data
 
-
-    def render(self):
-        """
-        Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
-        """
-
-        #
-        # if this block is dependant on another field and the value is not met, render nothing.
-        #
-        self._rendered = b""
-
-        if self.dep:
-            if self.dep_compare == "==":
-                if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
-                    return self._rendered
-
-                elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
-                    return self._rendered
-
-            if self.dep_compare == "!=":
-                if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
-                    return self._rendered
-
-                elif self.request.names[self.dep]._value == self.dep_value:
-                    return
-
-            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
-                return self._rendered
-
-            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
-                return self._rendered
-
-            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
-                return self._rendered
-
-            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
-                return self._rendered
-
-        #
-        # otherwise, render and encode as usual.
-        #
-
-        for item in self.stack:
-            self._rendered += item.render()
-
-        # add the completed block to the request dictionary.
-        self.request.closed_blocks[self.name] = self
-
-        # if an encoder was attached to this block, call it.
-        if self.encoder:
-            self._rendered = self.encoder(self._rendered)
-
-        return helpers.str_to_bytes(self._rendered)
-
     def reset(self):
         """
         Reset the primitives on this blocks stack to the starting mutation state.

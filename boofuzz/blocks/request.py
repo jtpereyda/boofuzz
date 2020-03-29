@@ -157,18 +157,6 @@ class Request(IFuzzable):
 
         return helpers.str_to_bytes(_rendered)
 
-    def render(self):
-        # ensure there are no open blocks lingering.
-        if self.block_stack:
-            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
-
-        self._rendered = b""
-
-        for item in self.stack:
-            self._rendered += item.render()
-
-        return helpers.str_to_bytes(self._rendered)
-
     def reset(self):
         """
         Reset every block and primitives mutant state under this request.

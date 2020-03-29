@@ -146,14 +146,6 @@ class Size(IFuzzable):
         else:
             return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(mutation=mutation)))
 
-    def render(self):
-        """
-        Render the sizer.
-
-        :return: Rendered value.
-        """
-        return self.render_mutated(Mutation())
-
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
 

@@ -36,12 +36,13 @@ class Mirror(BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def render(self):
+    def _render(self, value):
         """
         Render the mirror.
 
         :return: Rendered value.
         """
+        _ = value
         self._rendered = self._render_primitive(self._primitive_name)
         return helpers.str_to_bytes(self._rendered)
 

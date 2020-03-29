@@ -75,14 +75,6 @@ class Aligned(IFuzzable):
         a, b = divmod(padding_length, len(self._pattern))
         return data + self._pattern * a + self._pattern[:b]
 
-    def render(self):
-        """
-        Render the sizer.
-
-        :return: Rendered value.
-        """
-        return self._render(Mutation())
-
     def render_mutated(self, mutation):
         return self._render(mutation=mutation)
 

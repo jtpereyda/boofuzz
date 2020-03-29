@@ -1106,7 +1106,7 @@ class Session(pgraph.Graph):
         if callback_data:
             data = callback_data
         else:
-            data = node.render()
+            data = node.render_mutated(mutation=Mutation())
 
         try:  # send
             self.targets[0].send(data)

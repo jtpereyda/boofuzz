@@ -121,12 +121,6 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         """
         return
 
-    @abc.abstractmethod
-    def render(self):
-        """Return rendered value. Equal to original value after reset().
-        """
-        return
-
     def encode(self, value, child_data):
         return value
 
