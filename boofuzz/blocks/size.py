@@ -2,6 +2,7 @@ from functools import wraps
 
 from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
+from ..mutation import Mutation
 
 
 def _may_recurse(f):
@@ -98,15 +99,14 @@ class Size(IFuzzable):
 
     @property
     def original_value(self):
-        length = self._original_calculated_length()
-        return self._length_to_bytes(length)
+        return self.render_mutated(Mutation())
 
     def _original_calculated_length(self):
         return self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
 
     def mutations(self):
-        for value, rendered in self.bit_field.mutations():
-            yield value, rendered
+        for mutation in self.bit_field.mutations():
+            yield Mutation(mutations={self.qualified_name: mutation.mutations[next(iter(mutation.mutations))]})
 
     def mutate(self):
         """
@@ -134,20 +134,25 @@ class Size(IFuzzable):
 
         return self.bit_field.num_mutations()
 
+    def render_mutated(self, mutation):
+        """Render the sizer.
+
+        :return: Rendered value.
+        """
+        if self.qualified_name in mutation.mutations:
+            return self.bit_field.encode(value=mutation.mutations[self.qualified_name], child_data=None)
+        elif self._recursion_flag:
+            return self._get_dummy_value()
+        else:
+            return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(mutation=mutation)))
+
     def render(self):
         """
         Render the sizer.
 
         :return: Rendered value.
         """
-        if self._should_render_fuzz_value():
-            self._rendered = self.bit_field.render()
-        elif self._recursion_flag:
-            self._rendered = self._get_dummy_value()
-        else:
-            self._rendered = self._render()
-
-        return helpers.str_to_bytes(self._rendered)
+        return self.render_mutated(Mutation())
 
     def _should_render_fuzz_value(self):
         return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
@@ -155,12 +160,15 @@ class Size(IFuzzable):
     def _get_dummy_value(self):
         return self.length * "\x00"
 
-    def _render(self):
-        length = self._calculated_length()
-        return helpers.str_to_bytes(self._length_to_bytes(length))
+    def _render(self, value=None):
+        if value is None:
+            length = self._calculated_length(Mutation())
+            return helpers.str_to_bytes(self._length_to_bytes(length))
+        else:
+            return self.bit_field.encode(value=value, child_data=None)
 
-    def _calculated_length(self):
-        return self.offset + self._inclusive_length_of_self + self._length_of_target_block
+    def _calculated_length(self, mutation):
+        return self.offset + self._inclusive_length_of_self + self._length_of_target_block(mutation=mutation)
 
     def _length_to_bytes(self, length):
         return primitives.BitField.render_int(
@@ -179,11 +187,10 @@ class Size(IFuzzable):
         else:
             return 0
 
-    @property
     @_may_recurse
-    def _length_of_target_block(self):
-        """Return length of target block, including mutations if it is currently mutated."""
-        length = len(self.request.names[self.block_name])
+    def _length_of_target_block(self, mutation):
+        """Return length of target block, including mutations if mutation applies."""
+        length = len(self.request.names[self.block_name].render_mutated(mutation=mutation))
         return length
 
     @property

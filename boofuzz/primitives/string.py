@@ -5,6 +5,7 @@ from past.builtins import range
 
 from .base_primitive import BasePrimitive
 from .. import helpers
+from ..mutation import Mutation
 
 
 class String(BasePrimitive):
@@ -265,9 +266,12 @@ class String(BasePrimitive):
         if not self._fuzzable:
             return
 
-        for v in self._fuzz_library + self.this_library:
-            if self.size < 0 or len(v) <= self.size:
-                yield v, self._render(v)
+        for val in self._fuzz_library + self.this_library:
+            if self.size < 0 or len(val) <= self.size:
+                yield Mutation(mutations={self.qualified_name: val})
+
+    def encode(self, value, **kwargs):
+        return self._render(value)
 
     def mutate(self):
         """

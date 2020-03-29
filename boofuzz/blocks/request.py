@@ -60,9 +60,8 @@ class Request(IFuzzable):
     def mutations(self):
         for item in self.stack:
             self.mutant = item
-            for value, rendered in item.mutations():
-                mutations_map = {item.name: (value, rendered)}
-                yield mutations_map, self._render(mutations_map=mutations_map)
+            for mutation in item.mutations():
+                yield mutation
 
     def mutate(self):
         if self._element_mutant_index is None:
@@ -124,6 +123,9 @@ class Request(IFuzzable):
         """
         # if the item has a name, add it to the internal dictionary of names.
         if hasattr(item, "name") and item.name:
+            context_path = ".".join(x.name for x in self.block_stack)  # TODO put in method
+            context_path = ".".join(filter(None,(self.name, context_path)))
+            item.context_path = context_path
             # ensure the name doesn't already exist.
             if item.name in list(self.names):
                 raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
@@ -141,19 +143,19 @@ class Request(IFuzzable):
         if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
-    def _render(self, mutations_map):
+    def render_mutated(self, mutation):
+        return self._render(mutation=mutation)
+
+    def _render(self, mutation):
         # ensure there are no open blocks lingering.
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
-        self._rendered = b""
+        _rendered = b""
         for item in self.stack:
-            if item.name in mutations_map:
-                self._rendered += mutations_map[item.name][1]  # TODO add a render_value function that takes the value and renders it?
-            else:
-                self._rendered += item.render()
+            _rendered += item.render_mutated(mutation=mutation)
 
-        return helpers.str_to_bytes(self._rendered)
+        return helpers.str_to_bytes(_rendered)
 
     def render(self):
         # ensure there are no open blocks lingering.

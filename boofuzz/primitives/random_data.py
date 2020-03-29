@@ -7,6 +7,8 @@ from boofuzz import helpers
 from .base_primitive import BasePrimitive
 from past.builtins import xrange
 
+from ..mutation import Mutation
+
 
 class RandomData(BasePrimitive):
     def __init__(self, value, min_length, max_length, max_mutations=25, fuzzable=True, step=None, name=None):
@@ -65,7 +67,13 @@ class RandomData(BasePrimitive):
             value = ""
             for _ in xrange(length):
                 value += chr(random.randint(0, 255))
-            yield value, value
+            yield Mutation(mutations={self.qualified_name: value})
+
+    def encode(self, value, **kwargs):
+        return self._render(value)
+
+    def _render(self, value):
+        return value
 
     def mutate(self):
         """

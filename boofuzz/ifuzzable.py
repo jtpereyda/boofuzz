@@ -86,6 +86,20 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
             self._name = "{0}{1}".format(type(self).__name__, IFuzzable.name_counter)
         return self._name
 
+    @property
+    def qualified_name(self):
+        if not hasattr(self, '_context_path'):
+            self._context_path = None
+        return ".".join(filter(None, (self._context_path, self.name)))
+
+    @property
+    def context_path(self):
+        return self._context_path
+
+    @context_path.setter
+    def context_path(self, x):
+        self._context_path = x
+
     def mutate(self):
         """Mutate this element. Returns True each time and False on completion.
 
@@ -112,6 +126,22 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         """Return rendered value. Equal to original value after reset().
         """
         return
+
+    def encode(self, value, child_data):
+        return value
+
+    def render_mutated(self, mutation):
+        """Render after applying mutation, if applicable."""
+        child_data = self.get_child_data(mutation=mutation)
+        if self.qualified_name in mutation.mutations:
+            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data)
+            #return self.encode(value=value, child_data=child_data)
+        else:
+            #return self.encode_value(self.original_value)
+            return self.encode(value=self.original_value, child_data=child_data)
+
+    def get_child_data(self, mutation):
+        return None
 
     def reset(self):
         """Reset element to pre-mutation state."""

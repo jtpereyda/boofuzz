@@ -33,6 +33,7 @@ from boofuzz import (
     pgraph,
     primitives,
 )
+from boofuzz.mutation import Mutation
 from boofuzz.web.app import app
 
 
@@ -686,8 +687,8 @@ class Session(pgraph.Graph):
         self.server_init()
 
         try:
-            for fuzz_args in fuzz_case_iterator:
-                self._check_message(*fuzz_args)
+            for mutation in fuzz_case_iterator:
+                self._check_message(mutation)
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -724,7 +725,7 @@ class Session(pgraph.Graph):
             if self._reuse_target_connection:
                 self.targets[0].open()
             num_cases_actually_fuzzed = 0
-            for fuzz_args in fuzz_case_iterator:
+            for mutation in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
                 elif self._index_end is not None and self.total_mutant_index > self._index_end:
@@ -739,7 +740,7 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                     self._restart_target(self.targets[0])
 
-                self._fuzz_current_case(*fuzz_args)
+                self._fuzz_current_case(mutation)
 
                 num_cases_actually_fuzzed += 1
             if self._reuse_target_connection:
@@ -1157,7 +1158,7 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_fail(str(e))
 
-    def transmit_fuzz(self, sock, node, edge, callback_data, rendered):
+    def transmit_fuzz(self, sock, node, edge, callback_data, mutation):
         """Render and transmit a fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1169,7 +1170,7 @@ class Session(pgraph.Graph):
         if callback_data:
             data = callback_data
         else:
-            data = rendered
+            data = self.fuzz_node.render_mutated(mutation)
 
         try:  # send
             self.targets[0].send(data)
@@ -1267,7 +1268,7 @@ class Session(pgraph.Graph):
 
             self.fuzz_node = self.nodes[path[-1].dst]
             self.total_mutant_index += 1
-            yield path, None, None  # TODO kinda weird; just putting in None since there's no mutated content
+            yield Mutation(message_path=path)
 
             for x in self._iterate_messages_recursive(self.fuzz_node, path):
                 yield x
@@ -1333,15 +1334,24 @@ class Session(pgraph.Graph):
         Args:
             path (list of Connection): Nodes along the path to the current one being fuzzed.
 
+        Yields:
+            Mutation: Mutation object describing this mutation.
+
         Raises:
             sex.SullyRuntimeError:
         """
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
-        for value, rendered in self.fuzz_node.mutations():
+        for mutation in self.fuzz_node.mutations():
+            from pprint import pprint
+            pprint(mutation.mutations)
+
+            self.mutant_index += 1
             self.total_mutant_index += 1
-            yield path, value, rendered
+            self.test_case_session = {}
+            mutation.message_path = path
+            yield mutation
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False
@@ -1383,7 +1393,7 @@ class Session(pgraph.Graph):
                 cur_node = next_node
         return edge_path
 
-    def _check_message(self, path, value, rendered):
+    def _check_message(self, mutation):
         """Sends the current message without fuzzing.
 
         Current test case is controlled by fuzz_case_iterator().
@@ -1396,7 +1406,7 @@ class Session(pgraph.Graph):
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name_feature_check(path)
+        test_case_name = self._test_case_name_feature_check(mutation)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
@@ -1420,16 +1430,16 @@ class Session(pgraph.Graph):
 
             self._pre_send(target)
 
-            for e in path[:-1]:
+            for e in mutation.message_path[:-1]:
                 node = self.nodes[e.dst]
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
                 callback_data = self._callback_current_node(node=node, edge=e)
                 self.transmit_normal(target, node, e, callback_data=callback_data)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1])
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-            self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            self.transmit_normal(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data)
 
             self._post_send(target)
             self._check_procmon_failures(target)
@@ -1449,7 +1459,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
-    def _fuzz_current_case(self, path, value, rendered):
+    def _fuzz_current_case(self, mutation):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
@@ -1462,7 +1472,7 @@ class Session(pgraph.Graph):
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name(path, self.fuzz_node.mutant, value)
+        test_case_name = self._test_case_name(mutation, self.fuzz_node.mutant)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
@@ -1496,15 +1506,15 @@ class Session(pgraph.Graph):
 
             self._pre_send(target)
 
-            for e in path[:-1]:
+            for e in mutation.message_path[:-1]:
                 node = self.nodes[e.dst]
                 callback_data = self._callback_current_node(node=node, edge=e)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1])
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-            self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data, rendered=rendered)
+            self.transmit_fuzz(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data, mutation=mutation)
 
             if not self._check_for_passively_detected_failures(target=target):
                 self._post_send(target)
@@ -1566,27 +1576,14 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)
         time.sleep(seconds)
 
-    def _test_case_name_feature_check(self, path):
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
+    def _test_case_name_feature_check(self, mutation):
+        message_path = "->".join([self.nodes[e.dst].name for e in mutation.message_path])
         return "FEATURE-CHECK->{0}".format(message_path)
 
-    def _test_case_name(self, path, mutated_element, value):
+    def _test_case_name(self, mutation, mutated_element):
         """Get long test case name."""
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
-        if mutated_element.name:
-            # Hack to get primitive path; we probably need a Mutation type
-            if isinstance(value, dict):
-                v = value
-                primitive_names = []
-                while isinstance(v, dict):
-                    key = list(v.keys())[0]
-                    primitive_names.append(key)
-                    v = v[key][0]  # get value of dict item, then get 0th element of the tuple
-                primitive_path = ".".join(primitive_names)
-            else:
-                primitive_path = mutated_element.name
-        else:
-            primitive_path = "no-name"
+        message_path = "->".join([self.nodes[e.dst].name for e in mutation.message_path])
+        primitive_path = next(iter(mutation.mutations))
         return "{0}.{1}.{2}".format(message_path, primitive_path, self.mutant_index)
 
     def _post_send(self, target):

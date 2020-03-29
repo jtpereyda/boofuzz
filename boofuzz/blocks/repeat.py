@@ -1,6 +1,7 @@
 from past.builtins import range
 
 from .. import exception, helpers, ifuzzable
+from ..mutation import Mutation
 from ..primitives.bit_field import BitField
 
 
@@ -97,9 +98,8 @@ class Repeat(ifuzzable.IFuzzable):
         elif self.variable is not None:
             return  # no need to mutate if the variable block is driving mutations
         else:
-            for fuzz_value in self._fuzz_library:
-                current_reps = fuzz_value
-                yield current_reps, self._render(value=fuzz_value)
+            for fuzzed_reps_number in self._fuzz_library:
+                yield Mutation(mutations={self.qualified_name: fuzzed_reps_number})
 
     def mutate(self):
         """
@@ -152,16 +152,22 @@ class Repeat(ifuzzable.IFuzzable):
 
         return len(self._fuzz_library)
 
-    def _render(self, value):
-        """
-        Nothing fancy on render, simply return the value.
-        """
-        # if the target block for this sizer is not closed, raise an exception.
-        if self.block_name not in self.request.closed_blocks:
-            raise exception.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
+    def encode(self, value, child_data):
+        return value * child_data
 
-        _rendered = self.request.closed_blocks[self.block_name].render() * value
-        return value, helpers.str_to_bytes(_rendered)
+    def render_mutated(self, mutation):
+        child_data = self._get_child_data(mutation=mutation)
+        if self.qualified_name in mutation.mutations:
+            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data)
+        else:
+            return self.encode(value=self.original_value, child_data=child_data)
+
+    def _get_child_data(self, mutation):
+        if self.block_stack:
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+
+        _rendered = self.request.closed_blocks[self.block_name].render_mutated(mutation)
+        return helpers.str_to_bytes(self._rendered)
 
     def render(self):
         """

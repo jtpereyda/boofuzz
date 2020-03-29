@@ -1,6 +1,7 @@
 import six
 
 from .base_primitive import BasePrimitive
+from ..mutation import Mutation
 
 
 class Group(BasePrimitive):
@@ -38,8 +39,11 @@ class Group(BasePrimitive):
         if not self._fuzzable:
             return
 
-        for v in self.values:
-            yield v, self._render(v)
+        for val in self.values:
+            yield Mutation(mutations={self.qualified_name: val})
+
+    def encode(self, value, **kwargs):
+        return self._render(value)
 
     def mutate(self):
         """

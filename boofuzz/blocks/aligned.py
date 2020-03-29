@@ -2,6 +2,7 @@ from functools import wraps
 
 from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
+from ..mutation import Mutation
 
 
 class Aligned(IFuzzable):
@@ -50,9 +51,8 @@ class Aligned(IFuzzable):
     def mutations(self):
         for item in self.stack:
             self.request.mutant = item
-            for value, rendered in item.mutations():
-                mutations_map = {item.name: (value, rendered)}
-                yield mutations_map, self._render(mutations_map=mutations_map)
+            for mutation in item.mutations():
+                yield mutation
 
     def num_mutations(self):
         """
@@ -81,18 +81,18 @@ class Aligned(IFuzzable):
 
         :return: Rendered value.
         """
-        return self._render({})
+        return self._render(Mutation())
 
-    def _render(self, mutations_map):
+    def render_mutated(self, mutation):
+        return self._render(mutation=mutation)
+
+    def _render(self, mutation):
         """
         Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
         """
         rendered = b""
         for item in self.stack:
-            if item.name in mutations_map:
-                rendered += mutations_map[item.name][1]
-            else:
-                rendered += item.render()
+            rendered += item.render_mutated(mutation=mutation)
 
         return self._align_it(rendered)
 

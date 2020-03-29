@@ -2,6 +2,7 @@ import abc
 
 from .. import helpers
 from ..ifuzzable import IFuzzable
+from ..mutation import Mutation
 
 
 class BasePrimitive(IFuzzable):
@@ -19,7 +20,7 @@ class BasePrimitive(IFuzzable):
 
     @property
     def original_value(self):
-        return self._render(self._original_value)
+        return self._original_value
 
     def __init__(self):
         self._fuzzable = True  # flag controlling whether or not the given primitive is to be fuzzed.
@@ -34,7 +35,10 @@ class BasePrimitive(IFuzzable):
 
     def mutations(self):
         for val in self._fuzz_library:
-            yield val, self._render(val)
+            yield Mutation(mutations={self.qualified_name: val})
+
+    def encode(self, value, **kwargs):
+        return self._render(value)
 
     def mutate(self):
         fuzz_complete = False
