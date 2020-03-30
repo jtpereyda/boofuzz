@@ -631,7 +631,7 @@ class Session(pgraph.Graph):
         """
         Dump various object values to disk.
 
-        @see: import_file()
+        :see: import_file()
         """
 
         if not self.session_filename:
@@ -826,7 +826,7 @@ class Session(pgraph.Graph):
         """
         Load various object values from disk.
 
-        @see: export_file()
+        :see: export_file()
         """
         if self.session_filename is None:
             return
@@ -1060,8 +1060,6 @@ class Session(pgraph.Graph):
             pre_send() - req - callback ... req - callback - post_send()
 
         When fuzzing RPC for example, register this method to establish the RPC bind.
-
-        @see: pre_send()
 
         Args:
             target (session.target): Target we are sending data to

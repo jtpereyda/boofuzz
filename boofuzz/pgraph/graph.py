@@ -464,8 +464,8 @@ class Graph(object):
         """
         Render the GML graph description.
 
-        @rtype:  String
-        @return: GML graph description.
+        :returns: GML graph description.
+        :rtype: str
         """
 
         gml = 'Creator "pGRAPH - Pedram Amini <pedram.amini@gmail.com>"\n'
@@ -511,8 +511,15 @@ class Graph(object):
         """
         Render the graphviz graph structure.
 
-        @rtype:  pydot.Dot
-        @return: Pydot object representing entire graph
+        Example to create a png:
+
+        .. code-block::
+
+            with open('somefile.png', 'wb') as file:
+                file.write(session.render_graph_graphviz().create_png())
+
+        :returns: Pydot object representing entire graph
+        :rtype: pydot.Dot
         """
         dot_graph = pydot.Dot()
 
@@ -528,8 +535,8 @@ class Graph(object):
         """
         Render the uDraw graph description.
 
-        @rtype:  str
-        @return: uDraw graph description.
+        :returns: uDraw graph description.
+        :rtype: str
         """
 
         udraw = "["
@@ -549,8 +556,8 @@ class Graph(object):
         """
         Render the uDraw graph update description.
 
-        @rtype:  String
-        @return: uDraw graph description.
+        :returns: uDraw graph description.
+        :rtype: str
         """
 
         udraw = "["
