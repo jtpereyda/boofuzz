@@ -14,6 +14,7 @@
 #
 
 import pydot
+from builtins import object
 
 
 class Edge(object):

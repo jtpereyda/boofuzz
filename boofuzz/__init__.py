@@ -264,7 +264,7 @@ def s_switch(name):
 # ## BLOCK MANAGEMENT
 
 
-def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
+def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
     """
     Open a new block under the current request. The returned instance supports the "with" interface so it will
     be automatically closed for you::
@@ -290,7 +290,7 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
     :param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
 
-    class ScopedBlock(Block):
+    class ScopedBlock:
         def __init__(self, block):
             self.block = block
 
@@ -300,16 +300,16 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             """
             return self.block
 
-        def __exit__(self, type, value, traceback):
+        def __exit__(self, exc_type, exc_val, exc_tb):
             """
             Cleanup after executing the "with" statement body
             """
-            # Automagically close the block when exiting the "with" statement
+            # Automatically close the block when exiting the "with" statement
             s_block_end()
 
-    block = s_block_start(name, group, encoder, dep, dep_value, dep_values, dep_compare)
+    new_block = s_block_start(name, group, encoder, dep, dep_value, dep_values, dep_compare)
 
-    return ScopedBlock(block)
+    return ScopedBlock(new_block)
 
 
 def s_block_start(name, *args, **kwargs):

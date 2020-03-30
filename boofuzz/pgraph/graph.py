@@ -16,6 +16,7 @@
 import copy
 
 import pydot
+from builtins import object
 from future.utils import listvalues
 
 
