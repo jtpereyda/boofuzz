@@ -81,7 +81,7 @@ def SocketConnection(
     warnings.warn(
         "SocketConnection is deprecated and will be removed in a future version of Boofuzz. "
         "Use the classes derived from BaseSocketConnection instead.",
-        DeprecationWarning,
+        FutureWarning,
     )
     if proto not in _PROTOCOLS:
         raise exception.SullyRuntimeError("INVALID PROTOCOL SPECIFIED: %s" % proto)
