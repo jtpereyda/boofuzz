@@ -1,17 +1,14 @@
 import random
 
-import six
-from past.builtins import xrange
-
 from boofuzz import helpers
-from .base_primitive import BasePrimitive
 from past.builtins import xrange
 
+from ..ifuzzable import IFuzzable
 from ..mutation import Mutation
 
 
-class RandomData(BasePrimitive):
-    def __init__(self, value, min_length, max_length, max_mutations=25, fuzzable=True, step=None, name=None):
+class RandomData(IFuzzable):
+    def __init__(self, value, min_length, max_length, max_mutations=25, step=None):
         """
         Generate a random chunk of data while maintaining a copy of the original. A random length range
         can be specified.
@@ -26,12 +23,8 @@ class RandomData(BasePrimitive):
         @param max_length:    Maximum length of random block
         @type  max_mutations: int
         @param max_mutations: (Optional, def=25) Number of mutations to make before reverting to default
-        @type  fuzzable:      bool
-        @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  step:          int
         @param step:          (Optional, def=None) If not null, step count between min and max reps, otherwise random
-        @type  name:          str
-        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
         super(RandomData, self).__init__()
@@ -40,9 +33,7 @@ class RandomData(BasePrimitive):
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations
-        self._fuzzable = fuzzable
         self.step = step
-        self._name = name
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
@@ -70,9 +61,6 @@ class RandomData(BasePrimitive):
             yield Mutation(mutations={self.qualified_name: value})
 
     def encode(self, value, **kwargs):
-        return self._render(value)
-
-    def _render(self, value):
         return value
 
     def num_mutations(self):

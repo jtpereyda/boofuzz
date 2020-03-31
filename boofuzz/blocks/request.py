@@ -30,6 +30,14 @@ class Request(IFuzzable):
         self.mutant = None  # current primitive being mutated.
 
     @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
+    @property
     def fuzzable(self):
         return True
 
@@ -89,32 +97,30 @@ class Request(IFuzzable):
         @type item: BasePrimitive | Block | Request | Size | Repeat
         @param item: Some primitive/block/request/etc.
         """
-        # if the item has a name, add it to the internal dictionary of names.
-        if hasattr(item, "name") and item.name:
-            context_path = ".".join(x.name for x in self.block_stack)  # TODO put in method
-            context_path = ".".join(filter(None,(self.name, context_path)))
-            item.context_path = context_path
-            # ensure the name doesn't already exist.
-            if item.name in list(self.names):
-                raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
+        context_path = ".".join(x.name for x in self.block_stack)  # TODO put in method
+        context_path = ".".join(filter(None,(self.name, context_path)))
+        item.context_path = context_path
+        # ensure the name doesn't already exist.
+        if item.name in list(self.names):
+            raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
 
-            self.names[item.name] = item
+        self.names[item.name] = item
 
         # if there are no open blocks, the item gets pushed onto the request stack.
         # otherwise, the pushed item goes onto the stack of the last opened block.
         if not self.block_stack:
             self.stack.append(item)
         else:
-            self.block_stack[-1].push(item)
+            self.block_stack[-1].fuzz_object.push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+        if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object, Block) or isinstance(item.fuzz_object, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
     def render_mutated(self, mutation):
-        return self._render(mutation=mutation)
+        return self.get_child_data(mutation=mutation)
 
-    def _render(self, mutation):
+    def get_child_data(self, mutation):
         # ensure there are no open blocks lingering.
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)

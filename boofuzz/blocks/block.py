@@ -2,17 +2,16 @@ from __future__ import absolute_import
 
 from .. import helpers
 from ..ifuzzable import IFuzzable
+from ..mutation import Mutation
 
 
 class Block(IFuzzable):
     def __init__(
-        self, name, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="
+        self, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="
     ):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
 
-        @type  name:        str
-        @param name:        Name of the new block
         @type  request:     Request
         @param request:     Request this block belongs to
         @type  group:       str
@@ -29,7 +28,6 @@ class Block(IFuzzable):
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
 
-        self._name = name
         self.request = request
         self.group = group
         self.encoder = encoder
@@ -40,23 +38,13 @@ class Block(IFuzzable):
 
         self.stack = []  # block item stack.
         self._rendered = b""  # rendered block contents.
-        self._fuzzable = True  # blocks are always fuzzable because they may contain fuzzable items.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
 
     @property
-    def fuzzable(self):
-        return self._fuzzable
-
-    @property
     def original_value(self):
-        original_value = b""
-
-        for item in self.stack:
-            original_value += helpers.str_to_bytes(item.original_value)
-
-        return original_value
+        return self.render_mutated(Mutation())
 
     def mutations(self):
         for item in self.stack:
@@ -180,10 +168,12 @@ class Block(IFuzzable):
         @type item: BasePrimitive | Block | boofuzz.blocks.size.Size | boofuzz.blocks.repeat.Repeat
         @param item: Some primitive/block/etc.
         """
-
         self.stack.append(item)
 
     def render_mutated(self, mutation):
+        return self._render(mutation=mutation)
+
+    def get_child_data(self, mutation):
         return self._render(mutation=mutation)
 
     def _render(self, mutation):
@@ -196,44 +186,45 @@ class Block(IFuzzable):
         if self.dep:
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
-                    return self._rendered
+                    return _rendered
 
                 elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
-                    return self._rendered
+                    return _rendered
 
             if self.dep_compare == "!=":
                 if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
-                    return self._rendered
+                    return _rendered
 
                 elif self.request.names[self.dep]._value == self.dep_value:
-                    return
+                    return _rendered
 
             if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
-                return self._rendered
+                return _rendered
 
             if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
-                return self._rendered
+                return _rendered
 
             if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
-                return self._rendered
+                return _rendered
 
             if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
-                return self._rendered
+                return _rendered
 
         # otherwise, render and encode as usual.
         for item in self.stack:
-            _rendered += item.render_mutated(mutation=mutation)
+            x = item.render_mutated(mutation=mutation)
+            _rendered += x
 
         return helpers.str_to_bytes(self.encode(None, _rendered))
 
-    def encode(self, value, child_data):
+    def encode(self, value, child_data, **kwargs):
         if self.encoder:
              return self.encoder(child_data)
         else:
             return child_data
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.name)
+        return "%s" % (self.__class__.__name__)
 
     def __len__(self):
         if self.encoder is not None:

@@ -2,6 +2,7 @@ from functools import wraps
 
 from .base_primitive import BasePrimitive
 from .. import helpers
+from ..mutation import Mutation
 
 
 def _may_recurse(f):
@@ -22,29 +23,26 @@ class Mirror(BasePrimitive):
     Args:
         primitive_name (str):   Name of target primitive.
         request (s_request):    Request this primitive belongs to.
-        name (str, optional):   Name of current primitive. Default None.
     """
 
-    def __init__(self, primitive_name, request, name=None):
+    def __init__(self, primitive_name, request):
         super(Mirror, self).__init__()
 
         self._primitive_name = primitive_name
         self._request = request
-        self._name = name
-        self._fuzzable = False
 
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def _render(self, value):
+    def encode(self, value, **kwargs):
         """
         Render the mirror.
 
         :return: Rendered value.
         """
         _ = value
-        self._rendered = self._render_primitive(self._primitive_name)
-        return helpers.str_to_bytes(self._rendered)
+        rendered = self._render_primitive(self._primitive_name)
+        return helpers.str_to_bytes(rendered)
 
     def mutations(self):
         return iter(())  # empty generator
@@ -55,7 +53,7 @@ class Mirror(BasePrimitive):
 
     @_may_recurse
     def _render_primitive(self, primitive_name):
-        return self._request.names[primitive_name].render() if primitive_name is not None else None
+        return self._request.names[primitive_name].render_mutated(Mutation()) if primitive_name is not None else None
 
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name):

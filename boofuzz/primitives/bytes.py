@@ -91,7 +91,7 @@ class Bytes(BasePrimitive):
         b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
-    def __init__(self, value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
+    def __init__(self, value, size=None, padding=b"\x00", max_len=None):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
 
@@ -101,12 +101,8 @@ class Bytes(BasePrimitive):
         @param size:       (Optional, def=None) Static size of this field, leave None for dynamic.
         @type  padding:    chr
         @param padding:    (Optional, def=b"\\x00") Value to use as padding to fill static field size.
-        @type  fuzzable:   bool
-        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  max_len:    int
         @param max_len:    (Optional, def=None) Maximum string length
-        @type  name:       str
-        @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
         super(Bytes, self).__init__()
@@ -119,8 +115,6 @@ class Bytes(BasePrimitive):
         if self.size is not None:
             self.max_len = self.size
         self.padding = padding
-        self._fuzzable = fuzzable
-        self._name = name
         self.this_library = [self._value * 2, self._value * 10, self._value * 100]
 
     def mutate(self):  # TODO convert to mutations

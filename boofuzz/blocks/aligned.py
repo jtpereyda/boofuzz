@@ -1,6 +1,3 @@
-from functools import wraps
-
-from .. import helpers, primitives
 from ..ifuzzable import IFuzzable
 from ..mutation import Mutation
 
@@ -15,8 +12,6 @@ class Aligned(IFuzzable):
             self,
             request,
             modulus,
-            fuzzable=False,
-            name=None,
             pattern="\x00",
     ):
         """
@@ -25,28 +20,16 @@ class Aligned(IFuzzable):
 
         :type  request:       Request
         :param request:       Request this block belongs to
-        :type  fuzzable:      bool
-        :param fuzzable:      (Optional, def=False) Enable/disable fuzzing of this sizer
-        :type  name:          str
-        :param name:          Name of this sizer field
         :type  modulus:     int
         :param modulus:     Pad length of child content to this many bytes
         :type  pattern:     bytes
         :param pattern:     Pad using these byte(s)
         """
-
-        self._fuzzable = fuzzable
-        self._name = name
-
         self.request = request
         self._modulus = modulus
         self._pattern = pattern
 
         self.stack = []  # block item stack.
-
-    @property
-    def original_value(self):
-        return self.render()
 
     def mutations(self):
         for item in self.stack:
@@ -75,18 +58,14 @@ class Aligned(IFuzzable):
         a, b = divmod(padding_length, len(self._pattern))
         return data + self._pattern * a + self._pattern[:b]
 
-    def render_mutated(self, mutation):
-        return self._render(mutation=mutation)
+    def encode(self, value, child_data, mutation):
+        return self._align_it(child_data)
 
-    def _render(self, mutation):
-        """
-        Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
-        """
+    def get_child_data(self, mutation):
         rendered = b""
         for item in self.stack:
             rendered += item.render_mutated(mutation=mutation)
-
-        return self._align_it(rendered)
+        return rendered
 
     def push(self, item):
         """

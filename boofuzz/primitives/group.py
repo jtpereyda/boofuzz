@@ -33,15 +33,6 @@ class Group(BasePrimitive):
         for val in self.values:
             assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
 
-    def mutations(self):
-        """
-        """
-        if not self._fuzzable:
-            return
-
-        for val in self.values:
-            yield Mutation(mutations={self.qualified_name: val})
-
     def encode(self, value, **kwargs):
         return self._render(value)
 

@@ -53,86 +53,41 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
 
     """
 
-    name_counter = 0
-
-    @property
-    def fuzzable(self):
-        """If False, this element should not be mutated in normal fuzzing."""
-        return self._fuzzable
-
-
-    @abc.abstractproperty
     def mutations(self):
-        """Yields mutations."""
+        """Yields mutations.
+
+        Each mutation should be a pre-rendered value. That is, it must be suitable to pass to encode().
+        """
         return
+        yield
 
-    @property
-    @abc.abstractmethod
-    def original_value(self):
-        """Original, non-mutated value of element."""
-        return
-
-    @property
-    def name(self):
-        """Element name, should be specific for each instance."""
-        if self._name is None:
-            IFuzzable.name_counter += 1
-            self._name = "{0}{1}".format(type(self).__name__, IFuzzable.name_counter)
-        return self._name
-
-    @property
-    def qualified_name(self):
-        if not hasattr(self, '_context_path'):
-            self._context_path = None
-        return ".".join(filter(None, (self._context_path, self.name)))
-
-    @property
-    def context_path(self):
-        return self._context_path
-
-    @context_path.setter
-    def context_path(self, x):
-        self._context_path = x
-
-    @abc.abstractmethod
     def num_mutations(self):
         """Return the total number of mutations for this element.
+
+        Default implementation exhausts the mutations() generator, which is inefficient. Override if you can provide a
+        value more efficiently, or if exhausting the mutations() generator has side effects.
 
         Returns:
             int: Number of mutated forms this primitive can take
         """
-        return
+        return sum(1 for _ in self.mutations())
 
-    def encode(self, value, child_data):
-        return value
+    def encode(self, value, child_data, mutation):
+        """Takes a fuzz value and encodes/renders/serializes that value.
 
-    def render_mutated(self, mutation):
-        """Render after applying mutation, if applicable."""
-        child_data = self.get_child_data(mutation=mutation)
-        if self.qualified_name in mutation.mutations:
-            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data)
-            #return self.encode(value=value, child_data=child_data)
-        else:
-            #return self.encode_value(self.original_value)
-            return self.encode(value=self.original_value, child_data=child_data)
+        The value may be a default value, or may be a value yielded by mutations().
 
-    def get_child_data(self, mutation):
-        return None
-
-    @abc.abstractmethod
-    def __repr__(self):
-        return
-
-    @abc.abstractmethod
-    def __len__(self):
-        """Length of field. May vary if mutate() changes the length.
+        By default, simply returns value.
 
         Returns:
-            int: Length of element (length of mutated element if mutated).
+            bytes: Encoded/serialized value.
         """
-        return
+        return value
 
-    @abc.abstractmethod
+    def get_child_data(self, mutation):
+        """Return child data for this node. Only applies to complex mutators."""
+        return None
+
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.
 
@@ -142,4 +97,4 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         Returns:
             bool: True
         """
-        return
+        return True

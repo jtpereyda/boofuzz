@@ -2,35 +2,29 @@ from .base_primitive import BasePrimitive
 
 
 class Delim(BasePrimitive):
-    def __init__(self, value=None, fuzzable=True, name=None):
+    def __init__(self, default_value):
         """
         Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
 
-        @type  value:    chr
-        @param value:    Original value
-        @type  fuzzable: bool
-        @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:     str
-        @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
+        @type  default_value:    chr
+        @param default_value:    Original value
         """
 
         super(Delim, self).__init__()
 
-        self._fuzzable = fuzzable
-        self._name = name
-        self._value = self._original_value = value
+        self._default_value = default_value
 
-        if self._value:
-            self._fuzz_library.append(self._value * 2)
-            self._fuzz_library.append(self._value * 5)
-            self._fuzz_library.append(self._value * 10)
-            self._fuzz_library.append(self._value * 25)
-            self._fuzz_library.append(self._value * 100)
-            self._fuzz_library.append(self._value * 500)
-            self._fuzz_library.append(self._value * 1000)
+        if self._default_value:
+            self._fuzz_library.append(self._default_value * 2)
+            self._fuzz_library.append(self._default_value * 5)
+            self._fuzz_library.append(self._default_value * 10)
+            self._fuzz_library.append(self._default_value * 25)
+            self._fuzz_library.append(self._default_value * 100)
+            self._fuzz_library.append(self._default_value * 500)
+            self._fuzz_library.append(self._default_value * 1000)
 
         self._fuzz_library.append("")
-        if self._value == " ":
+        if self._default_value == " ":
             self._fuzz_library.append("\t")
             self._fuzz_library.append("\t" * 2)
             self._fuzz_library.append("\t" * 100)

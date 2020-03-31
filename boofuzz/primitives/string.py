@@ -3,16 +3,15 @@ import random
 import six
 from past.builtins import range
 
-from .base_primitive import BasePrimitive
 from .. import helpers
-from ..mutation import Mutation
+from ..ifuzzable import IFuzzable
 
 
-class String(BasePrimitive):
+class String(IFuzzable):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
-    def __init__(self, value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
+    def __init__(self, value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -27,12 +26,8 @@ class String(BasePrimitive):
         @param padding:  (Optional, def="\\x00") Value to use as padding to fill static field size.
         @type  encoding: str
         @param encoding: (Optional, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
-        @type  fuzzable: bool
-        @param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  max_len:  int
         @param max_len:  (Optional, def=-1) Maximum string length
-        @type  name:     str
-        @param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
         super(String, self).__init__()
@@ -48,8 +43,6 @@ class String(BasePrimitive):
             self.max_len = self.size
         self.padding = padding
         self.encoding = encoding
-        self._fuzzable = fuzzable
-        self._name = name
         self.this_library = [
             self._value * 2,
             self._value * 10,
@@ -183,34 +176,34 @@ class String(BasePrimitive):
             ]
 
             # add some long strings.
-            self.add_long_strings("C")
-            self.add_long_strings("1")
-            self.add_long_strings("<")
-            self.add_long_strings(">")
-            self.add_long_strings("'")
-            self.add_long_strings('"')
-            self.add_long_strings("/")
-            self.add_long_strings("\\")
-            self.add_long_strings("?")
-            self.add_long_strings("=")
-            self.add_long_strings("a=")
-            self.add_long_strings("&")
-            self.add_long_strings(".")
-            self.add_long_strings(",")
-            self.add_long_strings("(")
-            self.add_long_strings(")")
-            self.add_long_strings("]")
-            self.add_long_strings("[")
-            self.add_long_strings("%")
-            self.add_long_strings("*")
-            self.add_long_strings("-")
-            self.add_long_strings("+")
-            self.add_long_strings("{")
-            self.add_long_strings("}")
-            self.add_long_strings("\x14")
-            self.add_long_strings("\x00")
-            self.add_long_strings("\xFE")  # expands to 4 characters under utf16
-            self.add_long_strings("\xFF")  # expands to 4 characters under utf16
+            self._add_long_strings("C")
+            self._add_long_strings("1")
+            self._add_long_strings("<")
+            self._add_long_strings(">")
+            self._add_long_strings("'")
+            self._add_long_strings('"')
+            self._add_long_strings("/")
+            self._add_long_strings("\\")
+            self._add_long_strings("?")
+            self._add_long_strings("=")
+            self._add_long_strings("a=")
+            self._add_long_strings("&")
+            self._add_long_strings(".")
+            self._add_long_strings(",")
+            self._add_long_strings("(")
+            self._add_long_strings(")")
+            self._add_long_strings("]")
+            self._add_long_strings("[")
+            self._add_long_strings("%")
+            self._add_long_strings("*")
+            self._add_long_strings("-")
+            self._add_long_strings("+")
+            self._add_long_strings("{")
+            self._add_long_strings("}")
+            self._add_long_strings("\x14")
+            self._add_long_strings("\x00")
+            self._add_long_strings("\xFE")  # expands to 4 characters under utf16
+            self._add_long_strings("\xFF")  # expands to 4 characters under utf16
 
             # add some long strings with null bytes thrown in the middle of them.
             for length in [128, 256, 1024, 2048, 4096, 32767, 0xFFFF]:
@@ -233,7 +226,7 @@ class String(BasePrimitive):
                 # Pull out the bad string(s):
                 self._fuzz_library = list(set([t[: self.max_len] for t in self._fuzz_library]))
 
-    def add_long_strings(self, sequence):
+    def _add_long_strings(self, sequence):
         """
         Given a sequence, generate a number of selectively chosen strings lengths of the given sequence and add to the
         string heuristic library.
@@ -263,15 +256,17 @@ class String(BasePrimitive):
         @rtype:  bool
         @return: True on success, False otherwise.
         """
-        if not self._fuzzable:
-            return
-
         for val in self._fuzz_library + self.this_library:
             if self.size < 0 or len(val) <= self.size:
-                yield Mutation(mutations={self.qualified_name: val})
+                yield val
 
     def encode(self, value, **kwargs):
-        return self._render(value)
+        if isinstance(value, six.text_type):
+            value = helpers.str_to_bytes(value)
+        # pad undersized library items.
+        if len(value) < self.size:
+            value += self.padding * (self.size - len(value))
+        return helpers.str_to_bytes(value)
 
     def num_mutations(self):
         """
@@ -281,16 +276,3 @@ class String(BasePrimitive):
         @return: Number of mutated forms this primitive can take
         """
         return len(self._fuzz_library) + len(self.this_library)
-
-    def _render(self, value):
-        """
-        Render string value, properly padded.
-        """
-
-        if isinstance(value, six.text_type):
-            value = helpers.str_to_bytes(value)
-
-        # pad undersized library items.
-        if len(value) < self.size:
-            value += self.padding * (self.size - len(value))
-        return helpers.str_to_bytes(value)

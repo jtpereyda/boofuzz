@@ -33,8 +33,6 @@ class Size(IFuzzable):
         inclusive=False,
         signed=False,
         math=None,
-        fuzzable=True,
-        name=None,
     ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
@@ -58,10 +56,6 @@ class Size(IFuzzable):
         :param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
         :type  math:          def
         :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
-        :type  fuzzable:      bool
-        :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
-        :type  name:          str
-        :param name:          Name of this sizer field
         """
 
         self.block_name = block_name
@@ -73,8 +67,6 @@ class Size(IFuzzable):
         self.inclusive = inclusive
         self.signed = signed
         self.math = math
-        self._fuzzable = fuzzable
-        self._name = name
 
         self.bit_field = primitives.BitField(
             0, self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
@@ -88,20 +80,9 @@ class Size(IFuzzable):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    @property
-    def fuzzable(self):
-        return self._fuzzable
-
-    @property
-    def original_value(self):
-        return self.render_mutated(Mutation())
-
-    def _original_calculated_length(self):
-        return self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
-
     def mutations(self):
         for mutation in self.bit_field.mutations():
-            yield Mutation(mutations={self.qualified_name: mutation.mutations[next(iter(mutation.mutations))]})
+            yield mutation
 
     def num_mutations(self):
         """
@@ -113,20 +94,14 @@ class Size(IFuzzable):
 
         return self.bit_field.num_mutations()
 
-    def render_mutated(self, mutation):
-        """Render the sizer.
-
-        :return: Rendered value.
-        """
-        if self.qualified_name in mutation.mutations:
-            return self.bit_field.encode(value=mutation.mutations[self.qualified_name], child_data=None)
-        elif self._recursion_flag:
-            return self._get_dummy_value()
+    def encode(self, value, child_data, mutation):
+        if value is None:  # default
+            if self._recursion_flag:
+                return self._get_dummy_value()
+            else:
+                return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(mutation=mutation)))
         else:
-            return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(mutation=mutation)))
-
-    def _should_render_fuzz_value(self):
-        return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
+            return self.bit_field.encode(value=value, child_data=None)
 
     def _get_dummy_value(self):
         return self.length * "\x00"
@@ -142,7 +117,7 @@ class Size(IFuzzable):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block(mutation=mutation)
 
     def _length_to_bytes(self, length):
-        return primitives.BitField.render_int(
+        return primitives.BitField._render_int(
             value=self.math(length),
             output_format=self.format,
             bit_width=self.length * 8,

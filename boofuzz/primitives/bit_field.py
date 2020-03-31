@@ -41,15 +41,13 @@ def int_to_binary_string(number, bit_width):
 class BitField(BasePrimitive):
     def __init__(
         self,
-        value,
+        default_value,
         width,
         max_num=None,
         endian=LITTLE_ENDIAN,
         output_format="binary",
         signed=False,
         full_range=False,
-        fuzzable=True,
-        name=None,
     ):
         """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
@@ -68,26 +66,20 @@ class BitField(BasePrimitive):
         @param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
         @type  full_range:    bool
         @param full_range:    (Optional, def=False) If enabled the field mutates through *all* possible values.
-        @type  fuzzable:      bool
-        @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:          str
-        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
         super(BitField, self).__init__()
 
-        assert isinstance(value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
+        assert isinstance(default_value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, six.integer_types), "width must be an integer!"
 
-        self._value = self._original_value = value
+        self._default_value = default_value
         self.width = width
         self.max_num = max_num
         self.endian = endian
         self.format = output_format
         self.signed = signed
         self.full_range = full_range
-        self._fuzzable = fuzzable
-        self._name = name
         self.cyclic_index = 0  # when cycling through non-mutating values
 
         if not self.max_num:
@@ -100,24 +92,24 @@ class BitField(BasePrimitive):
             for i in range(0, self.max_num):
                 self._fuzz_library.append(i)
         else:
-            if isinstance(value, (list, tuple)):
+            if isinstance(default_value, (list, tuple)):
                 # Use the supplied values as the fuzz library.
-                for val in iter(value):
+                for val in iter(default_value):
                     self._fuzz_library.append(val)
             else:
                 # try only "smart" values.
-                self.add_integer_boundaries(0)
-                self.add_integer_boundaries(self.max_num // 2)
-                self.add_integer_boundaries(self.max_num // 3)
-                self.add_integer_boundaries(self.max_num // 4)
-                self.add_integer_boundaries(self.max_num // 8)
-                self.add_integer_boundaries(self.max_num // 16)
-                self.add_integer_boundaries(self.max_num // 32)
-                self.add_integer_boundaries(self.max_num)
+                self._add_integer_boundaries(0)
+                self._add_integer_boundaries(self.max_num // 2)
+                self._add_integer_boundaries(self.max_num // 3)
+                self._add_integer_boundaries(self.max_num // 4)
+                self._add_integer_boundaries(self.max_num // 8)
+                self._add_integer_boundaries(self.max_num // 16)
+                self._add_integer_boundaries(self.max_num // 32)
+                self._add_integer_boundaries(self.max_num)
 
             # TODO: Add injectable arbitrary bit fields
 
-    def add_integer_boundaries(self, integer):
+    def _add_integer_boundaries(self, integer):
         """
         Add the supplied integer and border cases to the integer fuzz heuristics library.
 
@@ -131,14 +123,14 @@ class BitField(BasePrimitive):
                 if case not in self._fuzz_library:
                     self._fuzz_library.append(case)
 
-    def _render(self, value):
-        temp = self.render_int(
+    def encode(self, value, **kwargs):
+        temp = self._render_int(
             value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed
         )
         return helpers.str_to_bytes(temp)
 
     @staticmethod
-    def render_int(value, output_format, bit_width, endian, signed):
+    def _render_int(value, output_format, bit_width, endian, signed):
         """
         Convert value to a bit or byte string.
 
@@ -194,9 +186,6 @@ class BitField(BasePrimitive):
             else:
                 _rendered = "%d" % value
         return _rendered
-
-    def __len__(self):
-        return len(self._render(self._value))
 
     def __bool__(self):
         """

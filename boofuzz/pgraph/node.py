@@ -14,6 +14,7 @@
 #
 
 import pydot
+import attr
 
 from ..ifuzzable import IFuzzable
 
@@ -60,6 +61,15 @@ class Node(IFuzzable):
         self.gml_line_width = 1.0
         self.gml_type = "rectangle"
         self.gml_width_shape = 1.0
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
+
 
     def render_node_gml(self):
         """
