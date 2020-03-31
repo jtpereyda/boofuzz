@@ -1,7 +1,7 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
@@ -16,7 +16,7 @@ def _may_recurse(f):
     return safe_recurse
 
 
-class Size(IFuzzable):
+class Size(Fuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -94,14 +94,15 @@ class Size(IFuzzable):
 
         return self.bit_field.num_mutations()
 
-    def encode(self, value, child_data, mutation):
+    def encode(self, value, child_data, mutation_context):
         if value is None:  # default
             if self._recursion_flag:
                 return self._get_dummy_value()
             else:
-                return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(mutation=mutation)))
+                return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(
+                    mutation_context=mutation_context)))
         else:
-            return self.bit_field.encode(value=value, child_data=None)
+            return self.bit_field.encode(value=value, child_data=None, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
         return self.length * "\x00"
@@ -113,8 +114,9 @@ class Size(IFuzzable):
         else:
             return self.bit_field.encode(value=value, child_data=None)
 
-    def _calculated_length(self, mutation):
-        return self.offset + self._inclusive_length_of_self + self._length_of_target_block(mutation=mutation)
+    def _calculated_length(self, mutation_context):
+        return self.offset + self._inclusive_length_of_self + self._length_of_target_block(
+            mutation_context=mutation_context)
 
     def _length_to_bytes(self, length):
         return primitives.BitField._render_int(
@@ -134,9 +136,9 @@ class Size(IFuzzable):
             return 0
 
     @_may_recurse
-    def _length_of_target_block(self, mutation):
+    def _length_of_target_block(self, mutation_context):
         """Return length of target block, including mutations if mutation applies."""
-        length = len(self.request.names[self.block_name].render_mutated(mutation=mutation))
+        length = len(self.request.names[self.block_name].render_mutated(mutation_context=mutation_context))
         return length
 
     @property
@@ -150,7 +152,7 @@ class Size(IFuzzable):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return len(self._render())
+        return len(self._render())  # TODO fix length method, if needed
 
     def __bool__(self):
         """

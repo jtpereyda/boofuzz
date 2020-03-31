@@ -4,9 +4,9 @@ import six
 from builtins import range
 from past.builtins import map
 
-from .base_primitive import BasePrimitive
 from .. import helpers
 from ..constants import LITTLE_ENDIAN
+from ..fuzzable import Fuzzable
 
 
 def binary_string_to_int(binary):
@@ -38,7 +38,7 @@ def int_to_binary_string(number, bit_width):
     return "".join(map(lambda x: str((number >> x) & 1), range(bit_width - 1, -1, -1)))
 
 
-class BitField(BasePrimitive):
+class BitField(Fuzzable):
     def __init__(
         self,
         default_value,
@@ -52,8 +52,8 @@ class BitField(BasePrimitive):
         """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
 
-        @type  value:         int
-        @param value:         Default integer value
+        @type  default_value: int
+        @param default_value: Default integer value
         @type  width:         int
         @param width:         Width of bit fields
         @type  max_num:       int
@@ -123,11 +123,18 @@ class BitField(BasePrimitive):
                 if case not in self._fuzz_library:
                     self._fuzz_library.append(case)
 
-    def encode(self, value, **kwargs):
+    def encode(self, value, child_data, mutation_context):
         temp = self._render_int(
             value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed
         )
         return helpers.str_to_bytes(temp)
+
+    def mutations(self):
+        for val in self._fuzz_library:
+            yield val
+
+    def num_mutations(self):
+        return len(self._fuzz_library)
 
     @staticmethod
     def _render_int(value, output_format, bit_width, endian, signed):

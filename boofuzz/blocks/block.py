@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
 from .. import helpers
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
-class Block(IFuzzable):
+class Block(Fuzzable):
     def __init__(
         self, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="
     ):
@@ -41,10 +41,6 @@ class Block(IFuzzable):
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
-
-    @property
-    def original_value(self):
-        return self.render_mutated(Mutation())
 
     def mutations(self):
         for item in self.stack:
@@ -170,13 +166,10 @@ class Block(IFuzzable):
         """
         self.stack.append(item)
 
-    def render_mutated(self, mutation):
-        return self._render(mutation=mutation)
+    def get_child_data(self, mutation_context):
+        return self._render(mutation_context=mutation_context)
 
-    def get_child_data(self, mutation):
-        return self._render(mutation=mutation)
-
-    def _render(self, mutation):
+    def _render(self, mutation_context):
         """
         Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
         """
@@ -212,19 +205,16 @@ class Block(IFuzzable):
 
         # otherwise, render and encode as usual.
         for item in self.stack:
-            x = item.render_mutated(mutation=mutation)
+            x = item.render_mutated(mutation_context=mutation_context)
             _rendered += x
 
-        return helpers.str_to_bytes(self.encode(None, _rendered))
+        return helpers.str_to_bytes(self.encode(None, _rendered, mutation_context=mutation_context))
 
-    def encode(self, value, child_data, **kwargs):
+    def encode(self, value, child_data, mutation_context):
         if self.encoder:
              return self.encoder(child_data)
         else:
             return child_data
-
-    def __repr__(self):
-        return "%s" % (self.__class__.__name__)
 
     def __len__(self):
         if self.encoder is not None:

@@ -4,10 +4,10 @@ import six
 from past.builtins import range
 
 from .. import helpers
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 
 
-class String(IFuzzable):
+class String(Fuzzable):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = []
 
@@ -260,7 +260,7 @@ class String(IFuzzable):
             if self.size < 0 or len(val) <= self.size:
                 yield val
 
-    def encode(self, value, **kwargs):
+    def encode(self, value, child_data, mutation_context=None):
         if isinstance(value, six.text_type):
             value = helpers.str_to_bytes(value)
         # pad undersized library items.

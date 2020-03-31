@@ -1,11 +1,11 @@
 from past.builtins import range
 
-from .. import exception, helpers, ifuzzable
+from .. import exception, helpers, fuzzable
 from ..mutation import Mutation
 from ..primitives.bit_field import BitField
 
 
-class Repeat(ifuzzable.IFuzzable):
+class Repeat(fuzzable.Fuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -107,15 +107,15 @@ class Repeat(ifuzzable.IFuzzable):
 
         return len(self._fuzz_library)
 
-    def encode(self, value, child_data):
+    def encode(self, value, child_data, mutation_context):
         return value * child_data
 
     def render_mutated(self, mutation):
         child_data = self._get_child_data(mutation=mutation)
         if self.qualified_name in mutation.mutations:
-            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data)
+            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data, mutation_context=None)
         else:
-            return self.encode(value=self.original_value, child_data=child_data)
+            return self.encode(value=self.original_value, child_data=child_data, mutation_context=None)
 
     def _get_child_data(self, mutation):
         if self.block_stack:

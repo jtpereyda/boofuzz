@@ -1,4 +1,13 @@
+import attr
+
 from boofuzz.mutation import Mutation
+from boofuzz.mutation_context import MutationContext
+
+
+@attr.s
+class ReferenceValueTestCaseSession(object):
+    name = attr.ib()
+    pass
 
 
 class FuzzableWrapper(object):
@@ -12,6 +21,7 @@ class FuzzableWrapper(object):
             default_value=None,
     ):
         """
+        Internal object used to handle Fuzzable objects. Manages name, default value, etc.
 
         @type  fuzzable:      bool
         @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
@@ -22,6 +32,7 @@ class FuzzableWrapper(object):
         self._name = name
         self._default_value = default_value
         self._fuzz_object = fuzz_object
+        self._context_path = ""
 
     @property
     def fuzz_object(self):
@@ -34,7 +45,10 @@ class FuzzableWrapper(object):
 
     @property
     def name(self):
-        """Element name, should be specific for each instance."""
+        """Element name, should be unique for each instance.
+
+        :rtype: str
+        """
         if self._name is None:
             FuzzableWrapper.name_counter += 1
             self._name = "{0}{1}".format(type(self).__name__, FuzzableWrapper.name_counter)
@@ -42,9 +56,9 @@ class FuzzableWrapper(object):
 
     @property
     def qualified_name(self):
-        if not hasattr(self, '_context_path'):
-            self._context_path = None
-        return ".".join(filter(None, (self._context_path, self.name)))
+        return ".".join(
+            s for s in (self._context_path, self.name) if s != ""
+        )
 
     @property
     def context_path(self):
@@ -54,27 +68,32 @@ class FuzzableWrapper(object):
     def context_path(self, x):
         self._context_path = x
 
-    @property
-    def original_value(self):
+    def original_value(self, mutation_context):
         """Original, non-mutated value of element."""
-        return self._default_value
+        if isinstance(self._default_value, ReferenceValueTestCaseSession):
+            return mutation_context.test_case_session[ReferenceValueTestCaseSession.name]
+        else:
+            return self._default_value
 
     def mutations(self):
         for value in self._fuzz_object.mutations():
             if isinstance(value, Mutation):
-                # TODO: Maybe only Block types should be doing this wrapping, as evidenced by needing to do this check
                 yield value
-                # print(f"Weird, our mutation is already wrapped: {self} {self.qualified_name} ")
             else:
                 yield Mutation(mutations={self.qualified_name: value})
 
-    def render_mutated(self, mutation):
-        """Render after applying mutation, if applicable."""
-        child_data = self._fuzz_object.get_child_data(mutation=mutation)
-        if self.qualified_name in mutation.mutations:
-            return self._fuzz_object.encode(mutation.mutations[self.qualified_name], child_data=child_data, mutation=mutation)
+    def render_mutated(self, mutation_context):
+        """Render after applying mutation, if applicable.
+        :type mutation_context: MutationContext
+        """
+        child_data = self._fuzz_object.get_child_data(mutation_context=mutation_context)
+        if self.qualified_name in mutation_context.mutation.mutations:
+            return self._fuzz_object.encode(mutation_context.mutation.mutations[self.qualified_name],
+                                            child_data=child_data, mutation_context=mutation_context)
         else:
-            return self._fuzz_object.encode(value=self.original_value, child_data=child_data, mutation=mutation)
+            return self._fuzz_object.encode(value=self.original_value(mutation_context=mutation_context),
+                                            child_data=child_data,
+                                            mutation_context=mutation_context)
 
     def num_mutations(self):
         return self._fuzz_object.num_mutations()

@@ -1,5 +1,5 @@
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 
 
-class Static(IFuzzable):
+class Static(Fuzzable):
     pass

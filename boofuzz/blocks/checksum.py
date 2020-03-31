@@ -99,15 +99,15 @@ class Checksum(primitives.BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def encode(self, value, child_data, mutation, **kwargs):
+    def encode(self, value, child_data, mutation_context):
         if value is None:
             if self._recursion_flag:
                 self._rendered = self._get_dummy_value()
             else:
                 self._rendered = self._checksum(
-                    data=self._render_block(self._block_name, mutation=mutation),
-                    ipv4_src=self._render_block(self._ipv4_src_block_name, mutation=mutation),
-                    ipv4_dst=self._render_block(self._ipv4_dst_block_name, mutation=mutation),
+                    data=self._render_block(self._block_name, mutation_context=mutation_context),
+                    ipv4_src=self._render_block(self._ipv4_src_block_name, mutation_context=mutation_context),
+                    ipv4_dst=self._render_block(self._ipv4_dst_block_name, mutation_context=mutation_context),
                 )
             return helpers.str_to_bytes(self._rendered)
         else:
@@ -117,8 +117,8 @@ class Checksum(primitives.BasePrimitive):
         return self._length * "\x00"
 
     @_may_recurse
-    def _render_block(self, block_name, mutation):
-        return self._request.names[block_name].render_mutated(mutation=mutation) if block_name is not None else None
+    def _render_block(self, block_name, mutation_context):
+        return self._request.names[block_name].render_mutated(mutation_context=mutation_context) if block_name is not None else None
 
     def _checksum(self, data, ipv4_src, ipv4_dst):
         """

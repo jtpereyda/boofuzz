@@ -34,10 +34,11 @@ class Mirror(BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def encode(self, value, **kwargs):
+    def encode(self, value, child_data, mutation_context=None):
         """
         Render the mirror.
 
+        :param mutation_context:
         :return: Rendered value.
         """
         _ = value
@@ -47,17 +48,19 @@ class Mirror(BasePrimitive):
     def mutations(self):
         return iter(())  # empty generator
     
-    @property
-    def original_value(self):
-        return self._original_value_of_primitive(self._primitive_name)
+    def original_value(self, mutation_context):
+        return self._original_value_of_primitive(self._primitive_name, mutation_context)
 
     @_may_recurse
     def _render_primitive(self, primitive_name):
         return self._request.names[primitive_name].render_mutated(Mutation()) if primitive_name is not None else None
 
     @_may_recurse
-    def _original_value_of_primitive(self, primitive_name):
-        return self._request.names[primitive_name].original_value if primitive_name is not None else None
+    def _original_value_of_primitive(self, primitive_name, mutation_context):
+        if primitive_name is None:
+            return None
+        else:
+            return self._request.names[primitive_name].original_value(mutation_context=mutation_context)
 
     @_may_recurse
     def get_length(self):

@@ -1,8 +1,8 @@
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
-class Aligned(IFuzzable):
+class Aligned(Fuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -58,13 +58,13 @@ class Aligned(IFuzzable):
         a, b = divmod(padding_length, len(self._pattern))
         return data + self._pattern * a + self._pattern[:b]
 
-    def encode(self, value, child_data, mutation):
+    def encode(self, value, child_data, mutation_context):
         return self._align_it(child_data)
 
-    def get_child_data(self, mutation):
+    def get_child_data(self, mutation_context):
         rendered = b""
         for item in self.stack:
-            rendered += item.render_mutated(mutation=mutation)
+            rendered += item.render_mutated(mutation_context=mutation_context)
         return rendered
 
     def push(self, item):
@@ -75,9 +75,6 @@ class Aligned(IFuzzable):
         """
 
         self.stack.append(item)
-
-    def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
         return len(self.render())

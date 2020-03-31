@@ -3,10 +3,10 @@ import collections
 from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 
 
-class Request(IFuzzable):
+class Request(Fuzzable):
     def __init__(self, name):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
@@ -59,10 +59,6 @@ class Request(IFuzzable):
             self.mutant = item
             for mutation in item.mutations():
                 yield mutation
-
-    def skip_element(self):
-        self.stack[self._element_mutant_index].reset()
-        self._element_mutant_index += 1
 
     def num_mutations(self):
         """
@@ -117,17 +113,17 @@ class Request(IFuzzable):
         if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object, Block) or isinstance(item.fuzz_object, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
-    def render_mutated(self, mutation):
-        return self.get_child_data(mutation=mutation)
+    def render_mutated(self, mutation_context):
+        return self.get_child_data(mutation_context=mutation_context)
 
-    def get_child_data(self, mutation):
+    def get_child_data(self, mutation_context):
         # ensure there are no open blocks lingering.
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 
         _rendered = b""
         for item in self.stack:
-            _rendered += item.render_mutated(mutation=mutation)
+            _rendered += item.render_mutated(mutation_context=mutation_context)
 
         return helpers.str_to_bytes(_rendered)
 

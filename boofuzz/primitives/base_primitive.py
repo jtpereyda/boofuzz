@@ -1,11 +1,11 @@
 import abc
 
 from .. import helpers
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
-class BasePrimitive(IFuzzable):
+class BasePrimitive(Fuzzable):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
@@ -17,7 +17,7 @@ class BasePrimitive(IFuzzable):
         for val in self._fuzz_library:
             yield val
 
-    def encode(self, value, child_data, mutation, **kwargs):
+    def encode(self, value, child_data, mutation_context):
         if value is None:
             value = b""
         return value

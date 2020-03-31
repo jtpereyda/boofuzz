@@ -32,22 +32,17 @@ class DocStringInheritor(type):
 
 
 # DocStringInheritor is the metaclass in python 2 and 3
-class IFuzzable(with_metaclass(DocStringInheritor, object)):
-    """Describes a fuzzable message element or message.
+class Fuzzable(with_metaclass(DocStringInheritor, object)):
+    """Describes a fuzzable message element.
 
-    The core functionality on which boofuzz runs:
+    Subclasses may implement any combination of:
 
-    1. mutations() -- iterate mutations.
-    2. mutant_index, mutate(), render(), reset() are an older interface used to simulate mutations().
-    3. render() returns either the normal value or the currently-being-mutated value.
-    3. name() -- gets the specific element's name; may be replaced in the future.
-    4. fuzzable() -- indicates whether an element should be fuzzed. This used to be checked externally, but is now
-                     checked within mutations()
-    5. original_value() -- used to get the default value of the element.
-    6. num_mutations() -- Number of mutations that an element yields.
-    7. __len__() -- an element should describe its own size when rendered.
-    8. __repr__() -- for nice readable user interfaces
-    9. __nonzero__() -- Allows one to use `if someFuzzableObject` to check for null. Questionable practice.
+    1. mutations() -- generator yields mutations for this element. Default: Empty iterator.
+    2. encode() -- Takes a value yielded by mutations() and translates it to a bytes (byte string). Optional if
+                   mutations() yields bytes. Example: Yield strings with mutations() and encode them using encode().
+    3. num_mutations() -- Number of mutations an element yields. Default: Iterate mutations() to get count (default
+        behavior may not always be appropriate).
+    4. __len__() -- an element may describe its own size when rendered -- not required.
 
     The mutation and original_value functions are the most fundamental.
 
@@ -72,7 +67,7 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
         """
         return sum(1 for _ in self.mutations())
 
-    def encode(self, value, child_data, mutation):
+    def encode(self, value, child_data, mutation_context):
         """Takes a fuzz value and encodes/renders/serializes that value.
 
         The value may be a default value, or may be a value yielded by mutations().
@@ -81,10 +76,11 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
 
         Returns:
             bytes: Encoded/serialized value.
+            :param mutation_context:
         """
         return value
 
-    def get_child_data(self, mutation):
+    def get_child_data(self, mutation_context):
         """Return child data for this node. Only applies to complex mutators."""
         return None
 
@@ -98,3 +94,7 @@ class IFuzzable(with_metaclass(DocStringInheritor, object)):
             bool: True
         """
         return True
+
+    def __repr__(self):
+        return "%s" % (self.__class__.__name__)
+

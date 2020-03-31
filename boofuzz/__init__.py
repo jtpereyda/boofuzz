@@ -30,6 +30,7 @@ from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .fuzzable_wrapper import FuzzableWrapper
+from .fuzzable_wrapper import ReferenceValueTestCaseSession
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .primitives import (
@@ -63,6 +64,7 @@ __all__ = [
     "Aligned",
     "BasePrimitive",
     "BaseSocketConnection",
+    "ReferenceValueTestCaseSession",
     "BIG_ENDIAN",
     "BitField",
     "Block",
