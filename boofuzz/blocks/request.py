@@ -54,18 +54,19 @@ class Request(Fuzzable):
 
         return self._rendered
 
-    def mutations(self):
+    def mutations(self, default_value=None):  # TODO: default_value=None is a way of simulating FuzzableWrapper which does not take default_value
         for item in self.stack:
             self.mutant = item
             for mutation in item.mutations():
                 yield mutation
 
-    def num_mutations(self):
+    def num_mutations(self, default_value=None):  # TODO: default_value=None is a way of simulating FuzzableWrapper which does not take default_value
         """
         Determine the number of repetitions we will be making.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take.
+        :param default_value:
         """
         num_mutations = 0
 

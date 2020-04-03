@@ -45,7 +45,7 @@ class Mirror(BasePrimitive):
         rendered = self._render_primitive(self._primitive_name)
         return helpers.str_to_bytes(rendered)
 
-    def mutations(self):
+    def mutations(self, default_value):
         return iter(())  # empty generator
     
     def original_value(self, mutation_context):

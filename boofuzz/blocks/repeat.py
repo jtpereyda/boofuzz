@@ -84,7 +84,7 @@ class Repeat(fuzzable.Fuzzable):
     def original_value(self):
         return self._original_value
 
-    def mutations(self):
+    def mutations(self, default_value):
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
             raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
@@ -97,12 +97,13 @@ class Repeat(fuzzable.Fuzzable):
             for fuzzed_reps_number in self._fuzz_library:
                 yield Mutation(mutations={self.qualified_name: fuzzed_reps_number})
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Determine the number of repetitions we will be making.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take.
+        :param default_value:
         """
 
         return len(self._fuzz_library)

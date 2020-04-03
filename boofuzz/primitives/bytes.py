@@ -1,3 +1,5 @@
+import itertools
+
 from .base_primitive import BasePrimitive
 from .. import helpers
 
@@ -91,12 +93,10 @@ class Bytes(BasePrimitive):
         b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
-    def __init__(self, value, size=None, padding=b"\x00", max_len=None):
+    def __init__(self, size=None, padding=b"\x00", max_len=None):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
 
-        @type  value:      bytes
-        @param value:      Default string value
         @type  size:       int
         @param size:       (Optional, def=None) Static size of this field, leave None for dynamic.
         @type  padding:    chr
@@ -107,15 +107,11 @@ class Bytes(BasePrimitive):
 
         super(Bytes, self).__init__()
 
-        assert isinstance(value, bytes)
-        self._original_value = value
-        self._value = self._original_value
         self.size = size
         self.max_len = max_len
         if self.size is not None:
             self.max_len = self.size
         self.padding = padding
-        self.this_library = [self._value * 2, self._value * 10, self._value * 100]
 
     def mutate(self):  # TODO convert to mutations
         """
@@ -189,28 +185,54 @@ class Bytes(BasePrimitive):
             # _value has now been mutated and therefore we return True to indicate success
             return True
 
-    def num_mutations(self):
+    def mutations(self, default_value):
+        for fuzz_value in self._iterate_fuzz_cases(default_value=default_value):
+            if self.size is not None:
+                if len(fuzz_value) > self.size:
+                    continue  # too long, skip this one
+                else:
+                    yield fuzz_value + self.padding * (self.size - len(fuzz_value))
+            elif self.max_len is not None and len(fuzz_value) > self.max_len:
+                yield fuzz_value[:self.max_len]
+            else:
+                yield fuzz_value
+
+    def _iterate_fuzz_cases(self, default_value):
+        this_library = [default_value * 2, default_value * 10, default_value * 100]
+        for fuzz_value in self._fuzz_library:
+            yield fuzz_value
+        for fuzz_value in this_library:
+            yield fuzz_value
+        for fuzz_value in self._magic_debug_values:
+            yield fuzz_value
+        for fuzz_bytes in self._fuzz_strings_1byte:
+            for i in range(0, len(default_value)):
+                yield default_value[:i] + fuzz_bytes + default_value[i + 1 :]
+        for fuzz_bytes in self._fuzz_strings_2byte:
+            for i in range(0, len(default_value)-1):
+                yield default_value[:i] + fuzz_bytes + default_value[i + 2 :]
+        for fuzz_bytes in self._fuzz_strings_4byte:
+            for i in range(0, len(default_value)-3):
+                yield default_value[:i] + fuzz_bytes + default_value[i + 4 :]
+
+
+    def num_mutations(self, default_value):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take
+        :param default_value:
         """
-        num = len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values)
-        num += len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0)
-        num += len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1)
-        num += len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3)
-        return num
+        return sum((len(self._fuzz_library),
+                    len(self.this_library),
+                    len(self._magic_debug_values),
+                    len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0),
+                    len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1),
+                    len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3),
+                    ))
 
-    def _render(self, value):
-        """
-        Render string value, properly padded.
-        """
-
-        value = helpers.str_to_bytes(value)
-
-        # if size is set, then pad undersized values.
-        if self.size is not None:
-            value += self.padding * (self.size - len(value))
-
-        return helpers.str_to_bytes(value)
+    def encode(self, value, child_data, mutation_context):
+        if value is None:
+            value = b""
+        return value

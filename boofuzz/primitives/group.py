@@ -36,16 +36,17 @@ class Group(BasePrimitive):
     def encode(self, value, child_data, mutation_context):
         return self._render(value)
 
-    def mutations(self):
+    def mutations(self, default_value):
         for value in self.values:
             yield value
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Number of values in this primitive.
 
         @rtype:  int
         @return: Number of values in this primitive.
+        :param default_value:
         """
 
         return len(self.values)

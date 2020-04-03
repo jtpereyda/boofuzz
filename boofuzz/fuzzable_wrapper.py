@@ -2,6 +2,8 @@ import attr
 
 from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
+from boofuzz.test_case_context import TestCaseContext
+from boofuzz.fuzzable import Fuzzable
 
 
 @attr.s
@@ -26,6 +28,8 @@ class FuzzableWrapper(object):
         @type  fuzzable:      bool
         @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  name:          str
+        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+        @type  fuzz_object:   Fuzzable
         @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
         self._fuzzable = fuzzable
@@ -68,35 +72,36 @@ class FuzzableWrapper(object):
     def context_path(self, x):
         self._context_path = x
 
-    def original_value(self, mutation_context):
+    def original_value(self, test_case_context):
         """Original, non-mutated value of element."""
         if isinstance(self._default_value, ReferenceValueTestCaseSession):
-            return mutation_context.test_case_session[ReferenceValueTestCaseSession.name]
+            return test_case_context.session_variables[self._default_value.name]
         else:
             return self._default_value
 
-    def mutations(self):
-        for value in self._fuzz_object.mutations():
+    def mutations(self, test_case_context):
+        for value in self._fuzz_object.mutations(self.original_value(test_case_context=test_case_context)):
             if isinstance(value, Mutation):
                 yield value
             else:
                 yield Mutation(mutations={self.qualified_name: value})
 
-    def render_mutated(self, mutation_context):
+    def render_mutated(self, mutation_context, test_case_context):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
         child_data = self._fuzz_object.get_child_data(mutation_context=mutation_context)
         if self.qualified_name in mutation_context.mutation.mutations:
-            return self._fuzz_object.encode(mutation_context.mutation.mutations[self.qualified_name],
-                                            child_data=child_data, mutation_context=mutation_context)
+            return self._fuzz_object.encode(value=mutation_context.mutation.mutations[self.qualified_name],
+                                            child_data=child_data,
+                                            mutation_context=mutation_context)
         else:
-            return self._fuzz_object.encode(value=self.original_value(mutation_context=mutation_context),
+            return self._fuzz_object.encode(value=self.original_value(test_case_context=test_case_context),
                                             child_data=child_data,
                                             mutation_context=mutation_context)
 
     def num_mutations(self):
-        return self._fuzz_object.num_mutations()
+        return self._fuzz_object.num_mutations(default_value=self._default_value)
 
     def __repr__(self):
         return "<%s <%s> %s %s>" % (self.__class__.__name__, self._fuzz_object, self.name, repr(self._default_value))

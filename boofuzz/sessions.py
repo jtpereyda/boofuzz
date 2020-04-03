@@ -970,7 +970,7 @@ class Session(pgraph.Graph):
         self._post_test_case_methods.append(method)
 
     # noinspection PyUnusedLocal
-    def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
+    def example_test_case_callback(self, target, fuzz_data_logger, session, mutation_context, *args, **kwargs):
         """
         Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
 
@@ -978,9 +978,9 @@ class Session(pgraph.Graph):
             target (Target): Target with sock-like interface.
             fuzz_data_logger (ifuzz_logger.IFuzzLogger): Allows logging of test checks and passes/failures.
                 Provided with a test case and test step already opened.
-
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
+            mutation_context (MutationContext): Context info specific to the current mutation.
 
             args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
             kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
@@ -1095,7 +1095,7 @@ class Session(pgraph.Graph):
 
         return data
 
-    def transmit_normal(self, sock, node, edge, callback_data):
+    def transmit_normal(self, sock, node, edge, callback_data, mutation_context):
         """Render and transmit a non-fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1103,11 +1103,12 @@ class Session(pgraph.Graph):
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
             callback_data (bytes): Data from previous callback.
+            :param mutation_context:
         """
         if callback_data:
             data = callback_data
         else:
-            data = node.render_mutated(mutation_context=MutationContext(mutation=Mutation()))
+            data = node.render_mutated(mutation_context=mutation_context)
 
         try:  # send
             self.targets[0].send(data)
@@ -1436,14 +1437,15 @@ class Session(pgraph.Graph):
                 node = self.nodes[e.dst]
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
                 callback_data = self._callback_current_node(node=node, edge=e, mutation_context=mutation_context)
-                self.transmit_normal(target, node, e, callback_data=callback_data)
+                self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1], mutation_context=mutation_context)
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-            self.transmit_normal(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data)
+            self.transmit_normal(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data,
+                                 mutation_context=mutation_context)
 
-            self._post_send(target)
+            self._post_send(target, mutation_context=mutation_context)
             self._check_procmon_failures(target)
             if not self._reuse_target_connection:
                 target.close()
@@ -1461,7 +1463,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
-    def _fuzz_current_case(self, mutation_context):
+    def _fuzz_crrent_case(self, mutation_context):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
@@ -1513,14 +1515,14 @@ class Session(pgraph.Graph):
                 node = self.nodes[e.dst]
                 callback_data = self._callback_current_node(node=node, edge=e, mutation_context=mutation_context)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
-                self.transmit_normal(target, node, e, callback_data=callback_data)
+                self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
             callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1], mutation_context=mutation_context)
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data, mutation_context=mutation_context)
 
             if not self._check_for_passively_detected_failures(target=target):
-                self._post_send(target)
+                self._post_send(target, mutation_context=mutation_context)
                 self._check_procmon_failures(target=target)
             if not self._reuse_target_connection:
                 target.close()
@@ -1589,12 +1591,12 @@ class Session(pgraph.Graph):
         primitive_path = next(iter(mutation.mutations))
         return "{0}.{1}.{2}".format(message_path, primitive_path, self.mutant_index)
 
-    def _post_send(self, target):
+    def _post_send(self, target, mutation_context):
         if len(self._post_test_case_methods) > 0:
             try:
                 for f in self._post_test_case_methods:
                     self._fuzz_data_logger.open_test_step('Post- test case callback: "{0}"'.format(f.__name__))
-                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, sock=target)
+                    f(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self, mutation_context=mutation_context, sock=target)
             except exception.BoofuzzTargetConnectionReset:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET_FAIL)
             except exception.BoofuzzTargetConnectionAborted as e:

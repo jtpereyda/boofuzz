@@ -37,12 +37,13 @@ class RandomData(Fuzzable):
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
-    def mutations(self):
+    def mutations(self, default_value):
         """
         Mutate the primitive value returning False on completion.
 
         @rtype:  bool
         @return: True on success, False otherwise.
+        :param default_value:
         """
         if not self._fuzzable:
             return
@@ -63,12 +64,13 @@ class RandomData(Fuzzable):
     def encode(self, value, child_data, mutation_context=None):
         return value
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take
+        :param default_value:
         """
 
         return self.max_mutations

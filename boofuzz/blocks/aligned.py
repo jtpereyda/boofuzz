@@ -31,16 +31,17 @@ class Aligned(Fuzzable):
 
         self.stack = []  # block item stack.
 
-    def mutations(self):
+    def mutations(self, default_value):
         for item in self.stack:
             self.request.mutant = item
             for mutation in item.mutations():
                 yield mutation
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Wrap the num_mutations routine of the internal bit_field primitive.
 
+        :param default_value:
         :rtype:  int
         :return: Number of mutated forms this primitive can take.
         """

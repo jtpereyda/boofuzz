@@ -42,7 +42,7 @@ class Block(Fuzzable):
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
 
-    def mutations(self):
+    def mutations(self, default_value):
         for item in self.stack:
             self.request.mutant = item
             for mutation in item.mutations():
@@ -138,12 +138,13 @@ class Block(Fuzzable):
 
         return mutated
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Determine the number of repetitions we will be making.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take.
+        :param default_value:
         """
 
         num_mutations = 0

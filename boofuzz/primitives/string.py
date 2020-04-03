@@ -248,13 +248,14 @@ class String(Fuzzable):
         for string in strings:
             self._fuzz_library.append(string)
 
-    def mutations(self):
+    def mutations(self, default_value):
         """
         Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
         completion.
 
         @rtype:  bool
         @return: True on success, False otherwise.
+        :param default_value:
         """
         for val in self._fuzz_library + self.this_library:
             if self.size < 0 or len(val) <= self.size:
@@ -268,11 +269,12 @@ class String(Fuzzable):
             value += self.padding * (self.size - len(value))
         return helpers.str_to_bytes(value)
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take
+        :param default_value:
         """
         return len(self._fuzz_library) + len(self.this_library)

@@ -2,6 +2,7 @@ from functools import wraps
 
 from .. import helpers, primitives
 from ..fuzzable import Fuzzable
+from ..fuzzable_wrapper import FuzzableWrapper
 from ..mutation import Mutation
 
 
@@ -68,8 +69,13 @@ class Size(Fuzzable):
         self.signed = signed
         self.math = math
 
-        self.bit_field = primitives.BitField(
-            0, self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
+        self.bit_field = FuzzableWrapper(
+            fuzz_object=primitives.BitField(
+                self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
+            ),
+            fuzzable=True,
+            name=None,
+            default_value=0,
         )
         self._rendered = b""
         self._fuzz_complete = False
@@ -80,14 +86,15 @@ class Size(Fuzzable):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def mutations(self):
+    def mutations(self, default_value):
         for mutation in self.bit_field.mutations():
             yield mutation
 
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Wrap the num_mutations routine of the internal bit_field primitive.
 
+        :param default_value:
         :rtype:  int
         :return: Number of mutated forms this primitive can take.
         """

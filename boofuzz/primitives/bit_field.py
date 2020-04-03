@@ -41,7 +41,6 @@ def int_to_binary_string(number, bit_width):
 class BitField(Fuzzable):
     def __init__(
         self,
-        default_value,
         width,
         max_num=None,
         endian=LITTLE_ENDIAN,
@@ -52,8 +51,6 @@ class BitField(Fuzzable):
         """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
 
-        @type  default_value: int
-        @param default_value: Default integer value
         @type  width:         int
         @param width:         Width of bit fields
         @type  max_num:       int
@@ -68,48 +65,48 @@ class BitField(Fuzzable):
         @param full_range:    (Optional, def=False) If enabled the field mutates through *all* possible values.
         """
 
-        super(BitField, self).__init__()
-
-        assert isinstance(default_value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple!"
         assert isinstance(width, six.integer_types), "width must be an integer!"
 
-        self._default_value = default_value
         self.width = width
         self.max_num = max_num
         self.endian = endian
         self.format = output_format
         self.signed = signed
         self.full_range = full_range
-        self.cyclic_index = 0  # when cycling through non-mutating values
 
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
 
         assert isinstance(self.max_num, six.integer_types), "max_num must be an integer!"
 
+    def _iterate_fuzz_lib(self, default_value):
+        assert isinstance(default_value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple, not {0}".format(type(default_value))
+
         if self.full_range:
-            # add all possible values.
             for i in range(0, self.max_num):
-                self._fuzz_library.append(i)
+                yield i
+        elif isinstance(default_value, (list, tuple)):
+            for val in iter(default_value):
+                yield val
         else:
-            if isinstance(default_value, (list, tuple)):
-                # Use the supplied values as the fuzz library.
-                for val in iter(default_value):
-                    self._fuzz_library.append(val)
-            else:
-                # try only "smart" values.
-                self._add_integer_boundaries(0)
-                self._add_integer_boundaries(self.max_num // 2)
-                self._add_integer_boundaries(self.max_num // 3)
-                self._add_integer_boundaries(self.max_num // 4)
-                self._add_integer_boundaries(self.max_num // 8)
-                self._add_integer_boundaries(self.max_num // 16)
-                self._add_integer_boundaries(self.max_num // 32)
-                self._add_integer_boundaries(self.max_num)
+            # try only "smart" values.
+            interesting_boundaries = [
+                0,
+                self.max_num // 2,
+                self.max_num // 3,
+                self.max_num // 4,
+                self.max_num // 8,
+                self.max_num // 16,
+                self.max_num // 32,
+                self.max_num,
+            ]
+            for boundary in interesting_boundaries:
+                for v in self._yield_integer_boundaries(boundary):
+                    yield v
 
-            # TODO: Add injectable arbitrary bit fields
+        # TODO: Add injectable arbitrary bit fields
 
-    def _add_integer_boundaries(self, integer):
+    def _yield_integer_boundaries(self, integer):
         """
         Add the supplied integer and border cases to the integer fuzz heuristics library.
 
@@ -118,10 +115,9 @@ class BitField(Fuzzable):
         """
         for i in range(-10, 10):
             case = integer + i
-            # ensure the border case falls within the valid range for this field.
             if 0 <= case < self.max_num:
-                if case not in self._fuzz_library:
-                    self._fuzz_library.append(case)
+                # some day: if case not in self._user_provided_values
+                yield case
 
     def encode(self, value, child_data, mutation_context):
         temp = self._render_int(
@@ -129,12 +125,9 @@ class BitField(Fuzzable):
         )
         return helpers.str_to_bytes(temp)
 
-    def mutations(self):
-        for val in self._fuzz_library:
+    def mutations(self, default_value):
+        for val in self._iterate_fuzz_lib(default_value):
             yield val
-
-    def num_mutations(self):
-        return len(self._fuzz_library)
 
     @staticmethod
     def _render_int(value, output_format, bit_width, endian, signed):

@@ -64,7 +64,6 @@ __all__ = [
     "Aligned",
     "BasePrimitive",
     "BaseSocketConnection",
-    "ReferenceValueTestCaseSession",
     "BIG_ENDIAN",
     "BitField",
     "Block",
@@ -100,6 +99,7 @@ __all__ = [
     "RandomData",
     "RawL2SocketConnection",
     "RawL3SocketConnection",
+    "ReferenceValueTestCaseSession",
     "Repeat",
     "Repeater",
     "Request",
@@ -737,7 +737,7 @@ def s_bit_field(
     :param name:           (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    bit_field = primitives.BitField(value, width, None, endian, output_format, signed, full_range)
+    bit_field = primitives.BitField(width, None, endian, output_format, signed, full_range)
     blocks.CURRENT.push(FuzzableWrapper(fuzz_object=bit_field, fuzzable=fuzzable, name=name, default_value=value))
 
 
@@ -765,7 +765,7 @@ def s_byte(
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    byte = primitives.Byte(value, endian, output_format, signed, full_range)
+    byte = primitives.Byte(endian, output_format, signed, full_range)
     blocks.CURRENT.push(FuzzableWrapper(fuzz_object=byte, fuzzable=fuzzable, name=name, default_value=value))
 
 
@@ -787,8 +787,8 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
     :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    _bytes = primitives.Bytes(value, size, padding, max_len)
-    blocks.CURRENT.push(_bytes)
+    _bytes = primitives.Bytes(size, padding, max_len)
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=_bytes, fuzzable=fuzzable, name=name, default_value=value))
 
 
 def s_word(
@@ -815,7 +815,7 @@ def s_word(
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    word = primitives.Word(value, endian, output_format, signed, full_range)
+    word = primitives.Word(endian, output_format, signed, full_range)
     blocks.CURRENT.push(FuzzableWrapper(fuzz_object=word, fuzzable=fuzzable, name=name, default_value=value))
 
 
@@ -843,7 +843,7 @@ def s_dword(
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    dword = primitives.DWord(value, endian, output_format, signed, full_range)
+    dword = primitives.DWord(endian, output_format, signed, full_range)
     blocks.CURRENT.push(FuzzableWrapper(fuzz_object=dword, fuzzable=fuzzable, name=name, default_value=value))
 
 
@@ -871,7 +871,7 @@ def s_qword(
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    qword = primitives.QWord(value, endian, output_format, signed, full_range)
+    qword = primitives.QWord(endian, output_format, signed, full_range)
     blocks.CURRENT.push(FuzzableWrapper(fuzz_object=qword, fuzzable=fuzzable, name=name, default_value=value))
 
 
