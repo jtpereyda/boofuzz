@@ -1,4 +1,8 @@
+import functools
 import itertools
+import operator
+
+from funcy import compose
 
 from .base_primitive import BasePrimitive
 from .. import helpers
@@ -185,35 +189,44 @@ class Bytes(BasePrimitive):
             # _value has now been mutated and therefore we return True to indicate success
             return True
 
-    def mutations(self, default_value):
-        for fuzz_value in self._iterate_fuzz_cases(default_value=default_value):
-            if self.size is not None:
-                if len(fuzz_value) > self.size:
-                    continue  # too long, skip this one
-                else:
-                    yield fuzz_value + self.padding * (self.size - len(fuzz_value))
-            elif self.max_len is not None and len(fuzz_value) > self.max_len:
-                yield fuzz_value[:self.max_len]
-            else:
-                yield fuzz_value
+    def mutations(self):
+        for fuzz_value in self._iterate_fuzz_cases():
+            if callable(fuzz_value):
+                yield compose(self._adjust_mutation_for_size,
+                              fuzz_value)
+            yield self._adjust_mutation_for_size(fuzz_value=fuzz_value)
 
-    def _iterate_fuzz_cases(self, default_value):
-        this_library = [default_value * 2, default_value * 10, default_value * 100]
+    def _adjust_mutation_for_size(self, fuzz_value):
+        if self.size is not None:
+            if len(fuzz_value) > self.size:
+                return fuzz_value[:self.max_len]
+            else:
+                return fuzz_value + self.padding * (self.size - len(fuzz_value))
+        elif self.max_len is not None and len(fuzz_value) > self.max_len:
+            return fuzz_value[:self.max_len]
+        else:
+            return fuzz_value
+
+    def _iterate_fuzz_cases(self):
+        this_library = [functools.partial(operator.mul, 2),
+                        functools.partial(operator.mul, 10),
+                        functools.partial(operator.mul, 100),
+                        ]
         for fuzz_value in self._fuzz_library:
             yield fuzz_value
         for fuzz_value in this_library:
             yield fuzz_value
         for fuzz_value in self._magic_debug_values:
             yield fuzz_value
-        for fuzz_bytes in self._fuzz_strings_1byte:
-            for i in range(0, len(default_value)):
-                yield default_value[:i] + fuzz_bytes + default_value[i + 1 :]
-        for fuzz_bytes in self._fuzz_strings_2byte:
-            for i in range(0, len(default_value)-1):
-                yield default_value[:i] + fuzz_bytes + default_value[i + 2 :]
-        for fuzz_bytes in self._fuzz_strings_4byte:
-            for i in range(0, len(default_value)-3):
-                yield default_value[:i] + fuzz_bytes + default_value[i + 4 :]
+        # for fuzz_bytes in self._fuzz_strings_1byte:
+        #     for i in range(0, len(default_value)):
+        #         yield default_value[:i] + fuzz_bytes + default_value[i + 1 :]
+        # for fuzz_bytes in self._fuzz_strings_2byte:
+        #     for i in range(0, len(default_value)-1):
+        #         yield default_value[:i] + fuzz_bytes + default_value[i + 2 :]
+        # for fuzz_bytes in self._fuzz_strings_4byte:
+        #     for i in range(0, len(default_value)-3):
+        #         yield default_value[:i] + fuzz_bytes + default_value[i + 4 :]
 
 
     def num_mutations(self, default_value):

@@ -11,8 +11,11 @@ class Word(BitField):
         width = 16
         super(Word, self).__init__(width, None, *args, **kwargs)
 
-    def mutations(self, default_value):
-        if not isinstance(default_value, (six.integer_types, list, tuple)):
-            default_value = struct.unpack(self.endian + "H", default_value)[0]
-        for v in super(Word, self).mutations(default_value=default_value):
+    def mutations(self):
+        for v in super(Word, self).mutations():
             yield v
+
+    def encode(self, value, child_data, mutation_context):
+        if not isinstance(value, (six.integer_types, list, tuple)):
+            value = struct.unpack(self.endian + "H", value)[0]
+        return super(Word, self).encode(value, child_data, mutation_context)

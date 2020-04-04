@@ -84,7 +84,7 @@ class Repeat(fuzzable.Fuzzable):
     def original_value(self):
         return self._original_value
 
-    def mutations(self, default_value):
+    def mutations(self):
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
             raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
@@ -111,7 +111,7 @@ class Repeat(fuzzable.Fuzzable):
     def encode(self, value, child_data, mutation_context):
         return value * child_data
 
-    def render_mutated(self, mutation):
+    def render_mutated(self, mutation):  # TODO render_mutated doesn't exist for Fuzzable
         child_data = self._get_child_data(mutation=mutation)
         if self.qualified_name in mutation.mutations:
             return self.encode(mutation.mutations[self.qualified_name], child_data=child_data, mutation_context=None)

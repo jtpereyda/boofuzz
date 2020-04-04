@@ -248,14 +248,13 @@ class String(Fuzzable):
         for string in strings:
             self._fuzz_library.append(string)
 
-    def mutations(self, default_value):
+    def mutations(self):
         """
         Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
         completion.
 
         @rtype:  bool
         @return: True on success, False otherwise.
-        :param default_value:
         """
         for val in self._fuzz_library + self.this_library:
             if self.size < 0 or len(val) <= self.size:

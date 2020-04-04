@@ -31,7 +31,7 @@ class Aligned(Fuzzable):
 
         self.stack = []  # block item stack.
 
-    def mutations(self, default_value):
+    def mutations(self):
         for item in self.stack:
             self.request.mutant = item
             for mutation in item.mutations():

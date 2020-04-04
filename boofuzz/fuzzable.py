@@ -48,11 +48,10 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
 
     """
 
-    def mutations(self, default_value):
+    def mutations(self):
         """Yields mutations.
 
         Each mutation should be a pre-rendered value. That is, it must be suitable to pass to encode().
-        :param default_value:
         """
         return
         yield
@@ -67,7 +66,7 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
             int: Number of mutated forms this primitive can take
             :param default_value:
         """
-        return sum(1 for _ in self.mutations(default_value=default_value))
+        return sum(1 for _ in self.mutations())
 
     def encode(self, value, child_data, mutation_context):
         """Takes a fuzz value and encodes/renders/serializes that value.

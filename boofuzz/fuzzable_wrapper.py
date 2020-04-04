@@ -79,26 +79,28 @@ class FuzzableWrapper(object):
         else:
             return self._default_value
 
-    def mutations(self, test_case_context):
-        for value in self._fuzz_object.mutations(self.original_value(test_case_context=test_case_context)):
+    def mutations(self):
+        for value in self._fuzz_object.mutations():
             if isinstance(value, Mutation):
                 yield value
             else:
                 yield Mutation(mutations={self.qualified_name: value})
 
-    def render_mutated(self, mutation_context, test_case_context):
+    def render_mutated(self, mutation_context):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
         child_data = self._fuzz_object.get_child_data(mutation_context=mutation_context)
         if self.qualified_name in mutation_context.mutation.mutations:
-            return self._fuzz_object.encode(value=mutation_context.mutation.mutations[self.qualified_name],
-                                            child_data=child_data,
-                                            mutation_context=mutation_context)
+            mutation = mutation_context.mutation.mutations[self.qualified_name]
+            if callable(mutation):
+                input_value = mutation(self.original_value(test_case_context=mutation_context.test_case_context))
+            else:
+                input_value = mutation
         else:
-            return self._fuzz_object.encode(value=self.original_value(test_case_context=test_case_context),
-                                            child_data=child_data,
-                                            mutation_context=mutation_context)
+            input_value = self.original_value(test_case_context=mutation_context.test_case_context)
+
+        return self._fuzz_object.encode(value=input_value, child_data=child_data, mutation_context=mutation_context)
 
     def num_mutations(self):
         return self._fuzz_object.num_mutations(default_value=self._default_value)

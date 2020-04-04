@@ -37,13 +37,12 @@ class RandomData(Fuzzable):
         if self.step:
             self.max_mutations = (self.max_length - self.min_length) // self.step + 1
 
-    def mutations(self, default_value):
+    def mutations(self):
         """
         Mutate the primitive value returning False on completion.
 
         @rtype:  bool
         @return: True on success, False otherwise.
-        :param default_value:
         """
         if not self._fuzzable:
             return

@@ -13,8 +13,12 @@ class Byte(BitField):
 
         super(Byte, self).__init__(width, max_num, *args, **kwargs)
 
-    def mutations(self, default_value):
-        if not isinstance(default_value, (six.integer_types, list, tuple)):
-            default_value = struct.unpack(self.endian + "B", default_value)[0]
-        for v in super(Byte, self).mutations(default_value=default_value):
+    def mutations(self):
+        for v in super(Byte, self).mutations():
             yield v
+
+    def encode(self, value, child_data, mutation_context):
+        if not isinstance(value, (six.integer_types, list, tuple)):
+            value = struct.unpack(self.endian + "B", value)[0]
+        return super(Byte, self).encode(value, child_data, mutation_context)
+

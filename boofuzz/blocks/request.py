@@ -4,6 +4,7 @@ from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
 from ..fuzzable import Fuzzable
+from ..mutation_context import MutationContext
 
 
 class Request(Fuzzable):
@@ -54,7 +55,7 @@ class Request(Fuzzable):
 
         return self._rendered
 
-    def mutations(self, default_value=None):  # TODO: default_value=None is a way of simulating FuzzableWrapper which does not take default_value
+    def mutations(self):
         for item in self.stack:
             self.mutant = item
             for mutation in item.mutations():
@@ -118,7 +119,12 @@ class Request(Fuzzable):
         return self.get_child_data(mutation_context=mutation_context)
 
     def get_child_data(self, mutation_context):
-        # ensure there are no open blocks lingering.
+        """
+
+        :param mutation_context:
+        :type mutation_context: MutationContext
+        :return:
+        """
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
 

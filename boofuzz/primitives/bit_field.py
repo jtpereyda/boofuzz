@@ -79,15 +79,10 @@ class BitField(Fuzzable):
 
         assert isinstance(self.max_num, six.integer_types), "max_num must be an integer!"
 
-    def _iterate_fuzz_lib(self, default_value):
-        assert isinstance(default_value, (six.integer_types, list, tuple)), "value must be an integer, list, or tuple, not {0}".format(type(default_value))
-
+    def _iterate_fuzz_lib(self):
         if self.full_range:
             for i in range(0, self.max_num):
                 yield i
-        elif isinstance(default_value, (list, tuple)):
-            for val in iter(default_value):
-                yield val
         else:
             # try only "smart" values.
             interesting_boundaries = [
@@ -103,6 +98,10 @@ class BitField(Fuzzable):
             for boundary in interesting_boundaries:
                 for v in self._yield_integer_boundaries(boundary):
                     yield v
+        # TODO Add a way to inject a list of fuzz values
+        # elif isinstance(default_value, (list, tuple)):
+        # for val in iter(default_value):
+        #    yield val
 
         # TODO: Add injectable arbitrary bit fields
 
@@ -125,8 +124,8 @@ class BitField(Fuzzable):
         )
         return helpers.str_to_bytes(temp)
 
-    def mutations(self, default_value):
-        for val in self._iterate_fuzz_lib(default_value):
+    def mutations(self):
+        for val in self._iterate_fuzz_lib():
             yield val
 
     @staticmethod

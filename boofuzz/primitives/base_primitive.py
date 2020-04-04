@@ -13,7 +13,7 @@ class BasePrimitive(Fuzzable):
     def __init__(self):
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
 
-    def mutations(self, default_value):
+    def mutations(self):
         for val in self._fuzz_library:
             yield val
 

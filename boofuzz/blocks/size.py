@@ -74,7 +74,6 @@ class Size(Fuzzable):
                 self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
             ),
             fuzzable=True,
-            name=None,
             default_value=0,
         )
         self._rendered = b""
@@ -86,8 +85,8 @@ class Size(Fuzzable):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def mutations(self, default_value):
-        for mutation in self.bit_field.mutations():
+    def mutations(self):
+        for mutation in self.bit_field.fuzz_object.mutations():
             yield mutation
 
     def num_mutations(self, default_value):
@@ -109,7 +108,7 @@ class Size(Fuzzable):
                 return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(
                     mutation_context=mutation_context)))
         else:
-            return self.bit_field.encode(value=value, child_data=None, mutation_context=mutation_context)
+            return self.bit_field.fuzz_object.encode(value=value, child_data=None, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
         return self.length * "\x00"
@@ -119,7 +118,7 @@ class Size(Fuzzable):
             length = self._calculated_length(Mutation())
             return helpers.str_to_bytes(self._length_to_bytes(length))
         else:
-            return self.bit_field.encode(value=value, child_data=None)
+            return self.bit_field.fuzz_object.encode(value=value, child_data=None)
 
     def _calculated_length(self, mutation_context):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block(
