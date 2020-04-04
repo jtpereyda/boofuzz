@@ -636,8 +636,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop()
-
+        self._main_fuzz_loop((m for path in self._iterate_protocol() for m in self._iterate_single_node(path)))
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -709,7 +708,7 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
 
-    def _main_fuzz_loop(self):
+    def _main_fuzz_loop(self, fuzz_case_iterator):
         """Execute main fuzz logic; takes an iterator of test cases.
 
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
@@ -729,25 +728,24 @@ class Session(pgraph.Graph):
             if self._reuse_target_connection:
                 self.targets[0].open()
             num_cases_actually_fuzzed = 0
-            for path in self._iterate_protocol():
-                for mutation_context in self._iterate_single_node(path):
-                    if self.total_mutant_index < self._index_start:
-                        continue
-                    elif self._index_end is not None and self.total_mutant_index > self._index_end:
-                        break
+            for mutation_context in fuzz_case_iterator:
+                if self.total_mutant_index < self._index_start:
+                    continue
+                elif self._index_end is not None and self.total_mutant_index > self._index_end:
+                    break
 
-                    # Check restart interval
-                    if (
-                        num_cases_actually_fuzzed
-                        and self.restart_interval
-                        and num_cases_actually_fuzzed % self.restart_interval == 0
-                    ):
-                        self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                        self._restart_target(self.targets[0])
+                # Check restart interval
+                if (
+                    num_cases_actually_fuzzed
+                    and self.restart_interval
+                    and num_cases_actually_fuzzed % self.restart_interval == 0
+                ):
+                    self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
+                    self._restart_target(self.targets[0])
 
-                    self._fuzz_current_case(mutation_context)
+                self._fuzz_current_case(mutation_context)
 
-                    num_cases_actually_fuzzed += 1
+                num_cases_actually_fuzzed += 1
             if self._reuse_target_connection:
                 self.targets[0].close()
 
@@ -1272,7 +1270,7 @@ class Session(pgraph.Graph):
             # given nodes we don't want any ambiguity.
             path.append(edge)
 
-            message_path = "->".join([self.nodes[e.dst].name for e in path])
+            message_path = self._message_path_to_str(path)
             logging.debug("fuzzing: {0}".format(message_path))
             self.fuzz_node = self.nodes[path[-1].dst]
 
@@ -1298,6 +1296,7 @@ class Session(pgraph.Graph):
         Raises:
             sex.SullyRuntimeError:
         """
+        self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
         for mutation in self.fuzz_node.mutations():
@@ -1545,14 +1544,17 @@ class Session(pgraph.Graph):
         time.sleep(seconds)
 
     def _test_case_name_feature_check(self, mutation):
-        message_path = "->".join([self.nodes[e.dst].name for e in mutation.message_path])
+        message_path = self._message_path_to_str(mutation.message_path)
         return "FEATURE-CHECK->{0}".format(message_path)
 
     def _test_case_name(self, mutation):
         """Get long test case name."""
-        message_path = "->".join([self.nodes[e.dst].name for e in mutation.message_path])
+        message_path = self._message_path_to_str(mutation.message_path)
         primitive_path = next(iter(mutation.mutations))
         return "{0}.{1}.{2}".format(message_path, primitive_path, self.mutant_index)
+
+    def _message_path_to_str(self, message_path):
+        return "->".join([self.nodes[e.dst].name for e in message_path])
 
     def _post_send(self, target, test_case_context):
         if len(self._post_test_case_methods) > 0:
