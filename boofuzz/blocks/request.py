@@ -150,7 +150,9 @@ class Request(Fuzzable):
 
         for item in stack:
             # if the item is a block, step into it and continue looping.
-            if isinstance(item, Block):
+            if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object,
+                                                                                  Block) or isinstance(item.fuzz_object,
+                                                                                                       Aligned):  # TODO generic check here
                 for stack_item in self.walk(item.stack):
                     yield stack_item
             else:

@@ -323,7 +323,7 @@ def s_aligned(name, modulus, pattern=b"\x00"):
             blocks.CURRENT.pop()
 
     aligned = Aligned(blocks.CURRENT, modulus=modulus, pattern=pattern)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=aligned, fuzzable=False, name=name, default_value=None))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=aligned, fuzzable=True, name=name, default_value=None))
 
     return ScopedAligned(aligned)
 

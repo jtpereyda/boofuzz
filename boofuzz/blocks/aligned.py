@@ -45,7 +45,12 @@ class Aligned(Fuzzable):
         :rtype:  int
         :return: Number of mutated forms this primitive can take.
         """
-        return 0
+        num_mutations = 0
+
+        for item in self.stack:
+            if item.fuzzable:
+                num_mutations += item.num_mutations()
+        return num_mutations
 
     def _align_it(self, data):
         """Align data.

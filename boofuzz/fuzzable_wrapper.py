@@ -9,6 +9,7 @@ from boofuzz.fuzzable import Fuzzable
 @attr.s
 class ReferenceValueTestCaseSession(object):
     name = attr.ib()
+    default_value = attr.ib()
     pass
 
 
@@ -55,7 +56,7 @@ class FuzzableWrapper(object):
         """
         if self._name is None:
             FuzzableWrapper.name_counter += 1
-            self._name = "{0}{1}".format(type(self).__name__, FuzzableWrapper.name_counter)
+            self._name = "{0}{1}".format(type(self.fuzz_object).__name__, FuzzableWrapper.name_counter)
         return self._name
 
     @property
@@ -75,7 +76,10 @@ class FuzzableWrapper(object):
     def original_value(self, test_case_context):
         """Original, non-mutated value of element."""
         if isinstance(self._default_value, ReferenceValueTestCaseSession):
-            return test_case_context.session_variables[self._default_value.name]
+            if test_case_context is None:
+                return self._default_value.default_value
+            else:
+                return test_case_context.session_variables[self._default_value.name]
         else:
             return self._default_value
 
@@ -103,10 +107,10 @@ class FuzzableWrapper(object):
         return self._fuzz_object.encode(value=input_value, child_data=child_data, mutation_context=mutation_context)
 
     def num_mutations(self):
-        return self._fuzz_object.num_mutations(default_value=self._default_value)
+        return self._fuzz_object.num_mutations(default_value=self.original_value(test_case_context=None))
 
     def __repr__(self):
-        return "<%s <%s> %s %s>" % (self.__class__.__name__, self._fuzz_object, self.name, repr(self._default_value))
+        return "<%s <%s> %s %s>" % (self.__class__.__name__, self._fuzz_object, self.name, repr(self.original_value(test_case_context=None)))
 
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.

@@ -97,6 +97,11 @@ class Bytes(BasePrimitive):
         b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
+    _mutators_of_default_value = [functools.partial(operator.mul, 2),
+                                  functools.partial(operator.mul, 10),
+                                  functools.partial(operator.mul, 100),
+                                  ]
+
     def __init__(self, size=None, padding=b"\x00", max_len=None):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
@@ -117,78 +122,6 @@ class Bytes(BasePrimitive):
             self.max_len = self.size
         self.padding = padding
 
-    def mutate(self):  # TODO convert to mutations
-        """
-        Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
-        completion.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
-
-        while True:
-            # if we've ran out of mutations, raise the completion flag.
-            if self._mutant_index == self.num_mutations():
-                self._fuzz_complete = True
-
-            # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-            if not self._fuzzable or self._fuzz_complete:
-                self._value = self._original_value
-                return False
-
-            if self._mutant_index < len(self._fuzz_library):
-                # stage 1a: replace with _fuzz_library items
-                alreadyDone = 0
-                self._value = self._fuzz_library[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library):
-                # stage 1b: replace with this_library items
-                alreadyDone = len(self._fuzz_library)
-                self._value = self.this_library[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values):
-                # stage 1c: replace with _magic_debug_value items
-                alreadyDone = len(self._fuzz_library) + len(self.this_library)
-                self._value = self._magic_debug_values[self._mutant_index - alreadyDone]
-            else:
-                # stage 2a: replace every single byte with a value from _fuzz_strings_1byte
-                # stage 2b: replace every double byte block with a value from _fuzz_strings_2byte
-                # stage 2c: replace every four byte block with a value from _fuzz_strings_4byte
-                alreadyDone = len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values)
-                testcase_nr = self._mutant_index - alreadyDone
-                testcases_2a = len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0)
-                testcases_2b = len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1)
-                testcases_2c = len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3)
-                if testcase_nr < testcases_2a:
-                    j = testcase_nr % len(self._fuzz_strings_1byte)
-                    i = testcase_nr // len(self._fuzz_strings_1byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_1byte[j] + self._original_value[i + 1 :]
-                elif testcase_nr < testcases_2a + testcases_2b:
-                    testcase_nr -= testcases_2a
-                    j = testcase_nr % len(self._fuzz_strings_2byte)
-                    i = testcase_nr // len(self._fuzz_strings_2byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_2byte[j] + self._original_value[i + 2 :]
-                elif testcase_nr < testcases_2a + testcases_2b + testcases_2c:
-                    testcase_nr -= testcases_2a
-                    testcase_nr -= testcases_2b
-                    j = testcase_nr % len(self._fuzz_strings_4byte)
-                    i = testcase_nr // len(self._fuzz_strings_4byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_4byte[j] + self._original_value[i + 4 :]
-                else:
-                    # should not be reachable!
-                    assert False
-
-            # increment the mutation count.
-            self._mutant_index += 1
-
-            # check if the current testcase aligns
-            if self.size is not None and len(self._value) > self.size:
-                continue  # too long, skip this one
-            if self.max_len is not None and len(self._value) > self.max_len:
-                # truncate the current value
-                self._value = self._value[: self.max_len]
-
-            # _value has now been mutated and therefore we return True to indicate success
-            return True
-
     def mutations(self):
         for fuzz_value in self._iterate_fuzz_cases():
             if callable(fuzz_value):
@@ -208,13 +141,9 @@ class Bytes(BasePrimitive):
             return fuzz_value
 
     def _iterate_fuzz_cases(self):
-        this_library = [functools.partial(operator.mul, 2),
-                        functools.partial(operator.mul, 10),
-                        functools.partial(operator.mul, 100),
-                        ]
         for fuzz_value in self._fuzz_library:
             yield fuzz_value
-        for fuzz_value in this_library:
+        for fuzz_value in self._mutators_of_default_value:
             yield fuzz_value
         for fuzz_value in self._magic_debug_values:
             yield fuzz_value
@@ -241,7 +170,6 @@ class Bytes(BasePrimitive):
         #     for i in range(0, len(default_value)-3):
         #         yield default_value[:i] + fuzz_bytes + default_value[i + 4 :]
 
-
     def num_mutations(self, default_value):
         """
         Calculate and return the total number of mutations for this individual primitive.
@@ -251,11 +179,11 @@ class Bytes(BasePrimitive):
         :param default_value:
         """
         return sum((len(self._fuzz_library),
-                    len(self.this_library),
+                    len(self._mutators_of_default_value),
                     len(self._magic_debug_values),
-                    len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0),
-                    len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1),
-                    len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3),
+                    len(self._fuzz_strings_1byte) * max(0, len(default_value) - 0),
+                    len(self._fuzz_strings_2byte) * max(0, len(default_value) - 1),
+                    len(self._fuzz_strings_4byte) * max(0, len(default_value) - 3),
                     ))
 
     def encode(self, value, child_data, mutation_context):
