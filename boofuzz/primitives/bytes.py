@@ -218,6 +218,19 @@ class Bytes(BasePrimitive):
             yield fuzz_value
         for fuzz_value in self._magic_debug_values:
             yield fuzz_value
+        for fuzz_bytes in self._fuzz_strings_1byte:
+            i = 0
+            keep_going = True
+            while keep_going:
+                def f(value):
+                    nonlocal keep_going
+                    if i < len(value):
+                        return value[:i] + fuzz_bytes + value[i + 1:]
+                    else:
+                        keep_going = False
+                yield f
+                i += 1
+
         # for fuzz_bytes in self._fuzz_strings_1byte:
         #     for i in range(0, len(default_value)):
         #         yield default_value[:i] + fuzz_bytes + default_value[i + 1 :]

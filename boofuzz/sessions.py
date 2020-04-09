@@ -11,6 +11,7 @@ import threading
 import time
 import traceback
 import zlib
+from boofuzz.exception import BoofuzzError
 from boofuzz.test_case_context import TestCaseContext
 from builtins import input
 from io import open
@@ -1196,9 +1197,10 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_fail(str(e))
 
+        received = b""
         try:  # recv
             if self._receive_data_after_fuzz:
-                self.last_recv = self.targets[0].recv()
+                received = self.targets[0].recv()
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
@@ -1216,6 +1218,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(str(e))
             else:
                 self._fuzz_data_logger.log_fail(str(e))
+        self.last_recv = received
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
@@ -1300,9 +1303,6 @@ class Session(pgraph.Graph):
         self.mutant_index = 0
 
         for mutation in self.fuzz_node.mutations():
-            from pprint import pprint
-            pprint(mutation.mutations)
-
             self.mutant_index += 1
             self.total_mutant_index += 1
             mutation.message_path = path
@@ -1551,7 +1551,7 @@ class Session(pgraph.Graph):
         """Get long test case name."""
         message_path = self._message_path_to_str(mutation.message_path)
         primitive_path = next(iter(mutation.mutations))
-        return "{0}.{1}.{2}".format(message_path, primitive_path, self.mutant_index)
+        return "{0}:{1}:{2}".format(message_path, primitive_path, self.mutant_index)
 
     def _message_path_to_str(self, message_path):
         return "->".join([self.nodes[e.dst].name for e in message_path])
