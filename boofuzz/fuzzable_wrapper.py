@@ -122,7 +122,7 @@ class FuzzableWrapper(object):
             else:
                 yield Mutation(mutations={self.qualified_name: value})
 
-    def render_mutated(self, mutation_context=None):
+    def render(self, mutation_context=None):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
@@ -168,4 +168,4 @@ class FuzzableWrapper(object):
         Returns:
             bool: True
         """
-        return
+        return True

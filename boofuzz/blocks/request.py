@@ -84,7 +84,7 @@ class Request(FuzzableBlock):
                 item.fuzz_object, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
-    def render_mutated(self, mutation_context):
+    def render(self, mutation_context):
         return self.get_child_data(mutation_context=mutation_context)
 
     def get_child_data(self, mutation_context):

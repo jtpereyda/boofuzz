@@ -53,7 +53,7 @@ class Mirror(BasePrimitive):
 
     @_may_recurse
     def _render_primitive(self, primitive_name):
-        return self._request.names[primitive_name].render_mutated(Mutation()) if primitive_name is not None else None
+        return self._request.names[primitive_name].render(Mutation()) if primitive_name is not None else None
 
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name, mutation_context):

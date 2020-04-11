@@ -28,8 +28,11 @@ class FuzzableBlock(Fuzzable):
     def get_child_data(self, mutation_context):
         rendered = b""
         for item in self.stack:
-            rendered += item.render_mutated(mutation_context=mutation_context)
+            rendered += item.render(mutation_context=mutation_context)
         return rendered
+
+    def encode(self, value, child_data, mutation_context):
+        return child_data
 
     def push(self, item):
         """Push a child element onto this block's stack.

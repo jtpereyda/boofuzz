@@ -484,10 +484,6 @@ def s_size(
     :param name:          Name of this sizer field
     """
 
-    # you can't add a size for a block currently in the stack.
-    if block_name in blocks.CURRENT.block_stack:
-        raise exception.SullyRuntimeError("CAN NOT ADD A SIZE FOR A BLOCK CURRENTLY IN THE STACK")
-
     size = Size(
         block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math
     )

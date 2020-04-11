@@ -136,7 +136,7 @@ class Size(Fuzzable):
     def _length_of_target_block(self, mutation_context):
         """Return length of target block, including mutations if mutation applies."""
         target_block = self.request.resolve_name(self.context_path, self.block_name)
-        return len(target_block.render_mutated(mutation_context=mutation_context))
+        return len(target_block.render(mutation_context=mutation_context))
 
     @property
     @_may_recurse

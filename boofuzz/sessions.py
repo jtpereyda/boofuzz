@@ -567,7 +567,7 @@ class Session(pgraph.Graph):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
-        if src != self.root and not self.find_node("name", src.name):
+        if src != self.root and self.find_node("name", src.name) is not None:
             self.add_node(src)
 
         if self.find_node("name", dst.name) is None:
@@ -1111,7 +1111,7 @@ class Session(pgraph.Graph):
         if callback_data:
             data = callback_data
         else:
-            data = node.render_mutated(mutation_context=mutation_context)
+            data = node.render(mutation_context=mutation_context)
 
         try:  # send
             self.targets[0].send(data)
@@ -1175,7 +1175,7 @@ class Session(pgraph.Graph):
         if callback_data:
             data = callback_data
         else:
-            data = self.fuzz_node.render_mutated(mutation_context)
+            data = self.fuzz_node.render(mutation_context)
 
         try:  # send
             self.targets[0].send(data)
@@ -1426,7 +1426,7 @@ class Session(pgraph.Graph):
         fuzz_case_iterator().
 
         Args:
-            path(list of Connection): Path to take to get to the target node.
+            mutation_context (MutationContext): Current mutation context.
 
         """
         target = self.targets[0]

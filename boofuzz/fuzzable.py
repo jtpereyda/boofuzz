@@ -113,6 +113,8 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
     def context_path(self):
         """Dot-delimited string that describes the path up to this element. Configured after the object is attached
         to a Request."""
+        if not hasattr(self, "_context_path"):
+            self._context_path = None
         return self._context_path
 
     @context_path.setter
@@ -122,6 +124,8 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
     @property
     def request(self):
         """Reference to the Request to which this object is attached."""
+        if not hasattr(self, "_request"):
+            self._request = None
         return self._request
 
     @request.setter
@@ -140,4 +144,4 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         return True
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.qualified_name)
+        return "<%s with context path: %s>" % (self.__class__.__name__, self.context_path)
