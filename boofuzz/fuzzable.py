@@ -1,7 +1,7 @@
-import abc
-
 from builtins import object
 from future.utils import listitems, with_metaclass
+
+from .mutation_context import MutationContext
 
 
 class DocStringInheritor(type):
@@ -33,28 +33,55 @@ class DocStringInheritor(type):
 
 # DocStringInheritor is the metaclass in python 2 and 3
 class Fuzzable(with_metaclass(DocStringInheritor, object)):
-    """Describes a fuzzable message element.
+    """Base class for fuzzable message element types.
 
     Subclasses may implement any combination of:
 
-    1. mutations() -- generator yields mutations for this element. Default: Empty iterator.
-    2. encode() -- Takes a value yielded by mutations() and translates it to a bytes (byte string). Optional if
-                   mutations() yields bytes. Example: Yield strings with mutations() and encode them using encode().
-    3. num_mutations() -- Number of mutations an element yields. Default: Iterate mutations() to get count (default
+    4.  num_mutations() -- Number of mutations an element yields. Default: Iterate mutations() to get count (default
         behavior may not always be appropriate).
-    4. __len__() -- an element may describe its own size when rendered -- not required.
 
     The mutation and original_value functions are the most fundamental.
 
     """
 
+    def __init__(self):
+        self._request = None
+        self._context_path = None
+
     def mutations(self):
-        """Yields mutations.
+        """Generator to yield mutation values for this element.
+
+        Values are either plain values or callable functions that take a "default value" and mutate it. Functions are
+        used when the default or "normal" value influences the fuzzed value. Functions are used because the "normal"
+        value is sometimes dynamic and not known at the time of generation.
 
         Each mutation should be a pre-rendered value. That is, it must be suitable to pass to encode().
+
+        Default: Empty iterator.
         """
         return
         yield
+
+    def encode(self, value, child_data, mutation_context):
+
+        """Takes a value and encodes/renders/serializes it to a bytes (byte string).
+
+        Optional if mutations() yields bytes.
+
+        Example: Yield strings with mutations() and encode them to UTF-8 using encode().
+
+        Default behavior: Return value.
+
+        Args:
+            value: Value to encode. Type should match the type yielded by mutations()
+            child_data (bytes): Data from child elements or referenced elements.
+            mutation_context (MutationContext): Context for current mutation, if any.
+
+
+        Returns:
+            bytes: Encoded/serialized value.
+        """
+        return value
 
     def num_mutations(self, default_value):
         """Return the total number of mutations for this element.
@@ -68,22 +95,38 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         """
         return sum(1 for _ in self.mutations())
 
-    def encode(self, value, child_data, mutation_context):
-        """Takes a fuzz value and encodes/renders/serializes that value.
+    def get_child_data(self, mutation_context):
+        """Get child or referenced data for this node.
 
-        The value may be a default value, or may be a value yielded by mutations().
+        For blocks that reference other data from the message structure (e.g. size, checksum, blocks). See
+        FuzzableBlock for an example.
 
-        By default, simply returns value.
+        Args:
+            mutation_context (MutationContext): Mutation context.
 
         Returns:
-            bytes: Encoded/serialized value.
-            :param mutation_context:
+            bytes: Child data.
         """
-        return value
-
-    def get_child_data(self, mutation_context):
-        """Return child data for this node. Only applies to complex mutators."""
         return None
+
+    @property
+    def context_path(self):
+        """Dot-delimited string that describes the path up to this element. Configured after the object is attached
+        to a Request."""
+        return self._context_path
+
+    @context_path.setter
+    def context_path(self, x):
+        self._context_path = x
+
+    @property
+    def request(self):
+        """Reference to the Request to which this object is attached."""
+        return self._request
+
+    @request.setter
+    def request(self, x):
+        self._request = x
 
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.
@@ -97,5 +140,4 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         return True
 
     def __repr__(self):
-        return "%s" % (self.__class__.__name__)
-
+        return "<%s %s>" % (self.__class__.__name__, self.qualified_name)

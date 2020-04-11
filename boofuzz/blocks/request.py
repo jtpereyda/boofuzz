@@ -4,10 +4,11 @@ from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
 from ..fuzzable import Fuzzable
+from ..fuzzable_block import FuzzableBlock
 from ..mutation_context import MutationContext
 
 
-class Request(Fuzzable):
+class Request(FuzzableBlock):
     def __init__(self, name):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
@@ -17,6 +18,7 @@ class Request(Fuzzable):
         @param name: Name of this request
         """
 
+        super().__init__(request=self)
         self._name = name
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
@@ -42,41 +44,6 @@ class Request(Fuzzable):
     def fuzzable(self):
         return True
 
-    @property
-    def original_value(self):
-        # ensure there are no open blocks lingering.
-        if self.block_stack:
-            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
-
-        self._rendered = b""
-
-        for item in self.stack:
-            self._rendered += helpers.str_to_bytes(item.original_value)
-
-        return self._rendered
-
-    def mutations(self):
-        for item in self.stack:
-            self.mutant = item
-            for mutation in item.mutations():
-                yield mutation
-
-    def num_mutations(self, default_value=None):  # TODO: default_value=None is a way of simulating FuzzableWrapper which does not take default_value
-        """
-        Determine the number of repetitions we will be making.
-
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take.
-        :param default_value:
-        """
-        num_mutations = 0
-
-        for item in self.stack:
-            if item.fuzzable:
-                num_mutations += item.num_mutations()
-
-        return num_mutations
-
     def pop(self):
         """
         The last open block was closed, so pop it off of the block stack.
@@ -96,13 +63,14 @@ class Request(Fuzzable):
         @param item: Some primitive/block/request/etc.
         """
         context_path = ".".join(x.name for x in self.block_stack)  # TODO put in method
-        context_path = ".".join(filter(None,(self.name, context_path)))
+        context_path = ".".join(filter(None, (self.name, context_path)))
         item.context_path = context_path
+        item.request = self
         # ensure the name doesn't already exist.
-        if item.name in list(self.names):
-            raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.name)
+        if item.qualified_name in list(self.names):
+            raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.qualified_name)
 
-        self.names[item.name] = item
+        self.names[item.qualified_name] = item
 
         # if there are no open blocks, the item gets pushed onto the request stack.
         # otherwise, the pushed item goes onto the stack of the last opened block.
@@ -112,7 +80,8 @@ class Request(Fuzzable):
             self.block_stack[-1].fuzz_object.push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object, Block) or isinstance(item.fuzz_object, Aligned):  # TODO generic check here
+        if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object, Block) or isinstance(
+                item.fuzz_object, Aligned):  # TODO generic check here
             self.block_stack.append(item)
 
     def render_mutated(self, mutation_context):
@@ -126,13 +95,9 @@ class Request(Fuzzable):
         :return:
         """
         if self.block_stack:
-            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].qualified_name)
 
-        _rendered = b""
-        for item in self.stack:
-            _rendered += item.render_mutated(mutation_context=mutation_context)
-
-        return helpers.str_to_bytes(_rendered)
+        return super(Request, self).get_child_data(mutation_context=mutation_context)
 
     def walk(self, stack=None):
         """
@@ -158,19 +123,42 @@ class Request(Fuzzable):
             else:
                 yield item
 
+    def resolve_name(self, context_path, name):
+        context_components = context_path.split(".")
+        name_components = name.split(".")
+
+        if name_components[0] == "_parent":  # if path is relative
+            del name_components[0]
+            components = context_components + name_components
+            i = 0
+            while i + 1 < len(components):
+                if components[i + 1] == "_parent":
+                    del components[i + 1]
+                    del components[i]
+                else:
+                    i += 1
+        else:
+            components = context_components + name_components
+
+        normalized_name = ".".join(components)
+
+        if normalized_name in self.names:
+            return self.names[normalized_name]
+        elif "." not in name:
+            # attempt to look up by last name component
+            found_names = []
+            for n in self.names:
+                if name == n.rsplit('.', 1)[-1]:
+                    found_names.append(n)
+            if len(found_names) == 0:
+                raise "Unable to resolve block name '{0}'".format(name)
+            elif len(found_names) == 1:
+                return self.names[found_names[0]]
+            else:
+                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many potential matches: {1}".format(name, found_names)
+        else:
+            raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
+
+
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
-
-    def __len__(self):
-        length = 0
-        for item in self.stack:
-            length += len(item)
-        return length
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True

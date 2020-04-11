@@ -120,7 +120,7 @@ class Repeat(fuzzable.Fuzzable):
 
     def _get_child_data(self, mutation):
         if self.block_stack:
-            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].name)
+            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].qualified_name)
 
         _rendered = self.request.closed_blocks[self.block_name].render_mutated(mutation)
         return helpers.str_to_bytes(self._rendered)

@@ -1,13 +1,20 @@
 import attr
 
 from boofuzz.mutation import Mutation
-from boofuzz.mutation_context import MutationContext
-from boofuzz.test_case_context import TestCaseContext
-from boofuzz.fuzzable import Fuzzable
+from .mutation_context import MutationContext
+from .test_case_context import TestCaseContext
+from .fuzzable import Fuzzable
 
 
 @attr.s
 class ReferenceValueTestCaseSession(object):
+    """Refers to a dynamic value received or generated in the context of an individual test case.
+
+    Args:
+        name (str): Refers to a test case session key. Must be set in the TestCaseContext by the time the value is
+            required in the protocol definition. See Session.
+
+    """
     name = attr.ib()
     default_value = attr.ib()
     pass
@@ -23,21 +30,21 @@ class FuzzableWrapper(object):
             name=None,
             default_value=None,
     ):
-        """
-        Internal object used to handle Fuzzable objects. Manages name, default value, etc.
+        """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
-        @type  fuzzable:      bool
-        @param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:          str
-        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
-        @type  fuzz_object:   Fuzzable
-        @param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+        Args:
+            fuzz_object (Fuzzable): Fuzzable element.
+            fuzzable (bool): Enable fuzzing of this primitive. Default: True.
+            name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
+                be given.
+            default_value: Can be a static value, or a ReferenceValueTestCaseSession.
         """
         self._fuzzable = fuzzable
         self._name = name
         self._default_value = default_value
         self._fuzz_object = fuzz_object
         self._context_path = ""
+        self._request = None
 
     @property
     def fuzz_object(self):
@@ -67,14 +74,39 @@ class FuzzableWrapper(object):
 
     @property
     def context_path(self):
+        """The path of parent elements leading to this element. E.g. "myrequest.myblock1.myblock2".
+
+        Set by the session manager (Session).
+
+        Returns:
+            str: Context path, dot-delimited.
+
+        """
         return self._context_path
 
     @context_path.setter
     def context_path(self, x):
         self._context_path = x
+        self._fuzz_object.context_path = x
+
+    @property
+    def request(self):
+        """Reference to the Request in which this FuzzableWrapper lives."""
+        return self._request
+
+    @request.setter
+    def request(self, x):
+        self._request = x
+        self._fuzz_object.request = x
 
     def original_value(self, test_case_context):
-        """Original, non-mutated value of element."""
+        """Original, non-mutated value of element.
+
+        Args:
+            test_case_context (TestCaseContext): Used to resolve ReferenceValueTestCaseSession type default values.
+
+        Returns:
+        """
         if isinstance(self._default_value, ReferenceValueTestCaseSession):
             if test_case_context is None:
                 return self._default_value.default_value
@@ -90,27 +122,34 @@ class FuzzableWrapper(object):
             else:
                 yield Mutation(mutations={self.qualified_name: value})
 
-    def render_mutated(self, mutation_context):
+    def render_mutated(self, mutation_context=None):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
-        child_data = self._fuzz_object.get_child_data(mutation_context=mutation_context)
+        return self._fuzz_object.encode(value=self.get_value(mutation_context=mutation_context),
+                                        child_data=self._fuzz_object.get_child_data(mutation_context=mutation_context),
+                                        mutation_context=mutation_context)
+
+    def get_value(self, mutation_context=None):
+        if mutation_context is None:
+            mutation_context = MutationContext(Mutation())
         if self.qualified_name in mutation_context.mutation.mutations:
             mutation = mutation_context.mutation.mutations[self.qualified_name]
             if callable(mutation):
-                input_value = mutation(self.original_value(test_case_context=mutation_context.test_case_context))
+                value = mutation(self.original_value(test_case_context=mutation_context.test_case_context))
             else:
-                input_value = mutation
+                value = mutation
         else:
-            input_value = self.original_value(test_case_context=mutation_context.test_case_context)
+            value = self.original_value(test_case_context=mutation_context.test_case_context)
 
-        return self._fuzz_object.encode(value=input_value, child_data=child_data, mutation_context=mutation_context)
+        return value
 
     def num_mutations(self):
         return self._fuzz_object.num_mutations(default_value=self.original_value(test_case_context=None))
 
     def __repr__(self):
-        return "<%s <%s> %s %s>" % (self.__class__.__name__, self._fuzz_object, self.name, repr(self.original_value(test_case_context=None)))
+        return "<%s <%s> %s %s>" % (
+        self.__class__.__name__, self._fuzz_object, self.name, repr(self.original_value(test_case_context=None)))
 
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.
@@ -118,7 +157,7 @@ class FuzzableWrapper(object):
         Returns:
             int: Length of element (length of mutated element if mutated).
         """
-        return len(self._fuzz_object.render_mutated(Mutation()))  # TODO this method might be useless now...
+        return len(self._fuzz_object.render_mutated(Mutation()))
 
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.

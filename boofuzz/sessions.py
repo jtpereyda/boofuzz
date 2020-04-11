@@ -535,9 +535,8 @@ class Session(pgraph.Graph):
 
             sess.connect(s_get("HTTP"))
 
-        If you register callback method, it must follow this prototype::
-
-            def callback(target, fuzz_data_logger, session, node, edge, mutation_context, *args, **kwargs)
+        If you register callback method, it must follow the message signature of Session.example_test_case_callback().
+        Remember to include **kwargs for forward-compatibility.
 
         Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
         is a pointer to the session instance which is useful for snagging data such as session.last_recv which contains
@@ -973,7 +972,7 @@ class Session(pgraph.Graph):
         self._post_test_case_methods.append(method)
 
     # noinspection PyUnusedLocal
-    def example_test_case_callback(self, target, fuzz_data_logger, session, mutation_context, *args, **kwargs):
+    def example_test_case_callback(self, target, fuzz_data_logger, session, test_case_context, *args, **kwargs):
         """
         Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
 
@@ -983,8 +982,9 @@ class Session(pgraph.Graph):
                 Provided with a test case and test step already opened.
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
-            mutation_context (MutationContext): Context info specific to the current mutation.
-
+            test_case_context (TestCaseContext): Context for test case -scoped data. TestCaseContext.session_variables
+                values are generally set within a callback and referenced in elements via default values of type
+                :py:class:`ReferenceValueTestCaseSession`.
             args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
             kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
         """

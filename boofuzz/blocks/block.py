@@ -1,14 +1,12 @@
 from __future__ import absolute_import
 
 from .. import helpers
-from ..fuzzable import Fuzzable
+from ..fuzzable_block import FuzzableBlock
 from ..mutation import Mutation
 
 
-class Block(Fuzzable):
-    def __init__(
-        self, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="
-    ):
+class Block(FuzzableBlock):
+    def __init__(self, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
 
@@ -27,6 +25,7 @@ class Block(Fuzzable):
         @type  dep_compare: str
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
+        super().__init__(request=request)
 
         self.request = request
         self.group = group
@@ -41,12 +40,6 @@ class Block(Fuzzable):
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
-
-    def mutations(self):
-        for item in self.stack:
-            self.request.mutant = item
-            for mutation in item.mutations():
-                yield mutation
 
     def mutate(self):  # TODO salvage the group reference behavior from this deprecated method
         mutated = False
@@ -138,95 +131,47 @@ class Block(Fuzzable):
 
         return mutated
 
-    def num_mutations(self, default_value):
-        """
-        Determine the number of repetitions we will be making.
-
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take.
-        :param default_value:
-        """
-
-        num_mutations = 0
-
-        for item in self.stack:
-            if item.fuzzable:
-                num_mutations += item.num_mutations()
-
-        # if this block is associated with a group, then multiply out the number of possible mutations.
+    def num_mutations(self, default_value=None):
+        n = super(Block, self).num_mutations(default_value=default_value)
         if self.group:
-            num_mutations *= len(self.request.names[self.group].values)
-
-        return num_mutations
-
-    def push(self, item):
-        """
-        Push an arbitrary item onto this blocks stack.
-        @type item: BasePrimitive | Block | boofuzz.blocks.size.Size | boofuzz.blocks.repeat.Repeat
-        @param item: Some primitive/block/etc.
-        """
-        self.stack.append(item)
+            n *= len(self.request.names[self.group].num_mutations())
+        return n
 
     def get_child_data(self, mutation_context):
-        return self._render(mutation_context=mutation_context)
+        if self._do_dependencices_allow_render(mutation_context=mutation_context):
+            return super(Block, self).get_child_data(mutation_context=mutation_context)
+        else:
+            return b""
 
-    def _render(self, mutation_context):
-        """
-        Step through every item on this blocks stack and render it. Subsequent blocks recursively render their stacks.
-        """
-
-        # if this block is dependant on another field and the value is not met, render nothing.
-        _rendered = b""
+    def _do_dependencices_allow_render(self, mutation_context):
         if self.dep:
             if self.dep_compare == "==":
-                if self.dep_values and self.request.names[self.dep]._value not in self.dep_values:
-                    return _rendered
-
-                elif not self.dep_values and self.request.names[self.dep]._value != self.dep_value:
-                    return _rendered
+                if self.dep_values and self.request.names[self.dep].get_value(mutation_context) not in self.dep_values:
+                    return False
+                elif not self.dep_values and self.request.names[self.dep].get_value(mutation_context) != self.dep_value:
+                    return False
 
             if self.dep_compare == "!=":
-                if self.dep_values and self.request.names[self.dep]._value in self.dep_values:
-                    return _rendered
+                if self.dep_values and self.request.names[self.dep].get_value(mutation_context) in self.dep_values:
+                    return False
+                elif self.request.names[self.dep].get_value(mutation_context) == self.dep_value:
+                    return False
 
-                elif self.request.names[self.dep]._value == self.dep_value:
-                    return _rendered
+            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep].get_value(mutation_context):
+                return False
 
-            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep]._value:
-                return _rendered
+            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep].get_value(mutation_context):
+                return False
 
-            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep]._value:
-                return _rendered
+            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep].get_value(mutation_context):
+                return False
 
-            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep]._value:
-                return _rendered
-
-            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep]._value:
-                return _rendered
-
-        # otherwise, render and encode as usual.
-        for item in self.stack:
-            x = item.render_mutated(mutation_context=mutation_context)
-            _rendered += x
-
-        return helpers.str_to_bytes(self.encode(None, _rendered, mutation_context=mutation_context))
+            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep].get_value(mutation_context):
+                return False
+        return True
 
     def encode(self, value, child_data, mutation_context):
         if self.encoder:
              return self.encoder(child_data)
         else:
             return child_data
-
-    def __len__(self):
-        if self.encoder is not None:
-            return len(self.render())
-        else:
-            return sum(len(item) for item in self.stack)
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True
