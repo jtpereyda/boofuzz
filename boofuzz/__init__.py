@@ -6,7 +6,7 @@ import sys
 import six
 from past.builtins import map
 
-from . import blocks, exception, legos, pedrpc, primitives
+from . import blocks, exception, legos, primitives
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size, Aligned
 from .connections import (
     BaseSocketConnection,
@@ -33,6 +33,7 @@ from .fuzzable_wrapper import FuzzableWrapper
 from boofuzz.test_case_session_reference import TestCaseSessionReference
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
+from .monitors import BaseMonitor, CallbackMonitor, NetworkMonitor, pedrpc, ProcessMonitor
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -62,6 +63,7 @@ if sys.platform == "win32" and sys.version_info >= (3, 8):
 
 __all__ = [
     "Aligned",
+    "BaseMonitor",
     "BasePrimitive",
     "BaseSocketConnection",
     "BIG_ENDIAN",
@@ -70,6 +72,7 @@ __all__ = [
     "blocks",
     "Byte",
     "Bytes",
+    "CallbackMonitor",
     "Checksum",
     "CountRepeater",
     "DEFAULT_PROCMON_PORT",
@@ -92,9 +95,11 @@ __all__ = [
     "LITTLE_ENDIAN",
     "Mirror",
     "MustImplementException",
+    "NetworkMonitor",
     "open_test_run",
     "pedrpc",
     "primitives",
+    "ProcessMonitor",
     "QWord",
     "RandomData",
     "RawL2SocketConnection",
