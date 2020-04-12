@@ -75,7 +75,7 @@ class Target(object):
         self.monitors = monitors if monitors is not None else []
         self.monitor_alive = monitor_alive if monitor_alive is not None else []
 
-        if "procmon" in kwargs.keys():
+        if "procmon" in kwargs.keys() and kwargs["procmon"] is not None:
             warnings.warn(
                 "Target(procmon=...) is deprecated. Please change your code"
                 " and add it to the monitors argument. For now, we do this "
@@ -84,7 +84,7 @@ class Target(object):
             )
             self.monitors.append(kwargs["procmon"])
 
-        if "netmon" in kwargs.keys():
+        if "netmon" in kwargs.keys() and kwargs["netmon"] is not None:
             warnings.warn(
                 "Target(netmon=...) is deprecated. Please change your code"
                 " and add it to the monitors argument. For now, we do this "
@@ -944,7 +944,7 @@ class Session(pgraph.Graph):
         # query monitors for any data they may want to add to this test case.
         for monitor in target.monitors:
             data = monitor.retrieve_data()
-            if len(data) > 0:
+            if data is not None and len(data) > 0:
                 self._fuzz_data_logger.log_info(
                     "{0} captured {1} bytes of additional data for test case #{2}".format(
                         str(monitor), len(data), self.total_mutant_index
