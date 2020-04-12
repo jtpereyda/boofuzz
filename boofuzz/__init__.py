@@ -542,9 +542,7 @@ def s_binary(value, name=None):
         value += six.int2byte(int(pair, 16))
 
     static = primitives.Static(value, name)
-    blocks.CURRENT.push(
-        FuzzableWrapper(fuzz_object=static, fuzzable=False, name=name, default_value=parsed)
-    )
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=static, fuzzable=False, name=name, default_value=parsed))
 
 
 def s_delim(value, fuzzable=True, name=None):

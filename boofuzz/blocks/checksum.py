@@ -118,7 +118,11 @@ class Checksum(primitives.BasePrimitive):
 
     @_may_recurse
     def _render_block(self, block_name, mutation_context):
-        return self._request.names[block_name].render(mutation_context=mutation_context) if block_name is not None else None
+        return (
+            self._request.names[block_name].render(mutation_context=mutation_context)
+            if block_name is not None
+            else None
+        )
 
     def _checksum(self, data, ipv4_src, ipv4_dst):
         """

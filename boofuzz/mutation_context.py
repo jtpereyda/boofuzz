@@ -17,5 +17,6 @@ class MutationContext(object):
     Note: Mutations are generated in the context of a Test Case, so a Mutation has a TestCaseContext, but a
     TestCaseContext does not necessarily have a MutationContext.
     """
+
     mutation = attr.ib(type=Mutation)
     test_case_context = attr.ib(type=TestCaseContext, default=None)

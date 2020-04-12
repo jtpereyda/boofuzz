@@ -63,7 +63,6 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         yield
 
     def encode(self, value, mutation_context):
-
         """Takes a value and encodes/renders/serializes it to a bytes (byte string).
 
         Optional if mutations() yields bytes.

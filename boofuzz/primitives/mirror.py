@@ -47,7 +47,7 @@ class Mirror(BasePrimitive):
 
     def mutations(self):
         return iter(())  # empty generator
-    
+
     def original_value(self, mutation_context):
         return self._original_value_of_primitive(self._primitive_name, mutation_context)
 

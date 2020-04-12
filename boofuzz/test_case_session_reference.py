@@ -11,6 +11,7 @@ class TestCaseSessionReference(object):
         default_value: The default default value, used if the element must be rendered outside the context of a test
             case.
     """
+
     name = attr.ib(type=str)
     default_value = attr.ib()
     pass

@@ -773,7 +773,6 @@ class Session(pgraph.Graph):
         if self.web_port is not None:
             self.server_init()
 
-
         try:
             for monitor in self.targets[0].monitors:
                 monitor.start_target()
@@ -1147,7 +1146,14 @@ class Session(pgraph.Graph):
         # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
         if edge.callback:
             self._fuzz_data_logger.open_test_step("Callback function")
-            data = edge.callback(self.targets[0], self._fuzz_data_logger, session=self, node=node, edge=edge, test_case_context=test_case_context)
+            data = edge.callback(
+                self.targets[0],
+                self._fuzz_data_logger,
+                session=self,
+                node=node,
+                edge=edge,
+                test_case_context=test_case_context,
+            )
 
         return data
 
@@ -1441,11 +1447,18 @@ class Session(pgraph.Graph):
                 callback_data = self._callback_current_node(node=node, edge=e, test_case_context=test_case_context)
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context)
+            callback_data = self._callback_current_node(
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+            )
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-            self.transmit_normal(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data,
-                                 mutation_context=mutation_context)
+            self.transmit_normal(
+                target,
+                self.fuzz_node,
+                mutation.message_path[-1],
+                callback_data=callback_data,
+                mutation_context=mutation_context,
+            )
 
             self._check_for_passively_detected_failures(target)
             if not self._reuse_target_connection:
@@ -1516,9 +1529,17 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context)
+            callback_data = self._callback_current_node(
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+            )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-            self.transmit_fuzz(target, self.fuzz_node, mutation.message_path[-1], callback_data=callback_data, mutation_context=mutation_context)
+            self.transmit_fuzz(
+                target,
+                self.fuzz_node,
+                mutation.message_path[-1],
+                callback_data=callback_data,
+                mutation_context=mutation_context,
+            )
 
             if not self._check_for_passively_detected_failures(target=target):
                 self._check_for_passively_detected_failures(target=target)

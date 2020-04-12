@@ -23,8 +23,18 @@ class Size(Fuzzable):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, block_name, request, offset=0, length=4, endian="<", output_format="binary", inclusive=False,
-                 signed=False, math=None):
+    def __init__(
+        self,
+        block_name,
+        request,
+        offset=0,
+        length=4,
+        endian="<",
+        output_format="binary",
+        inclusive=False,
+        signed=False,
+        math=None,
+    ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.
@@ -96,8 +106,9 @@ class Size(Fuzzable):
             if self._recursion_flag:
                 return self._get_dummy_value()
             else:
-                return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(
-                    mutation_context=mutation_context)))
+                return helpers.str_to_bytes(
+                    self._length_to_bytes(self._calculated_length(mutation_context=mutation_context))
+                )
         else:
             return self.bit_field.fuzz_object.encode(value=value, mutation_context=mutation_context)
 
@@ -112,8 +123,11 @@ class Size(Fuzzable):
             return self.bit_field.fuzz_object.encode(value=value)
 
     def _calculated_length(self, mutation_context):
-        return self.offset + self._inclusive_length_of_self + self._length_of_target_block(
-            mutation_context=mutation_context)
+        return (
+            self.offset
+            + self._inclusive_length_of_self
+            + self._length_of_target_block(mutation_context=mutation_context)
+        )
 
     def _length_to_bytes(self, length):
         return primitives.BitField._render_int(

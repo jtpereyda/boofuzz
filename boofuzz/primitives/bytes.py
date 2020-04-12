@@ -97,10 +97,11 @@ class Bytes(BasePrimitive):
         b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
-    _mutators_of_default_value = [functools.partial(operator.mul, 2),
-                                  functools.partial(operator.mul, 10),
-                                  functools.partial(operator.mul, 100),
-                                  ]
+    _mutators_of_default_value = [
+        functools.partial(operator.mul, 2),
+        functools.partial(operator.mul, 10),
+        functools.partial(operator.mul, 100),
+    ]
 
     def __init__(self, size=None, padding=b"\x00", max_len=None):
         """
@@ -125,18 +126,17 @@ class Bytes(BasePrimitive):
     def mutations(self):
         for fuzz_value in self._iterate_fuzz_cases():
             if callable(fuzz_value):
-                yield compose(self._adjust_mutation_for_size,
-                              fuzz_value)
+                yield compose(self._adjust_mutation_for_size, fuzz_value)
             yield self._adjust_mutation_for_size(fuzz_value=fuzz_value)
 
     def _adjust_mutation_for_size(self, fuzz_value):
         if self.size is not None:
             if len(fuzz_value) > self.size:
-                return fuzz_value[:self.max_len]
+                return fuzz_value[: self.max_len]
             else:
                 return fuzz_value + self.padding * (self.size - len(fuzz_value))
         elif self.max_len is not None and len(fuzz_value) > self.max_len:
-            return fuzz_value[:self.max_len]
+            return fuzz_value[: self.max_len]
         else:
             return fuzz_value
 
@@ -151,12 +151,14 @@ class Bytes(BasePrimitive):
             i = 0
             keep_going = True
             while keep_going:
+
                 def f(value):
                     nonlocal keep_going
                     if i < len(value):
-                        return value[:i] + fuzz_bytes + value[i + 1:]
+                        return value[:i] + fuzz_bytes + value[i + 1 :]
                     else:
                         keep_going = False
+
                 yield f
                 i += 1
 
@@ -178,13 +180,16 @@ class Bytes(BasePrimitive):
         @return: Number of mutated forms this primitive can take
         :param default_value:
         """
-        return sum((len(self._fuzz_library),
-                    len(self._mutators_of_default_value),
-                    len(self._magic_debug_values),
-                    len(self._fuzz_strings_1byte) * max(0, len(default_value) - 0),
-                    len(self._fuzz_strings_2byte) * max(0, len(default_value) - 1),
-                    len(self._fuzz_strings_4byte) * max(0, len(default_value) - 3),
-                    ))
+        return sum(
+            (
+                len(self._fuzz_library),
+                len(self._mutators_of_default_value),
+                len(self._magic_debug_values),
+                len(self._fuzz_strings_1byte) * max(0, len(default_value) - 0),
+                len(self._fuzz_strings_2byte) * max(0, len(default_value) - 1),
+                len(self._fuzz_strings_4byte) * max(0, len(default_value) - 3),
+            )
+        )
 
     def encode(self, value, mutation_context):
         if value is None:

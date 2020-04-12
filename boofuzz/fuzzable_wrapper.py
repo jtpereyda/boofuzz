@@ -1,4 +1,3 @@
-
 from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
@@ -10,11 +9,7 @@ class FuzzableWrapper(object):
     name_counter = 0
 
     def __init__(
-            self,
-            fuzz_object=None,
-            fuzzable=True,
-            name=None,
-            default_value=None,
+        self, fuzz_object=None, fuzzable=True, name=None, default_value=None,
     ):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
@@ -54,9 +49,7 @@ class FuzzableWrapper(object):
 
     @property
     def qualified_name(self):
-        return ".".join(
-            s for s in (self._context_path, self.name) if s != ""
-        )
+        return ".".join(s for s in (self._context_path, self.name) if s != "")
 
     @property
     def context_path(self):
@@ -112,8 +105,9 @@ class FuzzableWrapper(object):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
-        return self._fuzz_object.encode(value=self.get_value(mutation_context=mutation_context),
-                                        mutation_context=mutation_context)
+        return self._fuzz_object.encode(
+            value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context
+        )
 
     def get_value(self, mutation_context=None):
         if mutation_context is None:
@@ -134,7 +128,11 @@ class FuzzableWrapper(object):
 
     def __repr__(self):
         return "<%s <%s> %s %s>" % (
-        self.__class__.__name__, self._fuzz_object, self.name, repr(self.original_value(test_case_context=None)))
+            self.__class__.__name__,
+            self._fuzz_object,
+            self.name,
+            repr(self.original_value(test_case_context=None)),
+        )
 
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.

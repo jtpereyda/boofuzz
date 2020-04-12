@@ -52,7 +52,7 @@ class FuzzableBlock(Fuzzable):
 
     def push(self, item):
         """Push a child element onto this block's stack.
-        
+
         Args:
             item (FuzzableWrapper): Some wrapped Fuzzable element
 

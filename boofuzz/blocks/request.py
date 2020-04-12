@@ -80,8 +80,12 @@ class Request(FuzzableBlock):
             self.block_stack[-1].fuzz_object.push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object, Block) or isinstance(
-                item.fuzz_object, Aligned):  # TODO generic check here
+        if (
+            isinstance(item, Block)
+            or isinstance(item, Aligned)
+            or isinstance(item.fuzz_object, Block)
+            or isinstance(item.fuzz_object, Aligned)
+        ):  # TODO generic check here
             self.block_stack.append(item)
 
     def render(self, mutation_context):
@@ -106,9 +110,12 @@ class Request(FuzzableBlock):
 
         for item in stack:
             # if the item is a block, step into it and continue looping.
-            if isinstance(item, Block) or isinstance(item, Aligned) or isinstance(item.fuzz_object,
-                                                                                  Block) or isinstance(item.fuzz_object,
-                                                                                                       Aligned):  # TODO generic check here
+            if (
+                isinstance(item, Block)
+                or isinstance(item, Aligned)
+                or isinstance(item.fuzz_object, Block)
+                or isinstance(item.fuzz_object, Aligned)
+            ):  # TODO generic check here
                 for stack_item in self.walk(item.stack):
                     yield stack_item
             else:
@@ -139,17 +146,18 @@ class Request(FuzzableBlock):
             # attempt to look up by last name component
             found_names = []
             for n in self.names:
-                if name == n.rsplit('.', 1)[-1]:
+                if name == n.rsplit(".", 1)[-1]:
                     found_names.append(n)
             if len(found_names) == 0:
                 raise "Unable to resolve block name '{0}'".format(name)
             elif len(found_names) == 1:
                 return self.names[found_names[0]]
             else:
-                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many potential matches: {1}".format(name, found_names)
+                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many potential matches: {1}".format(
+                    name, found_names
+                )
         else:
             raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
-
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)
