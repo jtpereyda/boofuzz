@@ -99,7 +99,7 @@ class Checksum(primitives.BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if value is None:
             if self._recursion_flag:
                 self._rendered = self._get_dummy_value()

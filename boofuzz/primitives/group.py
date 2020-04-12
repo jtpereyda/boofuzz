@@ -33,7 +33,7 @@ class Group(BasePrimitive):
         for val in self.values:
             assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         return self._render(value)
 
     def mutations(self):

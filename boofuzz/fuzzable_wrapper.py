@@ -113,7 +113,6 @@ class FuzzableWrapper(object):
         :type mutation_context: MutationContext
         """
         return self._fuzz_object.encode(value=self.get_value(mutation_context=mutation_context),
-                                        child_data=self._fuzz_object.get_child_data(mutation_context=mutation_context),
                                         mutation_context=mutation_context)
 
     def get_value(self, mutation_context=None):

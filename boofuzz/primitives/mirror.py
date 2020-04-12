@@ -34,7 +34,7 @@ class Mirror(BasePrimitive):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         """
         Render the mirror.
 

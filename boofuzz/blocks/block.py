@@ -137,13 +137,7 @@ class Block(FuzzableBlock):
             n *= len(self.request.names[self.group].num_mutations())
         return n
 
-    def get_child_data(self, mutation_context):
-        if self._do_dependencices_allow_render(mutation_context=mutation_context):
-            return super(Block, self).get_child_data(mutation_context=mutation_context)
-        else:
-            return b""
-
-    def _do_dependencices_allow_render(self, mutation_context):
+    def _do_dependencies_allow_render(self, mutation_context):
         if self.dep:
             if self.dep_compare == "==":
                 if self.dep_values and self.request.names[self.dep].get_value(mutation_context) not in self.dep_values:
@@ -170,8 +164,12 @@ class Block(FuzzableBlock):
                 return False
         return True
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
+        if self._do_dependencies_allow_render(mutation_context=mutation_context):
+            child_data = super(Block, self).get_child_data(mutation_context=mutation_context)
+        else:
+            child_data = b""
         if self.encoder:
-             return self.encoder(child_data)
+            return self.encoder(child_data)
         else:
             return child_data

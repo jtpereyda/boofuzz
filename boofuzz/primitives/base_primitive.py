@@ -17,7 +17,7 @@ class BasePrimitive(Fuzzable):
         for val in self._fuzz_library:
             yield val
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if value is None:
             value = b""
         return value

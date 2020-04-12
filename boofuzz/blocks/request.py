@@ -85,15 +85,6 @@ class Request(FuzzableBlock):
             self.block_stack.append(item)
 
     def render(self, mutation_context):
-        return self.get_child_data(mutation_context=mutation_context)
-
-    def get_child_data(self, mutation_context):
-        """
-
-        :param mutation_context:
-        :type mutation_context: MutationContext
-        :return:
-        """
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].qualified_name)
 

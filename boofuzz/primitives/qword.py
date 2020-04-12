@@ -16,7 +16,7 @@ class QWord(BitField):
         for v in super(QWord, self).mutations():
             yield v
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):
             value = struct.unpack(self.endian + "Q", value)[0]
-        return super(QWord, self).encode(value, child_data, mutation_context)
+        return super(QWord, self).encode(value, mutation_context)

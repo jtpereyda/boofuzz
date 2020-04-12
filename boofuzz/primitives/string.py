@@ -260,7 +260,7 @@ class String(Fuzzable):
             if self.size < 0 or len(val) <= self.size:
                 yield val
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if isinstance(value, six.text_type):
             value = helpers.str_to_bytes(value)
         # pad undersized library items.

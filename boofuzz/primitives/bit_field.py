@@ -118,7 +118,7 @@ class BitField(Fuzzable):
                 # some day: if case not in self._user_provided_values
                 yield case
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         temp = self._render_int(
             value, output_format=self.format, bit_width=self.width, endian=self.endian, signed=self.signed
         )

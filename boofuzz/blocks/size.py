@@ -91,7 +91,7 @@ class Size(Fuzzable):
 
         return self.bit_field.num_mutations()
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if value is None:  # default
             if self._recursion_flag:
                 return self._get_dummy_value()
@@ -99,7 +99,7 @@ class Size(Fuzzable):
                 return helpers.str_to_bytes(self._length_to_bytes(self._calculated_length(
                     mutation_context=mutation_context)))
         else:
-            return self.bit_field.fuzz_object.encode(value=value, child_data=None, mutation_context=mutation_context)
+            return self.bit_field.fuzz_object.encode(value=value, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
         return self.length * "\x00"
@@ -109,7 +109,7 @@ class Size(Fuzzable):
             length = self._calculated_length(Mutation())
             return helpers.str_to_bytes(self._length_to_bytes(length))
         else:
-            return self.bit_field.fuzz_object.encode(value=value, child_data=None)
+            return self.bit_field.fuzz_object.encode(value=value)
 
     def _calculated_length(self, mutation_context):
         return self.offset + self._inclusive_length_of_self + self._length_of_target_block(

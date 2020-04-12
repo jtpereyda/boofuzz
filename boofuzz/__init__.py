@@ -157,6 +157,7 @@ __all__ = [
     "String",
     "SullyRuntimeError",
     "Target",
+    "TestCaseSessionReference",
     "TCPSocketConnection",
     "TimeRepeater",
     "UDPSocketConnection",

@@ -186,7 +186,7 @@ class Bytes(BasePrimitive):
                     len(self._fuzz_strings_4byte) * max(0, len(default_value) - 3),
                     ))
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         if value is None:
             value = b""
         return value

@@ -23,7 +23,8 @@ class Aligned(FuzzableBlock):
         self._modulus = modulus
         self._pattern = pattern
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
+        child_data = self.get_child_data(mutation_context=mutation_context)
         padding_length = self._modulus - (len(child_data) % self._modulus)
         a, b = divmod(padding_length, len(self._pattern))
         return child_data + self._pattern * a + self._pattern[:b]

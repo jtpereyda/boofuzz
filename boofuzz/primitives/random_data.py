@@ -60,7 +60,7 @@ class RandomData(Fuzzable):
                 value += chr(random.randint(0, 255))
             yield Mutation(mutations={self.qualified_name: value})
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         return value
 
     def num_mutations(self, default_value):

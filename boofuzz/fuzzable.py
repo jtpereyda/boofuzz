@@ -35,13 +35,13 @@ class DocStringInheritor(type):
 class Fuzzable(with_metaclass(DocStringInheritor, object)):
     """Base class for fuzzable message element types.
 
-    Subclasses may implement any combination of:
+    A typical Fuzzable type will implement mutations() (a generator) or encode() or both.
 
-    4.  num_mutations() -- Number of mutations an element yields. Default: Iterate mutations() to get count (default
-        behavior may not always be appropriate).
+    num_mutations() exists as an optimization -- if exhausting mutations is inefficient, one may provide num_mutations()
+    to compute the number of mutations more efficiently.
 
-    The mutation and original_value functions are the most fundamental.
-
+    It's OK if your muations() function yields an indeterminate number of mutations -- it will just mess up the stats
+    while the fuzzer is running.
     """
 
     def __init__(self):
@@ -62,7 +62,7 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         return
         yield
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
 
         """Takes a value and encodes/renders/serializes it to a bytes (byte string).
 
@@ -74,7 +74,6 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
 
         Args:
             value: Value to encode. Type should match the type yielded by mutations()
-            child_data (bytes): Data from child elements or referenced elements.
             mutation_context (MutationContext): Context for current mutation, if any.
 
 
@@ -89,25 +88,15 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         Default implementation exhausts the mutations() generator, which is inefficient. Override if you can provide a
         value more efficiently, or if exhausting the mutations() generator has side effects.
 
+        Args:
+            default_value: Use if number of mutations depends on the default value. Provided by FuzzableWrapper.
+                Note: It is generally good behavior to have a consistent number of mutations for a given default value
+                length.
+
         Returns:
             int: Number of mutated forms this primitive can take
-            :param default_value:
         """
         return sum(1 for _ in self.mutations())
-
-    def get_child_data(self, mutation_context):
-        """Get child or referenced data for this node.
-
-        For blocks that reference other data from the message structure (e.g. size, checksum, blocks). See
-        FuzzableBlock for an example.
-
-        Args:
-            mutation_context (MutationContext): Mutation context.
-
-        Returns:
-            bytes: Child data.
-        """
-        return None
 
     @property
     def context_path(self):

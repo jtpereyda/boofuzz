@@ -108,15 +108,15 @@ class Repeat(fuzzable.Fuzzable):
 
         return len(self._fuzz_library)
 
-    def encode(self, value, child_data, mutation_context):
+    def encode(self, value, mutation_context):
         return value * child_data
 
     def render_mutated(self, mutation):  # TODO render_mutated doesn't exist for Fuzzable
         child_data = self._get_child_data(mutation=mutation)
         if self.qualified_name in mutation.mutations:
-            return self.encode(mutation.mutations[self.qualified_name], child_data=child_data, mutation_context=None)
+            return self.encode(mutation.mutations[self.qualified_name], mutation_context=None)
         else:
-            return self.encode(value=self.original_value, child_data=child_data, mutation_context=None)
+            return self.encode(value=self.original_value, mutation_context=None)
 
     def _get_child_data(self, mutation):
         if self.block_stack:
