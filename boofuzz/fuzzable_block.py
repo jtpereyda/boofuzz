@@ -5,7 +5,7 @@ from .fuzzable_wrapper import FuzzableWrapper
 class FuzzableBlock(Fuzzable):
     """Fuzzable type designed to have children elements.
 
-    Overrides basic Fuzzable functions and adds:
+    Overrides basic Fuzzable methods and adds:
     1. push()
     2. get_child_data()
     """
