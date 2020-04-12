@@ -1,23 +1,9 @@
-import attr
 
 from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
+from .test_case_session_reference import TestCaseSessionReference
 from .fuzzable import Fuzzable
-
-
-@attr.s
-class ReferenceValueTestCaseSession(object):
-    """Refers to a dynamic value received or generated in the context of an individual test case.
-
-    Args:
-        name (str): Refers to a test case session key. Must be set in the TestCaseContext by the time the value is
-            required in the protocol definition. See Session.
-
-    """
-    name = attr.ib()
-    default_value = attr.ib()
-    pass
 
 
 class FuzzableWrapper(object):
@@ -107,7 +93,7 @@ class FuzzableWrapper(object):
 
         Returns:
         """
-        if isinstance(self._default_value, ReferenceValueTestCaseSession):
+        if isinstance(self._default_value, TestCaseSessionReference):
             if test_case_context is None:
                 return self._default_value.default_value
             else:

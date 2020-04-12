@@ -30,7 +30,7 @@ from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .fuzzable_wrapper import FuzzableWrapper
-from .fuzzable_wrapper import ReferenceValueTestCaseSession
+from boofuzz.test_case_session_reference import TestCaseSessionReference
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .primitives import (
@@ -99,7 +99,6 @@ __all__ = [
     "RandomData",
     "RawL2SocketConnection",
     "RawL3SocketConnection",
-    "ReferenceValueTestCaseSession",
     "Repeat",
     "Repeater",
     "Request",
