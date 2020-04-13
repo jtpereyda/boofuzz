@@ -179,7 +179,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             + (4 * indent_size + 1 - len(str(self._total_index))) * " "
             + description.strip()
         )
-        self._fail_storage.append([fail_msg, 1])
+        self._fail_storage.append([fail_msg.replace("\n", " "), curses.COLOR_RED])
         self._log_storage.append(helpers.format_log_msg(msg_type="fail", description=description, format_type="curses"))
         self._event_crash = True
         self._event_log = True
@@ -191,7 +191,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             + (4 * indent_size + 1 - len(str(self._total_index))) * " "
             + description.strip()
         )
-        self._fail_storage.append([fail_msg, 3])
+        self._fail_storage.append([fail_msg.replace("\n", " "), curses.COLOR_YELLOW])
         self._log_storage.append(
             helpers.format_log_msg(msg_type="error", description=description, format_type="curses")
         )
@@ -308,6 +308,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             max_lines=self._max_log_lines,
             total_indent_size=total_indent_size,
             auto_scroll=self._auto_scroll,
+            truncate_long_lines=True,
         )
 
     def _draw_stat(self):
@@ -398,7 +399,8 @@ def _progess_bar(current, total, width):
     return title_str + bar_str + percent_str
 
 
-def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_size, auto_scroll):
+def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_size, auto_scroll,
+                truncate_long_lines=False):
     total_rows = 0
     height = y_max - y_min + 1
     width = x_max - x_min
@@ -417,20 +419,21 @@ def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_
             total_rows += 1
             break
 
-        columns = width - total_indent_size
-        rows = int(ceil(len(lines[i][0][width:]) / columns))
-        if rows >= 1:
-            for row in range(1, rows + 1):
-                if total_rows < max_lines - 1:
-                    pad.addstr(
-                        total_rows,
-                        total_indent_size,
-                        lines[i][0][width:][(row * columns) - columns : row * columns],
-                        curses.color_pair(lines[i][1]),
-                    )
-                    total_rows += 1
-                else:
-                    break
+        if not truncate_long_lines:
+            columns = width - total_indent_size
+            rows = int(ceil(len(lines[i][0][width:]) / columns))
+            if rows >= 1:
+                for row in range(1, rows + 1):
+                    if total_rows < max_lines - 1:
+                        pad.addstr(
+                            total_rows,
+                            total_indent_size,
+                            lines[i][0][width:][(row * columns) - columns : row * columns],
+                            curses.color_pair(lines[i][1]),
+                        )
+                        total_rows += 1
+                    else:
+                        break
 
     if total_rows > height and auto_scroll:
         offset = total_rows - height
