@@ -58,6 +58,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.proc_name = proc_name
         self.ignore_pid = pid_to_ignore
         self.log_level = level
+        self.capture_output = False
 
         self.stop_commands = []
         self.start_commands = []
@@ -158,6 +159,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             ignore_pid=self.ignore_pid,
             log_level=self.log_level,
             coredump_dir=self.coredump_dir,
+            capture_output=self.capture_output,
         )
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
@@ -197,6 +199,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Restarting target...")
         self.stop_target()
         return self.start_target()
+
+    def set_capture_output(self, capture_output):
+        self.log("updating capture_output to '%s'" % capture_output)
+        self.capture_output = capture_output
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)
