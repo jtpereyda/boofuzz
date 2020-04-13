@@ -9,8 +9,10 @@ class BoofuzzFailure(Exception):
     it may be necessary to abort the test case before a fuzz message is even sent, as the fuzz message may be poorly
     defined outside the context of a valid partial protocol exchange.
     """
+
     message = attr.ib(type=str, default="")
     pass
+
 
 class BoofuzzError(Exception):
     pass
