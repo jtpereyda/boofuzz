@@ -12,7 +12,7 @@ import time
 import traceback
 import warnings
 import zlib
-from boofuzz.exception import BoofuzzError, BoofuzzFailure
+from .exception import BoofuzzFailure
 from builtins import input
 from io import open
 
