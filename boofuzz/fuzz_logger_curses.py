@@ -399,8 +399,9 @@ def _progess_bar(current, total, width):
     return title_str + bar_str + percent_str
 
 
-def _render_pad(lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_size, auto_scroll,
-                truncate_long_lines=False):
+def _render_pad(
+    lines, pad, y_min, x_min, y_max, x_max, max_lines, total_indent_size, auto_scroll, truncate_long_lines=False
+):
     total_rows = 0
     height = y_max - y_min + 1
     width = x_max - x_min
