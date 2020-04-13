@@ -30,7 +30,9 @@ if not getattr(__builtins__, "WindowsError", None):
 
         pass
 
+
 POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK = 30
+
 
 def _enumerate_processes():
     for pid in psutil.pids():
@@ -51,8 +53,15 @@ def _get_coredump_path():
 
 class DebuggerThreadSimple(threading.Thread):
     def __init__(
-        self, start_commands, process_monitor, proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1,
-        capture_output=False, **kwargs
+        self,
+        start_commands,
+        process_monitor,
+        proc_name=None,
+        ignore_pid=None,
+        coredump_dir=None,
+        log_level=1,
+        capture_output=False,
+        **kwargs
     ):
         """
         This class isn't actually ran as a thread, only the start_monitoring
@@ -164,16 +173,17 @@ class DebuggerThreadSimple(threading.Thread):
             if self._process is not None:
                 outdata, errdata = self._process.communicate(timeout=POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK)
         except subprocess.TimeoutExpired:
-            self.process_monitor.log(msg="Expired waiting for process {0} to terminate".format(self._process.pid),
-                                     level=1)
+            self.process_monitor.log(
+                msg="Expired waiting for process {0} to terminate".format(self._process.pid), level=1
+            )
 
         msg = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
             time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason
         )
         if errdata is not None:
-            msg += "STDERR:\n{0}\n".format(errdata.decode('ascii'))
+            msg += "STDERR:\n{0}\n".format(errdata.decode("ascii"))
         if outdata is not None:
-            msg += "STDOUT:\n{0}\n".format(outdata.decode('ascii'))
+            msg += "STDOUT:\n{0}\n".format(outdata.decode("ascii"))
         self.process_monitor.last_synopsis = msg
 
     def watch(self):
