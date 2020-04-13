@@ -10,9 +10,7 @@ from .fuzzable import Fuzzable
 class FuzzableWrapper(object):
     name_counter = 0
 
-    def __init__(
-        self, fuzz_object=None, fuzzable=True, name=None, default_value=None, fuzz_values=None
-    ):
+    def __init__(self, fuzz_object=None, fuzzable=True, name=None, default_value=None, fuzz_values=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
         Args:
