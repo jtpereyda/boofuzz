@@ -1,4 +1,6 @@
 from boofuzz.mutation import Mutation
+from future.moves import itertools
+
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
@@ -9,7 +11,7 @@ class FuzzableWrapper(object):
     name_counter = 0
 
     def __init__(
-        self, fuzz_object=None, fuzzable=True, name=None, default_value=None,
+        self, fuzz_object=None, fuzzable=True, name=None, default_value=None, fuzz_values=None
     ):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
@@ -19,6 +21,7 @@ class FuzzableWrapper(object):
             name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
                 be given.
             default_value: Can be a static value, or a ReferenceValueTestCaseSession.
+            fuzz_values (list): List of custom fuzz values to add to the normal mutations.
         """
         self._fuzzable = fuzzable
         self._name = name
@@ -27,6 +30,9 @@ class FuzzableWrapper(object):
         self._context_path = ""
         self._request = None
         self._halt_mutations = False
+        if fuzz_values is None:
+            fuzz_values = list()
+        self._fuzz_values = fuzz_values
 
     @property
     def fuzz_object(self):
@@ -107,7 +113,7 @@ class FuzzableWrapper(object):
 
     def mutations(self):
         try:
-            for value in self._fuzz_object.mutations():
+            for value in itertools.chain(self._fuzz_object.mutations(), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
                     return

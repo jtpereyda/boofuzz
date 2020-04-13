@@ -26,6 +26,7 @@ Fixes
 - Refactored old unit-tests
 - Removed deprecated session arguments `fuzz_data_logger`, `log_level`, `logfile`, `logfile_level` and `log()`.
 - Removed deprecated logger `FuzzLoggerFile`.
+- Fixed network monitor compatibility with Python 3.
 
 v0.1.6
 ------

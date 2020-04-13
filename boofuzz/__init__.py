@@ -365,14 +365,14 @@ def s_block_end(name=None):
 
 
 def s_checksum(
-    block_name,
-    algorithm="crc32",
-    length=0,
-    endian=LITTLE_ENDIAN,
-    fuzzable=True,
-    name=None,
-    ipv4_src_block_name=None,
-    ipv4_dst_block_name=None,
+        block_name,
+        algorithm="crc32",
+        length=0,
+        endian=LITTLE_ENDIAN,
+        fuzzable=True,
+        name=None,
+        ipv4_src_block_name=None,
+        ipv4_dst_block_name=None,
 ):
     """
     Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
@@ -450,16 +450,16 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
 
 
 def s_size(
-    block_name,
-    offset=0,
-    length=4,
-    endian=LITTLE_ENDIAN,
-    output_format="binary",
-    inclusive=False,
-    signed=False,
-    math=None,
-    fuzzable=True,
-    name=None,
+        block_name,
+        offset=0,
+        length=4,
+        endian=LITTLE_ENDIAN,
+        output_format="binary",
+        inclusive=False,
+        signed=False,
+        math=None,
+        fuzzable=True,
+        name=None,
 ):
     """
     Create a sizer block bound to the block with the specified name. You *can not* create a sizer for any
@@ -711,7 +711,8 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
 
 # noinspection PyTypeChecker
 def s_bit_field(
-    value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+        value, width, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True,
+        name=None, fuzz_values=None
 ):
     """
     Push a variable length bit field onto the current block stack.
@@ -734,14 +735,18 @@ def s_bit_field(
     :param fuzzable:       (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:           str
     :param name:           (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type fuzz_values:     list
+    :param fuzz_values:    List of custom fuzz values to add to the normal mutations.
     """
 
     bit_field = primitives.BitField(width, None, endian, output_format, signed, full_range)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=bit_field, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=bit_field, fuzzable=fuzzable, name=name, default_value=value,
+                                        fuzz_values=fuzz_values))
 
 
 def s_byte(
-    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+        value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None,
+        fuzz_values=None
 ):
     """
     Push a byte onto the current block stack.
@@ -762,10 +767,13 @@ def s_byte(
     :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:          str
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type fuzz_values:    list
+    :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
     byte = primitives.Byte(endian, output_format, signed, full_range)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=byte, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=byte, fuzzable=fuzzable, name=name, default_value=value,
+                                        fuzz_values=fuzz_values))
 
 
 def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
@@ -791,7 +799,8 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
 
 
 def s_word(
-    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+        value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None,
+        fuzz_values=None
 ):
     """
     Push a word onto the current block stack.
@@ -812,14 +821,18 @@ def s_word(
     :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:          str
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type fuzz_values:    list
+    :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
     word = primitives.Word(endian, output_format, signed, full_range)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=word, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=word, fuzzable=fuzzable, name=name, default_value=value,
+                                        fuzz_values=fuzz_values))
 
 
 def s_dword(
-    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+        value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None,
+        fuzz_values=None
 ):
     """
     Push a double word onto the current block stack.
@@ -840,14 +853,18 @@ def s_dword(
     :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:          str
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type fuzz_values:    list
+    :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
     dword = primitives.DWord(endian, output_format, signed, full_range)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=dword, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=dword, fuzzable=fuzzable, name=name, default_value=value,
+                                        fuzz_values=fuzz_values))
 
 
 def s_qword(
-    value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None
+        value, endian=LITTLE_ENDIAN, output_format="binary", signed=False, full_range=False, fuzzable=True, name=None,
+        fuzz_values=None
 ):
     """
     Push a quad word onto the current block stack.
@@ -868,10 +885,13 @@ def s_qword(
     :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:          str
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type fuzz_values:    list
+    :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
     qword = primitives.QWord(endian, output_format, signed, full_range)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=qword, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=qword, fuzzable=fuzzable, name=name, default_value=value,
+                                        fuzz_values=fuzz_values))
 
 
 # ALIASES
