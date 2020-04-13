@@ -1371,6 +1371,7 @@ class Session(pgraph.Graph):
                 self._skip_current_node_after_current_test_case = False
                 break
             elif self._skip_current_element_after_current_test_case:
+                self.fuzz_node.mutant.stop_mutations()
                 self._skip_current_element_after_current_test_case = False
                 continue
                 # TODO reimplement node skip functionality
@@ -1506,7 +1507,7 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall."
             % (
-                type(self.fuzz_node.mutant).__name__,
+                type(self.fuzz_node.mutant.fuzz_object).__name__,
                 # TODO: Original value is not always attainable here, in the case of dynamic default values.
                 # This output could be easily removed, and with some effort made dynamically available in the web view.
                 # repr(self.fuzz_node.mutant.original_value(mutation_context=mutation_context)),

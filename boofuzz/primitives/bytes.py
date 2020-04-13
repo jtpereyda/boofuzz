@@ -161,16 +161,30 @@ class Bytes(BasePrimitive):
 
                 yield f
                 i += 1
-
-        # for fuzz_bytes in self._fuzz_strings_1byte:
-        #     for i in range(0, len(default_value)):
-        #         yield default_value[:i] + fuzz_bytes + default_value[i + 1 :]
-        # for fuzz_bytes in self._fuzz_strings_2byte:
-        #     for i in range(0, len(default_value)-1):
-        #         yield default_value[:i] + fuzz_bytes + default_value[i + 2 :]
-        # for fuzz_bytes in self._fuzz_strings_4byte:
-        #     for i in range(0, len(default_value)-3):
-        #         yield default_value[:i] + fuzz_bytes + default_value[i + 4 :]
+        for fuzz_bytes in self._fuzz_strings_2byte:
+            i = 0
+            keep_going = True
+            while keep_going:
+                def f(value):
+                    nonlocal keep_going
+                    if i < len(value)-1:
+                        return value[:i] + fuzz_bytes + value[i + 2:]
+                    else:
+                        keep_going = False
+                yield f
+                i += 1
+        for fuzz_bytes in self._fuzz_strings_4byte:
+            i = 0
+            keep_going = True
+            while keep_going:
+                def f(value):
+                    nonlocal keep_going
+                    if i < len(value)-3:
+                        return value[:i] + fuzz_bytes + value[i + 4:]
+                    else:
+                        keep_going = False
+                yield f
+                i += 1
 
     def num_mutations(self, default_value):
         """

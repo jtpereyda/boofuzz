@@ -26,6 +26,7 @@ class FuzzableWrapper(object):
         self._fuzz_object = fuzz_object
         self._context_path = ""
         self._request = None
+        self._halt_mutations = False
 
     @property
     def fuzz_object(self):
@@ -78,6 +79,16 @@ class FuzzableWrapper(object):
         self._request = x
         self._fuzz_object.request = x
 
+    def stop_mutations(self):
+        """Stop yielding mutations on the currently running :py:meth:`mutations` call.
+
+        Used by boofuzz to stop fuzzing an element when it's already caused several failures.
+
+        Returns:
+            NoneType: None
+        """
+        self._halt_mutations = True
+
     def original_value(self, test_case_context):
         """Original, non-mutated value of element.
 
@@ -95,11 +106,17 @@ class FuzzableWrapper(object):
             return self._default_value
 
     def mutations(self):
-        for value in self._fuzz_object.mutations():
-            if isinstance(value, Mutation):
-                yield value
-            else:
-                yield Mutation(mutations={self.qualified_name: value})
+        try:
+            for value in self._fuzz_object.mutations():
+                if self._halt_mutations:
+                    self._halt_mutations = False
+                    return
+                if isinstance(value, Mutation):
+                    yield value
+                else:
+                    yield Mutation(mutations={self.qualified_name: value})
+        finally:
+            self._halt_mutations = False  # in case stop_mutations is called when mutations were exhausted anyway
 
     def render(self, mutation_context=None):
         """Render after applying mutation, if applicable.
