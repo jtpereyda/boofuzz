@@ -1175,12 +1175,12 @@ class Session(pgraph.Graph):
             if self._ignore_connection_aborted:
                 self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(message=str(e))
 
         try:  # recv
             if self._receive_data_after_each_request:
@@ -1201,14 +1201,14 @@ class Session(pgraph.Graph):
         except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
 
     def transmit_fuzz(self, sock, node, edge, callback_data):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1237,12 +1237,12 @@ class Session(pgraph.Graph):
             if self._ignore_connection_issues_when_sending_fuzz_data:
                 self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
 
         try:  # recv
             if self._receive_data_after_fuzz:
@@ -1255,7 +1255,7 @@ class Session(pgraph.Graph):
         except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
             pass
@@ -1263,7 +1263,7 @@ class Session(pgraph.Graph):
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
