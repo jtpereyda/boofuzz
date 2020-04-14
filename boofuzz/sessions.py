@@ -491,7 +491,9 @@ class Session(pgraph.Graph):
             restart_methods = restart_callbacks
 
         self._callback_monitor = CallbackMonitor(
-            on_pre_send=pre_send_methods, on_post_send=post_test_case_methods, on_restart_target=restart_methods,
+            on_pre_send=pre_send_methods,
+            on_post_send=post_test_case_methods,
+            on_restart_target=restart_methods,
             on_post_start_target=post_start_target_methods,
         )
 
@@ -1134,8 +1136,7 @@ class Session(pgraph.Graph):
 
         if restarted:
             for monitor in target.monitors:
-                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger,
-                                          session=self)
+                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger, session=self)
         else:
             self._fuzz_data_logger.log_info(
                 "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
