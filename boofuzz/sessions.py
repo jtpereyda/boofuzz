@@ -287,6 +287,10 @@ class SessionInfo(object):
         x = next(self._db_reader.query("SELECT COUNT(*) FROM cases"))[0]
         return x
 
+    @property
+    def mutant_index(self):
+        return None
+
     def test_case_data(self, index):
         """Return test case data object (for use by web server)
 
@@ -358,7 +362,7 @@ class Session(pgraph.Graph):
         crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
-                                           Default None.
+                                            Default None.
         restart_threshold (int):    Maximum number of retries on lost target connection. Default None (indefinitely).
         restart_timeout (float):    Time in seconds for that a connection attempt should be retried. Default None
                                     (indefinitely).
@@ -604,7 +608,6 @@ class Session(pgraph.Graph):
         Returns:
             pgraph.Edge: The edge between the src and dst.
         """
-
         # if only a source was provided, then make it the destination and set the source to the root node.
         if dst is None:
             dst = src
@@ -618,7 +621,7 @@ class Session(pgraph.Graph):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
-        if src != self.root and self.find_node("name", src.name) is not None:
+        if src != self.root and self.find_node("name", src.name) is None:
             self.add_node(src)
 
         if self.find_node("name", dst.name) is None:
@@ -992,7 +995,7 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node
             ):
-                skipped = self.fuzz_node.num_mutations() - self.mutant_index
+                skipped = max(0, self.fuzz_node.num_mutations() - self.mutant_index)
                 self._skip_current_node_after_current_test_case = True
                 self._fuzz_data_logger.open_test_step(
                     "Crash threshold reached for this request, exhausting {0} mutants.".format(skipped)
@@ -1006,7 +1009,7 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = self.fuzz_node.mutant.num_mutations() - self.mutant_index
+                    skipped = max(0, self.fuzz_node.mutant.num_mutations() - self.mutant_index)
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
