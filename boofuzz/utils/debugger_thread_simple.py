@@ -52,6 +52,13 @@ def _get_coredump_path():
 
 
 class DebuggerThreadSimple(threading.Thread):
+    """Simple debugger that gets exit code, stdout/stderr from a target process.
+
+    This class isn't actually ran as a thread, only the start_monitoring
+    method is. It can spawn/stop a process, wait for it to exit and report on
+    the exit status/code.
+    """
+
     def __init__(
         self,
         start_commands,
@@ -63,11 +70,6 @@ class DebuggerThreadSimple(threading.Thread):
         capture_output=False,
         **kwargs
     ):
-        """
-        This class isn't actually ran as a thread, only the start_monitoring
-        method is. It can spawn/stop a process, wait for it to exit and report on
-        the exit status/code.
-        """
         threading.Thread.__init__(self)
 
         self.proc_name = proc_name
@@ -221,7 +223,7 @@ class DebuggerThreadSimple(threading.Thread):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        if self.isAlive():
+        if self.is_alive():
             return True
         else:
             with open(self.process_monitor.crash_filename, "a") as rec_file:
