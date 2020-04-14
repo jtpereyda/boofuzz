@@ -15,6 +15,7 @@ Features
 - Reworked Monitors, consolidated interface. Breaking change: session no longer has netmon_options and procmon_options.
 - `SessionInfo` has had attributes renamed; procmon_results and netmon_results are deprecated and now aliases for monitor_results and monitor_data respectively.
 - Added `capture_output` option to process monitor to capture target process stderr/stdout .
+- Added post-start-target callbacks (called every time a target is started or restarted).
 
 Fixes
 ^^^^^
