@@ -362,6 +362,8 @@ class Session(pgraph.Graph):
                                             Default None.
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
                                                   Default None.
+        post_start_target_callbacks (list of method): Method(s) will be called after the target is started or restarted,
+                                                      say, by a process monitor.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         keep_web_open (bool):     Keep the webinterface open after session completion. Default True.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
@@ -407,6 +409,7 @@ class Session(pgraph.Graph):
         restart_timeout=None,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
+        post_start_target_callbacks=None,
         fuzz_loggers=None,
         fuzz_db_keep_only_n_pass_cases=0,
         receive_data_after_each_request=True,
@@ -477,13 +480,19 @@ class Session(pgraph.Graph):
         else:
             post_test_case_methods = post_test_case_callbacks
 
+        if post_start_target_callbacks is None:
+            post_start_target_methods = []
+        else:
+            post_start_target_methods = post_start_target_callbacks
+
         if restart_callbacks is None:
             restart_methods = []
         else:
             restart_methods = restart_callbacks
 
         self._callback_monitor = CallbackMonitor(
-            on_pre_send=pre_send_methods, on_post_send=post_test_case_methods, on_restart_target=restart_methods
+            on_pre_send=pre_send_methods, on_post_send=post_test_case_methods, on_restart_target=restart_methods,
+            on_post_start_target=post_start_target_methods,
         )
 
         self.total_num_mutations = 0
@@ -772,6 +781,9 @@ class Session(pgraph.Graph):
         try:
             for monitor in self.targets[0].monitors:
                 monitor.start_target()
+            for monitor in self.targets[0].monitors:
+                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger,
+                                          session=self,)
 
             if self._reuse_target_connection:
                 self.targets[0].open()
@@ -1092,18 +1104,19 @@ class Session(pgraph.Graph):
         #       a custom callback. wtf?
 
         self._fuzz_data_logger.open_test_step("Restarting target")
+        restarted = False
         if len(self.on_failure) > 0:
             for f in self.on_failure:
                 self._fuzz_data_logger.open_test_step("Calling registered on_failure method")
                 f(logger=self._fuzz_data_logger)
+            restarted = True
         # vm restarting is the preferred method so try that before monitors.
         elif target.vmcontrol:
             self._fuzz_data_logger.log_info("Restarting target virtual machine")
             target.vmcontrol.restart_target()
-
+            restarted = True
         # we always have at least one monitor; a Callback Monitor that handles all callbacks.
         else:
-            restarted = False
             for monitor in target.monitors:
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
@@ -1113,12 +1126,15 @@ class Session(pgraph.Graph):
                     restarted = True
                     break
 
-            # no monitor can restart
-            if not restarted:
-                self._fuzz_data_logger.log_info(
-                    "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
-                )
-                time.sleep(self.restart_sleep_time)
+        if restarted:
+            for monitor in target.monitors:
+                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger,
+                                          session=self,)
+        else:
+            self._fuzz_data_logger.log_info(
+                "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
+            )
+            time.sleep(self.restart_sleep_time)
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.monitors_alive()
