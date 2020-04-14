@@ -779,11 +779,7 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
-            for monitor in self.targets[0].monitors:
-                monitor.start_target()
-            for monitor in self.targets[0].monitors:
-                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger,
-                                          session=self,)
+            self._start_target(self.targets[0])
 
             if self._reuse_target_connection:
                 self.targets[0].open()
@@ -833,6 +829,16 @@ class Session(pgraph.Graph):
             raise
         finally:
             self._fuzz_data_logger.close_test()
+
+    def _start_target(self, target):
+        started = False
+        for monitor in target.monitors:
+            if monitor.start_target():
+                started = True
+                break
+        if started:
+            for monitor in target.monitors:
+                monitor.post_start_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
 
     def import_file(self):
         """
@@ -1129,7 +1135,7 @@ class Session(pgraph.Graph):
         if restarted:
             for monitor in target.monitors:
                 monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger,
-                                          session=self,)
+                                          session=self)
         else:
             self._fuzz_data_logger.log_info(
                 "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
