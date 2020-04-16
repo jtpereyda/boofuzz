@@ -187,6 +187,9 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             self.log("target still running; stopping first...")
             self._stop_target()
             self.log("target stopped")
+            return True
+        else:
+            return False
 
     def _stop_target(self):
         # give the debugger thread a chance to exit.

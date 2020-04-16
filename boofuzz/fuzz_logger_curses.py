@@ -35,6 +35,14 @@ else:
             stacklevel=2,
         )
 
+COLOR_PAIR_WHITE = 1
+COLOR_PAIR_CYAN = 2
+COLOR_PAIR_RED = 3
+COLOR_PAIR_YELLOW = 4
+COLOR_PAIR_GREEN = 5
+COLOR_PAIR_MAGENTA = 6
+COLOR_PAIR_BLACK = 7
+
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     """
@@ -127,13 +135,13 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._stdscr.nodelay(1)
 
         # Curses color pairs
-        curses.init_pair(1, curses.COLOR_WHITE, -1)
-        curses.init_pair(2, curses.COLOR_CYAN, -1)
-        curses.init_pair(3, curses.COLOR_RED, -1)
-        curses.init_pair(4, curses.COLOR_YELLOW, -1)
-        curses.init_pair(5, curses.COLOR_GREEN, -1)
-        curses.init_pair(6, curses.COLOR_MAGENTA, -1)
-        curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(COLOR_PAIR_WHITE, curses.COLOR_WHITE, -1)
+        curses.init_pair(COLOR_PAIR_CYAN, curses.COLOR_CYAN, -1)
+        curses.init_pair(COLOR_PAIR_RED, curses.COLOR_RED, -1)
+        curses.init_pair(COLOR_PAIR_YELLOW, curses.COLOR_YELLOW, -1)
+        curses.init_pair(COLOR_PAIR_GREEN, curses.COLOR_GREEN, -1)
+        curses.init_pair(COLOR_PAIR_MAGENTA, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(COLOR_PAIR_BLACK, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
         # Start thread and restore the original SIGWINCH handler
         self._draw_thread = threading.Thread(name="curses_logger", target=self._draw_screen)
@@ -179,7 +187,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             + (4 * indent_size + 1 - len(str(self._total_index))) * " "
             + description.strip()
         )
-        self._fail_storage.append([fail_msg.replace("\n", " "), curses.COLOR_RED])
+        self._fail_storage.append([fail_msg.replace("\n", " "), COLOR_PAIR_WHITE])
         self._log_storage.append(helpers.format_log_msg(msg_type="fail", description=description, format_type="curses"))
         self._event_crash = True
         self._event_log = True
@@ -191,7 +199,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
             + (4 * indent_size + 1 - len(str(self._total_index))) * " "
             + description.strip()
         )
-        self._fail_storage.append([fail_msg.replace("\n", " "), curses.COLOR_YELLOW])
+        self._fail_storage.append([fail_msg.replace("\n", " "), COLOR_PAIR_RED])
         self._log_storage.append(
             helpers.format_log_msg(msg_type="error", description=description, format_type="curses")
         )
@@ -429,7 +437,7 @@ def _render_pad(
                         pad.addstr(
                             total_rows,
                             total_indent_size,
-                            lines[i][0][width:][(row * columns) - columns : row * columns],
+                            lines[i][0][width:][(row * columns) - columns: row * columns],
                             curses.color_pair(lines[i][1]),
                         )
                         total_rows += 1
