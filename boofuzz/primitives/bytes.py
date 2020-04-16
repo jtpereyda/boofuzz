@@ -123,11 +123,12 @@ class Bytes(BasePrimitive):
             self.max_len = self.size
         self.padding = padding
 
-    def mutations(self):
-        for fuzz_value in self._iterate_fuzz_cases():
+    def mutations(self, default_value):
+        for fuzz_value in self._iterate_fuzz_cases(default_value):
             if callable(fuzz_value):
                 yield compose(self._adjust_mutation_for_size, fuzz_value)
-            yield self._adjust_mutation_for_size(fuzz_value=fuzz_value)
+            else:
+                yield self._adjust_mutation_for_size(fuzz_value=fuzz_value)
 
     def _adjust_mutation_for_size(self, fuzz_value):
         if self.size is not None:
@@ -140,55 +141,40 @@ class Bytes(BasePrimitive):
         else:
             return fuzz_value
 
-    def _iterate_fuzz_cases(self):
+    def _iterate_fuzz_cases(self, default_value):
         for fuzz_value in self._fuzz_library:
             yield fuzz_value
         for fuzz_value in self._mutators_of_default_value:
             yield fuzz_value
         for fuzz_value in self._magic_debug_values:
             yield fuzz_value
-        for fuzz_bytes in self._fuzz_strings_1byte:
-            i = 0
-            keep_going = True
-            while keep_going:
-
+        for i in range(0, len(default_value)):
+            for fuzz_bytes in self._fuzz_strings_1byte:
                 def f(value):
-                    nonlocal keep_going
                     if i < len(value):
                         return value[:i] + fuzz_bytes + value[i + 1 :]
                     else:
-                        keep_going = False
-
+                        return value
                 yield f
-                i += 1
-        for fuzz_bytes in self._fuzz_strings_2byte:
-            i = 0
-            keep_going = True
-            while keep_going:
-
+        for i in range(0, len(default_value)-1):
+            for fuzz_bytes in self._fuzz_strings_2byte:
                 def f(value):
-                    nonlocal keep_going
                     if i < len(value) - 1:
                         return value[:i] + fuzz_bytes + value[i + 2 :]
                     else:
-                        keep_going = False
+                        return value
 
                 yield f
-                i += 1
-        for fuzz_bytes in self._fuzz_strings_4byte:
-            i = 0
-            keep_going = True
-            while keep_going:
 
+        for i in range(0, len(default_value) - 3):
+            for fuzz_bytes in self._fuzz_strings_4byte:
                 def f(value):
-                    nonlocal keep_going
                     if i < len(value) - 3:
                         return value[:i] + fuzz_bytes + value[i + 4 :]
                     else:
-                        keep_going = False
+                        return value
 
                 yield f
-                i += 1
 
     def num_mutations(self, default_value):
         """

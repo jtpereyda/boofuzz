@@ -12,10 +12,6 @@ class QWord(BitField):
 
         super(QWord, self).__init__(width, max_num, *args, **kwargs)
 
-    def mutations(self):
-        for v in super(QWord, self).mutations():
-            yield v
-
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):
             value = struct.unpack(self.endian + "Q", value)[0]

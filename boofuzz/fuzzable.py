@@ -48,7 +48,7 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         self._request = None
         self._context_path = None
 
-    def mutations(self):
+    def mutations(self, default_value):
         """Generator to yield mutation values for this element.
 
         Values are either plain values or callable functions that take a "default value" and mutate it. Functions are
@@ -58,6 +58,9 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         Each mutation should be a pre-rendered value. That is, it must be suitable to pass to encode().
 
         Default: Empty iterator.
+
+        Args:
+            default_value:
         """
         return
         yield
@@ -95,7 +98,7 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         Returns:
             int: Number of mutated forms this primitive can take
         """
-        return sum(1 for _ in self.mutations())
+        return sum(1 for _ in self.mutations(None))
 
     @property
     def context_path(self):

@@ -1364,7 +1364,7 @@ class Session(pgraph.Graph):
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
-        for mutation in self.fuzz_node.mutations():
+        for mutation in self.fuzz_node.mutations(None):
             self.mutant_index += 1
             self.total_mutant_index += 1
             mutation.message_path = path

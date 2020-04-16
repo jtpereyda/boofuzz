@@ -84,7 +84,7 @@ class Repeat(fuzzable.Fuzzable):
     def original_value(self):
         return self._original_value
 
-    def mutations(self):
+    def mutations(self, default_value):
         # if the target block for this sizer is not closed, raise an exception.
         if self.block_name not in self.request.closed_blocks:
             raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)

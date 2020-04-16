@@ -13,10 +13,6 @@ class DWord(BitField):
 
         super(DWord, self).__init__(width, max_num, *args, **kwargs)
 
-    def mutations(self):
-        for v in super(DWord, self).mutations():
-            yield v
-
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):
             value = struct.unpack(self.endian + "L", value)[0]

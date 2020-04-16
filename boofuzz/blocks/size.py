@@ -86,8 +86,8 @@ class Size(Fuzzable):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    def mutations(self):
-        for mutation in self.bit_field.fuzz_object.mutations():
+    def mutations(self, default_value):
+        for mutation in self.bit_field.fuzz_object.mutations(None):
             yield mutation
 
     def num_mutations(self, default_value):

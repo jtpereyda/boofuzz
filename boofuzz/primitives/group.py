@@ -36,7 +36,7 @@ class Group(BasePrimitive):
     def encode(self, value, mutation_context):
         return self._render(value)
 
-    def mutations(self):
+    def mutations(self, default_value):
         for value in self.values:
             yield value
 

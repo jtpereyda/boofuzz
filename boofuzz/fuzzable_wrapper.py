@@ -93,7 +93,7 @@ class FuzzableWrapper(object):
         """
         self._halt_mutations = True
 
-    def original_value(self, test_case_context):
+    def original_value(self, test_case_context=None):
         """Original, non-mutated value of element.
 
         Args:
@@ -111,7 +111,7 @@ class FuzzableWrapper(object):
 
     def mutations(self):
         try:
-            for value in itertools.chain(self._fuzz_object.mutations(), self._fuzz_values):
+            for value in itertools.chain(self._fuzz_object.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
                     return

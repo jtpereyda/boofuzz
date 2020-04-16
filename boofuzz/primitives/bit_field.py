@@ -124,7 +124,7 @@ class BitField(Fuzzable):
         )
         return helpers.str_to_bytes(temp)
 
-    def mutations(self):
+    def mutations(self, default_value):
         for val in self._iterate_fuzz_lib():
             yield val
 
