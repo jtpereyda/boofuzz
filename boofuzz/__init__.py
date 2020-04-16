@@ -24,7 +24,7 @@ from .connections import (
 )
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
-from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError
+from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError, BoofuzzFailure
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
@@ -67,6 +67,7 @@ __all__ = [
     "BitField",
     "Block",
     "blocks",
+    "BoofuzzFailure",
     "Byte",
     "Bytes",
     "CallbackMonitor",

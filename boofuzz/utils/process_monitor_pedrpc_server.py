@@ -151,6 +151,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         self.log("Starting target...")
+        self._stop_target_if_running()
         self.log("creating debugger thread", 5)
         self.debugger_thread = self.debugger_class(
             self.start_commands,
@@ -176,19 +177,37 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # give the debugger thread a chance to exit.
         time.sleep(1)
 
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            if len(self.stop_commands) < 1:
-                self.debugger_thread.stop_target()
-            else:
-                for command in self.stop_commands:
-                    if command == "TERMINATE_PID":
-                        self.debugger_thread.stop_target()
-                    else:
-                        self.log("Executing stop command: '{0}'".format(command), 2)
-                        os.system(command)
+        if self._target_is_running():
+            self._stop_target()
             self.log("target stopped")
         else:
             self.log("target already stopped")
+
+    def _stop_target_if_running(self):
+        """Stop target, if it is running. Return true if it was running; otherwise false."""
+        if self._target_is_running():
+            self.log("target still running; stopping first...")
+            self._stop_target()
+            self.log("target stopped")
+            return True
+        else:
+            return False
+
+    def _stop_target(self):
+        # give the debugger thread a chance to exit.
+        time.sleep(1)
+        if len(self.stop_commands) < 1:
+            self.debugger_thread.stop_target()
+        else:
+            for command in self.stop_commands:
+                if command == "TERMINATE_PID":
+                    self.debugger_thread.stop_target()
+                else:
+                    self.log("Executing stop command: '{0}'".format(command), 2)
+                    os.system(command)
+
+    def _target_is_running(self):
+        return self.debugger_thread is not None and self.debugger_thread.isAlive()
 
     def restart_target(self):
         """

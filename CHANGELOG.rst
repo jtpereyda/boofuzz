@@ -14,6 +14,8 @@ Features
 - Added optional timeout and threshold to quit infinite connection retries
 - Reworked Monitors, consolidated interface. Breaking change: session no longer has netmon_options and procmon_options.
 - `SessionInfo` has had attributes renamed; procmon_results and netmon_results are deprecated and now aliases for monitor_results and monitor_data respectively.
+- New `BoofuzzFailure` exception type allows callback methods to signal a failure that should halt the current test case.
+- Fixed many bugs in which a failure would not stop the test case evaluation.
 - Added `capture_output` option to process monitor to capture target process stderr/stdout .
 - Added post-start-target callbacks (called every time a target is started or restarted).
 

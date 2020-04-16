@@ -1,3 +1,10 @@
+.summary div {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
 :root {
     --foreground-color:#A0B0B0;
 }
