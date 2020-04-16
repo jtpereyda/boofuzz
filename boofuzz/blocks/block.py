@@ -6,7 +6,7 @@ from ..mutation import Mutation
 
 
 class Block(FuzzableBlock):
-    def __init__(self, request, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
+    def __init__(self, request=None, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
 

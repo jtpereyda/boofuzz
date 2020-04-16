@@ -9,7 +9,7 @@ from ..mutation_context import MutationContext
 
 
 class Request(FuzzableBlock):
-    def __init__(self, name):
+    def __init__(self, name, child_nodes=None):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
         essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
@@ -31,6 +31,37 @@ class Request(FuzzableBlock):
         self._mutant_index = 0  # current mutation index.
         self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.
+
+        if child_nodes is None:
+            child_nodes = []
+        self._initialize_children(child_nodes=child_nodes)
+
+    def _initialize_children(self, child_nodes, block_stack=None):
+        if block_stack is None:
+            block_stack = list()
+
+        for item in child_nodes:
+            item.context_path = self._generate_context_path(self.block_stack)
+            item.request = self
+            # ensure the name doesn't already exist.
+            if item.qualified_name in list(self.names):
+                raise exception.SullyRuntimeError("BLOCK NAME ALREADY EXISTS: %s" % item.qualified_name)
+            self.names[item.qualified_name] = item
+
+            if len(block_stack) == 0:
+                self.stack.append(item)
+            if (
+                isinstance(item, Block)
+                or isinstance(item, Aligned)
+                or isinstance(item.fuzz_object, Block)
+                or isinstance(item.fuzz_object, Aligned)
+            ):  # TODO generic check here
+                block_stack.append(item)
+                self._initialize_children(child_nodes=item.stack, block_stack=block_stack)
+
+
+
+
 
     @property
     def name(self):
@@ -59,12 +90,19 @@ class Request(FuzzableBlock):
         Push an item into the block structure. If no block is open, the item goes onto the request stack. otherwise,
         the item goes onto the last open blocks stack.
 
+        What this method does:
+        1. Sets context_path for each pushed FuzzableWrapper.
+        2. Sets request for each FuzzableWrapper
+        3. Checks for duplicate qualified_name items
+        4. Adds item to self.names map (based on qualified_name)
+        5. Adds the item to self.stack, or to the stack of the currently opened block.
+
+        Also: Manages block_stack, mostly an implementation detail to help static protocol definition
+
         @type item: BasePrimitive | Block | Request | Size | Repeat
         @param item: Some primitive/block/request/etc.
         """
-        context_path = ".".join(x.name for x in self.block_stack)  # TODO put in method
-        context_path = ".".join(filter(None, (self.name, context_path)))
-        item.context_path = context_path
+        item.context_path = self._generate_context_path(self.block_stack)
         item.request = self
         # ensure the name doesn't already exist.
         if item.qualified_name in list(self.names):
@@ -87,6 +125,11 @@ class Request(FuzzableBlock):
             or isinstance(item.fuzz_object, Aligned)
         ):  # TODO generic check here
             self.block_stack.append(item)
+
+    def _generate_context_path(self, block_stack):
+        context_path = ".".join(x.name for x in block_stack)  # TODO put in method
+        context_path = ".".join(filter(None, (self.name, context_path)))
+        return context_path
 
     def render(self, mutation_context):
         if self.block_stack:

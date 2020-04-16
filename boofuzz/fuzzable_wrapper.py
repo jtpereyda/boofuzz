@@ -1,3 +1,5 @@
+from collections import Iterable
+
 from boofuzz.mutation import Mutation
 from future.moves import itertools
 
@@ -10,7 +12,8 @@ from .fuzzable import Fuzzable
 class FuzzableWrapper(object):
     name_counter = 0
 
-    def __init__(self, fuzz_object=None, fuzzable=True, name=None, default_value=None, fuzz_values=None):
+    def __init__(self, name=None, fuzz_object=None, fuzzable=True, default_value=None, fuzz_values=None,
+                 child_nodes=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
         Args:
@@ -20,6 +23,7 @@ class FuzzableWrapper(object):
                 be given.
             default_value: Can be a static value, or a ReferenceValueTestCaseSession.
             fuzz_values (list): List of custom fuzz values to add to the normal mutations.
+            child_nodes (Iterable): List of child nodes (typically given to FuzzableBlock types).
         """
         self._fuzzable = fuzzable
         self._name = name
@@ -31,6 +35,8 @@ class FuzzableWrapper(object):
         if fuzz_values is None:
             fuzz_values = list()
         self._fuzz_values = fuzz_values
+        if child_nodes is not None:
+            self.fuzz_object.stack = list(child_nodes)
 
     @property
     def fuzz_object(self):

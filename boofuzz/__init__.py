@@ -81,6 +81,7 @@ __all__ = [
     "EventHook",
     "exception",
     "FromFile",
+    "FuzzableWrapper",
     "FuzzLogger",
     "FuzzLoggerCsv",
     "FuzzLoggerCurses",
