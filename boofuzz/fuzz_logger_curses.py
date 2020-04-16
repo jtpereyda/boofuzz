@@ -437,7 +437,7 @@ def _render_pad(
                         pad.addstr(
                             total_rows,
                             total_indent_size,
-                            lines[i][0][width:][(row * columns) - columns: row * columns],
+                            lines[i][0][width:][(row * columns) - columns : row * columns],
                             curses.color_pair(lines[i][1]),
                         )
                         total_rows += 1
