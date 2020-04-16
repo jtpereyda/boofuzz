@@ -98,7 +98,7 @@ class Fuzzable(with_metaclass(DocStringInheritor, object)):
         Returns:
             int: Number of mutated forms this primitive can take
         """
-        return sum(1 for _ in self.mutations(None))
+        return sum(1 for _ in self.mutations(default_value=default_value))
 
     @property
     def context_path(self):
