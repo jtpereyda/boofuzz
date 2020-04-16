@@ -150,14 +150,17 @@ class Bytes(BasePrimitive):
             yield fuzz_value
         for i in range(0, len(default_value)):
             for fuzz_bytes in self._fuzz_strings_1byte:
+
                 def f(value):
                     if i < len(value):
                         return value[:i] + fuzz_bytes + value[i + 1 :]
                     else:
                         return value
+
                 yield f
-        for i in range(0, len(default_value)-1):
+        for i in range(0, len(default_value) - 1):
             for fuzz_bytes in self._fuzz_strings_2byte:
+
                 def f(value):
                     if i < len(value) - 1:
                         return value[:i] + fuzz_bytes + value[i + 2 :]
@@ -168,6 +171,7 @@ class Bytes(BasePrimitive):
 
         for i in range(0, len(default_value) - 3):
             for fuzz_bytes in self._fuzz_strings_4byte:
+
                 def f(value):
                     if i < len(value) - 3:
                         return value[:i] + fuzz_bytes + value[i + 4 :]

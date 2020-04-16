@@ -14,8 +14,8 @@ def clear_requests():
 
 class TestBytes(unittest.TestCase):
     def test_mutations(self):
-        default_value = b'ABCDEFGH'
-        default_default_value = b'\x00'*len(default_value)
+        default_value = b"ABCDEFGH"
+        default_default_value = b"\x00" * len(default_value)
         b = Bytes()
         generator = b.mutations(default_value=default_default_value)
         for expected, actual in zip(b._fuzz_library, generator):
@@ -29,10 +29,8 @@ class TestBytes(unittest.TestCase):
             for expected_fuzz_string in b._fuzz_strings_1byte:
                 actual_callable = next(generator)
                 actual_value = actual_callable(default_value)
-                expected_value = default_value[0:i] + expected_fuzz_string + default_value[i+1:]
+                expected_value = default_value[0:i] + expected_fuzz_string + default_value[i + 1 :]
                 self.assertEqual(expected_value, actual_value)
-
-
 
 
 if __name__ == "__main__":
