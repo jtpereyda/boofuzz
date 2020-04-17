@@ -132,7 +132,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         curses.use_default_colors()
         curses.noecho()
         curses.curs_set(0)
-        self._stdscr.nodelay(1)
+        self._stdscr.nodelay(True)
 
         # Curses color pairs
         curses.init_pair(COLOR_PAIR_WHITE, curses.COLOR_WHITE, -1)
@@ -243,18 +243,20 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # Render title
         self._stdscr.addstr(0, 0, "=" * self._width)
         start_x_title = int((self._width // 2) - (len(self._title) // 2) - len(self._title) % 2)
-        self._stdscr.addstr(0, start_x_title, self._title, curses.color_pair(2) | curses.A_BOLD)
+        self._stdscr.addstr(0, start_x_title, self._title, curses.color_pair(COLOR_PAIR_CYAN) | curses.A_BOLD)
 
         # Render status bar
-        self._stdscr.attron(curses.color_pair(7))
+        self._stdscr.attron(curses.color_pair(COLOR_PAIR_BLACK))
         self._stdscr.addstr(self._height - 1, 0, " " * (self._width - 1))
         self._stdscr.insch(" ")  # Fill bottom right corner
         if self._quit:
-            self._stdscr.addstr(self._height - 1, 1, "Press 'q' to quit", curses.color_pair(7) | curses.A_BLINK)
+            self._stdscr.addstr(
+                self._height - 1, 1, "Press 'q' to quit", curses.color_pair(COLOR_PAIR_BLACK) | curses.A_BLINK
+            )
         else:
             self._stdscr.addstr(self._height - 1, 1, "Press 'CTRL+C' to abort")
         self._stdscr.addstr(self._height - 1, self._width - len(self._version) - 1, self._version)
-        self._stdscr.attroff(curses.color_pair(7))
+        self._stdscr.attroff(curses.color_pair(COLOR_PAIR_BLACK))
         self._stdscr.refresh()
 
         # Initialise test case window
@@ -262,7 +264,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._casescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._casescr_frame.nodelay(1)
         self._casescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
-        self._casescr_frame.addstr(0, 1, "Test case log", curses.color_pair(4) | curses.A_BOLD)
+        self._casescr_frame.addstr(0, 1, "Test case log", curses.color_pair(COLOR_PAIR_YELLOW) | curses.A_BOLD)
         self._casescr_frame.refresh(0, 0, 1, 0, self._height - 18, self._width)
         self._casescr = self._casescr_frame.subpad(self._max_log_lines, self._width - 2, 1, 1)
         self._draw_case()
@@ -271,7 +273,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._crashescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._crashescr_frame.nodelay(1)
         self._crashescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
-        self._crashescr_frame.addstr(0, 1, "Crashes", curses.color_pair(3) | curses.A_BOLD)
+        self._crashescr_frame.addstr(0, 1, "Crashes", curses.color_pair(COLOR_PAIR_RED) | curses.A_BOLD)
         self._crashescr_frame.refresh(0, 0, self._height - 17, 0, self._height - 8, self._width)
         self._crashescr = self._crashescr_frame.subpad(self._max_log_lines, self._width - 2, 1, 1)
         self._draw_crash()
@@ -279,9 +281,9 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         # Initialise status window
         self._statscr = curses.newwin(6, self._width, self._height - 7, 0)
-        self._statscr.nodelay(1)
+        self._statscr.nodelay(True)
         self._statscr.border()
-        self._statscr.addstr(0, 1, "Status", curses.color_pair(2) | curses.A_BOLD)
+        self._statscr.addstr(0, 1, "Status", curses.color_pair(COLOR_PAIR_CYAN) | curses.A_BOLD)
         self._draw_stat()
 
     def _draw_case(self, indent_size=INDENT_SIZE):
@@ -337,13 +339,13 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # TODO: Get paused flag from sessions
         if self._status == 0:
             self._statscr.addstr(4, 1, "Status:")
-            self._statscr.addstr(4, self._indent_size, "Running", curses.color_pair(4))
+            self._statscr.addstr(4, self._indent_size, "Running", curses.color_pair(COLOR_PAIR_YELLOW))
         elif self._status == 1:
             self._statscr.addstr(4, 1, "Status:")
-            self._statscr.addstr(4, self._indent_size, "Paused ", curses.color_pair(3) | curses.A_BLINK)
+            self._statscr.addstr(4, self._indent_size, "Paused ", curses.color_pair(COLOR_PAIR_RED) | curses.A_BLINK)
         elif self._status == 2:
             self._statscr.addstr(4, 1, "Status:")
-            self._statscr.addstr(4, self._indent_size, "Done   ", curses.color_pair(5))
+            self._statscr.addstr(4, self._indent_size, "Done   ", curses.color_pair(COLOR_PAIR_GREEN))
 
         self._statscr.refresh()
 
@@ -423,7 +425,7 @@ def _render_pad(
                 total_rows,
                 0,
                 "Maximum number of lines reached for this window! Increase 'max_log_lines'",
-                curses.color_pair(3),
+                curses.color_pair(COLOR_PAIR_RED),
             )
             total_rows += 1
             break
