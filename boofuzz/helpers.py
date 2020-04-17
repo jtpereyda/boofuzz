@@ -18,6 +18,15 @@ from past.builtins import map, range
 
 from boofuzz.connections import ip_constants, udp_socket_connection
 
+# Curses color pairs
+COLOR_PAIR_WHITE = 1
+COLOR_PAIR_CYAN = 2
+COLOR_PAIR_RED = 3
+COLOR_PAIR_YELLOW = 4
+COLOR_PAIR_GREEN = 5
+COLOR_PAIR_MAGENTA = 6
+COLOR_PAIR_BLACK = 7
+
 test_step_info = {
     "test_case": {
         "indent": 0,
@@ -25,7 +34,7 @@ test_step_info = {
         "html": "Test Case: {msg}",
         "terminal": Fore.YELLOW + Style.BRIGHT + "Test Case: {msg}" + Style.RESET_ALL,
         "css_class": "log-case",
-        "curses": 4,
+        "curses": COLOR_PAIR_YELLOW,
     },
     "step": {
         "indent": 1,
@@ -33,7 +42,7 @@ test_step_info = {
         "html": " Test Step: {msg}",
         "terminal": Fore.MAGENTA + Style.BRIGHT + "Test Step: {msg}" + Style.RESET_ALL,
         "css_class": "log-step",
-        "curses": 6,
+        "curses": COLOR_PAIR_MAGENTA,
     },
     "info": {
         "indent": 2,
@@ -41,7 +50,7 @@ test_step_info = {
         "html": "Info: {msg}",
         "terminal": "Info: {msg}",
         "css_class": "log-info",
-        "curses": 1,
+        "curses": COLOR_PAIR_WHITE,
     },
     "error": {
         "indent": 2,
@@ -49,7 +58,7 @@ test_step_info = {
         "html": "Error!!!! {msg}",
         "terminal": Back.RED + Style.BRIGHT + "Error!!!! {msg}" + Style.RESET_ALL,
         "css_class": "log-error",
-        "curses": 3,
+        "curses": COLOR_PAIR_RED,
     },
     "send": {
         "indent": 2,
@@ -57,7 +66,7 @@ test_step_info = {
         "html": "Transmitted {n} bytes{note}: {msg}",
         "terminal": Fore.CYAN + "Transmitted {n} bytes{note}: {msg}" + Style.RESET_ALL,
         "css_class": "log-send",
-        "curses": 2,
+        "curses": COLOR_PAIR_CYAN,
     },
     "receive": {
         "indent": 2,
@@ -65,7 +74,7 @@ test_step_info = {
         "html": "Received{note}: {msg}",
         "terminal": Fore.CYAN + "Received{note}: {msg}" + Style.RESET_ALL,
         "css_class": "log-receive",
-        "curses": 2,
+        "curses": COLOR_PAIR_CYAN,
     },
     "check": {
         "indent": 2,
@@ -73,7 +82,7 @@ test_step_info = {
         "html": "Check: {msg}",
         "terminal": "Check: {msg}",
         "css_class": "log-check",
-        "curses": 1,
+        "curses": COLOR_PAIR_WHITE,
     },
     "fail": {
         "indent": 3,
@@ -81,7 +90,7 @@ test_step_info = {
         "html": "Check Failed: {msg}",
         "terminal": Fore.RED + Style.BRIGHT + "Check Failed: {msg}" + Style.RESET_ALL,
         "css_class": "log-fail",
-        "curses": 3,
+        "curses": COLOR_PAIR_RED,
     },
     "pass": {
         "indent": 3,
@@ -89,7 +98,7 @@ test_step_info = {
         "html": "Check OK: {msg}",
         "terminal": Fore.GREEN + Style.BRIGHT + "Check OK: {msg}" + Style.RESET_ALL,
         "css_class": "log-pass",
-        "curses": 5,
+        "curses": COLOR_PAIR_GREEN,
     },
 }
 
