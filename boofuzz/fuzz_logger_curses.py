@@ -262,7 +262,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # Initialise test case window
         # pytype: disable=module-attr
         self._casescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
-        self._casescr_frame.nodelay(1)
+        self._casescr_frame.nodelay(True)
         self._casescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
         self._casescr_frame.addstr(0, 1, "Test case log", curses.color_pair(COLOR_PAIR_YELLOW) | curses.A_BOLD)
         self._casescr_frame.refresh(0, 0, 1, 0, self._height - 18, self._width)
@@ -271,7 +271,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         # Initialise crash window
         self._crashescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
-        self._crashescr_frame.nodelay(1)
+        self._crashescr_frame.nodelay(True)
         self._crashescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
         self._crashescr_frame.addstr(0, 1, "Crashes", curses.color_pair(COLOR_PAIR_RED) | curses.A_BOLD)
         self._crashescr_frame.refresh(0, 0, self._height - 17, 0, self._height - 8, self._width)
