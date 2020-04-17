@@ -1,5 +1,5 @@
-from ..fuzzable import Fuzzable
+from ..mutator import Mutator
 
 
-class Static(Fuzzable):
+class Static(Mutator):
     pass

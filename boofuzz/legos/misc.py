@@ -17,7 +17,7 @@ class DNSHostname(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
 
     def render(self):
         """
@@ -56,5 +56,5 @@ class Tag(blocks.Block):
         # [delim][string][delim]
 
         self.push(primitives.Delim("<"))
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
         self.push(primitives.Delim(">"))

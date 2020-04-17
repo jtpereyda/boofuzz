@@ -1,11 +1,11 @@
 import abc
 
 from .. import helpers
-from ..fuzzable import Fuzzable
+from ..mutator import Mutator
 from ..mutation import Mutation
 
 
-class BasePrimitive(Fuzzable):
+class BasePrimitive(Mutator):
     """
     The primitive base class implements common functionality shared across most primitives.
     """

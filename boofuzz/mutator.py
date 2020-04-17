@@ -32,7 +32,7 @@ class DocStringInheritor(type):
 
 
 # DocStringInheritor is the metaclass in python 2 and 3
-class Fuzzable(with_metaclass(DocStringInheritor, object)):
+class Mutator(with_metaclass(DocStringInheritor, object)):
     """Base class for fuzzable message element types.
 
     A typical Fuzzable type will implement mutations() (a generator) or encode() or both.

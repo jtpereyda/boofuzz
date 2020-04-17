@@ -30,7 +30,7 @@ class String(blocks.Block):
             raise exception.SullyRuntimeError("MISSING LEGO.ber_string DEFAULT VALUE")
 
         str_block = blocks.Block(name + "_STR", request)
-        str_block.push(primitives.String(self.value))
+        str_block.push(primitives.String())
 
         self.push(blocks.Size(name + "_STR", request, endian=BIG_ENDIAN, fuzzable=True))
         self.push(str_block)

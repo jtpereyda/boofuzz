@@ -7,7 +7,7 @@ class Aligned(FuzzableBlock):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, request, modulus, pattern="\x00"):
+    def __init__(self, modulus, request=None, pattern="\x00"):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.

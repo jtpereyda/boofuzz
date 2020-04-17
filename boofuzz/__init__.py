@@ -29,7 +29,7 @@ from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
-from .fuzzable_wrapper import FuzzableWrapper
+from .fuzzable_wrapper import FuzzNode
 from boofuzz.test_case_session_reference import TestCaseSessionReference
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
@@ -81,7 +81,7 @@ __all__ = [
     "EventHook",
     "exception",
     "FromFile",
-    "FuzzableWrapper",
+    "FuzzNode",
     "FuzzLogger",
     "FuzzLoggerCsv",
     "FuzzLoggerCurses",
@@ -328,8 +328,8 @@ def s_aligned(name, modulus, pattern=b"\x00"):
             """
             blocks.CURRENT.pop()
 
-    aligned = Aligned(blocks.CURRENT, modulus=modulus, pattern=pattern)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=aligned, fuzzable=True, name=name, default_value=None))
+    aligned = Aligned(modulus=modulus, request=blocks.CURRENT, pattern=pattern)
+    blocks.CURRENT.push(FuzzNode(mutator=aligned, name=name, default_value=None, fuzzable=True))
 
     return ScopedAligned(aligned)
 
@@ -349,7 +349,7 @@ def s_block_start(name, *args, **kwargs):
     :see s_block
     """
     block = Block(blocks.CURRENT, *args, **kwargs)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=block, fuzzable=True, name=name, default_value=None))
+    blocks.CURRENT.push(FuzzNode(mutator=block, name=name, default_value=None, fuzzable=True))
 
     return block
 
@@ -419,7 +419,7 @@ def s_checksum(
         ipv4_src_block_name=ipv4_src_block_name,
         ipv4_dst_block_name=ipv4_dst_block_name,
     )
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=checksum, fuzzable=fuzzable, name=name, default_value=None))
+    blocks.CURRENT.push(FuzzNode(mutator=checksum, name=name, default_value=None, fuzzable=fuzzable))
 
 
 def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, name=None):
@@ -493,7 +493,7 @@ def s_size(
     size = Size(
         block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math
     )
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=size, fuzzable=fuzzable, name=name, default_value=None))
+    blocks.CURRENT.push(FuzzNode(mutator=size, name=name, default_value=None, fuzzable=fuzzable))
 
 
 def s_update(name, value):
@@ -543,7 +543,7 @@ def s_binary(value, name=None):
         value += six.int2byte(int(pair, 16))
 
     static = primitives.Static(value, name)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=static, fuzzable=False, name=name, default_value=parsed))
+    blocks.CURRENT.push(FuzzNode(mutator=static, name=name, default_value=parsed, fuzzable=False))
 
 
 def s_delim(value, fuzzable=True, name=None):
@@ -559,7 +559,7 @@ def s_delim(value, fuzzable=True, name=None):
     """
 
     delim = primitives.Delim(value)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=delim, name=name, fuzzable=fuzzable, default_value=value))
+    blocks.CURRENT.push(FuzzNode(mutator=delim, name=name, default_value=value, fuzzable=fuzzable))
 
 
 def s_group(name, values, default_value=None):
@@ -577,7 +577,7 @@ def s_group(name, values, default_value=None):
     """
 
     group = primitives.Group(name, values, default_value)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=group, name=name, fuzzable=False, default_value=default_value))
+    blocks.CURRENT.push(FuzzNode(mutator=group, name=name, default_value=default_value, fuzzable=False))
 
 
 # noinspection PyCallingNonCallable
@@ -628,7 +628,7 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     """
 
     random_data = primitives.RandomData(value, min_length, max_length, num_mutations, step)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=random_data, name=name, fuzzable=fuzzable, default_value=value))
+    blocks.CURRENT.push(FuzzNode(mutator=random_data, name=name, default_value=value, fuzzable=fuzzable))
 
 
 def s_static(value, name=None):
@@ -644,7 +644,7 @@ def s_static(value, name=None):
     """
 
     static = primitives.Static()
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=static, name=name, fuzzable=False, default_value=value))
+    blocks.CURRENT.push(FuzzNode(mutator=static, name=name, default_value=value, fuzzable=False))
 
 
 def s_mirror(primitive_name, name=None):
@@ -661,7 +661,7 @@ def s_mirror(primitive_name, name=None):
 
     mirror = primitives.Mirror(primitive_name, blocks.CURRENT)
     blocks.CURRENT.push(mirror)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=mirror, name=name, fuzzable=True, default_value=None))
+    blocks.CURRENT.push(FuzzNode(mutator=mirror, name=name, default_value=None, fuzzable=True))
 
 
 def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
@@ -684,8 +684,8 @@ def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, m
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    s = primitives.String(value, size, padding, encoding, max_len)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=s, fuzzable=fuzzable, name=name, default_value=value))
+    s = primitives.String(size, padding, encoding, max_len)
+    blocks.CURRENT.push(FuzzNode(mutator=s, name=name, default_value=value, fuzzable=fuzzable))
 
 
 def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
@@ -707,7 +707,7 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     """
 
     s = primitives.FromFile(value, max_len, filename)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=s, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzNode(mutator=s, name=name, default_value=value, fuzzable=fuzzable))
 
 
 # noinspection PyTypeChecker
@@ -749,9 +749,7 @@ def s_bit_field(
 
     bit_field = primitives.BitField(width, None, endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzableWrapper(
-            fuzz_object=bit_field, fuzzable=fuzzable, name=name, default_value=value, fuzz_values=fuzz_values
-        )
+        FuzzNode(mutator=bit_field, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -790,7 +788,7 @@ def s_byte(
 
     byte = primitives.Byte(endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzableWrapper(fuzz_object=byte, fuzzable=fuzzable, name=name, default_value=value, fuzz_values=fuzz_values)
+        FuzzNode(mutator=byte, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -813,7 +811,7 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
     """
 
     _bytes = primitives.Bytes(size, padding, max_len)
-    blocks.CURRENT.push(FuzzableWrapper(fuzz_object=_bytes, fuzzable=fuzzable, name=name, default_value=value))
+    blocks.CURRENT.push(FuzzNode(mutator=_bytes, name=name, default_value=value, fuzzable=fuzzable))
 
 
 def s_word(
@@ -851,7 +849,7 @@ def s_word(
 
     word = primitives.Word(endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzableWrapper(fuzz_object=word, fuzzable=fuzzable, name=name, default_value=value, fuzz_values=fuzz_values)
+        FuzzNode(mutator=word, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -890,7 +888,7 @@ def s_dword(
 
     dword = primitives.DWord(endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzableWrapper(fuzz_object=dword, fuzzable=fuzzable, name=name, default_value=value, fuzz_values=fuzz_values)
+        FuzzNode(mutator=dword, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -929,7 +927,7 @@ def s_qword(
 
     qword = primitives.QWord(endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzableWrapper(fuzz_object=qword, fuzzable=fuzzable, name=name, default_value=value, fuzz_values=fuzz_values)
+        FuzzNode(mutator=qword, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 

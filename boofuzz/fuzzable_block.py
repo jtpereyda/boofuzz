@@ -1,8 +1,8 @@
-from .fuzzable import Fuzzable
-from .fuzzable_wrapper import FuzzableWrapper
+from .mutator import Mutator
+from .fuzzable_wrapper import FuzzNode
 
 
-class FuzzableBlock(Fuzzable):
+class FuzzableBlock(Mutator):
     """Fuzzable type designed to have children elements.
 
     Overrides basic Fuzzable methods and adds:
@@ -54,7 +54,7 @@ class FuzzableBlock(Fuzzable):
         """Push a child element onto this block's stack.
 
         Args:
-            item (FuzzableWrapper): Some wrapped Fuzzable element
+            item (FuzzNode): Some wrapped Fuzzable element
 
         Returns: None
         """

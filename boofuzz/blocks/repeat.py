@@ -1,11 +1,11 @@
 from past.builtins import range
 
-from .. import exception, helpers, fuzzable
+from .. import exception, helpers, mutator
 from ..mutation import Mutation
 from ..primitives.bit_field import BitField
 
 
-class Repeat(fuzzable.Fuzzable):
+class Repeat(mutator.Mutator):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.

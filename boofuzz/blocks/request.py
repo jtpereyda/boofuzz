@@ -3,7 +3,7 @@ import collections
 from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
-from ..fuzzable import Fuzzable
+from ..mutator import Mutator
 from ..fuzzable_block import FuzzableBlock
 from ..mutation_context import MutationContext
 

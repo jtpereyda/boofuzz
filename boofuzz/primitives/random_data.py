@@ -3,11 +3,11 @@ import random
 from boofuzz import helpers
 from past.builtins import xrange
 
-from ..fuzzable import Fuzzable
+from ..mutator import Mutator
 from ..mutation import Mutation
 
 
-class RandomData(Fuzzable):
+class RandomData(Mutator):
     def __init__(self, value, min_length, max_length, max_mutations=25, step=None):
         """
         Generate a random chunk of data while maintaining a copy of the original. A random length range

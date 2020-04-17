@@ -1,8 +1,8 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..fuzzable import Fuzzable
-from ..fuzzable_wrapper import FuzzableWrapper
+from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 from ..mutation import Mutation
 
 
@@ -17,7 +17,7 @@ def _may_recurse(f):
     return safe_recurse
 
 
-class Size(Fuzzable):
+class Size(Mutator):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -26,7 +26,7 @@ class Size(Fuzzable):
     def __init__(
         self,
         block_name,
-        request,
+        request=None,
         offset=0,
         length=4,
         endian="<",
@@ -70,13 +70,9 @@ class Size(Fuzzable):
         self.signed = signed
         self.math = math
 
-        self.bit_field = FuzzableWrapper(
-            fuzz_object=primitives.BitField(
-                self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
-            ),
-            fuzzable=True,
-            default_value=0,
-        )
+        self.bit_field = FuzzNode(mutator=primitives.BitField(
+            self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
+        ), default_value=0, fuzzable=True)
         self._rendered = b""
         self._fuzz_complete = False
 

@@ -23,7 +23,7 @@ class NdrConformantArray(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.ndr_conformant_array DEFAULT VALUE")
 
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
 
     def render(self):
         """
@@ -63,7 +63,7 @@ class NdrString(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
 
     def render(self):
         """
@@ -114,7 +114,7 @@ class NdrWString(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
 
     def render(self):
         """

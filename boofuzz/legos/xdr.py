@@ -26,7 +26,7 @@ class String(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.xdr_string DEFAULT VALUE")
 
-        self.push(primitives.String(self.value))
+        self.push(primitives.String())
 
     def render(self):
         """

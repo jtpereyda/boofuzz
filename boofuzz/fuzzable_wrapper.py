@@ -6,37 +6,36 @@ from future.moves import itertools
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
-from .fuzzable import Fuzzable
+from .mutator import Mutator
 
 
-class FuzzableWrapper(object):
+class FuzzNode(object):
     name_counter = 0
 
-    def __init__(self, name=None, fuzz_object=None, fuzzable=True, default_value=None, fuzz_values=None,
-                 child_nodes=None):
+    def __init__(self, mutator=None, name=None, default_value=None, fuzzable=True, fuzz_values=None, children=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
         Args:
-            fuzz_object (Fuzzable): Fuzzable element.
+            mutator (Mutator): Fuzzable element.
             fuzzable (bool): Enable fuzzing of this primitive. Default: True.
             name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
                 be given.
             default_value: Can be a static value, or a ReferenceValueTestCaseSession.
             fuzz_values (list): List of custom fuzz values to add to the normal mutations.
-            child_nodes (Iterable): List of child nodes (typically given to FuzzableBlock types).
+            children (Iterable): List of child nodes (typically given to FuzzableBlock types).
         """
         self._fuzzable = fuzzable
         self._name = name
         self._default_value = default_value
-        self._fuzz_object = fuzz_object
+        self._fuzz_object = mutator
         self._context_path = ""
         self._request = None
         self._halt_mutations = False
         if fuzz_values is None:
             fuzz_values = list()
         self._fuzz_values = fuzz_values
-        if child_nodes is not None:
-            self.fuzz_object.stack = list(child_nodes)
+        if children is not None:
+            self.fuzz_object.stack = list(children)
 
     @property
     def fuzz_object(self):
@@ -54,8 +53,8 @@ class FuzzableWrapper(object):
         :rtype: str
         """
         if self._name is None:
-            FuzzableWrapper.name_counter += 1
-            self._name = "{0}{1}".format(type(self.fuzz_object).__name__, FuzzableWrapper.name_counter)
+            FuzzNode.name_counter += 1
+            self._name = "{0}{1}".format(type(self.fuzz_object).__name__, FuzzNode.name_counter)
         return self._name
 
     @property
