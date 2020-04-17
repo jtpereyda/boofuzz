@@ -220,7 +220,7 @@ class String(Mutator):
 
         # Remove any fuzz items greater than self.max_len
         if self.max_len > 0:
-            if any(len(s) > self.max_len for s in self.this_library):
+            if any(len(s) > self.max_len for s in this_library):
                 # Pull out the bad string(s):
                 this_library = list(set([t[: self.max_len] for t in this_library]))
             if any(len(s) > self.max_len for s in self._fuzz_library):
@@ -248,4 +248,4 @@ class String(Mutator):
         @return: Number of mutated forms this primitive can take
         :param default_value:
         """
-        return len(self._fuzz_library) + len(self.this_library)
+        return len(self._fuzz_library) # + len(self.this_library)  # TODO update string num_mutations calc

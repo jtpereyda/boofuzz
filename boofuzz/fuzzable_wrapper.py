@@ -38,6 +38,14 @@ class FuzzNode(object):
             self.fuzz_object.stack = list(children)
 
     @property
+    def stack(self):
+        return self.fuzz_object.stack
+
+    @stack.setter
+    def stack(self, new_stack):
+        self.fuzz_object.stack = new_stack
+
+    @property
     def fuzz_object(self):
         return self._fuzz_object
 

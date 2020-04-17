@@ -41,7 +41,7 @@ class Request(FuzzableBlock):
             block_stack = list()
 
         for item in child_nodes:
-            item.context_path = self._generate_context_path(self.block_stack)
+            item.context_path = self._generate_context_path(block_stack)
             item.request = self
             # ensure the name doesn't already exist.
             if item.qualified_name in list(self.names):
@@ -58,6 +58,7 @@ class Request(FuzzableBlock):
             ):  # TODO generic check here
                 block_stack.append(item)
                 self._initialize_children(child_nodes=item.stack, block_stack=block_stack)
+                block_stack.pop()
 
 
 
