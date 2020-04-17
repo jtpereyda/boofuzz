@@ -95,7 +95,7 @@ class Size(Mutator):
         :return: Number of mutated forms this primitive can take.
         """
 
-        return self.bit_field.num_mutations()
+        return self.bit_field.get_num_mutations()
 
     def encode(self, value, mutation_context):
         if value is None:  # default

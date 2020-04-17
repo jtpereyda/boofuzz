@@ -700,7 +700,7 @@ class Session(pgraph.Graph):
         node_edges = self._path_names_to_edges(node_names=node_names)
 
         self.total_mutant_index = 0
-        self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
+        self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
 
         self._main_fuzz_loop(self._iterate_single_node(node_edges))
 
@@ -879,7 +879,7 @@ class Session(pgraph.Graph):
 
         for edge in self.edges_from(this_node.id):
             next_node = self.nodes[edge.dst]
-            self.total_num_mutations += next_node.num_mutations()
+            self.total_num_mutations += next_node.get_num_mutations()
 
             if edge.src != self.root.id:
                 path.append(edge)
@@ -995,7 +995,7 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node
             ):
-                skipped = max(0, self.fuzz_node.num_mutations() - self.mutant_index)
+                skipped = max(0, self.fuzz_node.get_num_mutations() - self.mutant_index)
                 self._skip_current_node_after_current_test_case = True
                 self._fuzz_data_logger.open_test_step(
                     "Crash threshold reached for this request, exhausting {0} mutants.".format(skipped)
@@ -1009,7 +1009,7 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = max(0, self.fuzz_node.mutant.num_mutations() - self.mutant_index)
+                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.mutant_index)
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
@@ -1364,7 +1364,7 @@ class Session(pgraph.Graph):
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
-        for mutation in self.fuzz_node.mutations(None):
+        for mutation in self.fuzz_node.get_mutations(None):
             self.mutant_index += 1
             self.total_mutant_index += 1
             mutation.message_path = path
@@ -1435,7 +1435,7 @@ class Session(pgraph.Graph):
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
             current_index=self.mutant_index,
-            current_num_mutations=self.fuzz_node.num_mutations(),
+            current_num_mutations=self.fuzz_node.get_num_mutations(),
         )
 
         try:
@@ -1504,7 +1504,7 @@ class Session(pgraph.Graph):
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
             current_index=self.mutant_index,
-            current_num_mutations=self.fuzz_node.num_mutations(),
+            current_num_mutations=self.fuzz_node.get_num_mutations(),
         )
 
         self._fuzz_data_logger.log_info(
@@ -1608,7 +1608,14 @@ class Session(pgraph.Graph):
         return "FEATURE-CHECK->{0}".format(message_path)
 
     def _test_case_name(self, mutation):
-        """Get long test case name."""
+        """Get long test case name.
+
+        Args:
+            mutation (Mutation):
+
+        Returns:
+
+        """
         message_path = self._message_path_to_str(mutation.message_path)
         primitive_path = next(iter(mutation.mutations))
         return "{0}:{1}:{2}".format(message_path, primitive_path, self.mutant_index)

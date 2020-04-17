@@ -203,5 +203,11 @@ class Request(FuzzableBlock):
         else:
             raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
 
+    def get_mutations(self, default_value=None):
+        return self.mutations(default_value=default_value)
+
+    def get_num_mutations(self):
+        return self.num_mutations()
+
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.name)

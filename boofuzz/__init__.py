@@ -226,7 +226,7 @@ def s_num_mutations():
     :return: Number of mutated forms this primitive can take.
     """
 
-    return blocks.CURRENT.num_mutations()
+    return blocks.CURRENT.get_num_mutations()
 
 
 def s_switch(name):

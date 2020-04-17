@@ -52,7 +52,7 @@ class Block(FuzzableBlock):
         # mutate every item on the stack for every possible group value.
         #
         if self.group:
-            group_count = self.request.names[self.group].num_mutations()
+            group_count = self.request.names[self.group].get_num_mutations()
 
             # update the group value to that at the current index.
             self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
@@ -134,7 +134,7 @@ class Block(FuzzableBlock):
     def num_mutations(self, default_value=None):
         n = super(Block, self).num_mutations(default_value=default_value)
         if self.group:
-            n *= len(self.request.names[self.group].num_mutations())
+            n *= len(self.request.names[self.group].get_num_mutations())
         return n
 
     def _do_dependencies_allow_render(self, mutation_context):

@@ -112,6 +112,14 @@ class Repeat(mutator.Mutator):
         return value * child_data
 
     def render_mutated(self, mutation):  # TODO render_mutated doesn't exist for Fuzzable
+        """
+
+        Args:
+            mutation (Mutation):
+
+        Returns:
+
+        """
         child_data = self._get_child_data(mutation=mutation)
         if self.qualified_name in mutation.mutations:
             return self.encode(mutation.mutations[self.qualified_name], mutation_context=None)

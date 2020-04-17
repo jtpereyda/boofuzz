@@ -122,7 +122,7 @@ class FuzzNode(object):
         else:
             return self._default_value
 
-    def mutations(self):
+    def get_mutations(self):
         try:
             for value in itertools.chain(self._fuzz_object.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
@@ -144,6 +144,14 @@ class FuzzNode(object):
         )
 
     def get_value(self, mutation_context=None):
+        """
+
+        Args:
+            mutation_context (MutationContext):
+
+        Returns:
+
+        """
         if mutation_context is None:
             mutation_context = MutationContext(Mutation())
         if self.qualified_name in mutation_context.mutation.mutations:
@@ -157,7 +165,7 @@ class FuzzNode(object):
 
         return value
 
-    def num_mutations(self):
+    def get_num_mutations(self):
         return self._fuzz_object.num_mutations(default_value=self.original_value(test_case_context=None))
 
     def __repr__(self):

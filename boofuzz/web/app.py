@@ -78,7 +78,7 @@ def index_update():
             "current_index": app.session.total_mutant_index,
             "num_mutations": app.session.total_num_mutations,
             "current_index_element": app.session.mutant_index if app.session is not None else None,
-            "num_mutations_element": app.session.fuzz_node.num_mutations()
+            "num_mutations_element": app.session.fuzz_node.get_num_mutations()
             if app.session.fuzz_node is not None
             else None,
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
@@ -102,7 +102,7 @@ def index():
     # render sweet progress bars.
     if app.session.fuzz_node is not None:
         mutant_index = float(app.session.mutant_index)
-        num_mutations = float(app.session.fuzz_node.num_mutations())
+        num_mutations = float(app.session.fuzz_node.get_num_mutations())
 
         try:
             progress_current = mutant_index / num_mutations

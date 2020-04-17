@@ -18,7 +18,7 @@ class FuzzableBlock(Mutator):
     def mutations(self, default_value):
         for item in self.stack:
             self.request.mutant = item
-            for mutation in item.mutations():
+            for mutation in item.get_mutations():
                 yield mutation
 
     def num_mutations(self, default_value=None):
@@ -26,7 +26,7 @@ class FuzzableBlock(Mutator):
 
         for item in self.stack:
             if item.fuzzable:
-                num_mutations += item.num_mutations()
+                num_mutations += item.get_num_mutations()
 
         return num_mutations
 
