@@ -1,12 +1,12 @@
 from past.builtins import range
 
 from .. import exception, helpers
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 from ..primitives.bit_field import BitField
 
 
-class Repeat(FuzzNode):
+class Repeat(Fuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.

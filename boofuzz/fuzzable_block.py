@@ -1,7 +1,7 @@
-from .fuzzable_wrapper import FuzzNode
+from .fuzzable import Fuzzable
 
 
-class FuzzableBlock(FuzzNode):
+class FuzzableBlock(Fuzzable):
     """Fuzzable type designed to have children elements.
 
     Overrides basic Fuzzable methods and adds:
@@ -18,7 +18,7 @@ class FuzzableBlock(FuzzNode):
 
         if children is None:
             self.stack = []
-        elif isinstance(children, FuzzNode):
+        elif isinstance(children, Fuzzable):
             self.stack = [children]
         else:
             self.stack = list(children)
@@ -62,7 +62,7 @@ class FuzzableBlock(FuzzNode):
         """Push a child element onto this block's stack.
 
         Args:
-            item (FuzzNode): Some wrapped Fuzzable element
+            item (Fuzzable): Some wrapped Fuzzable element
 
         Returns: None
         """

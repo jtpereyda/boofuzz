@@ -5,10 +5,10 @@ from future.moves import itertools
 from past.builtins import range
 
 from .. import helpers
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
 
 
-class String(FuzzNode):
+class String(Fuzzable):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = [
         "",

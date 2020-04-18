@@ -1,11 +1,11 @@
 import abc
 
 from .. import helpers
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
-class BasePrimitive(FuzzNode):
+class BasePrimitive(Fuzzable):
     """
     The primitive base class implements common functionality shared across most primitives.
     """

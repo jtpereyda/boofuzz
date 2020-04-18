@@ -29,7 +29,7 @@ from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
-from .fuzzable_wrapper import FuzzNode
+from .fuzzable import Fuzzable
 from boofuzz.test_case_session_reference import TestCaseSessionReference
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
@@ -81,7 +81,7 @@ __all__ = [
     "EventHook",
     "exception",
     "FromFile",
-    "FuzzNode",
+    "Fuzzable",
     "FuzzLogger",
     "FuzzLoggerCsv",
     "FuzzLoggerCurses",

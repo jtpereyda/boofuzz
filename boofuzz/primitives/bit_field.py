@@ -6,7 +6,7 @@ from past.builtins import map
 
 from .. import helpers
 from ..constants import LITTLE_ENDIAN
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
 
 
 def binary_string_to_int(binary):
@@ -38,7 +38,7 @@ def int_to_binary_string(number, bit_width):
     return "".join(map(lambda x: str((number >> x) & 1), range(bit_width - 1, -1, -1)))
 
 
-class BitField(FuzzNode):
+class BitField(Fuzzable):
     def __init__(
         self,
         name,

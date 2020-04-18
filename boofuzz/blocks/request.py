@@ -3,7 +3,7 @@ import collections
 from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
 from ..fuzzable_block import FuzzableBlock
 from ..mutation_context import MutationContext
 
@@ -34,7 +34,7 @@ class Request(FuzzableBlock):
 
         if children is None:
             children = []
-        elif isinstance(children, FuzzNode):
+        elif isinstance(children, Fuzzable):
             children = [children]
 
         self._initialize_children(child_nodes=children)

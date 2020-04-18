@@ -9,7 +9,7 @@ from .test_case_session_reference import TestCaseSessionReference
 from typing import Union
 
 
-class FuzzNode(object):
+class Fuzzable(object):
     name_counter = 0
 
     def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
@@ -44,8 +44,8 @@ class FuzzNode(object):
         :rtype: str
         """
         if self._name is None:
-            FuzzNode.name_counter += 1
-            self._name = "{0}{1}".format(type(self).__name__, FuzzNode.name_counter)
+            Fuzzable.name_counter += 1
+            self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
         return self._name
 
     @property

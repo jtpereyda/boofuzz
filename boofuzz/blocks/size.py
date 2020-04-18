@@ -1,8 +1,8 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..fuzzable_wrapper import FuzzNode
-from ..fuzzable_wrapper import FuzzNode
+from ..fuzzable import Fuzzable
+from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 
@@ -17,7 +17,7 @@ def _may_recurse(f):
     return safe_recurse
 
 
-class Size(FuzzNode):
+class Size(Fuzzable):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
