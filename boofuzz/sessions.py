@@ -12,7 +12,7 @@ import time
 import traceback
 import warnings
 import zlib
-from boofuzz.exception import BoofuzzError
+from .exception import BoofuzzFailure
 from boofuzz.test_case_context import TestCaseContext
 from builtins import input
 from io import open
@@ -370,6 +370,8 @@ class Session(pgraph.Graph):
                                             Default None.
         post_test_case_callbacks (list of method): The registered method will be called after each fuzz test case.
                                                   Default None.
+        post_start_target_callbacks (list of method): Method(s) will be called after the target is started or restarted,
+                                                      say, by a process monitor.
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
         keep_web_open (bool):     Keep the webinterface open after session completion. Default True.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
@@ -415,6 +417,7 @@ class Session(pgraph.Graph):
         restart_timeout=None,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
+        post_start_target_callbacks=None,
         fuzz_loggers=None,
         fuzz_db_keep_only_n_pass_cases=0,
         receive_data_after_each_request=True,
@@ -485,13 +488,21 @@ class Session(pgraph.Graph):
         else:
             post_test_case_methods = post_test_case_callbacks
 
+        if post_start_target_callbacks is None:
+            post_start_target_methods = []
+        else:
+            post_start_target_methods = post_start_target_callbacks
+
         if restart_callbacks is None:
             restart_methods = []
         else:
             restart_methods = restart_callbacks
 
         self._callback_monitor = CallbackMonitor(
-            on_pre_send=pre_send_methods, on_post_send=post_test_case_methods, on_restart_target=restart_methods
+            on_pre_send=pre_send_methods,
+            on_post_send=post_test_case_methods,
+            on_restart_target=restart_methods,
+            on_post_start_target=post_start_target_methods,
         )
 
         self.total_num_mutations = 0
@@ -777,8 +788,7 @@ class Session(pgraph.Graph):
             self.server_init()
 
         try:
-            for monitor in self.targets[0].monitors:
-                monitor.start_target()
+            self._start_target(self.targets[0])
 
             if self._reuse_target_connection:
                 self.targets[0].open()
@@ -828,6 +838,16 @@ class Session(pgraph.Graph):
             raise
         finally:
             self._fuzz_data_logger.close_test()
+
+    def _start_target(self, target):
+        started = False
+        for monitor in target.monitors:
+            if monitor.start_target():
+                started = True
+                break
+        if started:
+            for monitor in target.monitors:
+                monitor.post_start_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
 
     def import_file(self):
         """
@@ -1100,18 +1120,19 @@ class Session(pgraph.Graph):
         #       a custom callback. wtf?
 
         self._fuzz_data_logger.open_test_step("Restarting target")
+        restarted = False
         if len(self.on_failure) > 0:
             for f in self.on_failure:
                 self._fuzz_data_logger.open_test_step("Calling registered on_failure method")
                 f(logger=self._fuzz_data_logger)
+            restarted = True
         # vm restarting is the preferred method so try that before monitors.
         elif target.vmcontrol:
             self._fuzz_data_logger.log_info("Restarting target virtual machine")
             target.vmcontrol.restart_target()
-
+            restarted = True
         # we always have at least one monitor; a Callback Monitor that handles all callbacks.
         else:
-            restarted = False
             for monitor in target.monitors:
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
@@ -1121,12 +1142,14 @@ class Session(pgraph.Graph):
                     restarted = True
                     break
 
-            # no monitor can restart
-            if not restarted:
-                self._fuzz_data_logger.log_info(
-                    "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
-                )
-                time.sleep(self.restart_sleep_time)
+        if restarted:
+            for monitor in target.monitors:
+                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger, session=self)
+        else:
+            self._fuzz_data_logger.log_info(
+                "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
+            )
+            time.sleep(self.restart_sleep_time)
 
         # pass specified target parameters to the PED-RPC server to re-establish connections.
         target.monitors_alive()
@@ -1183,19 +1206,19 @@ class Session(pgraph.Graph):
             if self._ignore_connection_reset:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
+                raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
         except exception.BoofuzzTargetConnectionAborted as e:
             # TODO: Switch _ignore_connection_aborted for _ignore_transmission_error, or provide retry mechanism
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._ignore_connection_aborted:
                 self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(message=str(e))
 
         try:  # recv
             if self._receive_data_after_each_request:
@@ -1205,25 +1228,25 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_check("Verify some data was received from the target.")
                     if not self.last_recv:
                         # Assume a crash?
-                        self._fuzz_data_logger.log_fail("Nothing received from target.")
+                        raise BoofuzzFailure(message="Nothing received from target.")
                     else:
                         self._fuzz_data_logger.log_pass("Some data received from target.")
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
+                raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
         except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
 
     def transmit_fuzz(self, sock, node, edge, callback_data, mutation_context):
         """Render and transmit a fuzzed node, process callbacks accordingly.
@@ -1246,18 +1269,18 @@ class Session(pgraph.Graph):
             if self._ignore_connection_issues_when_sending_fuzz_data:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
             else:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
+                raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
         except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._ignore_connection_issues_when_sending_fuzz_data:
                 self._fuzz_data_logger.log_info(msg)
             else:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
         except exception.BoofuzzSSLError as e:
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
-                self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
 
         received = b""
         try:  # recv
@@ -1265,13 +1288,13 @@ class Session(pgraph.Graph):
                 received = self.targets[0].recv()
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(constants.ERR_CONN_RESET)
+                raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
             else:
                 self._fuzz_data_logger.log_info(constants.ERR_CONN_RESET)
         except exception.BoofuzzTargetConnectionAborted as e:
             msg = constants.ERR_CONN_ABORTED.format(socket_errno=e.socket_errno, socket_errmsg=e.socket_errmsg)
             if self._check_data_received_each_request:
-                self._fuzz_data_logger.log_fail(msg)
+                raise BoofuzzFailure(msg)
             else:
                 self._fuzz_data_logger.log_info(msg)
             pass
@@ -1280,6 +1303,7 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(str(e))
             else:
                 self._fuzz_data_logger.log_fail(str(e))
+                raise BoofuzzFailure(str(e))
         self.last_recv = received
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
@@ -1553,6 +1577,10 @@ class Session(pgraph.Graph):
             if self.sleep_time > 0:
                 self._fuzz_data_logger.open_test_step("Sleep between tests.")
                 self._sleep(self.sleep_time)
+        except BoofuzzFailure as e:
+            self._fuzz_data_logger.log_fail(e.message)
+            if not self._check_for_passively_detected_failures(target=target):
+                self._check_for_passively_detected_failures(target=target)
         finally:
             self._process_failures(target=target)
             self._fuzz_data_logger.close_test_case()

@@ -51,6 +51,10 @@ class BaseMonitor:
         """
         return True
 
+    def post_start_target(self, target=None, fuzz_data_logger=None, session=None):
+        """Called after a target is started or restarted."""
+        return
+
     def retrieve_data(self):
         """
         Called to retrieve data independent of whether the current fuzz node crashed
