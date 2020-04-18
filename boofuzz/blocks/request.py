@@ -9,7 +9,7 @@ from ..mutation_context import MutationContext
 
 
 class Request(FuzzableBlock):
-    def __init__(self, name, child_nodes=None):
+    def __init__(self, name, children=None):
         """
         Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
         essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
@@ -32,9 +32,12 @@ class Request(FuzzableBlock):
         self._element_mutant_index = None  # index of current mutant element within self.stack
         self.mutant = None  # current primitive being mutated.
 
-        if child_nodes is None:
-            child_nodes = []
-        self._initialize_children(child_nodes=child_nodes)
+        if children is None:
+            children = []
+        elif isinstance(children, FuzzNode):
+            children = [children]
+
+        self._initialize_children(child_nodes=children)
 
     def _initialize_children(self, child_nodes, block_stack=None):
         if block_stack is None:

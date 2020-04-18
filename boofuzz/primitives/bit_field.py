@@ -56,7 +56,7 @@ class BitField(FuzzNode):
         The bit field primitive represents a number of variable length and is used to define all other integer types.
 
         @type  width:         int
-        @param width:         Width of bit fields
+        @param width:         Width in bits
         @type  max_num:       int
         @param max_num:       Maximum number to iterate up to
         @type  endian:        chr

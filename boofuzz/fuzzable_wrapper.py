@@ -6,6 +6,7 @@ from future.moves import itertools
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
+from typing import Union
 
 
 class FuzzNode(object):
@@ -31,10 +32,12 @@ class FuzzNode(object):
         if fuzz_values is None:
             fuzz_values = list()
         self._fuzz_values = fuzz_values
-        if children is not None:
-            self.stack = list(children)
-        else:
+        if children is None:
             self.stack = []
+        elif isinstance(children, FuzzNode):
+            self.stack = [children]
+        else:
+            self.stack = list(children)
 
     @property
     def fuzzable(self):
