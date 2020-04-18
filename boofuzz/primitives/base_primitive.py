@@ -1,7 +1,7 @@
 import abc
 
 from .. import helpers
-from ..mutator import FuzzNode
+from ..fuzzable_wrapper import FuzzNode
 from ..mutation import Mutation
 
 

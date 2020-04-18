@@ -16,7 +16,7 @@
 import pydot
 import attr
 
-from ..mutator import FuzzNode
+from ..fuzzable_wrapper import FuzzNode
 
 
 class Node(FuzzNode):
