@@ -12,7 +12,7 @@ from typing import Union
 class FuzzNode(object):
     name_counter = 0
 
-    def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None, children=None):
+    def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
         Args:
@@ -21,7 +21,6 @@ class FuzzNode(object):
                 be given.
             default_value: Can be a static value, or a ReferenceValueTestCaseSession.
             fuzz_values (list): List of custom fuzz values to add to the normal mutations.
-            children (Iterable): List of child nodes (typically given to FuzzableBlock types).
         """
         self._fuzzable = fuzzable
         self._name = name
@@ -32,12 +31,6 @@ class FuzzNode(object):
         if fuzz_values is None:
             fuzz_values = list()
         self._fuzz_values = fuzz_values
-        if children is None:
-            self.stack = []
-        elif isinstance(children, FuzzNode):
-            self.stack = [children]
-        else:
-            self.stack = list(children)
 
     @property
     def fuzzable(self):

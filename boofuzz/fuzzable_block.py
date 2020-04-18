@@ -7,11 +7,21 @@ class FuzzableBlock(FuzzNode):
     Overrides basic Fuzzable methods and adds:
     1. push()
     2. get_child_data()
+
+    Args:
+        children (Iterable): List of child nodes (typically given to FuzzableBlock types).
     """
 
-    def __init__(self, name, request=None, *args, **kwargs):
+    def __init__(self, name, request=None, children=None, *args, **kwargs):
         super(FuzzableBlock, self).__init__(name, *args, **kwargs)
         self.request = request
+
+        if children is None:
+            self.stack = []
+        elif isinstance(children, FuzzNode):
+            self.stack = [children]
+        else:
+            self.stack = list(children)
 
     def mutations(self, default_value):
         for item in self.stack:
