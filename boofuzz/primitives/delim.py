@@ -1,4 +1,5 @@
 from .base_primitive import BasePrimitive
+from .. import helpers
 
 
 class Delim(BasePrimitive):
@@ -65,3 +66,8 @@ class Delim(BasePrimitive):
         self._fuzz_library.append("\r\n" * 64)
         self._fuzz_library.append("\r\n" * 128)
         self._fuzz_library.append("\r\n" * 512)
+
+    def encode(self, value, mutation_context):
+        if value is None:
+            value = b""
+        return helpers.str_to_bytes(value)
