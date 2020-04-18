@@ -8,10 +8,9 @@ from .bit_field import BitField
 class Byte(BitField):
     def __init__(self, *args, **kwargs):
         # Inject the one parameter we care to pass in (width)
-        width = 8
-        max_num = None
+        kwargs["width"] = 8
 
-        super(Byte, self).__init__(width, max_num, *args, **kwargs)
+        super(Byte, self).__init__(*args, **kwargs)
 
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):

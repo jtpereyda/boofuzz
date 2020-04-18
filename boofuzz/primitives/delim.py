@@ -2,7 +2,7 @@ from .base_primitive import BasePrimitive
 
 
 class Delim(BasePrimitive):
-    def __init__(self, default_value):
+    def __init__(self, default_value, *args, **kwargs):
         """
         Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
 
@@ -10,7 +10,7 @@ class Delim(BasePrimitive):
         @param default_value:    Original value
         """
 
-        super(Delim, self).__init__()
+        super(Delim, self).__init__(*args, **kwargs)
 
         self._default_value = default_value
 

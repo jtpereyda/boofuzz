@@ -5,10 +5,10 @@ from future.moves import itertools
 from past.builtins import range
 
 from .. import helpers
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 
 
-class String(Mutator):
+class String(FuzzNode):
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = [
         "",
@@ -137,7 +137,7 @@ class String(Mutator):
                          "\xFF",  # expands to 4 characters under utf1
                          ]
 
-    def __init__(self, size=-1, padding=b"\x00", encoding="ascii", max_len=-1):
+    def __init__(self, name, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, *args, **kwargs):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
         smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
@@ -156,7 +156,7 @@ class String(Mutator):
         @param max_len:  (Optional, def=-1) Maximum string length
         """
 
-        super(String, self).__init__()
+        super(String, self).__init__(name, default_value, *args, **kwargs)
 
         self.size = size
         self.max_len = max_len

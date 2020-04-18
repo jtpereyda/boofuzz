@@ -5,7 +5,7 @@ from ..mutation import Mutation
 
 
 class Group(BasePrimitive):
-    def __init__(self, name, values, default_value=None):
+    def __init__(self, name, values, default_value=None, *args, **kwargs):
         """
         This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
         to a group primitive to specify that the block should cycle through all possible mutations for *each* value
@@ -19,7 +19,7 @@ class Group(BasePrimitive):
         @param default_value:   Specifying a value when fuzzing() is complete
         """
 
-        super(Group, self).__init__()
+        super(Group, self).__init__(*args, **kwargs)
 
         self._name = name
         self.values = values

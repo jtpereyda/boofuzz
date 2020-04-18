@@ -289,7 +289,7 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             # Automagically close the block when exiting the "with" statement
             s_block_end()
 
-    block = s_block_start(name, group, encoder, dep, dep_value, dep_values, dep_compare)
+    block = s_block_start(name, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values, dep_compare=dep_compare)
 
     return ScopedBlock(block)
 
@@ -328,8 +328,8 @@ def s_aligned(name, modulus, pattern=b"\x00"):
             """
             blocks.CURRENT.pop()
 
-    aligned = Aligned(modulus=modulus, request=blocks.CURRENT, pattern=pattern)
-    blocks.CURRENT.push(FuzzNode(mutator=aligned, name=name, default_value=None, fuzzable=True))
+    aligned = Aligned(name=name, modulus=modulus, pattern=pattern, fuzzable=True)
+    blocks.CURRENT.push(aligned)
 
     return ScopedAligned(aligned)
 
@@ -348,8 +348,8 @@ def s_block_start(name, *args, **kwargs):
     :note Prefer using s_block to this function directly
     :see s_block
     """
-    block = Block(blocks.CURRENT, *args, **kwargs)
-    blocks.CURRENT.push(FuzzNode(mutator=block, name=name, default_value=None, fuzzable=True))
+    block = Block(name, blocks.CURRENT, *args, **kwargs)
+    blocks.CURRENT.push(block)
 
     return block
 
@@ -411,6 +411,7 @@ def s_checksum(
         raise exception.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
     checksum = Checksum(
+        name,
         block_name,
         blocks.CURRENT,
         algorithm,
@@ -419,7 +420,7 @@ def s_checksum(
         ipv4_src_block_name=ipv4_src_block_name,
         ipv4_dst_block_name=ipv4_dst_block_name,
     )
-    blocks.CURRENT.push(FuzzNode(mutator=checksum, name=name, default_value=None, fuzzable=fuzzable))
+    blocks.CURRENT.push(checksum)
 
 
 def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, name=None):
@@ -446,8 +447,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     :param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    repeat = Repeat(block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable, name)
-    blocks.CURRENT.push(repeat)
+    blocks.CURRENT.push(Repeat(name, block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable))
 
 
 def s_size(
@@ -490,10 +490,7 @@ def s_size(
     :param name:          Name of this sizer field
     """
 
-    size = Size(
-        block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math
-    )
-    blocks.CURRENT.push(FuzzNode(mutator=size, name=name, default_value=None, fuzzable=fuzzable))
+    blocks.CURRENT.push(Size(name, block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable=fuzzable))
 
 
 def s_update(name, value):
@@ -542,8 +539,7 @@ def s_binary(value, name=None):
 
         value += six.int2byte(int(pair, 16))
 
-    static = primitives.Static(value, name)
-    blocks.CURRENT.push(FuzzNode(mutator=static, name=name, default_value=parsed, fuzzable=False))
+    blocks.CURRENT.push(Static(name=name, default_value=parsed, fuzzable=False))
 
 
 def s_delim(value, fuzzable=True, name=None):
@@ -558,8 +554,7 @@ def s_delim(value, fuzzable=True, name=None):
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    delim = primitives.Delim(value)
-    blocks.CURRENT.push(FuzzNode(mutator=delim, name=name, default_value=value, fuzzable=fuzzable))
+    blocks.CURRENT.push(Delim(name=name, default_value=value, fuzzable=fuzzable))
 
 
 def s_group(name, values, default_value=None):
@@ -576,8 +571,7 @@ def s_group(name, values, default_value=None):
     :param default_value:   (Optional, def=None) Specifying a value when fuzzing() is complete
     """
 
-    group = primitives.Group(name, values, default_value)
-    blocks.CURRENT.push(FuzzNode(mutator=group, name=name, default_value=default_value, fuzzable=False))
+    blocks.CURRENT.push(Group(name=name, default_value=default_value, values=values, fuzzable=False))
 
 
 # noinspection PyCallingNonCallable
@@ -627,8 +621,7 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    random_data = primitives.RandomData(value, min_length, max_length, num_mutations, step)
-    blocks.CURRENT.push(FuzzNode(mutator=random_data, name=name, default_value=value, fuzzable=fuzzable))
+    blocks.CURRENT.push(RandomData(name, value, min_length, max_length, num_mutations, step, fuzzable=fuzzable))
 
 
 def s_static(value, name=None):
@@ -643,8 +636,7 @@ def s_static(value, name=None):
     :param name:  (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    static = primitives.Static()
-    blocks.CURRENT.push(FuzzNode(mutator=static, name=name, default_value=value, fuzzable=False))
+    blocks.CURRENT.push(Static(name=name, default_value=value, fuzzable=False))
 
 
 def s_mirror(primitive_name, name=None):
@@ -659,9 +651,7 @@ def s_mirror(primitive_name, name=None):
     if primitive_name not in blocks.CURRENT.names:
         raise exception.SullyRuntimeError("CAN NOT ADD A MIRROR FOR A NON-EXIST PRIMITIVE CURRENTLY")
 
-    mirror = primitives.Mirror(primitive_name, blocks.CURRENT)
-    blocks.CURRENT.push(mirror)
-    blocks.CURRENT.push(FuzzNode(mutator=mirror, name=name, default_value=None, fuzzable=True))
+    blocks.CURRENT.push(Mirror(name, primitive_name, blocks.CURRENT, fuzzable=True))
 
 
 def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
@@ -684,8 +674,7 @@ def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, m
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    s = primitives.String(size, padding, encoding, max_len)
-    blocks.CURRENT.push(FuzzNode(mutator=s, name=name, default_value=value, fuzzable=fuzzable))
+    blocks.CURRENT.push(String(name, value, size, padding, encoding, max_len, fuzzable=fuzzable))
 
 
 def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
@@ -706,8 +695,7 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :param filename: (Mandatory) Specify filename where to read fuzz list
     """
 
-    s = primitives.FromFile(value, max_len, filename)
-    blocks.CURRENT.push(FuzzNode(mutator=s, name=name, default_value=value, fuzzable=fuzzable))
+    blocks.CURRENT.push(FromFile(name, value, max_len, filename, fuzzable=fuzzable))
 
 
 # noinspection PyTypeChecker
@@ -747,9 +735,8 @@ def s_bit_field(
     :param fuzz_values:    List of custom fuzz values to add to the normal mutations.
     """
 
-    bit_field = primitives.BitField(width, None, endian, output_format, signed, full_range)
     blocks.CURRENT.push(
-        FuzzNode(mutator=bit_field, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        BitField(name, value, width, None, endian, output_format, signed, full_range, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -786,9 +773,9 @@ def s_byte(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-    byte = primitives.Byte(endian, output_format, signed, full_range)
+
     blocks.CURRENT.push(
-        FuzzNode(mutator=byte, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        Byte(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -810,8 +797,7 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
     :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    _bytes = primitives.Bytes(size, padding, max_len)
-    blocks.CURRENT.push(FuzzNode(mutator=_bytes, name=name, default_value=value, fuzzable=fuzzable))
+    blocks.CURRENT.push(Bytes(name=name, default_value=value, size=size, padding=padding, max_len=max_len, fuzzable=fuzzable))
 
 
 def s_word(
@@ -847,9 +833,9 @@ def s_word(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-    word = primitives.Word(endian, output_format, signed, full_range)
+
     blocks.CURRENT.push(
-        FuzzNode(mutator=word, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        Word(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -886,9 +872,9 @@ def s_dword(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-    dword = primitives.DWord(endian, output_format, signed, full_range)
+
     blocks.CURRENT.push(
-        FuzzNode(mutator=dword, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        DWord(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 
@@ -925,9 +911,9 @@ def s_qword(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-    qword = primitives.QWord(endian, output_format, signed, full_range)
+
     blocks.CURRENT.push(
-        FuzzNode(mutator=qword, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        QWord(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
     )
 
 

@@ -6,7 +6,7 @@ from ..mutation import Mutation
 
 
 class Block(FuzzableBlock):
-    def __init__(self, request=None, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
+    def __init__(self, name, default_value=None, request=None, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="==", *args, **kwargs):
         """
         The basic building block. Can contain primitives, sizers, checksums or other blocks.
 
@@ -25,7 +25,7 @@ class Block(FuzzableBlock):
         @type  dep_compare: str
         @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
         """
-        super().__init__(request=request)
+        super(Block, self).__init__(name=name, default_value=default_value, request=request, *args, **kwargs)
 
         self.request = request
         self.group = group
@@ -35,7 +35,6 @@ class Block(FuzzableBlock):
         self.dep_values = dep_values
         self.dep_compare = dep_compare
 
-        self.stack = []  # block item stack.
         self._rendered = b""  # rendered block contents.
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.

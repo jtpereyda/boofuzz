@@ -8,10 +8,9 @@ from boofuzz.primitives.bit_field import BitField
 class DWord(BitField):
     def __init__(self, *args, **kwargs):
         # Inject our width argument
-        width = 32
-        max_num = None
+        kwargs["width"] = 32
 
-        super(DWord, self).__init__(width, max_num, *args, **kwargs)
+        super(DWord, self).__init__(*args, **kwargs)
 
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):

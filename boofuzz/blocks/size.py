@@ -1,7 +1,7 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 from ..fuzzable_wrapper import FuzzNode
 from ..mutation import Mutation
 
@@ -17,7 +17,7 @@ def _may_recurse(f):
     return safe_recurse
 
 
-class Size(Mutator):
+class Size(FuzzNode):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
@@ -25,6 +25,7 @@ class Size(Mutator):
 
     def __init__(
         self,
+        name,
         block_name,
         request=None,
         offset=0,
@@ -34,6 +35,8 @@ class Size(Mutator):
         inclusive=False,
         signed=False,
         math=None,
+        *args,
+        **kwargs,
     ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
@@ -59,7 +62,7 @@ class Size(Mutator):
         :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
         """
 
-        super().__init__()
+        super().__init__(name=name, default_value=None, *args, **kwargs)
         self.block_name = block_name
         self.request = request
         self.offset = offset
@@ -70,9 +73,7 @@ class Size(Mutator):
         self.signed = signed
         self.math = math
 
-        self.bit_field = FuzzNode(mutator=primitives.BitField(
-            self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
-        ), default_value=0, fuzzable=True)
+        self.bit_field = primitives.BitField(name="innerBitField", default_value=0, width=self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed)
         self._rendered = b""
         self._fuzz_complete = False
 
@@ -83,7 +84,7 @@ class Size(Mutator):
         self._recursion_flag = False
 
     def mutations(self, default_value):
-        for mutation in self.bit_field.fuzz_object.mutations(None):
+        for mutation in self.bit_field.mutations(None):
             yield mutation
 
     def num_mutations(self, default_value):
@@ -106,7 +107,7 @@ class Size(Mutator):
                     self._length_to_bytes(self._calculated_length(mutation_context=mutation_context))
                 )
         else:
-            return self.bit_field.fuzz_object.encode(value=value, mutation_context=mutation_context)
+            return self.bit_field.encode(value=value, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
         return self.length * "\x00"
@@ -116,7 +117,7 @@ class Size(Mutator):
             length = self._calculated_length(Mutation())
             return helpers.str_to_bytes(self._length_to_bytes(length))
         else:
-            return self.bit_field.fuzz_object.encode(value=value)
+            return self.bit_field.encode(value=value)
 
     def _calculated_length(self, mutation_context):
         return (

@@ -1510,7 +1510,7 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall."
             % (
-                type(self.fuzz_node.mutant.fuzz_object).__name__,
+                type(self.fuzz_node.mutant).__name__,
                 # TODO: Original value is not always attainable here, in the case of dynamic default values.
                 # This output could be easily removed, and with some effort made dynamically available in the web view.
                 # repr(self.fuzz_node.mutant.original_value(mutation_context=mutation_context)),

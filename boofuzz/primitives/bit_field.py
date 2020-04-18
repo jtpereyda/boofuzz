@@ -6,7 +6,7 @@ from past.builtins import map
 
 from .. import helpers
 from ..constants import LITTLE_ENDIAN
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 
 
 def binary_string_to_int(binary):
@@ -38,15 +38,19 @@ def int_to_binary_string(number, bit_width):
     return "".join(map(lambda x: str((number >> x) & 1), range(bit_width - 1, -1, -1)))
 
 
-class BitField(Mutator):
+class BitField(FuzzNode):
     def __init__(
         self,
+        name,
+        default_value,
         width,
         max_num=None,
         endian=LITTLE_ENDIAN,
         output_format="binary",
         signed=False,
         full_range=False,
+        *args,
+        **kwargs
     ):
         """
         The bit field primitive represents a number of variable length and is used to define all other integer types.
@@ -64,6 +68,7 @@ class BitField(Mutator):
         @type  full_range:    bool
         @param full_range:    (Optional, def=False) If enabled the field mutates through *all* possible values.
         """
+        super(BitField, self).__init__(name, default_value, *args, **kwargs)
 
         assert isinstance(width, six.integer_types), "width must be an integer!"
 

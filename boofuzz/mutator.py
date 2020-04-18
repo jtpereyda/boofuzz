@@ -1,6 +1,7 @@
 from builtins import object
 from future.utils import listitems, with_metaclass
 
+from .fuzzable_wrapper import FuzzNode
 from .mutation_context import MutationContext
 
 
@@ -32,7 +33,7 @@ class DocStringInheritor(type):
 
 
 # DocStringInheritor is the metaclass in python 2 and 3
-class Mutator(with_metaclass(DocStringInheritor, object)):
+class Mutator(with_metaclass(DocStringInheritor, FuzzNode)):
     """Base class for fuzzable message element types.
 
     A typical Fuzzable type will implement mutations() (a generator) or encode() or both.

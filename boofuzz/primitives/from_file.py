@@ -5,7 +5,7 @@ from .base_primitive import BasePrimitive
 
 
 class FromFile(BasePrimitive):
-    def __init__(self, value, max_len=0, filename=None):
+    def __init__(self, name, value, max_len=0, filename=None, *args, **kwargs):
         """
         Cycles through a list of "bad" values from a file(s). Takes filename and open the file(s) to read
         the values to use in fuzzing process. filename may contain glob characters.
@@ -18,7 +18,7 @@ class FromFile(BasePrimitive):
         @param filename: Filename pattern to load all fuzz value
         """
 
-        super(FromFile, self).__init__()
+        super(FromFile, self).__init__(name, value, *args, **kwargs)
 
         self._default_value = value
         self._filename = filename

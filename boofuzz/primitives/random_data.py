@@ -3,12 +3,12 @@ import random
 from boofuzz import helpers
 from past.builtins import xrange
 
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 from ..mutation import Mutation
 
 
-class RandomData(Mutator):
-    def __init__(self, value, min_length, max_length, max_mutations=25, step=None):
+class RandomData(FuzzNode):
+    def __init__(self, name, value, min_length, max_length, max_mutations=25, step=None, *args, **kwargs):
         """
         Generate a random chunk of data while maintaining a copy of the original. A random length range
         can be specified.
@@ -27,7 +27,7 @@ class RandomData(Mutator):
         @param step:          (Optional, def=None) If not null, step count between min and max reps, otherwise random
         """
 
-        super(RandomData, self).__init__()
+        super(RandomData, self).__init__(name, value, *args, **kwargs)
 
         self._value = self._original_value = helpers.str_to_bytes(value)
         self.min_length = min_length

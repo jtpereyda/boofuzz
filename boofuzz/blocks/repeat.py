@@ -1,17 +1,18 @@
 from past.builtins import range
 
-from .. import exception, helpers, mutator
+from .. import exception, helpers
+from ..fuzzable_wrapper import FuzzNode
 from ..mutation import Mutation
 from ..primitives.bit_field import BitField
 
 
-class Repeat(mutator.Mutator):
+class Repeat(FuzzNode):
     """
     This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, block_name, request, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, name=None):
+    def __init__(self, name, block_name, request, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, *args, **kwargs):
         """
         Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
         default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
@@ -34,6 +35,7 @@ class Repeat(mutator.Mutator):
         @type  name:       str
         @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
+        super(Repeat, self).__init__(name, default_value, *args, **kwargs)
 
         self.block_name = block_name
         self.request = request

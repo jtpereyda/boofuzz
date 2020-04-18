@@ -25,8 +25,8 @@ class Mirror(BasePrimitive):
         request (s_request):    Request this primitive belongs to.
     """
 
-    def __init__(self, primitive_name, request):
-        super(Mirror, self).__init__()
+    def __init__(self, name, primitive_name, request, *args, **kwargs):
+        super(Mirror, self).__init__(name, default_value=None, *args, **kwargs)
 
         self._primitive_name = primitive_name
         self._request = request

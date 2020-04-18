@@ -1,8 +1,8 @@
-from .mutator import Mutator
+from .mutator import FuzzNode
 from .fuzzable_wrapper import FuzzNode
 
 
-class FuzzableBlock(Mutator):
+class FuzzableBlock(FuzzNode):
     """Fuzzable type designed to have children elements.
 
     Overrides basic Fuzzable methods and adds:
@@ -10,9 +10,8 @@ class FuzzableBlock(Mutator):
     2. get_child_data()
     """
 
-    def __init__(self, request):
-        super().__init__()
-        self.stack = []  # block item stack
+    def __init__(self, name, request=None, *args, **kwargs):
+        super(FuzzableBlock, self).__init__(name, *args, **kwargs)
         self.request = request
 
     def mutations(self, default_value):

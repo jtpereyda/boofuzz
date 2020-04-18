@@ -1,5 +1,6 @@
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 
 
-class Static(Mutator):
-    pass
+class Static(FuzzNode):
+    def __init__(self, *args, **kwargs):
+        super(Static, self).__init__(*args, **kwargs)

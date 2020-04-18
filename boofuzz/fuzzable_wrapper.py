@@ -6,17 +6,15 @@ from future.moves import itertools
 from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
-from .mutator import Mutator
 
 
 class FuzzNode(object):
     name_counter = 0
 
-    def __init__(self, mutator=None, name=None, default_value=None, fuzzable=True, fuzz_values=None, children=None):
+    def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None, children=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
 
         Args:
-            mutator (Mutator): Fuzzable element.
             fuzzable (bool): Enable fuzzing of this primitive. Default: True.
             name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
                 be given.
@@ -27,7 +25,6 @@ class FuzzNode(object):
         self._fuzzable = fuzzable
         self._name = name
         self._default_value = default_value
-        self._fuzz_object = mutator
         self._context_path = ""
         self._request = None
         self._halt_mutations = False
@@ -35,19 +32,9 @@ class FuzzNode(object):
             fuzz_values = list()
         self._fuzz_values = fuzz_values
         if children is not None:
-            self.fuzz_object.stack = list(children)
-
-    @property
-    def stack(self):
-        return self.fuzz_object.stack
-
-    @stack.setter
-    def stack(self, new_stack):
-        self.fuzz_object.stack = new_stack
-
-    @property
-    def fuzz_object(self):
-        return self._fuzz_object
+            self.stack = list(children)
+        else:
+            self.stack = []
 
     @property
     def fuzzable(self):
@@ -62,7 +49,7 @@ class FuzzNode(object):
         """
         if self._name is None:
             FuzzNode.name_counter += 1
-            self._name = "{0}{1}".format(type(self.fuzz_object).__name__, FuzzNode.name_counter)
+            self._name = "{0}{1}".format(type(self).__name__, FuzzNode.name_counter)
         return self._name
 
     @property
@@ -71,30 +58,27 @@ class FuzzNode(object):
 
     @property
     def context_path(self):
-        """The path of parent elements leading to this element. E.g. "myrequest.myblock1.myblock2".
-
-        Set by the session manager (Session).
-
-        Returns:
-            str: Context path, dot-delimited.
-
-        """
+        """Dot-delimited string that describes the path up to this element. Configured after the object is attached
+        to a Request."""
+        if not hasattr(self, "_context_path"):
+            self._context_path = None
         return self._context_path
 
     @context_path.setter
     def context_path(self, x):
         self._context_path = x
-        self._fuzz_object.context_path = x
 
     @property
     def request(self):
-        """Reference to the Request in which this FuzzableWrapper lives."""
+        """Reference to the Request to which this object is attached."""
+        if not hasattr(self, "_request"):
+            self._request = None
         return self._request
 
     @request.setter
     def request(self, x):
         self._request = x
-        self._fuzz_object.request = x
+
 
     def stop_mutations(self):
         """Stop yielding mutations on the currently running :py:meth:`mutations` call.
@@ -124,7 +108,7 @@ class FuzzNode(object):
 
     def get_mutations(self):
         try:
-            for value in itertools.chain(self._fuzz_object.mutations(self.original_value()), self._fuzz_values):
+            for value in itertools.chain(self.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
                     return
@@ -139,7 +123,7 @@ class FuzzNode(object):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
-        return self._fuzz_object.encode(
+        return self.encode(
             value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context
         )
 
@@ -166,12 +150,63 @@ class FuzzNode(object):
         return value
 
     def get_num_mutations(self):
-        return self._fuzz_object.num_mutations(default_value=self.original_value(test_case_context=None))
+        return self.num_mutations(default_value=self.original_value(test_case_context=None))
+
+    def mutations(self, default_value):
+        """Generator to yield mutation values for this element.
+
+        Values are either plain values or callable functions that take a "default value" and mutate it. Functions are
+        used when the default or "normal" value influences the fuzzed value. Functions are used because the "normal"
+        value is sometimes dynamic and not known at the time of generation.
+
+        Each mutation should be a pre-rendered value. That is, it must be suitable to pass to encode().
+
+        Default: Empty iterator.
+
+        Args:
+            default_value:
+        """
+        return
+        yield
+
+    def encode(self, value, mutation_context):
+        """Takes a value and encodes/renders/serializes it to a bytes (byte string).
+
+        Optional if mutations() yields bytes.
+
+        Example: Yield strings with mutations() and encode them to UTF-8 using encode().
+
+        Default behavior: Return value.
+
+        Args:
+            value: Value to encode. Type should match the type yielded by mutations()
+            mutation_context (MutationContext): Context for current mutation, if any.
+
+
+        Returns:
+            bytes: Encoded/serialized value.
+        """
+        return value
+
+    def num_mutations(self, default_value):
+        """Return the total number of mutations for this element.
+
+        Default implementation exhausts the mutations() generator, which is inefficient. Override if you can provide a
+        value more efficiently, or if exhausting the mutations() generator has side effects.
+
+        Args:
+            default_value: Use if number of mutations depends on the default value. Provided by FuzzableWrapper.
+                Note: It is generally good behavior to have a consistent number of mutations for a given default value
+                length.
+
+        Returns:
+            int: Number of mutated forms this primitive can take
+        """
+        return sum(1 for _ in self.mutations(default_value=default_value))
 
     def __repr__(self):
-        return "<%s <%s> %s %s>" % (
+        return "<%s %s %s>" % (
             self.__class__.__name__,
-            self._fuzz_object,
             self.name,
             repr(self.original_value(test_case_context=None)),
         )
@@ -182,7 +217,7 @@ class FuzzNode(object):
         Returns:
             int: Length of element (length of mutated element if mutated).
         """
-        return len(self._fuzz_object.render_mutated(Mutation()))
+        return len(self.render(MutationContext(mutation=Mutation())))
 
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.

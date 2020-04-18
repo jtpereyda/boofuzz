@@ -7,10 +7,9 @@ from boofuzz.primitives.bit_field import BitField
 
 class QWord(BitField):
     def __init__(self, *args, **kwargs):
-        width = 64
-        max_num = None
+        kwargs["width"] = 64
 
-        super(QWord, self).__init__(width, max_num, *args, **kwargs)
+        super(QWord, self).__init__(*args, **kwargs)
 
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):

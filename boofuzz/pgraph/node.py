@@ -16,10 +16,10 @@
 import pydot
 import attr
 
-from ..mutator import Mutator
+from ..mutator import FuzzNode
 
 
-class Node(Mutator):
+class Node(FuzzNode):
     id = 0
     number = 0
 

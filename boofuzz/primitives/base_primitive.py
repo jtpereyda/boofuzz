@@ -1,16 +1,17 @@
 import abc
 
 from .. import helpers
-from ..mutator import Mutator
+from ..mutator import FuzzNode
 from ..mutation import Mutation
 
 
-class BasePrimitive(Mutator):
+class BasePrimitive(FuzzNode):
     """
     The primitive base class implements common functionality shared across most primitives.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super(BasePrimitive, self).__init__(*args, **kwargs)
         self._fuzz_library = []  # library of static fuzz heuristics to cycle through.
 
     def mutations(self, default_value):

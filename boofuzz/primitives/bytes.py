@@ -2,13 +2,14 @@ import functools
 import itertools
 import operator
 
+from ..fuzzable_wrapper import FuzzNode
 from funcy import compose
 
 from .base_primitive import BasePrimitive
 from .. import helpers
 
 
-class Bytes(BasePrimitive):
+class Bytes(FuzzNode):
     # This binary strings will always included as testcases.
     _fuzz_library = [
         b"",
@@ -103,7 +104,7 @@ class Bytes(BasePrimitive):
         functools.partial(operator.mul, 100),
     ]
 
-    def __init__(self, size=None, padding=b"\x00", max_len=None):
+    def __init__(self, name, default_value, size=None, padding=b"\x00", max_len=None, *args, **kwargs):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
 
@@ -115,7 +116,7 @@ class Bytes(BasePrimitive):
         @param max_len:    (Optional, def=None) Maximum string length
         """
 
-        super(Bytes, self).__init__()
+        super(Bytes, self).__init__(name, default_value, *args, **kwargs)
 
         self.size = size
         self.max_len = max_len

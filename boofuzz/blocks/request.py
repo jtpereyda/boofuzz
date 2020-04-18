@@ -3,7 +3,7 @@ import collections
 from .block import Block
 from .aligned import Aligned
 from .. import exception, helpers
-from ..mutator import Mutator
+from ..fuzzable_wrapper import FuzzNode
 from ..fuzzable_block import FuzzableBlock
 from ..mutation_context import MutationContext
 
@@ -18,7 +18,7 @@ class Request(FuzzableBlock):
         @param name: Name of this request
         """
 
-        super().__init__(request=self)
+        super(Request, self).__init__(name, self)
         self._name = name
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
@@ -53,8 +53,6 @@ class Request(FuzzableBlock):
             if (
                 isinstance(item, Block)
                 or isinstance(item, Aligned)
-                or isinstance(item.fuzz_object, Block)
-                or isinstance(item.fuzz_object, Aligned)
             ):  # TODO generic check here
                 block_stack.append(item)
                 self._initialize_children(child_nodes=item.stack, block_stack=block_stack)
@@ -116,14 +114,12 @@ class Request(FuzzableBlock):
         if not self.block_stack:
             self.stack.append(item)
         else:
-            self.block_stack[-1].fuzz_object.push(item)
+            self.block_stack[-1].push(item)
 
         # add the opened block to the block stack.
         if (
             isinstance(item, Block)
             or isinstance(item, Aligned)
-            or isinstance(item.fuzz_object, Block)
-            or isinstance(item.fuzz_object, Aligned)
         ):  # TODO generic check here
             self.block_stack.append(item)
 
@@ -132,11 +128,11 @@ class Request(FuzzableBlock):
         context_path = ".".join(filter(None, (self.name, context_path)))
         return context_path
 
-    def render(self, mutation_context):
+    def render(self, mutation_context=None):
         if self.block_stack:
             raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].qualified_name)
 
-        return super(Request, self).get_child_data(mutation_context=mutation_context)
+        return self.get_child_data(mutation_context=mutation_context)
 
     def walk(self, stack=None):
         """
@@ -157,8 +153,6 @@ class Request(FuzzableBlock):
             if (
                 isinstance(item, Block)
                 or isinstance(item, Aligned)
-                or isinstance(item.fuzz_object, Block)
-                or isinstance(item.fuzz_object, Aligned)
             ):  # TODO generic check here
                 for stack_item in self.walk(item.stack):
                     yield stack_item

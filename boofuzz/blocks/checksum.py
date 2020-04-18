@@ -64,8 +64,10 @@ class Checksum(primitives.BasePrimitive):
         endian=LITTLE_ENDIAN,
         ipv4_src_block_name=None,
         ipv4_dst_block_name=None,
+        *args,
+        **kwargs
     ):
-        super(Checksum, self).__init__()
+        super(Checksum, self).__init__(*args, **kwargs)
 
         self._block_name = block_name
         self._request = request

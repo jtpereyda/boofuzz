@@ -7,7 +7,7 @@ class Aligned(FuzzableBlock):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, modulus, request=None, pattern=b"\x00"):
+    def __init__(self, name, modulus, request=None, pattern=b"\x00", *args, **kwargs):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
         grandparent are allowed.
@@ -19,7 +19,7 @@ class Aligned(FuzzableBlock):
         :type  pattern:     bytes
         :param pattern:     Pad using these byte(s)
         """
-        super().__init__(request=request)
+        super(Aligned, self).__init__(name=name, default_value=None, request=request, *args, **kwargs)
         self._modulus = modulus
         self._pattern = pattern
 
