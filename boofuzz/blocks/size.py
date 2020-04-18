@@ -73,7 +73,14 @@ class Size(Fuzzable):
         self.signed = signed
         self.math = math
 
-        self.bit_field = primitives.BitField(name="innerBitField", default_value=0, width=self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed)
+        self.bit_field = primitives.BitField(
+            name="innerBitField",
+            default_value=0,
+            width=self.length * 8,
+            endian=self.endian,
+            output_format=self.format,
+            signed=self.signed,
+        )
         self._rendered = b""
         self._fuzz_complete = False
 

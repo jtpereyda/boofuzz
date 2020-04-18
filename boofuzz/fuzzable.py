@@ -75,7 +75,6 @@ class Fuzzable(object):
     def request(self, x):
         self._request = x
 
-
     def stop_mutations(self):
         """Stop yielding mutations on the currently running :py:meth:`mutations` call.
 
@@ -119,9 +118,7 @@ class Fuzzable(object):
         """Render after applying mutation, if applicable.
         :type mutation_context: MutationContext
         """
-        return self.encode(
-            value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context
-        )
+        return self.encode(value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context)
 
     def get_value(self, mutation_context=None):
         """
@@ -201,11 +198,7 @@ class Fuzzable(object):
         return sum(1 for _ in self.mutations(default_value=default_value))
 
     def __repr__(self):
-        return "<%s %s %s>" % (
-            self.__class__.__name__,
-            self.name,
-            repr(self.original_value(test_case_context=None)),
-        )
+        return "<%s %s %s>" % (self.__class__.__name__, self.name, repr(self.original_value(test_case_context=None)),)
 
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.

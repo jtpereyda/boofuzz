@@ -12,7 +12,19 @@ class Repeat(Fuzzable):
     user does not need to be wary of this fact.
     """
 
-    def __init__(self, name, block_name, request, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, *args, **kwargs):
+    def __init__(
+        self,
+        name,
+        block_name,
+        request,
+        min_reps=0,
+        max_reps=None,
+        step=1,
+        variable=None,
+        fuzzable=True,
+        *args,
+        **kwargs
+    ):
         """
         Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
         default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block

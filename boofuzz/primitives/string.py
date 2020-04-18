@@ -131,11 +131,36 @@ class String(Fuzzable):
         "<>" * 500,  # sendmail crackaddr (http://lsd-pl.net/other/sendmail.txt)
     ]
 
-    long_string_seeds = ["C", "1", "<", ">", "'", '"', "/", "\\", "?", "=", "a=", "&", ".", ",", "(", ")", "]", "[",
-                         "%", "*", "-", "+", "{", "}", "\x14", "\x00",
-                         "\xFE",  # expands to 4 characters under utf1
-                         "\xFF",  # expands to 4 characters under utf1
-                         ]
+    long_string_seeds = [
+        "C",
+        "1",
+        "<",
+        ">",
+        "'",
+        '"',
+        "/",
+        "\\",
+        "?",
+        "=",
+        "a=",
+        "&",
+        ".",
+        ",",
+        "(",
+        ")",
+        "]",
+        "[",
+        "%",
+        "*",
+        "-",
+        "+",
+        "{",
+        "}",
+        "\x14",
+        "\x00",
+        "\xFE",  # expands to 4 characters under utf1
+        "\xFF",  # expands to 4 characters under utf1
+    ]
 
     def __init__(self, name, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, *args, **kwargs):
         """
@@ -248,4 +273,4 @@ class String(Fuzzable):
         @return: Number of mutated forms this primitive can take
         :param default_value:
         """
-        return len(self._fuzz_library) # + len(self.this_library)  # TODO update string num_mutations calc
+        return len(self._fuzz_library)  # + len(self.this_library)  # TODO update string num_mutations calc

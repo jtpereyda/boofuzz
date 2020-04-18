@@ -289,7 +289,9 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             # Automagically close the block when exiting the "with" statement
             s_block_end()
 
-    block = s_block_start(name, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values, dep_compare=dep_compare)
+    block = s_block_start(
+        name, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values, dep_compare=dep_compare
+    )
 
     return ScopedBlock(block)
 
@@ -490,7 +492,21 @@ def s_size(
     :param name:          Name of this sizer field
     """
 
-    blocks.CURRENT.push(Size(name, block_name, blocks.CURRENT, offset, length, endian, output_format, inclusive, signed, math, fuzzable=fuzzable))
+    blocks.CURRENT.push(
+        Size(
+            name,
+            block_name,
+            blocks.CURRENT,
+            offset,
+            length,
+            endian,
+            output_format,
+            inclusive,
+            signed,
+            math,
+            fuzzable=fuzzable,
+        )
+    )
 
 
 def s_update(name, value):
@@ -736,7 +752,18 @@ def s_bit_field(
     """
 
     blocks.CURRENT.push(
-        BitField(name, value, width, None, endian, output_format, signed, full_range, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        BitField(
+            name,
+            value,
+            width,
+            None,
+            endian,
+            output_format,
+            signed,
+            full_range,
+            fuzzable=fuzzable,
+            fuzz_values=fuzz_values,
+        )
     )
 
 
@@ -773,9 +800,17 @@ def s_byte(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-
     blocks.CURRENT.push(
-        Byte(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        Byte(
+            endian=endian,
+            output_format=output_format,
+            signed=signed,
+            full_range=full_range,
+            name=name,
+            default_value=value,
+            fuzzable=fuzzable,
+            fuzz_values=fuzz_values,
+        )
     )
 
 
@@ -797,7 +832,9 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
     :param name:         (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    blocks.CURRENT.push(Bytes(name=name, default_value=value, size=size, padding=padding, max_len=max_len, fuzzable=fuzzable))
+    blocks.CURRENT.push(
+        Bytes(name=name, default_value=value, size=size, padding=padding, max_len=max_len, fuzzable=fuzzable)
+    )
 
 
 def s_word(
@@ -833,9 +870,17 @@ def s_word(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-
     blocks.CURRENT.push(
-        Word(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        Word(
+            endian=endian,
+            output_format=output_format,
+            signed=signed,
+            full_range=full_range,
+            name=name,
+            default_value=value,
+            fuzzable=fuzzable,
+            fuzz_values=fuzz_values,
+        )
     )
 
 
@@ -872,9 +917,17 @@ def s_dword(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-
     blocks.CURRENT.push(
-        DWord(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        DWord(
+            endian=endian,
+            output_format=output_format,
+            signed=signed,
+            full_range=full_range,
+            name=name,
+            default_value=value,
+            fuzzable=fuzzable,
+            fuzz_values=fuzz_values,
+        )
     )
 
 
@@ -911,9 +964,17 @@ def s_qword(
     :param fuzz_values:   List of custom fuzz values to add to the normal mutations.
     """
 
-
     blocks.CURRENT.push(
-        QWord(endian=endian, output_format=output_format, signed=signed, full_range=full_range, name=name, default_value=value, fuzzable=fuzzable, fuzz_values=fuzz_values)
+        QWord(
+            endian=endian,
+            output_format=output_format,
+            signed=signed,
+            full_range=full_range,
+            name=name,
+            default_value=value,
+            fuzzable=fuzzable,
+            fuzz_values=fuzz_values,
+        )
     )
 
 
