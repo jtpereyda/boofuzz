@@ -104,6 +104,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @rtype:  String
         @return: Synopsis of last recorded crash.
         """
+        # Since crash synopsis is called only after a failure, check for failures again:
+        self.debugger_thread.post_send()
 
         return self.last_synopsis
 
