@@ -194,8 +194,8 @@ class String(Fuzzable):
         """
         Given a sequence, yield a number of selectively chosen strings lengths of the given sequence.
 
-        @type  sequence: list(str)
-        @param sequence: Sequence to repeat for creation of fuzz strings.
+        @type  sequences: list(str)
+        @param sequences: Sequence to repeat for creation of fuzz strings.
         """
         for sequence in sequences:
             for size in [128, 256, 512, 1024, 2048, 4096, 32768, 0xFFFF]:
