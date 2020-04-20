@@ -7,6 +7,7 @@ from .mutation_context import MutationContext
 from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
 from typing import Union
+from future.builtins import object
 
 
 class Fuzzable(object):

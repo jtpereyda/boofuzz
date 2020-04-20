@@ -2,7 +2,6 @@ from functools import wraps
 
 from .. import helpers, primitives
 from ..fuzzable import Fuzzable
-from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 
 

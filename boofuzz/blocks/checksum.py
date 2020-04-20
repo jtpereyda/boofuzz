@@ -113,7 +113,7 @@ class Checksum(primitives.BasePrimitive):
                 )
             return helpers.str_to_bytes(self._rendered)
         else:
-            return self._value
+            return value
 
     def _get_dummy_value(self):
         return self._length * "\x00"
