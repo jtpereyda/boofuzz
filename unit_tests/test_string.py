@@ -46,7 +46,7 @@ class TestString(unittest.TestCase):
             for size in String._long_string_lengths:
                 for delta in String._long_string_deltas:
                     n += 1
-                    self.assertEqual(sequence * (size+delta), next(generator))
+                    self.assertEqual(sequence * (size + delta), next(generator))
 
         for size in String._long_string_lengths:
             s = "D" * size

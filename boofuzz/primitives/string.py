@@ -246,9 +246,11 @@ class String(Fuzzable):
             str: Mutations
         """
 
-        for val in itertools.chain(self._fuzz_library,
-                                   self._yield_variable_mutations(default_value),
-                                   self._yield_long_strings(self.long_string_seeds)):
+        for val in itertools.chain(
+            self._fuzz_library,
+            self._yield_variable_mutations(default_value),
+            self._yield_long_strings(self.long_string_seeds),
+        ):
             if self.size < 0 or len(val) <= self.size:
                 yield val
 
@@ -270,10 +272,12 @@ class String(Fuzzable):
         @return: Number of mutated forms this primitive can take
         :param default_value:
         """
-        return sum((
-            len(self._fuzz_library),
-            len(self._variable_mutation_multipliers),
-            (len(self.long_string_seeds) * len(self._long_string_lengths) * len(self._long_string_deltas)),
-            sum((len(indices) for _, indices in self.random_indices.items())),
-            (len(self._extra_long_string_lengths) * len(self.long_string_seeds)),
-        ))
+        return sum(
+            (
+                len(self._fuzz_library),
+                len(self._variable_mutation_multipliers),
+                (len(self.long_string_seeds) * len(self._long_string_lengths) * len(self._long_string_deltas)),
+                sum((len(indices) for _, indices in self.random_indices.items())),
+                (len(self._extra_long_string_lengths) * len(self.long_string_seeds)),
+            )
+        )
