@@ -162,6 +162,12 @@ class String(Fuzzable):
         "\xFF",  # expands to 4 characters under utf1
     ]
 
+    _long_string_lengths = [128, 256, 512, 1024, 2048, 4096, 32768, 0xFFFF]
+    _long_string_deltas = [-2, -1, 0, 1, 2]
+    _extra_long_string_lengths = [5000, 10000, 20000, 99999, 100000, 500000, 1000000]
+
+    _variable_mutation_multipliers = [2, 10, 100]
+
     def __init__(self, name, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, *args, **kwargs):
         """
         Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
@@ -190,6 +196,15 @@ class String(Fuzzable):
         self.padding = padding
         self.encoding = encoding
 
+        self.random_indices = {}
+
+        random.seed(0)
+        for length in self._long_string_lengths:
+            self.random_indices[length] = []
+            for _ in range(random.randint(1, 10)):  # Number of null bytes to insert (random)
+                loc = random.randint(1, length)  # Location of random byte
+                self.random_indices[length].append(loc)
+
     def _yield_long_strings(self, sequences):
         """
         Given a sequence, yield a number of selectively chosen strings lengths of the given sequence.
@@ -198,15 +213,26 @@ class String(Fuzzable):
         @param sequences: Sequence to repeat for creation of fuzz strings.
         """
         for sequence in sequences:
-            for size in [128, 256, 512, 1024, 2048, 4096, 32768, 0xFFFF]:
-                yield sequence * (size - 2)
-                yield sequence * (size - 1)
-                yield sequence * size
-                yield sequence * (size + 1)
-                yield sequence * (size + 2)
+            for size in self._long_string_lengths:
+                for delta in self._long_string_deltas:
+                    yield sequence * (size + delta)
 
-            for size in [5000, 10000, 20000, 99999, 100000, 500000, 1000000]:
+        for size in self._long_string_lengths:
+            s = "D" * size
+            for loc in self.random_indices[size]:
+                s = s[:loc] + "\x00" + s[loc:]
+                yield s
+
+        for sequence in sequences:
+            for size in self._extra_long_string_lengths:
                 yield sequence * size
+
+    def _yield_variable_mutations(self, default_value):
+        for length in self._variable_mutation_multipliers:
+            yield default_value * length
+        # doesn't make sense while we're yielding strings:
+        # for length in self._variable_mutation_multipliers:
+        #     yield default_value * length + b"\xfe"
 
     def mutations(self, default_value):
         """
@@ -219,39 +245,10 @@ class String(Fuzzable):
         Yields:
             str: Mutations
         """
-        if not isinstance(default_value, bytes):
-            default_value = default_value.encode(encoding=self.encoding)
 
-        this_library = [
-            default_value * 2,
-            default_value * 10,
-            default_value * 100,
-            # UTF-8
-            # TODO: This can't actually convert these to unicode strings...
-            default_value * 2 + b"\xfe",
-            default_value * 10 + b"\xfe",
-            default_value * 100 + b"\xfe",
-        ]
-
-        # add some long strings with null bytes thrown in the middle of them.
-        for length in [128, 256, 1024, 2048, 4096, 32767, 0xFFFF]:
-            s = "D" * length
-            # Number of null bytes to insert (random)
-            for i in range(random.randint(1, 10)):
-                # Location of random byte
-                loc = random.randint(1, len(s))
-                s = s[:loc] + "\x00" + s[loc:]
-            self._fuzz_library.append(s)
-
-        # Remove any fuzz items greater than self.max_len
-        if self.max_len > 0:
-            if any(len(s) > self.max_len for s in this_library):
-                # Pull out the bad string(s):
-                this_library = list(set([t[: self.max_len] for t in this_library]))
-            if any(len(s) > self.max_len for s in self._fuzz_library):
-                # Pull out the bad string(s):
-                self._fuzz_library = list(set([t[: self.max_len] for t in self._fuzz_library]))
-        for val in itertools.chain(self._fuzz_library, this_library, self.long_string_seeds):
+        for val in itertools.chain(self._fuzz_library,
+                                   self._yield_variable_mutations(default_value),
+                                   self._yield_long_strings(self.long_string_seeds)):
             if self.size < 0 or len(val) <= self.size:
                 yield val
 
@@ -273,4 +270,10 @@ class String(Fuzzable):
         @return: Number of mutated forms this primitive can take
         :param default_value:
         """
-        return len(self._fuzz_library)  # + len(self.this_library)  # TODO update string num_mutations calc
+        return sum((
+            len(self._fuzz_library),
+            len(self._variable_mutation_multipliers),
+            (len(self.long_string_seeds) * len(self._long_string_lengths) * len(self._long_string_deltas)),
+            sum((len(indices) for _, indices in self.random_indices.items())),
+            (len(self._extra_long_string_lengths) * len(self.long_string_seeds)),
+        ))
