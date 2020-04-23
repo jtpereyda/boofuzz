@@ -9,5 +9,6 @@ recursive-include request_definitions *.html *.py
 recursive-include unit_tests *.feature *.py
 recursive-include utils *.py
 
-exclude .readthedocs.yml .travis.yml codecov.yml
+exclude .readthedocs.yml .travis.yml codecov.yml artwork
+recursive-exclude artwork *
 prune docs/_build
