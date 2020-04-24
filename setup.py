@@ -34,7 +34,7 @@ def get_long_description():
 
 extra_requirements = {
     "dev": ["tox", "flake8", "check-manifest", "mock", "pytest", "pytest-bdd", "pytest-cov", "netifaces", "ipaddress"],
-    "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
+    "docs": ["sphinx", "sphinx_rtd_theme", "pillow", "pygments>=2.4.0"],
 }
 extra_requirements["dev"] += extra_requirements["docs"]
 
