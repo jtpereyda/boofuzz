@@ -100,7 +100,7 @@ html_theme_options = {
     "logo_only": True,
 }
 
-html_logo = "../artwork/boo-logo-light.png"
+html_logo = "../artwork/boo-logo-light.svg"
 html_favicon = "../artwork/favicon-32x32.ico"
 
 html_style = "css/custom.css"
