@@ -97,7 +97,11 @@ html_theme = "sphinx_rtd_theme"
 #
 html_theme_options = {
     "display_version": True,
+    "logo_only": True,
 }
+
+html_logo = "../artwork/boo-logo-light.png"
+html_favicon = "../artwork/favicon-32x32.ico"
 
 html_style = "css/custom.css"
 
