@@ -1,3 +1,6 @@
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/artwork/boo-logo-dark.png
+    :alt: boofuzz logo
+
 boofuzz: Network Protocol Fuzzing for Humans
 ============================================
 
