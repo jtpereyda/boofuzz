@@ -21,22 +21,6 @@
 # sys.path.insert(0, os.path.abspath('.'))
 from datetime import datetime
 
-from PIL import Image
-
-TARGET_BOUNDS = (512, 512)
-
-pic = Image.open('../artwork/boo-logo-light.png')
-
-# Calculate the new size, preserving the aspect ratio
-ratio = min(TARGET_BOUNDS[0] / pic.size[0],
-            TARGET_BOUNDS[1] / pic.size[1])
-new_size = (int(pic.size[0] * ratio), int(pic.size[1] * ratio))
-
-# Resize to fit the target size
-pic = pic.resize(new_size, Image.ANTIALIAS)
-
-# Save to PNG
-pic.save("_static/boo-logo-light.png", "PNG")
 
 # -- General configuration ------------------------------------------------
 
@@ -116,8 +100,8 @@ html_theme_options = {
     "logo_only": True,
 }
 
-html_logo = "_static/boo-logo-light.png"
-html_favicon = "../artwork/favicon-32x32.ico"
+html_logo = "../artwork/boo-logo-light.svg"
+html_favicon = "../artwork/favicon.svg"
 
 html_style = "css/custom.css"
 

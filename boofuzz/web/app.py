@@ -28,6 +28,13 @@ def favicon():
     )
 
 
+@app.route("/favicon.svg")
+def favicon_svg():
+    return send_from_directory(
+        os.path.join(app.root_path, "../../artwork"), "favicon.svg", mimetype="image/svg+xml"
+    )
+
+
 @app.route("/togglepause")
 def pause():
     # Flip our state
