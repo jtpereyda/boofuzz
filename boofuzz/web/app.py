@@ -21,20 +21,6 @@ def commify(number):
     return number
 
 
-@app.route("/favicon.ico")
-def favicon():
-    return send_from_directory(
-        os.path.join(app.root_path, "../../artwork"), "favicon-32x32.ico", mimetype="image/vnd.microsoft.icon"
-    )
-
-
-@app.route("/favicon.svg")
-def favicon_svg():
-    return send_from_directory(
-        os.path.join(app.root_path, "../../artwork"), "favicon.svg", mimetype="image/svg+xml"
-    )
-
-
 @app.route("/togglepause")
 def pause():
     # Flip our state
