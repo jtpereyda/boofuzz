@@ -97,14 +97,18 @@ html_theme = "sphinx_rtd_theme"
 #
 html_theme_options = {
     "display_version": True,
+    "logo_only": True,
 }
+
+html_logo = "../artwork/boo-logo-light.svg"
+html_favicon = "../artwork/favicon-32x32.ico"
 
 html_style = "css/custom.css"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ["_static", "../artwork/favicon.svg"]
 
 
 # -- Options for HTMLHelp output ------------------------------------------
