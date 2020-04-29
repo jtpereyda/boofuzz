@@ -10,6 +10,7 @@ from . import blocks, exception, legos, primitives
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size
 from .connections import (
     BaseSocketConnection,
+    FileConnection,
     ip_constants,
     ISerialLike,
     ITargetConnection,
@@ -78,6 +79,7 @@ __all__ = [
     "DWord",
     "EventHook",
     "exception",
+    "FileConnection",
     "FromFile",
     "FuzzLogger",
     "FuzzLoggerCsv",

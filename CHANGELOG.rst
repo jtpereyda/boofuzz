@@ -19,6 +19,7 @@ Features
 - Added `capture_output` option to process monitor to capture target process stderr/stdout .
 - Added post-start-target callbacks (called every time a target is started or restarted).
 - Added new boofuzz logo and favicon to docs and webinterface.
+- Added `FileConnection` to dump messages to files.
 
 Fixes
 ^^^^^
