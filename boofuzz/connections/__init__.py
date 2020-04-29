@@ -1,5 +1,6 @@
 # Import connections at this level for API backwards compatibility.
 from .base_socket_connection import BaseSocketConnection
+from .file_connection import FileConnection
 from .iserial_like import ISerialLike
 from .itarget_connection import ITargetConnection
 from .raw_l2_socket_connection import RawL2SocketConnection
@@ -13,6 +14,7 @@ from .udp_socket_connection import UDPSocketConnection
 
 __all__ = [
     "BaseSocketConnection",
+    "FileConnection",
     "ISerialLike",
     "ITargetConnection",
     "RawL2SocketConnection",
