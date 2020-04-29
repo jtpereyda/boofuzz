@@ -40,7 +40,7 @@ class FileConnection(itarget_connection.ITargetConnection):
 
         :return: None
         """
-        self._file_handle = open(os.path.join(self._dirname, str(self._file_id)), 'wb')
+        self._file_handle = open(os.path.join(self._dirname, str(self._file_id)), "wb")
 
     def recv(self, max_bytes):
         """
