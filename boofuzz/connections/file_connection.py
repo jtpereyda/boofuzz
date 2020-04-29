@@ -11,12 +11,15 @@ class FileConnection(itarget_connection.ITargetConnection):
 
     Args:
         directory: Directory for new message files.
+        one_file_only (bool): Set to True to continually overwrite a single file. Can be used in conjunction with a hook
+            that processes the file.
     """
 
-    def __init__(self, directory):
+    def __init__(self, directory, one_file_only=False):
         self._dirname = directory
         self._file_id = 1
         self._file_handle = None
+        self._one_file_only = one_file_only
 
         try:
             os.mkdir(self._dirname)
@@ -32,7 +35,8 @@ class FileConnection(itarget_connection.ITargetConnection):
         :return: None
         """
         self._file_handle.close()
-        self._file_id += 1
+        if not self._one_file_only:
+            self._file_id += 1
 
     def open(self):
         """
