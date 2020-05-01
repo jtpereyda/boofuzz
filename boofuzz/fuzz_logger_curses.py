@@ -1,8 +1,11 @@
 from __future__ import division
 
+import atexit
 import sys
 import time
 import warnings
+
+from six import StringIO
 
 try:
     import curses  # pytype: disable=import-error
@@ -126,6 +129,9 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._width_old = 0
         self._min_size_ok = True
 
+        sys.stdout = sys.stderr = self._std_buffer = StringIO()
+        atexit.register(self._cleanup)
+
         self._stdscr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
@@ -144,9 +150,18 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         # Start thread and restore the original SIGWINCH handler
         self._draw_thread = threading.Thread(name="curses_logger", target=self._draw_screen)
+        self._draw_thread.setDaemon(True)
         current_signal_handler = signal.getsignal(signal.SIGWINCH)
         self._draw_thread.start()
         signal.signal(signal.SIGWINCH, current_signal_handler)
+
+    def _cleanup(self):
+        self._wait_on_quit = False
+        self.close_test()
+        sys.stderr = sys.__stderr__
+        sys.stdout = sys.__stdout__
+        print(self._std_buffer.getvalue())
+        self._std_buffer.close()
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._log_storage = []
@@ -224,7 +239,12 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._status = STATUS_DONE
         self._quit = True
         try:
-            self._draw_thread.join()
+            if self._wait_on_quit:
+                self._draw_thread.join()
+            else:
+                self._draw_thread.join(max(0.2, self._refresh_interval * 3))
+        except KeyboardInterrupt:
+            pass
         finally:
             self._wait_on_quit = False
             curses.nocbreak()
