@@ -6,7 +6,6 @@ from boofuzz.monitors import NetworkMonitor, pedrpc, ProcessMonitor
 
 RPC_HOST = "localhost"
 RPC_PORT = 31337
-RPC_SERVER = None
 
 
 # noinspection PyMethodMayBeStatic
@@ -60,21 +59,19 @@ def _start_rpc(server):
 
 class TestProcessMonitor(unittest.TestCase):
     def setUp(self):
-        global RPC_SERVER
-        RPC_SERVER = MockRPCServer(RPC_HOST, RPC_PORT)
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
 
-        self.rpc_server_process = Process(target=_start_rpc, args=(RPC_SERVER,))
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
         self.rpc_server_process.start()
         time.sleep(0.01)  # give the RPC server some time to start up
 
         self.process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
 
     def tearDown(self):
-        global RPC_SERVER
-        RPC_SERVER.stop()
+        self.rpc_server.stop()
         self.rpc_server_process.terminate()
 
-        RPC_SERVER = None
+        self.rpc_server = None
         self.rpc_server_process = None
         self.process_monitor = None
 
@@ -94,13 +91,12 @@ class TestProcessMonitor(unittest.TestCase):
         self.assertEqual(self.process_monitor.get_foobar(), "bazbar")
 
     def test_set_options_persistent(self):
-        global RPC_SERVER
         self.process_monitor.set_options(foobar="bazbar")
 
-        RPC_SERVER.stop()
+        self.rpc_server.stop()
         self.rpc_server_process.terminate()
-        RPC_SERVER = MockRPCServer(RPC_HOST, RPC_PORT)
-        self.rpc_server_process = Process(target=_start_rpc, args=(RPC_SERVER,))
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
         self.rpc_server_process.start()
         time.sleep(0.01)  # give the RPC server some time to start up
 
@@ -110,21 +106,19 @@ class TestProcessMonitor(unittest.TestCase):
 
 class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):
-        global RPC_SERVER
-        RPC_SERVER = MockRPCServer(RPC_HOST, RPC_PORT)
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
 
-        self.rpc_server_process = Process(target=_start_rpc, args=(RPC_SERVER,))
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
         self.rpc_server_process.start()
         time.sleep(0.01)  # give the RPC server some time to start up
 
         self.network_monitor = NetworkMonitor(RPC_HOST, RPC_PORT)
 
     def tearDown(self):
-        global RPC_SERVER
-        RPC_SERVER.stop()
+        self.rpc_server.stop()
         self.rpc_server_process.terminate()
 
-        RPC_SERVER = None
+        self.rpc_server = None
         self.rpc_server_process = None
         self.network_monitor = None
 
