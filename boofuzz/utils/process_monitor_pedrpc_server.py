@@ -58,6 +58,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.proc_name = proc_name
         self.ignore_pid = pid_to_ignore
         self.log_level = level
+        self.capture_output = False
 
         self.stop_commands = []
         self.start_commands = []
@@ -104,6 +105,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @rtype:  String
         @return: Synopsis of last recorded crash.
         """
+        # Since crash synopsis is called only after a failure, check for failures again:
+        self.debugger_thread.post_send()
 
         return self.last_synopsis
 
@@ -151,6 +154,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @returns True if successful.
         """
         self.log("Starting target...")
+        self._stop_target_if_running()
         self.log("creating debugger thread", 5)
         self.debugger_thread = self.debugger_class(
             self.start_commands,
@@ -159,6 +163,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             ignore_pid=self.ignore_pid,
             log_level=self.log_level,
             coredump_dir=self.coredump_dir,
+            capture_output=self.capture_output,
         )
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
@@ -175,19 +180,37 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         # give the debugger thread a chance to exit.
         time.sleep(1)
 
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
-            if len(self.stop_commands) < 1:
-                self.debugger_thread.stop_target()
-            else:
-                for command in self.stop_commands:
-                    if command == "TERMINATE_PID":
-                        self.debugger_thread.stop_target()
-                    else:
-                        self.log("Executing stop command: '{0}'".format(command), 2)
-                        os.system(command)
+        if self._target_is_running():
+            self._stop_target()
             self.log("target stopped")
         else:
             self.log("target already stopped")
+
+    def _stop_target_if_running(self):
+        """Stop target, if it is running. Return true if it was running; otherwise false."""
+        if self._target_is_running():
+            self.log("target still running; stopping first...")
+            self._stop_target()
+            self.log("target stopped")
+            return True
+        else:
+            return False
+
+    def _stop_target(self):
+        # give the debugger thread a chance to exit.
+        time.sleep(1)
+        if len(self.stop_commands) < 1:
+            self.debugger_thread.stop_target()
+        else:
+            for command in self.stop_commands:
+                if command == "TERMINATE_PID":
+                    self.debugger_thread.stop_target()
+                else:
+                    self.log("Executing stop command: '{0}'".format(command), 2)
+                    os.system(command)
+
+    def _target_is_running(self):
+        return self.debugger_thread is not None and self.debugger_thread.isAlive()
 
     def restart_target(self):
         """
@@ -198,6 +221,10 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.log("Restarting target...")
         self.stop_target()
         return self.start_target()
+
+    def set_capture_output(self, capture_output):
+        self.log("updating capture_output to '%s'" % capture_output)
+        self.capture_output = capture_output
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)

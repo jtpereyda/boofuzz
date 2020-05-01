@@ -60,19 +60,19 @@ Network Device List:
     for index, pcapy_device in enumerate(ifs):
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
-            import _winreg  # pytype: disable=import-error
+            from six.moves import winreg  # pytype: disable=import-error
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.
                 pcapy_device = pcapy_device[pcapy_device.index("{") : pcapy_device.index("}") + 1]
                 subkey = r"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s" % pcapy_device
-                key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey)
 
                 # if there is a DHCP address snag that, otherwise fall back to the IP address.
                 try:
-                    ip = _winreg.QueryValueEx(key, "DhcpIPAddress")[0]
+                    ip = winreg.QueryValueEx(key, "DhcpIPAddress")[0]
                 except Exception:
-                    ip = _winreg.QueryValueEx(key, "IPAddress")[0][0]
+                    ip = winreg.QueryValueEx(key, "IPAddress")[0][0]
 
                 pcapy_device = pcapy_device + "\t" + ip
             except Exception:

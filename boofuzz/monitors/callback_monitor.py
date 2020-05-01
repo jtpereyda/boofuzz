@@ -16,6 +16,7 @@ class CallbackMonitor(BaseMonitor):
     - restart_callbacks --> target_restart
     - pre_send_callbacks --> pre_send
     - post_test_case_callbacks --> post_send
+    - post_start_target_callbacks --> post_start_target
 
     All other implemented interface members are stubs only, as no corresponding
     arguments exist in session. In any case, it is probably wiser to implement
@@ -24,12 +25,13 @@ class CallbackMonitor(BaseMonitor):
     .. versionadded:: 0.2.0
     """
 
-    def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None):
+    def __init__(self, on_pre_send=None, on_post_send=None, on_restart_target=None, on_post_start_target=None):
         BaseMonitor.__init__(self)
 
         self.on_pre_send = on_pre_send if on_pre_send is not None else []
         self.on_post_send = on_post_send if on_post_send is not None else []
         self.on_restart_target = on_restart_target if on_restart_target is not None else []
+        self.on_post_start_target = on_post_start_target if on_post_start_target is not None else []
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
         """ This method iterates over all supplied pre send callbacks and executes them.
@@ -113,10 +115,22 @@ class CallbackMonitor(BaseMonitor):
         else:
             return False
 
+    def post_start_target(self, target=None, fuzz_data_logger=None, session=None):
+        """Called after a target is started or restarted."""
+        try:
+            for f in self.on_post_start_target:
+                fuzz_data_logger.open_test_step('Post-start-target callback: "{0}"'.format(f.__name__))
+                f(target=target, fuzz_data_logger=fuzz_data_logger, session=session, sock=target)
+        except Exception:
+            fuzz_data_logger.log_error(
+                constants.ERR_CALLBACK_FUNC.format(func_name="post_start_target") + traceback.format_exc()
+            )
+
     def __repr__(self):
-        return "CallbackMonitor#{}[pre=[{}],post=[{}],restart=[{}]]".format(
+        return "CallbackMonitor#{}[pre=[{}],post=[{}],restart=[{}],post_start_target=[{}]]".format(
             id(self),
             ", ".join([x.__name__ for x in self.on_pre_send]),
             ", ".join([x.__name__ for x in self.on_post_send]),
             ", ".join([x.__name__ for x in self.on_restart_target]),
+            ", ".join([x.__name__ for x in self.on_post_start_target]),
         )

@@ -104,6 +104,10 @@ class BitField(BasePrimitive):
                 # Use the supplied values as the fuzz library.
                 for val in iter(value):
                     self._fuzz_library.append(val)
+
+                # Use the first value of the supplied values as the default value if it exists, 0 else.
+                val = 0 if len(value) == 0 else value[0]
+                self._value = self._original_value = val
             else:
                 # try only "smart" values.
                 self.add_integer_boundaries(0)
