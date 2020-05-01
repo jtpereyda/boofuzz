@@ -1,3 +1,4 @@
+import sys
 import time
 import unittest
 from multiprocessing import Process
@@ -57,6 +58,10 @@ def _start_rpc(server):
     server.serve_forever()
 
 
+# https://github.com/jtpereyda/boofuzz/pull/409
+@unittest.skipIf(
+    sys.platform.startswith("win") and sys.version_info.major == 2, "Multithreading problem on Python2 Windows"
+)
 class TestProcessMonitor(unittest.TestCase):
     def setUp(self):
         self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
@@ -104,6 +109,10 @@ class TestProcessMonitor(unittest.TestCase):
         self.assertEqual(self.process_monitor.get_foobar(), "bazbar")
 
 
+# https://github.com/jtpereyda/boofuzz/pull/409
+@unittest.skipIf(
+    sys.platform.startswith("win") and sys.version_info.major == 2, "Multithreading problem on Python2 Windows"
+)
 class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):
         self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
