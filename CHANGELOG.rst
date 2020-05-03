@@ -20,6 +20,7 @@ Features
 - Added post-start-target callbacks (called every time a target is started or restarted).
 - Added new boofuzz logo and favicon to docs and webinterface.
 - Added `FileConnection` to dump messages to files.
+- Added method to gracefully stop PED-RPC Server.
 
 Fixes
 ^^^^^

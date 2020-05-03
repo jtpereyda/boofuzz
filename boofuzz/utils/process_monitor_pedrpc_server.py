@@ -88,6 +88,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
     def __exit__(self, exc_type, exc_value, traceback):
         if self.debugger_thread is not None and self.debugger_thread.isAlive():
             self.debugger_thread.stop_target()
+        self.stop()
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
