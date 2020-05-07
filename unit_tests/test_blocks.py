@@ -42,15 +42,9 @@ class TestBlocks(unittest.TestCase):
         # count how many mutations we get per primitive type.
         print("PRIMITIVE MUTATION COUNTS (SIZES):")
 
-        print(
-            "\tdelim:  %d\t(%s)"
-            % (delim.get_num_mutations(), sum(map(len, delim._fuzz_library)))
-        )
+        print("\tdelim:  %d\t(%s)" % (delim.get_num_mutations(), sum(map(len, delim._fuzz_library))))
 
-        print(
-            "\tstring: %d\t(%s)"
-            % (string.get_num_mutations(), sum(map(len, string._fuzz_library)))
-        )
+        print("\tstring: %d\t(%s)" % (string.get_num_mutations(), sum(map(len, string._fuzz_library))))
 
         print("\tbyte:   %d" % byte.get_num_mutations())
         print("\tword:   %d" % word.get_num_mutations())
