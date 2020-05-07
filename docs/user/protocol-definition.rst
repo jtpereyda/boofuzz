@@ -56,20 +56,18 @@ Block Manipulation
 Primitive Definition
 --------------------
 
-.. autofunction:: boofuzz.Binary
 .. autofunction:: boofuzz.Delim
 .. autofunction:: boofuzz.Group
-.. autofunction:: boofuzz.Lego
-.. autofunction:: boofuzz.Random
+.. autofunction:: boofuzz.RandomData
 .. autofunction:: boofuzz.Static
 .. autofunction:: boofuzz.String
-.. autofunction:: boofuzz.From_file
-.. autofunction:: boofuzz.Bit_field
+.. autofunction:: boofuzz.FromFile
+.. autofunction:: boofuzz.BitField
 .. autofunction:: boofuzz.Byte
 .. autofunction:: boofuzz.Bytes
 .. autofunction:: boofuzz.Word
-.. autofunction:: boofuzz.Dword
-.. autofunction:: boofuzz.Qword
+.. autofunction:: boofuzz.DWord
+.. autofunction:: boofuzz.QWord
 
 .. _custom-blocks:
 

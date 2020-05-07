@@ -27,42 +27,53 @@ class TestBlocks(unittest.TestCase):
             s_random(0, 5, 10, 100, name="random")
             s_block_end()
 
-        # count how many mutations we get per primitive type.
         req1 = s_get("UNIT TEST 1")
+        sizer = req1.resolve_name("BLOCK", "sizer")
+        group = req1.resolve_name("", "group")
+        block = req1.resolve_name("", "BLOCK")
+        delim = req1.resolve_name("BLOCK", "delim")
+        string = req1.resolve_name("BLOCK", "string")
+        byte = req1.resolve_name("BLOCK", "byte")
+        word = req1.resolve_name("BLOCK", "word")
+        dword = req1.resolve_name("BLOCK", "dword")
+        qword = req1.resolve_name("BLOCK", "qword")
+        random = req1.resolve_name("BLOCK", "random")
+
+        # count how many mutations we get per primitive type.
         print("PRIMITIVE MUTATION COUNTS (SIZES):")
 
         print(
             "\tdelim:  %d\t(%s)"
-            % (req1.names["delim"].num_mutations(), sum(map(len, req1.names["delim"]._fuzz_library)))
+            % (delim.get_num_mutations(), sum(map(len, delim._fuzz_library)))
         )
 
         print(
             "\tstring: %d\t(%s)"
-            % (req1.names["string"].num_mutations(), sum(map(len, req1.names["string"]._fuzz_library)))
+            % (string.get_num_mutations(), sum(map(len, string._fuzz_library)))
         )
 
-        print("\tbyte:   %d" % req1.names["byte"].num_mutations())
-        print("\tword:   %d" % req1.names["word"].num_mutations())
-        print("\tdword:  %d" % req1.names["dword"].num_mutations())
-        print("\tqword:  %d" % req1.names["qword"].num_mutations())
-        print("\tsizer:  %d" % req1.names["sizer"].num_mutations())
+        print("\tbyte:   %d" % byte.get_num_mutations())
+        print("\tword:   %d" % word.get_num_mutations())
+        print("\tdword:  %d" % dword.get_num_mutations())
+        print("\tqword:  %d" % qword.get_num_mutations())
+        print("\tsizer:  %d" % sizer.get_num_mutations())
 
         # we specify the number of mutations in a random field, so ensure that matches.
-        self.assertEqual(req1.names["random"].num_mutations(), 100)
+        self.assertEqual(random.get_num_mutations(), 100)
 
         # we specify the number of values in a group field, so ensure that matches.
-        self.assertEqual(req1.names["group"].num_mutations(), 4)
+        self.assertEqual(group.get_num_mutations(), 4)
 
         # assert that the number of block mutations equals the sum of the number of mutations of its components.
         self.assertEqual(
-            req1.names["BLOCK"].num_mutations(),
-            req1.names["delim"].num_mutations()
-            + req1.names["string"].num_mutations()
-            + req1.names["byte"].num_mutations()
-            + req1.names["word"].num_mutations()
-            + req1.names["dword"].num_mutations()
-            + req1.names["qword"].num_mutations()
-            + req1.names["random"].num_mutations(),
+            block.get_num_mutations(),
+            delim.get_num_mutations()
+            + string.get_num_mutations()
+            + byte.get_num_mutations()
+            + word.get_num_mutations()
+            + dword.get_num_mutations()
+            + qword.get_num_mutations()
+            + random.get_num_mutations(),
         )
 
         s_initialize("UNIT TEST 2")
@@ -77,9 +88,11 @@ class TestBlocks(unittest.TestCase):
             s_random(0, 5, 10, 100, name="random")
             s_block_end()
 
-        # assert that the number of block mutations in request 2 is len(group.values) (4) times that of request 1.
         req2 = s_get("UNIT TEST 2")
-        self.assertEqual(req2.names["BLOCK"].num_mutations(), req1.names["BLOCK"].num_mutations() * 4)
+        req2block = req2.resolve_name("", "BLOCK")
+
+        # assert that the number of block mutations in request 2 is len(group.values) (4) times that of request 1.
+        self.assertEqual(req2block.get_num_mutations(), block.get_num_mutations() * 4)
 
     def test_dependencies(self):
         s_initialize("DEP TEST 1")

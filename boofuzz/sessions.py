@@ -602,7 +602,7 @@ class Session(pgraph.Graph):
             sess.connect(s_get("HTTP"))
 
         If you register callback method, it must follow the message signature of Session.example_test_case_callback().
-        Remember to include **kwargs for forward-compatibility.
+        Remember to include \*\*kwargs for forward-compatibility.
 
         Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
         is a pointer to the session instance which is useful for snagging data such as session.last_recv which contains
@@ -1191,7 +1191,7 @@ class Session(pgraph.Graph):
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
             callback_data (bytes): Data from previous callback.
-            :param mutation_context:
+            mutation_context (MutationContext): active mutation context
         """
         if callback_data:
             data = callback_data

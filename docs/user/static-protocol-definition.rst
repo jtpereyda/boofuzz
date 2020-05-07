@@ -16,9 +16,7 @@ Request Manipulation
 
 .. autofunction:: boofuzz.s_initialize
 .. autofunction:: boofuzz.s_get
-.. autofunction:: boofuzz.s_mutate
 .. autofunction:: boofuzz.s_num_mutations
-.. autofunction:: boofuzz.s_render
 .. autofunction:: boofuzz.s_switch
 
 Block Manipulation
