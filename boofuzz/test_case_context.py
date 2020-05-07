@@ -9,4 +9,5 @@ class TestCaseContext(object):
     :class:`Session <boofuzz.Session>`). Variables may be used in a later callback function, or by a
     TestCaseSessionReference object.
     """
+
     session_variables = attr.ib(factory=dict)

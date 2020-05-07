@@ -15,9 +15,9 @@ class Fuzzable(object):
 
     def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
         """Internal object used to handle Fuzzable objects. Manages context like name, default value, etc.
-        
+
         When making new fuzzable types, one will typically override `mutations()` and/or `encode()`.
-        
+
         `mutations()` is a generator function yielding mutations, typically of type bytes.
 
         `encode()` is a function that takes a value and encodes it. The value comes from `mutations()` or

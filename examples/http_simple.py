@@ -13,26 +13,37 @@ def main():
 
     session.fuzz()
 
+
 def define_proto(session):
-    req = Request("HTTP-Request",children=(
-        Block("Request-Line", children=(
-            Group("Method", values= ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"]),
-            Delim("space-1", " "),
-            String("URI", "/index.html"),
-            Delim("space-2", " "),
-            String("HTTP-Version", "HTTP/1.1"),
+    req = Request(
+        "HTTP-Request",
+        children=(
+            Block(
+                "Request-Line",
+                children=(
+                    Group("Method", values=["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"]),
+                    Delim("space-1", " "),
+                    String("URI", "/index.html"),
+                    Delim("space-2", " "),
+                    String("HTTP-Version", "HTTP/1.1"),
+                    Static("CRLF", "\r\n"),
+                ),
+            ),
+            Block(
+                "Host-Line",
+                children=(
+                    String("Host-Key", "Host:"),
+                    Delim("space", " "),
+                    String("Host-Value", "example.com"),
+                    Static("CRLF", "\r\n"),
+                ),
+            ),
             Static("CRLF", "\r\n"),
-        )),
-        Block("Host-Line", children=(
-            String("Host-Key", "Host:"),
-            Delim("space", " "),
-            String("Host-Value", "example.com"),
-            Static("CRLF", "\r\n"),
-        )),
-        Static("CRLF", "\r\n"),
-    ))
+        ),
+    )
 
     session.connect(req)
+
 
 def define_proto_static(session):
     s_initialize(name="Request")
