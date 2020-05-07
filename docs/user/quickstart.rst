@@ -19,9 +19,9 @@ raw sockets, and :class:`SerialConnection <boofuzz.connections.SerialConnection>
 
 With a Session object ready, you next need to define the messages in your protocol. Once you've read the requisite
 RFC, tutorial, etc., you should be confident enough in the format to define your protocol using the various
-:ref:`static protocol definition functions<static-primitives>`.
+:ref:`block and primitive types <protocol-definition>`.
 
-Each message is a :class:`Request <boofuzz.blocks.Request>` object, whose children define the structure for that
+Each message is a :class:`Request <boofuzz.Request>` object, whose children define the structure for that
 message.
 
 Here are several message definitions from the FTP protocol:
@@ -56,7 +56,7 @@ Here are several message definitions from the FTP protocol:
         Static("end", "\r\n"),
     ))
 
-Once you've defined your message(s), you will connect them into a graph using the Session object you just created.
+Once you've defined your message(s), you will connect them into a graph using the Session object you just created:
 
 .. code-block:: python
 
@@ -65,8 +65,8 @@ Once you've defined your message(s), you will connect them into a graph using th
     session.connect(passw, stor)
     session.connect(passw, retr)
 
-As you can see, the user node is the initial message, passw is the second message, and stor and retr both come after
-passw. When fuzzing, boofuzz will send user and passw in each test case before fuzzing stor or retr.
+When fuzzing, boofuzz will send ``user`` before fuzzing ``passw``, and ``user`` and
+``passw`` before fuzzing ``stor`` or ``retr``.
 
 Now you are ready to fuzz:
 
@@ -88,7 +88,7 @@ current working directory. You can reopen the web interface on any of those data
 
 To do cool stuff like checking responses, you'll want to use ``post_test_case_callbacks`` in
 :class:`Session <boofuzz.Session>`. To use data from a response in a subsequent request, see
-:class:`TestCaseSessionReference <boofuzz.test_case_session_reference>`.
+:class:`TestCaseSessionReference <boofuzz.TestCaseSessionReference>`.
 
 You may also be interested in :ref:`custom-blocks`.
 

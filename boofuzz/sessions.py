@@ -589,27 +589,20 @@ class Session(pgraph.Graph):
     def connect(self, src, dst=None, callback=None):
         """
         Create a connection between the two requests (nodes) and register an optional callback to process in between
-        transmissions of the source and destination request. Leverage this functionality to handle situations such as
-        challenge response systems. The session class maintains a top level node that all initial requests must be
+        transmissions of the source and destination request. The session class maintains a top level node that all initial requests must be
         connected to. Example::
 
             sess = sessions.session()
             sess.connect(sess.root, s_get("HTTP"))
 
         If given only a single parameter, sess.connect() will default to attaching the supplied node to the root node.
-        This is a convenient alias and is identical to the second line from the above example::
+        This is a convenient alias. The following line is identical to the second line from the above example::
 
             sess.connect(s_get("HTTP"))
 
-        If you register callback method, it must follow the message signature of Session.example_test_case_callback().
+        Leverage callback methods to handle situations such as challenge response systems.
+        A callback method must follow the message signature of :meth:`Session.example_test_case_callback`.
         Remember to include \*\*kwargs for forward-compatibility.
-
-        Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
-        is a pointer to the session instance which is useful for snagging data such as session.last_recv which contains
-        the data returned from the last socket transmission and sock is the live socket. A callback is also useful in
-        situations where, for example, the size of the next packet is specified in the first packet. As another
-        example, if you need to fill in the dynamic IP address of the target register a callback that snags the IP
-        from sock.getpeername()[0].
 
         Args:
             src (str or Request (pgrah.Node)): Source request name or request node
@@ -1063,7 +1056,8 @@ class Session(pgraph.Graph):
     # noinspection PyUnusedLocal
     def example_test_case_callback(self, target, fuzz_data_logger, session, test_case_context, *args, **kwargs):
         """
-        Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
+        Example call signature for methods given to :func:`~Session.connect` or
+        :func:`~Session.register_post_test_case_callback`
 
         Args:
             target (Target): Target with sock-like interface.
@@ -1071,7 +1065,8 @@ class Session(pgraph.Graph):
                 Provided with a test case and test step already opened.
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
-            test_case_context (TestCaseContext): Context for test case -scoped data. TestCaseContext.session_variables
+            test_case_context (TestCaseContext): Context for test case -scoped data.
+                :py:class:`TestCaseContext` :py:attr:`session_variables <TestCaseContext.session_variables>`
                 values are generally set within a callback and referenced in elements via default values of type
                 :py:class:`ReferenceValueTestCaseSession`.
             args: Implementations should include \\*args and \\**kwargs for forward-compatibility.

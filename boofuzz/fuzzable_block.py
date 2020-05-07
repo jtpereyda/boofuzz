@@ -4,9 +4,16 @@ from .fuzzable import Fuzzable
 class FuzzableBlock(Fuzzable):
     """Fuzzable type designed to have children elements.
 
-    Overrides basic Fuzzable methods and adds:
-    1. push()
-    2. get_child_data()
+    FuzzableBlock overrides the following methods, changing the default behavior for any type based on FuzzableBlock:
+
+    1. :meth:`mutations` Iterate through the mutations yielded by all child nodes.
+    2. :meth:`num_mutations` Sum the mutations represented by each child node.
+    3. :meth:`encode` Call :meth:`get_child_data`.
+
+    FuzzableBlock adds the following methods:
+
+    1. :meth:`get_child_data` Render and concatenate all child nodes.
+    2. :meth:`push` Add an additional child node; generally used only internally.
 
     Args:
         children (Iterable): List of child nodes (typically given to FuzzableBlock types).

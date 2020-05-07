@@ -1,7 +1,7 @@
 .. _protocol-definition:
 
-Static Protocol Definition
-==========================
+Protocol Definition
+===================
 
 For the old school Spike-style static protocol definition format, see
 :ref:`static protocol definition functions<static-primitives>`. The non-static protocol definition
@@ -40,21 +40,21 @@ Here is an example of an HTTP message. It demonstrates how to use Request, Block
         Static("CRLF", "\r\n"),
     ))
 
-Request Manipulation
---------------------
+Request
+-------
 
 .. autofunction:: boofuzz.Request
 
-Block Manipulation
-------------------
+Blocks
+------
 .. autofunction:: boofuzz.Block
 .. autofunction:: boofuzz.Checksum
 .. autofunction:: boofuzz.Repeat
 .. autofunction:: boofuzz.Size
 .. autofunction:: boofuzz.Aligned
 
-Primitive Definition
---------------------
+Primitives
+----------
 
 .. autofunction:: boofuzz.Delim
 .. autofunction:: boofuzz.Group
@@ -79,11 +79,22 @@ conceivably need? And yet, I am urged by joy to contribute my own sweet blocks!"
 
 To make your own block/primitive:
 
-1. Create an object that implements :class:`Fuzzable <boofuzz.fuzzable>` or :class:`FuzzableBlock <boofuzz.fuzzable_block>`
-2. Optional: Create an accompanying static primitive function. See boofuzz's `__init__.py` file for examples.
-3. ???
-4. Profit!
+1. Create an object that inherits from :class:`Fuzzable <boofuzz.Fuzzable>` or :class:`FuzzableBlock <boofuzz.FuzzableBlock>`
+2. Override :meth:`mutations <boofuzz.Fuzzable.mutations>` and/or :meth:`encode <boofuzz.Fuzzable.encode>`.
+3. Optional: Create an accompanying static primitive function. See boofuzz's `__init__.py` file for examples.
+4. ???
+5. Profit!
 
 If your block depends on references to other blocks, the way a checksum or length field depends on other parts of the
 message, see the :class:`Size <boofuzz.Size>` source code for an example of how to avoid recursion issues, and Be
 Careful. :)
+
+.. autoclass:: boofuzz.Fuzzable
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. autoclass:: boofuzz.FuzzableBlock
+    :members:
+    :undoc-members:
+    :show-inheritance:

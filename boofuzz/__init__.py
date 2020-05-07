@@ -30,7 +30,9 @@ from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .fuzzable import Fuzzable
-from boofuzz.test_case_session_reference import TestCaseSessionReference
+from .fuzzable_block import FuzzableBlock
+from .test_case_session_reference import TestCaseSessionReference
+from .test_case_context import TestCaseContext
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .monitors import BaseMonitor, CallbackMonitor, NetworkMonitor, pedrpc, ProcessMonitor
@@ -83,6 +85,7 @@ __all__ = [
     "exception",
     "FromFile",
     "Fuzzable",
+    "FuzzableBlock",
     "FuzzLogger",
     "FuzzLoggerCsv",
     "FuzzLoggerCurses",
@@ -165,6 +168,7 @@ __all__ = [
     "SullyRuntimeError",
     "Target",
     "TestCaseSessionReference",
+    "TestCaseContext",
     "TCPSocketConnection",
     "TimeRepeater",
     "UDPSocketConnection",
