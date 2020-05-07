@@ -33,6 +33,7 @@ class Fuzzable(object):
             Can be a static value, or a ReferenceValueTestCaseSession.
         fuzz_values (list): List of custom fuzz values to add to the normal mutations.
     """
+
     name_counter = 0
 
     def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
