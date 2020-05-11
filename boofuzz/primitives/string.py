@@ -59,8 +59,8 @@ class String(BasePrimitive):
             self._value * 10 + b"\xfe",
             self._value * 100 + b"\xfe",
         ]
-        if not self._fuzz_library:
-            self._fuzz_library = [
+        if not String._fuzz_library:
+            String._fuzz_library = [
                 "",
                 # strings ripped from spike (and some others I added)
                 "/.:/" + "A" * 5000 + "\x00\x00",
@@ -219,7 +219,7 @@ class String(BasePrimitive):
                     # Location of random byte
                     loc = random.randint(1, len(s))
                     s = s[:loc] + "\x00" + s[loc:]
-                self._fuzz_library.append(s)
+                String._fuzz_library.append(s)
 
                 # TODO: Add easy and sane string injection from external file/s
 
@@ -228,9 +228,9 @@ class String(BasePrimitive):
             if any(len(s) > self.max_len for s in self.this_library):
                 # Pull out the bad string(s):
                 self.this_library = list(set([t[: self.max_len] for t in self.this_library]))
-            if any(len(s) > self.max_len for s in self._fuzz_library):
+            if any(len(s) > self.max_len for s in String._fuzz_library):
                 # Pull out the bad string(s):
-                self._fuzz_library = list(set([t[: self.max_len] for t in self._fuzz_library]))
+                String._fuzz_library = list(set([t[: self.max_len] for t in String._fuzz_library]))
 
     @property
     def name(self):
@@ -256,7 +256,7 @@ class String(BasePrimitive):
             strings.append(sequence * size)
 
         for string in strings:
-            self._fuzz_library.append(string)
+            String._fuzz_library.append(string)
 
     def mutate(self):
         """
@@ -279,7 +279,7 @@ class String(BasePrimitive):
                 return False
 
             # update the current value from the fuzz library.
-            self._value = (self._fuzz_library + self.this_library)[self._mutant_index]
+            self._value = (String._fuzz_library + self.this_library)[self._mutant_index]
 
             # increment the mutation count.
             self._mutant_index += 1
@@ -302,7 +302,7 @@ class String(BasePrimitive):
         @rtype:  int
         @return: Number of mutated forms this primitive can take
         """
-        return len(self._fuzz_library) + len(self.this_library)
+        return len(String._fuzz_library) + len(self.this_library)
 
     def _render(self, value):
         """

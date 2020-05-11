@@ -35,6 +35,7 @@ Fixes
 - Removed deprecated logger `FuzzLoggerFile`.
 - Fixed network monitor compatibility with Python 3.
 - Minor console GUI optimizations.
+- Fixed memory optimization for `s_string`
 
 v0.1.6
 ------
