@@ -86,8 +86,13 @@ class Request(IFuzzable):
         return mutated
 
     def skip_element(self):
-        self.stack[self._element_mutant_index].reset()
-        self._element_mutant_index += 1
+        item = self.stack[self._element_mutant_index]
+        if isinstance(item, Block):
+            item.skip_element()
+        else:
+            item.reset()
+            self._element_mutant_index += 1
+
 
     def num_mutations(self):
         """
