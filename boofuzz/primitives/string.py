@@ -230,7 +230,7 @@ class String(BasePrimitive):
                 self.this_library = list(set([t[: self.max_len] for t in self.this_library]))
             if any(len(s) > self.max_len for s in String._fuzz_library):
                 # Pull out the bad string(s):
-                String._fuzz_library = list(set([t[: self.max_len] for t in String._fuzz_library]))
+                self._fuzz_library = list(set([t[: self.max_len] for t in String._fuzz_library]))
 
     @property
     def name(self):
@@ -279,7 +279,7 @@ class String(BasePrimitive):
                 return False
 
             # update the current value from the fuzz library.
-            self._value = (String._fuzz_library + self.this_library)[self._mutant_index]
+            self._value = (self._fuzz_library + self.this_library)[self._mutant_index]
 
             # increment the mutation count.
             self._mutant_index += 1
@@ -302,7 +302,7 @@ class String(BasePrimitive):
         @rtype:  int
         @return: Number of mutated forms this primitive can take
         """
-        return len(String._fuzz_library) + len(self.this_library)
+        return len(self._fuzz_library) + len(self.this_library)
 
     def _render(self, value):
         """
