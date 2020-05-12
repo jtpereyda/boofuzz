@@ -197,13 +197,14 @@ class TestBlocks(unittest.TestCase):
 
         req = s_get("SKIP TEST")
         req.mutate()
-        self.assertEqual(req.mutant.name, 'foo')
+        self.assertEqual(req.mutant.name, "foo")
         req.skip_element()
         req.mutate()
-        self.assertEqual(req.mutant.name, 'bar')
+        self.assertEqual(req.mutant.name, "bar")
         req.skip_element()
         req.mutate()
-        self.assertEqual(req.mutant.name, 'baz')
+        self.assertEqual(req.mutant.name, "baz")
+
 
 if __name__ == "__main__":
     unittest.main()
