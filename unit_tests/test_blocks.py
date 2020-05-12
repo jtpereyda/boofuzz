@@ -190,7 +190,7 @@ class TestBlocks(unittest.TestCase):
     def test_skip_element(self):
         s_initialize("SKIP TEST")
 
-        with s_block("BLOCK1") as b:
+        with s_block("BLOCK1"):
             s_string("foo", name="foo")
             s_string("bar", name="bar")
         s_string("baz", name="baz")
