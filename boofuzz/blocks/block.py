@@ -44,6 +44,7 @@ class Block(IFuzzable):
         self.group_idx = 0  # if this block is tied to a group, the index within that group.
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
+        self._element_mutant_index = None  # index of current mutant element within self.stack
 
     @property
     def mutant_index(self):
@@ -67,6 +68,9 @@ class Block(IFuzzable):
         return self._name
 
     def mutate(self):
+        if self._element_mutant_index is None:
+            self._element_mutant_index = 0
+
         mutated = False
 
         # are we done with this block?
@@ -83,13 +87,16 @@ class Block(IFuzzable):
             self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
 
             # mutate every item on the stack at the current group value.
-            for item in self.stack:
+            while self._element_mutant_index < len(self.stack):
+                item = self.stack[self._element_mutant_index]
                 if item.fuzzable and item.mutate():
                     mutated = True
 
                     if not isinstance(item, Block):
                         self.request.mutant = item
                     break
+                else:
+                    self._element_mutant_index += 1
 
             # if the possible mutations for the stack are exhausted.
             if not mutated:
@@ -114,7 +121,9 @@ class Block(IFuzzable):
 
                     # now mutate the first field in this block before continuing.
                     # (we repeat a test case if we don't mutate something)
-                    for item in self.stack:
+                    self._element_mutant_index = 0
+                    while self._element_mutant_index < len(self.stack):
+                        item = self.stack[self._element_mutant_index]
                         if item.fuzzable and item.mutate():
                             mutated = True
 
@@ -122,11 +131,14 @@ class Block(IFuzzable):
                                 self.request.mutant = item
 
                             break
+                        else:
+                            self._element_mutant_index += 1
         #
         # no grouping, mutate every item on the stack once.
         #
         else:
-            for item in self.stack:
+            while self._element_mutant_index < len(self.stack):
+                item = self.stack[self._element_mutant_index]
                 if item.fuzzable and item.mutate():
                     mutated = True
 
@@ -134,6 +146,8 @@ class Block(IFuzzable):
                         self.request.mutant = item
 
                     break
+                else:
+                    self._element_mutant_index += 1
 
         # if this block is dependant on another field, then manually update that fields value appropriately while we
         # mutate this block. we'll restore the original value of the field prior to continuing.
@@ -155,6 +169,14 @@ class Block(IFuzzable):
                 self.request.names[self.dep].reset()
 
         return mutated
+
+    def skip_element(self):
+        item = self.stack[self._element_mutant_index]
+        if isinstance(item, Block):
+            item.skip_element()
+        else:
+            item.reset()
+            self._element_mutant_index += 1
 
     def num_mutations(self):
         """
@@ -245,6 +267,7 @@ class Block(IFuzzable):
 
         self._fuzz_complete = False
         self.group_idx = 0
+        self._element_mutant_index = None
 
         for item in self.stack:
             if item.fuzzable:
