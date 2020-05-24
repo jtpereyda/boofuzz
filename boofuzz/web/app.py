@@ -1,8 +1,7 @@
 import re
-import os
 
 import flask
-from flask import Flask, redirect, render_template, send_from_directory
+from flask import Flask, redirect, render_template
 
 from .. import exception
 
