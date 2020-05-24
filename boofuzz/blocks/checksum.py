@@ -4,13 +4,6 @@ import warnings
 import zlib
 from functools import wraps
 
-try:
-    import crc32c  # pytype: disable=import-error
-except ImportError:
-    # Import guard for systems without crc32c support.
-    warnings.warn("Importing crc32c package failed. Using crc32c checksums will fail.", UserWarning, stacklevel=2)
-    crc32c = None
-    pass
 import six
 
 from .. import exception, helpers, primitives
@@ -151,6 +144,13 @@ class Checksum(primitives.BasePrimitive):
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
 
             elif self._algorithm == "crc32c":
+                try:
+                    import crc32c  # pytype: disable=import-error
+                except ImportError:
+                    warnings.warn(
+                        "Importing crc32c package failed. Please install it using pip.", UserWarning, stacklevel=2
+                    )
+                    raise
                 check = struct.pack(self._endian + "L", crc32c.crc32(data))
 
             elif self._algorithm == "adler32":

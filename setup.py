@@ -58,7 +58,6 @@ setup(
         "backports.shutil_get_terminal_size",
         "click",
         "colorama",
-        "crc32c",
         "Flask",
         "future",
         "impacket",
