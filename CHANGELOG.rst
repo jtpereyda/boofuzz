@@ -36,6 +36,7 @@ Fixes
 - Fixed network monitor compatibility with Python 3.
 - Minor console GUI optimizations.
 - Fixed crash_threshold_element handling if blocks are used
+- `crc32c` is no longer a required package. Install manually if needed.
 
 v0.1.6
 ------
