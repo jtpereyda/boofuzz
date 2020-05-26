@@ -93,7 +93,6 @@ class Request(IFuzzable):
             item.reset()
             self._element_mutant_index += 1
 
-
     def num_mutations(self):
         """
         Determine the number of repetitions we will be making.
