@@ -2,7 +2,7 @@ Changelog
 =========
 
 v0.2.0
---------
+------
 Features
 ^^^^^^^^
 - Rewrote and split the SocketConnection class into individual classes per socket type.
