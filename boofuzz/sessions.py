@@ -1400,12 +1400,13 @@ class Session(pgraph.Graph):
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
-        for fuzz_args in self._iterate_protocol():
-            if fuzz_index >= test_case_index:
-                self.total_mutant_index = 1
-                yield fuzz_args
-                break
-            fuzz_index += 1
+        for path in self._iterate_protocol():
+            for fuzz_args in self._iterate_single_node(path):
+                if fuzz_index >= test_case_index:
+                    self.total_mutant_index = 1
+                    yield fuzz_args
+                    break
+                fuzz_index += 1
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
