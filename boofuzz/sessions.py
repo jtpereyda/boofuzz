@@ -915,7 +915,7 @@ class Session(pgraph.Graph):
             else:
                 break
 
-    def _check_for_passively_detected_failures(self, target):
+    def _check_for_passively_detected_failures(self, target, failure_already_detected=False):
         """Check for and log passively detected failures. Return True if any found.
 
         Returns:
@@ -941,7 +941,7 @@ class Session(pgraph.Graph):
                     )
                     finished_monitors.append(monitor)
 
-            if not has_crashed:
+            if not has_crashed and not failure_already_detected:
                 self._fuzz_data_logger.log_pass("No crash detected.")
             else:
                 for monitor in set(target.monitors) - set(finished_monitors):
@@ -1565,8 +1565,7 @@ class Session(pgraph.Graph):
                 mutation_context=mutation_context,
             )
 
-            if not self._check_for_passively_detected_failures(target=target):
-                self._check_for_passively_detected_failures(target=target)
+            self._check_for_passively_detected_failures(target=target)
             if not self._reuse_target_connection:
                 target.close()
 
@@ -1575,8 +1574,7 @@ class Session(pgraph.Graph):
                 self._sleep(self.sleep_time)
         except BoofuzzFailure as e:
             self._fuzz_data_logger.log_fail(e.message)
-            if not self._check_for_passively_detected_failures(target=target):
-                self._check_for_passively_detected_failures(target=target)
+            self._check_for_passively_detected_failures(target=target, failure_already_detected=True)
         finally:
             self._process_failures(target=target)
             self._fuzz_data_logger.close_test_case()

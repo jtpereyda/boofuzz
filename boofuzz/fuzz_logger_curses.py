@@ -1,16 +1,19 @@
 from __future__ import division
 
+import atexit
 import sys
 import time
 import warnings
+
+from six import StringIO
 
 try:
     import curses  # pytype: disable=import-error
 except ImportError:
     # Allow fuzz_logger_curses to be imported on Windows -- will fail if you try to use it.
-    warnings.warn("Importing curses failed. Console GUI features will not be available.", UserWarning, stacklevel=2)
+    warnings.warn("Importing curses failed. Optional console GUI features will not be available.", UserWarning)
     curses = None
-    pass
+
 import signal
 import threading
 
@@ -29,11 +32,7 @@ else:
         def get_terminal_size():
             return [130, 40]
 
-        warnings.warn(
-            "Console GUI will not resize properly. Install shutil_backports for full support.",
-            UserWarning,
-            stacklevel=2,
-        )
+        warnings.warn("Console GUI will not resize properly. Install shutil_backports for full support.", UserWarning)
 
 COLOR_PAIR_WHITE = 1
 COLOR_PAIR_CYAN = 2
@@ -43,13 +42,16 @@ COLOR_PAIR_GREEN = 5
 COLOR_PAIR_MAGENTA = 6
 COLOR_PAIR_BLACK = 7
 
+STATUS_RUNNING = 0
+STATUS_PAUSED = 1
+STATUS_DONE = 2
+
 
 class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     """
     This class formats FuzzLogger data for a console GUI using curses. This hasn't been tested on Windows.
     """
 
-    DEFAULT_HEX_TO_STR = helpers.hex_to_hexstr
     INDENT_SIZE = 2
 
     def __init__(
@@ -57,25 +59,25 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         web_port=26000,
         window_height=40,
         window_width=130,
-        auto_scoll=True,
+        auto_scroll=True,
         max_log_lines=500,
         wait_on_quit=True,
         min_refresh_rate=1000,
-        bytes_to_str=DEFAULT_HEX_TO_STR,
+        bytes_to_str=helpers.hex_to_hexstr,
     ):
         """
         :type web_port: int
         :param web_port: Webinterface port. Default 26000
 
         :type window_height: int
-        :param window_height: Default console heigth, set to on startup. Default 40
+        :param window_height: Default console height, set to on startup. Default 40
 
         :type window_width: int
         :param window_width: Default console width, set to on startup. Default 130
 
-        :type auto_scoll: bool
-        :param auto_scoll: Whether to auto-scoll the cases and crashed windows to allways display the last line if there
-                           are too many lines to display all of them. Default True
+        :type auto_scroll: bool
+        :param auto_scroll: Whether to auto-scroll the cases and crashed windows to always display the last line if
+                            there are too many lines to display all of them. Default True
 
         :type max_log_lines: int
         :param max_log_lines: Maximum log lines to keep in the internal storage. Additional lines exceeding this limit
@@ -96,13 +98,13 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._title = "boofuzz"
         self._web_port = web_port
         self._max_log_lines = max_log_lines
-        self._auto_scroll = auto_scoll
+        self._auto_scroll = auto_scroll
         self._current_data = None
         self._log_storage = []
         self._fail_storage = []
         self._wait_on_quit = wait_on_quit
         self._quit = False
-        self._status = 0  # 0: Running 1: Paused 2: Done
+        self._status = STATUS_RUNNING
         self._refresh_interval = min_refresh_rate
         self._event_resize = True
         self._event_log = False
@@ -127,6 +129,9 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._width_old = 0
         self._min_size_ok = True
 
+        sys.stdout = sys.stderr = self._std_buffer = StringIO()
+        atexit.register(self._cleanup)
+
         self._stdscr = curses.initscr()
         curses.start_color()
         curses.use_default_colors()
@@ -145,17 +150,30 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         # Start thread and restore the original SIGWINCH handler
         self._draw_thread = threading.Thread(name="curses_logger", target=self._draw_screen)
+        self._draw_thread.setDaemon(True)
         current_signal_handler = signal.getsignal(signal.SIGWINCH)
         self._draw_thread.start()
         signal.signal(signal.SIGWINCH, current_signal_handler)
 
+    def _cleanup(self):
+        self._wait_on_quit = False
+        self.close_test()
+        sys.stderr = sys.__stderr__
+        sys.stdout = sys.__stdout__
+        print(self._std_buffer.getvalue())
+        self._std_buffer.close()
+
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._log_storage = []
-        self._total_index = index
-        self._total_num_mutations = kwargs["num_mutations"]
         self._current_name = name
-        self._current_index = kwargs["current_index"]
-        self._current_num_mutations = kwargs["current_num_mutations"]
+        self._total_index = index
+        if "current_index" in kwargs:
+            self._current_index = kwargs["current_index"]
+        if "current_num_mutations" in kwargs:
+            self._current_num_mutations = kwargs["current_num_mutations"]
+        if "num_mutations" in kwargs:
+            self._total_num_mutations = kwargs["num_mutations"]
+
         self._log_storage.append(
             helpers.format_log_msg(msg_type="test_case", description=test_case_id, format_type="curses")
         )
@@ -218,13 +236,21 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._event_case_close = True
 
     def close_test(self):
-        self._status = 2
+        self._status = STATUS_DONE
         self._quit = True
-        self._draw_thread.join()
-        curses.nocbreak()
-        self._stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
+        try:
+            if self._wait_on_quit:
+                self._draw_thread.join()
+            else:
+                self._draw_thread.join(max(0.2, self._refresh_interval * 3))
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self._wait_on_quit = False
+            curses.nocbreak()
+            self._stdscr.keypad(False)
+            curses.echo()
+            curses.endwin()
 
     def _draw_main(self, force=False):
         self._width, self._height = get_terminal_size()
@@ -260,10 +286,9 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._stdscr.refresh()
 
         # Initialise test case window
-        # pytype: disable=module-attr
         self._casescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._casescr_frame.nodelay(True)
-        self._casescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
+        self._casescr_frame.border()
         self._casescr_frame.addstr(0, 1, "Test case log", curses.color_pair(COLOR_PAIR_YELLOW) | curses.A_BOLD)
         self._casescr_frame.refresh(0, 0, 1, 0, self._height - 18, self._width)
         self._casescr = self._casescr_frame.subpad(self._max_log_lines, self._width - 2, 1, 1)
@@ -272,12 +297,11 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # Initialise crash window
         self._crashescr_frame = curses.newpad(self._max_log_lines + 1, self._width)
         self._crashescr_frame.nodelay(True)
-        self._crashescr_frame.border(0, 0, 0, " ", 0, 0, curses.ACS_VLINE, curses.ACS_VLINE)
+        self._crashescr_frame.border()
         self._crashescr_frame.addstr(0, 1, "Crashes", curses.color_pair(COLOR_PAIR_RED) | curses.A_BOLD)
         self._crashescr_frame.refresh(0, 0, self._height - 17, 0, self._height - 8, self._width)
         self._crashescr = self._crashescr_frame.subpad(self._max_log_lines, self._width - 2, 1, 1)
         self._draw_crash()
-        # pytype: enable=module-attr
 
         # Initialise status window
         self._statscr = curses.newwin(6, self._width, self._height - 7, 0)
@@ -337,13 +361,13 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                                                                 self._width - self._indent_size))
         # fmt: on
         # TODO: Get paused flag from sessions
-        if self._status == 0:
+        if self._status == STATUS_RUNNING:
             self._statscr.addstr(4, 1, "Status:")
             self._statscr.addstr(4, self._indent_size, "Running", curses.color_pair(COLOR_PAIR_YELLOW))
-        elif self._status == 1:
+        elif self._status == STATUS_PAUSED:
             self._statscr.addstr(4, 1, "Status:")
             self._statscr.addstr(4, self._indent_size, "Paused ", curses.color_pair(COLOR_PAIR_RED) | curses.A_BLINK)
-        elif self._status == 2:
+        elif self._status == STATUS_DONE:
             self._statscr.addstr(4, 1, "Status:")
             self._statscr.addstr(4, self._indent_size, "Done   ", curses.color_pair(COLOR_PAIR_GREEN))
 
@@ -352,10 +376,10 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     def _draw_screen(self):
         error_counter = 0
         ms_since_refresh = 0
-        k = 0
+        key = 0
         wait_for_key = False
         try:
-            while not ((k == ord("q") or not self._wait_on_quit) and self._quit):
+            while not ((key == ord("q") or not self._wait_on_quit) and self._quit):
                 try:
                     if self._event_resize or ms_since_refresh >= self._refresh_interval:
                         self._draw_main()
@@ -379,7 +403,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
                             self._draw_stat()
                             self._event_case_close = False
 
-                    k = self._stdscr.getch()
+                    key = self._stdscr.getch()
                     curses.flushinp()
 
                     time.sleep(0.1)

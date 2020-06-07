@@ -10,6 +10,7 @@ from . import blocks, exception, legos, primitives
 from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size, Aligned
 from .connections import (
     BaseSocketConnection,
+    FileConnection,
     ip_constants,
     ISerialLike,
     ITargetConnection,
@@ -83,6 +84,7 @@ __all__ = [
     "DWord",
     "EventHook",
     "exception",
+    "FileConnection",
     "FromFile",
     "Fuzzable",
     "FuzzableBlock",
@@ -175,7 +177,7 @@ __all__ = [
     "Word",
 ]
 
-__version__ = "0.1.6"
+__version__ = "0.2.0"
 
 
 # REQUEST MANAGEMENT

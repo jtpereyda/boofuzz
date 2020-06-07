@@ -131,7 +131,7 @@ class DebuggerThreadSimple(threading.Thread):
             self.log('searching for process by name "{0}"'.format(self.proc_name))
             self.watch()
             self._psutil_proc = psutil.Process(pid=self.pid)
-            self.process_monitor.log("found match on pid %d".format(self.pid))
+            self.process_monitor.log("found match on pid {}".format(self.pid))
         else:
             self.log("done. target up and running, giving it 5 seconds to settle in.")
             time.sleep(5)

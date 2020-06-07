@@ -1,13 +1,9 @@
 /*@import '../alabaster.css';  /* for Alabaster */
 @import 'theme.css';       /* for the Read the Docs theme */
 
-.wy-nav-side {
+.wy-nav-side, .wy-nav-top, .wy-side-nav-search {
   /* background: #343131; */
   background: #303030;
-}
-
-.wy-side-nav-search {
-  background-color: revert;
 }
 
 .wy-side-nav-search > div.version {
@@ -28,4 +24,9 @@ code, .rst-content tt, .rst-content code {
 .rst-content tt.literal, .rst-content tt.literal, .rst-content code.literal {
   /* color: #E74C3C; */
   color: #ccc;
+}
+
+.wy-side-nav-search > a img.logo, .wy-side-nav-search .wy-dropdown > a img.logo {
+  width: 1000px;
+  padding: 0;
 }

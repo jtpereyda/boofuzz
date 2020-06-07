@@ -88,6 +88,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
     def __exit__(self, exc_type, exc_value, traceback):
         if self.debugger_thread is not None and self.debugger_thread.isAlive():
             self.debugger_thread.stop_target()
+        self.stop()
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -104,6 +105,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         @rtype:  String
         @return: Synopsis of last recorded crash.
         """
+        # Since crash synopsis is called only after a failure, check for failures again:
+        self.debugger_thread.post_send()
 
         return self.last_synopsis
 
