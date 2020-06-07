@@ -16,4 +16,3 @@ class Byte(BitField):
         if not isinstance(value, (six.integer_types, list, tuple)):
             value = struct.unpack(self.endian + "B", value)[0]
         return super(Byte, self).encode(value, mutation_context)
-

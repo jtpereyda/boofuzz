@@ -1,8 +1,4 @@
-import abc
-
-from .. import helpers
 from ..fuzzable import Fuzzable
-from ..mutation import Mutation
 
 
 class BasePrimitive(Fuzzable):

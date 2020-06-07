@@ -1,7 +1,6 @@
 import six
 
 from .base_primitive import BasePrimitive
-from ..mutation import Mutation
 
 
 class Group(BasePrimitive):

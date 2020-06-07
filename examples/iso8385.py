@@ -5,8 +5,9 @@
 # Author Fakhir Karim Reda
 # kf@cyber-defense.ma / www.cyber-defense.ma
 
-from boofuzz import *
 import os
+
+from boofuzz import *
 
 
 def recordlength(s):

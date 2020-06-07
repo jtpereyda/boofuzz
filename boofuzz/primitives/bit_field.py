@@ -1,7 +1,7 @@
 import struct
+from builtins import range
 
 import six
-from builtins import range
 from past.builtins import map
 
 from .. import helpers

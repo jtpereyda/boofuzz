@@ -1,5 +1,5 @@
-from ..fuzzable import Fuzzable
 from .. import helpers
+from ..fuzzable import Fuzzable
 
 
 class Static(Fuzzable):

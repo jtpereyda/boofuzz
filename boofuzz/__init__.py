@@ -7,7 +7,7 @@ import six
 from past.builtins import map
 
 from . import blocks, exception, legos, primitives
-from .blocks import Block, Checksum, Repeat, Request, REQUESTS, Size, Aligned
+from .blocks import Aligned, Block, Checksum, Repeat, Request, REQUESTS, Size
 from .connections import (
     BaseSocketConnection,
     FileConnection,
@@ -25,15 +25,13 @@ from .connections import (
 )
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
-from .exception import MustImplementException, SizerNotUtilizedError, SullyRuntimeError, BoofuzzFailure
+from .exception import BoofuzzFailure, MustImplementException, SizerNotUtilizedError, SullyRuntimeError
 from .fuzz_logger import FuzzLogger
 from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
 from .fuzzable import Fuzzable
 from .fuzzable_block import FuzzableBlock
-from .test_case_session_reference import TestCaseSessionReference
-from .test_case_context import TestCaseContext
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .monitors import BaseMonitor, CallbackMonitor, NetworkMonitor, pedrpc, ProcessMonitor
@@ -55,6 +53,8 @@ from .primitives import (
 )
 from .repeater import CountRepeater, Repeater, TimeRepeater
 from .sessions import open_test_run, Session, Target
+from .test_case_context import TestCaseContext
+from .test_case_session_reference import TestCaseSessionReference
 
 # workaround to make Tornado work in Python 3.8
 # https://github.com/tornadoweb/tornado/issues/2608
@@ -169,9 +169,9 @@ __all__ = [
     "String",
     "SullyRuntimeError",
     "Target",
-    "TestCaseSessionReference",
-    "TestCaseContext",
     "TCPSocketConnection",
+    "TestCaseContext",
+    "TestCaseSessionReference",
     "TimeRepeater",
     "UDPSocketConnection",
     "Word",

@@ -8,7 +8,7 @@
 # this was a really half assed fuzz. someone should take it further, see my notes in the requests file for more info.
 #
 
-from boofuzz import Session, Target, s_get, TCPSocketConnection
+from boofuzz import s_get, Session, Target, TCPSocketConnection
 
 # noinspection PyUnresolvedReferences
 # pytype: disable=import-error

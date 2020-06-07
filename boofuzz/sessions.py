@@ -12,8 +12,6 @@ import time
 import traceback
 import warnings
 import zlib
-from .exception import BoofuzzFailure
-from boofuzz.test_case_context import TestCaseContext
 from builtins import input
 from io import open
 
@@ -38,7 +36,9 @@ from boofuzz import (
 from boofuzz.monitors import CallbackMonitor
 from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
+from boofuzz.test_case_context import TestCaseContext
 from boofuzz.web.app import app
+from .exception import BoofuzzFailure
 
 
 class Target(object):
@@ -589,8 +589,8 @@ class Session(pgraph.Graph):
     def connect(self, src, dst=None, callback=None):
         """
         Create a connection between the two requests (nodes) and register an optional callback to process in between
-        transmissions of the source and destination request. The session class maintains a top level node that all initial requests must be
-        connected to. Example::
+        transmissions of the source and destination request. The session class maintains a top level node that all
+        initial requests must be connected to. Example::
 
             sess = sessions.session()
             sess.connect(sess.root, s_get("HTTP"))

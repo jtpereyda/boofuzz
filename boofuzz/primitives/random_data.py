@@ -1,8 +1,8 @@
 import random
 
-from boofuzz import helpers
 from past.builtins import xrange
 
+from boofuzz import helpers
 from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 

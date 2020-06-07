@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 
-from .. import helpers
 from ..fuzzable_block import FuzzableBlock
-from ..mutation import Mutation
 
 
 class Block(FuzzableBlock):

@@ -1,11 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 
 import unittest
+from builtins import bytes, chr
+from io import StringIO
 
 import six
-from builtins import bytes, chr
-
-from io import StringIO
 
 import boofuzz.helpers
 from boofuzz import fuzz_logger_text

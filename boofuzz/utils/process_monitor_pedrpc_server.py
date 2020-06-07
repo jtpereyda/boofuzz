@@ -3,8 +3,8 @@ from __future__ import print_function
 import os
 import shlex
 import time
-
 from builtins import str
+
 from past.builtins import map
 
 from boofuzz import pedrpc, utils

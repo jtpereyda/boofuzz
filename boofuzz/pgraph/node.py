@@ -14,7 +14,6 @@
 #
 
 import pydot
-import attr
 
 from ..fuzzable import Fuzzable
 
@@ -69,7 +68,6 @@ class Node(Fuzzable):
     @name.setter
     def name(self, name):
         self._name = name
-
 
     def render_node_gml(self):
         """

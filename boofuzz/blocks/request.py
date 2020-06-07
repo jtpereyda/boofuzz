@@ -1,11 +1,10 @@
 import collections
 
-from .block import Block
 from .aligned import Aligned
-from .. import exception, helpers
+from .block import Block
+from .. import exception
 from ..fuzzable import Fuzzable
 from ..fuzzable_block import FuzzableBlock
-from ..mutation_context import MutationContext
 
 
 class Request(FuzzableBlock):

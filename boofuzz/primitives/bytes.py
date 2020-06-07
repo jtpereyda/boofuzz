@@ -1,12 +1,9 @@
 import functools
-import itertools
 import operator
 
-from ..fuzzable import Fuzzable
 from funcy import compose
 
-from .base_primitive import BasePrimitive
-from .. import helpers
+from ..fuzzable import Fuzzable
 
 
 class Bytes(Fuzzable):

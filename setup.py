@@ -59,6 +59,7 @@ setup(
         "click",
         "colorama",
         "Flask",
+        "funcy",
         "future",
         "impacket",
         "psutil",
