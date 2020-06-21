@@ -70,7 +70,7 @@ class TestTarget(unittest.TestCase):
         target.send(b"This is a test")
 
         self.assertEqual(repeater.count, connection.count)
-        self.assertGreaterEqual(connection.second - connection.first, self.SLEEP_TIME)
+        self.assertGreaterEqual(round(connection.second - connection.first, 2), self.SLEEP_TIME)
         with self.assertRaises(ValueError):
             CountRepeater(count=0)
 
@@ -82,6 +82,6 @@ class TestTarget(unittest.TestCase):
         target.send(b"This is a test")
 
         self.assertLessEqual(connection.last - connection.first, repeater.duration)
-        self.assertGreaterEqual(connection.second - connection.first, self.SLEEP_TIME)
+        self.assertGreaterEqual(round(connection.second - connection.first, 2), self.SLEEP_TIME)
         with self.assertRaises(ValueError):
             TimeRepeater(duration=0)
