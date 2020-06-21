@@ -8,8 +8,8 @@ from boofuzz.connections import ITargetConnection
 class MockCountConnection(ITargetConnection):
     def __init__(self):
         self.count = 0
-        self.first = None
-        self.second = None
+        self.first = 0
+        self.second = 0
 
     def close(self):
         pass
@@ -22,9 +22,9 @@ class MockCountConnection(ITargetConnection):
 
     def send(self, data):
         self.count += 1
-        if self.first is None:
+        if self.first == 0:
             self.first = time.time()
-        elif self.second is None:
+        elif self.second == 0:
             self.second = time.time()
 
     @property
@@ -34,9 +34,9 @@ class MockCountConnection(ITargetConnection):
 
 class MockTimeConnection(ITargetConnection):
     def __init__(self):
-        self.first = None
-        self.second = None
-        self.last = None
+        self.first = 0
+        self.second = 0
+        self.last = 0
 
     def close(self):
         pass
@@ -48,9 +48,9 @@ class MockTimeConnection(ITargetConnection):
         pass
 
     def send(self, data):
-        if self.first is None:
+        if self.first == 0:
             self.first = time.time()
-        elif self.second is None:
+        elif self.second == 0:
             self.second = time.time()
         self.last = time.time()
 
