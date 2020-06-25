@@ -297,8 +297,14 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             s_block_end()
 
     block = s_block_start(
-        name, request=blocks.CURRENT, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values,
-        dep_compare=dep_compare
+        name,
+        request=blocks.CURRENT,
+        group=group,
+        encoder=encoder,
+        dep=dep,
+        dep_value=dep_value,
+        dep_values=dep_values,
+        dep_compare=dep_compare,
     )
 
     return ScopedBlock(block)

@@ -94,7 +94,9 @@ class Repeat(Fuzzable):
         return value * self._get_child_data(mutation_context=mutation_context)
 
     def _get_child_data(self, mutation_context):
-        _rendered = self.request.resolve_name(self.context_path, self.block_name).render(mutation_context=mutation_context)
+        _rendered = self.request.resolve_name(self.context_path, self.block_name).render(
+            mutation_context=mutation_context
+        )
         return helpers.str_to_bytes(_rendered)
 
     def __repr__(self):
