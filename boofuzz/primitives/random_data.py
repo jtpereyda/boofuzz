@@ -1,4 +1,5 @@
 import random
+import struct
 
 from past.builtins import xrange
 
@@ -47,10 +48,7 @@ class RandomData(Fuzzable):
         Args:
             default_value:
         """
-        if not self._fuzzable:
-            return
-
-        for i in range(0, self.num_mutations()):
+        for i in range(0, self.get_num_mutations()):
             # select a random length for this string.
             if not self.step:
                 length = random.randint(self.min_length, self.max_length)
@@ -58,9 +56,9 @@ class RandomData(Fuzzable):
             else:
                 length = self.min_length + i * self.step
 
-            value = ""
+            value = b""
             for _ in xrange(length):
-                value += chr(random.randint(0, 255))
+                value += struct.pack("B", random.randint(0, 255))
             yield Mutation(mutations={self.qualified_name: value})
 
     def encode(self, value, mutation_context):

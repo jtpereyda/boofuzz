@@ -297,7 +297,8 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             s_block_end()
 
     block = s_block_start(
-        name, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values, dep_compare=dep_compare
+        name, request=blocks.CURRENT, group=group, encoder=encoder, dep=dep, dep_value=dep_value, dep_values=dep_values,
+        dep_compare=dep_compare
     )
 
     return ScopedBlock(block)
@@ -357,7 +358,7 @@ def s_block_start(name, *args, **kwargs):
     :note Prefer using s_block to this function directly
     :see s_block
     """
-    block = Block(name, blocks.CURRENT, *args, **kwargs)
+    block = Block(name, *args, **kwargs)
     blocks.CURRENT.push(block)
 
     return block
@@ -594,7 +595,7 @@ def s_group(name, values, default_value=None):
     :param default_value:   (Optional, def=None) Specifying a value when fuzzing() is complete
     """
 
-    blocks.CURRENT.push(Group(name=name, default_value=default_value, values=values, fuzzable=False))
+    blocks.CURRENT.push(Group(name=name, default_value=default_value, values=values))
 
 
 # noinspection PyCallingNonCallable

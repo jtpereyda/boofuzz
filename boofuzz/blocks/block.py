@@ -51,126 +51,127 @@ class Block(FuzzableBlock):
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
 
-    def mutate(self):  # TODO salvage the group reference behavior from this deprecated method
-        mutated = False
-
-        # are we done with this block?
-        if self._fuzz_complete:
-            return False
-
-        #
-        # mutate every item on the stack for every possible group value.
-        #
-        if self.group:
-            group_count = self.request.names[self.group].get_num_mutations()
-
-            # update the group value to that at the current index.
-            self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
-
-            # mutate every item on the stack at the current group value.
-            for item in self.stack:
-                if item.fuzzable and item.mutate():
-                    mutated = True
-
-                    if not isinstance(item, Block):
-                        self.request.mutant = item
-                    break
-
-            # if the possible mutations for the stack are exhausted.
-            if not mutated:
-                # increment the group value index.
-                self.group_idx += 1
-
-                # if the group values are exhausted, we are done with this block.
-                if self.group_idx == group_count:
-                    # restore the original group value.
-                    self.request.names[self.group].reset()
-
-                # otherwise continue mutating this group/block.
-                else:
-                    # update the group value to that at the current index.
-                    self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
-
-                    # this the mutate state for every item in this blocks stack.
-                    # NOT THE BLOCK ITSELF THOUGH! (hence why we didn't call self.reset())
-                    for item in self.stack:
-                        if item.fuzzable:
-                            item.reset()
-
-                    # now mutate the first field in this block before continuing.
-                    # (we repeat a test case if we don't mutate something)
-                    for item in self.stack:
-                        if item.fuzzable and item.mutate():
-                            mutated = True
-
-                            if not isinstance(item, Block):
-                                self.request.mutant = item
-
-                            break
-        #
-        # no grouping, mutate every item on the stack once.
-        #
-        else:
-            for item in self.stack:
-                if item.fuzzable and item.mutate():
-                    mutated = True
-
-                    if not isinstance(item, Block):
-                        self.request.mutant = item
-
-                    break
-
-        # if this block is dependant on another field, then manually update that fields value appropriately while we
-        # mutate this block. we'll restore the original value of the field prior to continuing.
-        if mutated and self.dep:
-            # if a list of values was specified, use the first item in the list.
-            if self.dep_values:
-                self.request.names[self.dep]._value = self.dep_values[0]
-
-            # if a list of values was not specified, assume a single value is present.
-            else:
-                self.request.names[self.dep]._value = self.dep_value
-
-        # we are done mutating this block.
-        if not mutated:
-            self._fuzz_complete = True
-
-            # if we had a dependency, make sure we restore the original value.
-            if self.dep:
-                self.request.names[self.dep].reset()
-
-        return mutated
+    # def mutate(self):  # TODO salvage the group reference behavior from this deprecated method
+    #     mutated = False
+    #
+    #     # are we done with this block?
+    #     if self._fuzz_complete:
+    #         return False
+    #
+    #     #
+    #     # mutate every item on the stack for every possible group value.
+    #     #
+    #     if self.group:
+    #         group_count = self.request.names[self.group].get_num_mutations()
+    #
+    #         # update the group value to that at the current index.
+    #         self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
+    #
+    #         # mutate every item on the stack at the current group value.
+    #         for item in self.stack:
+    #             if item.fuzzable and item.mutate():
+    #                 mutated = True
+    #
+    #                 if not isinstance(item, Block):
+    #                     self.request.mutant = item
+    #                 break
+    #
+    #         # if the possible mutations for the stack are exhausted.
+    #         if not mutated:
+    #             # increment the group value index.
+    #             self.group_idx += 1
+    #
+    #             # if the group values are exhausted, we are done with this block.
+    #             if self.group_idx == group_count:
+    #                 # restore the original group value.
+    #                 self.request.names[self.group].reset()
+    #
+    #             # otherwise continue mutating this group/block.
+    #             else:
+    #                 # update the group value to that at the current index.
+    #                 self.request.names[self.group]._value = self.request.names[self.group].values[self.group_idx]
+    #
+    #                 # this the mutate state for every item in this blocks stack.
+    #                 # NOT THE BLOCK ITSELF THOUGH! (hence why we didn't call self.reset())
+    #                 for item in self.stack:
+    #                     if item.fuzzable:
+    #                         item.reset()
+    #
+    #                 # now mutate the first field in this block before continuing.
+    #                 # (we repeat a test case if we don't mutate something)
+    #                 for item in self.stack:
+    #                     if item.fuzzable and item.mutate():
+    #                         mutated = True
+    #
+    #                         if not isinstance(item, Block):
+    #                             self.request.mutant = item
+    #
+    #                         break
+    #     #
+    #     # no grouping, mutate every item on the stack once.
+    #     #
+    #     else:
+    #         for item in self.stack:
+    #             if item.fuzzable and item.mutate():
+    #                 mutated = True
+    #
+    #                 if not isinstance(item, Block):
+    #                     self.request.mutant = item
+    #
+    #                 break
+    #
+    #     # if this block is dependant on another field, then manually update that fields value appropriately while we
+    #     # mutate this block. we'll restore the original value of the field prior to continuing.
+    #     if mutated and self.dep:
+    #         # if a list of values was specified, use the first item in the list.
+    #         if self.dep_values:
+    #             self.request.names[self.dep]._value = self.dep_values[0]
+    #
+    #         # if a list of values was not specified, assume a single value is present.
+    #         else:
+    #             self.request.names[self.dep]._value = self.dep_value
+    #
+    #     # we are done mutating this block.
+    #     if not mutated:
+    #         self._fuzz_complete = True
+    #
+    #         # if we had a dependency, make sure we restore the original value.
+    #         if self.dep:
+    #             self.request.names[self.dep].reset()
+    #
+    #     return mutated
 
     def num_mutations(self, default_value=None):
         n = super(Block, self).num_mutations(default_value=default_value)
         if self.group:
-            n *= len(self.request.names[self.group].get_num_mutations())
+            n *= self.request.resolve_name(self.context_path, self.group).get_num_mutations()
         return n
 
     def _do_dependencies_allow_render(self, mutation_context):
         if self.dep:
+            dependent_value = self.request.resolve_name(self.context_path, self.dep).get_value(mutation_context)
             if self.dep_compare == "==":
-                if self.dep_values and self.request.names[self.dep].get_value(mutation_context) not in self.dep_values:
+                if self.dep_values and dependent_value not in self.dep_values:
                     return False
-                elif not self.dep_values and self.request.names[self.dep].get_value(mutation_context) != self.dep_value:
+                elif not self.dep_values and dependent_value != self.dep_value:
                     return False
 
             if self.dep_compare == "!=":
-                if self.dep_values and self.request.names[self.dep].get_value(mutation_context) in self.dep_values:
+                if self.dep_values and dependent_value in self.dep_values:
                     return False
-                elif self.request.names[self.dep].get_value(mutation_context) == self.dep_value:
+                elif dependent_value == self.dep_value:
                     return False
 
-            if self.dep_compare == ">" and self.dep_value <= self.request.names[self.dep].get_value(mutation_context):
+            if self.dep_compare == ">" and self.dep_value <= dependent_value:
                 return False
 
-            if self.dep_compare == ">=" and self.dep_value < self.request.names[self.dep].get_value(mutation_context):
+            if self.dep_compare == ">=" and self.dep_value < dependent_value:
                 return False
 
-            if self.dep_compare == "<" and self.dep_value >= self.request.names[self.dep].get_value(mutation_context):
+            if self.dep_compare == "<" and self.dep_value >= dependent_value:
                 return False
 
-            if self.dep_compare == "<=" and self.dep_value > self.request.names[self.dep].get_value(mutation_context):
+            if self.dep_compare == "<=" and self.dep_value > dependent_value:
                 return False
         return True
 

@@ -22,8 +22,6 @@ class Request(FuzzableBlock):
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
-        self.closed_blocks = {}  # dictionary of closed blocks.
-        # dictionary of list of sizers / checksums that were unable to complete rendering:
         self.callbacks = collections.defaultdict(list)
         self.names = {}  # dictionary of directly accessible primitives.
         self._rendered = b""  # rendered block structure.

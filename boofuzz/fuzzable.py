@@ -115,7 +115,15 @@ class Fuzzable(object):
             return self._default_value
 
     def get_mutations(self):
+        """Iterate mutations. Used by boofuzz framework.
+
+        Yields:
+            Mutation: Mutations
+
+        """
         try:
+            if not self.fuzzable:
+                return
             for value in itertools.chain(self.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
@@ -133,8 +141,13 @@ class Fuzzable(object):
         """
         return self.encode(value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context)
 
+    def get_num_mutations(self):
+        return self.num_mutations(default_value=self.original_value(test_case_context=None))
+
     def get_value(self, mutation_context=None):
-        """
+        """Helper method to get the currently applicable value.
+
+        This is either the default value, or the active mutation value as dictated by mutation_context.
 
         Args:
             mutation_context (MutationContext):
@@ -154,9 +167,6 @@ class Fuzzable(object):
             value = self.original_value(test_case_context=mutation_context.test_case_context)
 
         return value
-
-    def get_num_mutations(self):
-        return self.num_mutations(default_value=self.original_value(test_case_context=None))
 
     def mutations(self, default_value):
         """Generator to yield mutation values for this element.

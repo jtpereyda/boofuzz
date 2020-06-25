@@ -28,7 +28,7 @@ class String(blocks.Block):
 
         self.push(primitives.String())
 
-    def render(self):
+    def render(self, mutation_context=None):
         """
         We overload and extend the render routine in order to properly pad and prefix the string.
 

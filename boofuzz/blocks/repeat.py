@@ -1,6 +1,7 @@
 from past.builtins import range
 
 from .. import exception, helpers
+from ..test_case_session_reference import TestCaseSessionReference
 from ..fuzzable import Fuzzable
 from ..mutation import Mutation
 from ..primitives.bit_field import BitField
@@ -8,8 +9,26 @@ from ..primitives.bit_field import BitField
 
 class Repeat(Fuzzable):
     """
-    This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
-    user does not need to be wary of this fact.
+    Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
+    default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
+    modifier MUST come after the block it is being applied to.
+
+    @type  block_name: str
+    @param block_name: Name of block to repeat
+    @type  request:    s_request
+    @param request:    Request this block belongs to
+    @type  min_reps:   int
+    @param min_reps:   (Optional, def=0) Minimum number of block repetitions
+    @type  max_reps:   int
+    @param max_reps:   (Optional, def=None) Maximum number of block repetitions
+    @type  step:       int
+    @param step:       (Optional, def=1) Step count between min and max reps
+    @type  variable:   Sulley Integer Primitive
+    @param variable:   (Optional, def=None) Repetitions will be derived from this variable, disables fuzzing
+    @type  fuzzable:   bool
+    @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
+    @type  name:       str
+    @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
     def __init__(
@@ -22,36 +41,20 @@ class Repeat(Fuzzable):
         step=1,
         variable=None,
         fuzzable=True,
+        default_value=None,
         *args,
         **kwargs
     ):
-        """
-        Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
-        default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
-        modifier MUST come after the block it is being applied to.
+        if default_value is None:
+            if variable is not None:
+                default_value = TestCaseSessionReference(name=variable, default_value=0)
+            else:
+                default_value = 0
 
-        @type  block_name: str
-        @param block_name: Name of block to repeat
-        @type  request:    s_request
-        @param request:    Request this block belongs to
-        @type  min_reps:   int
-        @param min_reps:   (Optional, def=0) Minimum number of block repetitions
-        @type  max_reps:   int
-        @param max_reps:   (Optional, def=None) Maximum number of block repetitions
-        @type  step:       int
-        @param step:       (Optional, def=1) Step count between min and max reps
-        @type  variable:   Sulley Integer Primitive
-        @param variable:   (Optional, def=None) Repetitions will be derived from this variable, disables fuzzing
-        @type  fuzzable:   bool
-        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
-        @type  name:       str
-        @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
-        """
         super(Repeat, self).__init__(name, default_value, *args, **kwargs)
 
         self.block_name = block_name
         self.request = request
-        self.variable = variable
         self.min_reps = min_reps
         self.max_reps = max_reps
         self.step = step
@@ -66,50 +69,16 @@ class Repeat(Fuzzable):
         self._mutant_index = 0  # current mutation number
         self.current_reps = min_reps  # current number of repetitions
 
-        # ensure the target block exists.
-        if self.block_name not in self.request.names:
-            raise exception.SullyRuntimeError("Can't add repeater for non-existent block: %s!" % self.block_name)
-
-        # ensure the user specified either a variable to tie this repeater to or a min/max val.
-        if self.variable is None and self.max_reps is None:
-            raise exception.SullyRuntimeError(
-                "Repeater for block %s doesn't have a min/max or variable binding!" % self.block_name
-            )
-
-        # if a variable is specified, ensure it is an integer type.
-        if self.variable and not isinstance(self.variable, BitField):
-            print(self.variable)
-            raise exception.SullyRuntimeError(
-                "Attempt to bind the repeater for block %s to a non-integer primitive!" % self.block_name
-            )
-
-        # if not binding variable was specified, propagate the fuzz library with the repetition counts.
-        if not self.variable:
+        if self.max_reps is not None:
             self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
-        # otherwise, disable fuzzing as the repetition count is determined by the variable.
-        else:
-            self._fuzzable = False
 
     @property
     def fuzzable(self):
         return self._fuzzable
 
-    @property
-    def original_value(self):
-        return self._original_value
-
     def mutations(self, default_value):
-        # if the target block for this sizer is not closed, raise an exception.
-        if self.block_name not in self.request.closed_blocks:
-            raise exception.SullyRuntimeError("Can't apply repeater to unclosed block: %s" % self.block_name)
-
-        if not self.fuzzable:
-            return
-        elif self.variable is not None:
-            return  # no need to mutate if the variable block is driving mutations
-        else:
-            for fuzzed_reps_number in self._fuzz_library:
-                yield Mutation(mutations={self.qualified_name: fuzzed_reps_number})
+        for fuzzed_reps_number in self._fuzz_library:
+            yield fuzzed_reps_number
 
     def num_mutations(self, default_value):
         """
@@ -119,50 +88,14 @@ class Repeat(Fuzzable):
         @return: Number of mutated forms this primitive can take.
         :param default_value:
         """
-
         return len(self._fuzz_library)
 
     def encode(self, value, mutation_context):
-        return value * child_data
+        return value * self._get_child_data(mutation_context=mutation_context)
 
-    def render_mutated(self, mutation):  # TODO render_mutated doesn't exist for Fuzzable
-        """
-
-        Args:
-            mutation (Mutation):
-
-        Returns:
-
-        """
-        child_data = self._get_child_data(mutation=mutation)
-        if self.qualified_name in mutation.mutations:
-            return self.encode(mutation.mutations[self.qualified_name], mutation_context=None)
-        else:
-            return self.encode(value=self.original_value, mutation_context=None)
-
-    def _get_child_data(self, mutation):
-        if self.block_stack:
-            raise exception.SullyRuntimeError("UNCLOSED BLOCK: %s" % self.block_stack[-1].qualified_name)
-
-        _rendered = self.request.closed_blocks[self.block_name].render(mutation)
-        return helpers.str_to_bytes(self._rendered)
-
-    def render(self):
-        """
-        Nothing fancy on render, simply return the value.
-        """
-
-        # if the target block for this sizer is not closed, raise an exception.
-        if self.block_name not in self.request.closed_blocks:
-            raise exception.SullyRuntimeError("CAN NOT APPLY REPEATER TO UNCLOSED BLOCK: %s" % self.block_name)
-
-        # if a variable-bounding was specified then set the value appropriately.
-        if self.variable:
-            block = self.request.closed_blocks[self.block_name]
-            self._value = block.render() * self.variable.render()
-
-        self._rendered = self._value
-        return helpers.str_to_bytes(self._rendered)
+    def _get_child_data(self, mutation_context):
+        _rendered = self.request.resolve_name(self.context_path, self.block_name).render(mutation_context=mutation_context)
+        return helpers.str_to_bytes(_rendered)
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

@@ -1372,7 +1372,7 @@ class Session(pgraph.Graph):
         """Iterate fuzz cases for the last node in path.
 
         Args:
-            path (list of Connection): Nodes along the path to the current one being fuzzed.
+            path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
 
         Yields:
             Mutation: Mutation object describing this mutation.

@@ -35,7 +35,7 @@ class Size(Fuzzable):
         signed=False,
         math=None,
         *args,
-        **kwargs,
+        **kwargs
     ):
         """
         Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or

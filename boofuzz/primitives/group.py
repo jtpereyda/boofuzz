@@ -12,28 +12,19 @@ class Group(BasePrimitive):
 
         @type  name:            str
         @param name:            Name of group
-        @type  values:          list or str
+        @type  values:          list or bytes
         @param values:          List of possible raw values this group can take.
 
         @param default_value:   Specifying a value when fuzzing() is complete
         """
-
-        super(Group, self).__init__(*args, **kwargs)
-
-        self._name = name
-        self.values = values
-
-        assert len(self.values) > 0, "You can't have an empty value list for your group!"
-
         if default_value is None:
-            default_value = self.values[0]
-        self._value = self._original_value = default_value
+            default_value = values[0]
+        super(Group, self).__init__(name, default_value, *args, **kwargs)
 
+        self.values = values
+        assert len(self.values) > 0, "You can't have an empty value list for your group!"
         for val in self.values:
             assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
-
-    def encode(self, value, mutation_context):
-        return self._render(value)
 
     def mutations(self, default_value):
         for value in self.values:
@@ -47,5 +38,4 @@ class Group(BasePrimitive):
         @return: Number of values in this primitive.
         :param default_value:
         """
-
         return len(self.values)
