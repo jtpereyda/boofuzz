@@ -116,7 +116,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
             int: Number of bytes actually sent.
         """
         num_sent = 0
-        data = data[:self._max_payload]
+        data = data[: self._max_payload]
 
         try:
             if self.server:
