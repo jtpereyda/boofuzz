@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Upcoming
+--------
+Features
+^^^^^^^^
+
+Fixes
+^^^^^
+- Fixed UDPSocketConnection data truncation when sending more data than the socket supports.
+
 v0.2.0
 ------
 Features
