@@ -204,7 +204,7 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
                 time.sleep(0.1)
         else:
             for command in self.stop_commands:
-                if command == "TERMINATE_PID":
+                if command == ["TERMINATE_PID"] or command == "TERMINATE_PID":
                     self.debugger_thread.stop_target()
                     while self.debugger_thread.isAlive():
                         time.sleep(0.1)
