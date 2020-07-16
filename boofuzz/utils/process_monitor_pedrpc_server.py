@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import shlex
+import subprocess
 import time
 
 from builtins import str
@@ -177,8 +178,6 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         Kill the current debugger thread and stop the target process by issuing the commands in self.stop_commands.
         """
         self.log("Stopping target...")
-        # give the debugger thread a chance to exit.
-        time.sleep(1)
 
         if self._target_is_running():
             self._stop_target()
@@ -201,13 +200,17 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         time.sleep(1)
         if len(self.stop_commands) < 1:
             self.debugger_thread.stop_target()
+            while self.debugger_thread.isAlive():
+                time.sleep(0.1)
         else:
             for command in self.stop_commands:
-                if command == "TERMINATE_PID":
+                if command == ["TERMINATE_PID"] or command == "TERMINATE_PID":
                     self.debugger_thread.stop_target()
+                    while self.debugger_thread.isAlive():
+                        time.sleep(0.1)
                 else:
                     self.log("Executing stop command: '{0}'".format(command), 2)
-                    os.system(command)
+                    subprocess.Popen(command)
 
     def _target_is_running(self):
         return self.debugger_thread is not None and self.debugger_thread.isAlive()

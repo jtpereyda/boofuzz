@@ -9,6 +9,7 @@ Features
 Fixes
 ^^^^^
 - Fixed UDPSocketConnection data truncation when sending more data than the socket supports.
+- Fixed execution of procmon stop_commands.
 
 v0.2.0
 ------
