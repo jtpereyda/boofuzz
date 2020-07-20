@@ -37,8 +37,6 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             raise ValueError("SSL/TLS requires either sslcontext or server_hostname to be set.")
 
     def open(self):
-        super(SSLSocketConnection, self).open()
-
         # If boofuzz is the SSL client and user did not give us a SSLContext,
         # then we just use a default one.
         if self.server is False and self.sslcontext is None:
@@ -46,12 +44,7 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             self.sslcontext.check_hostname = True
             self.sslcontext.verify_mode = ssl.CERT_REQUIRED
 
-        try:
-            self._sock = self.sslcontext.wrap_socket(
-                self._sock, server_side=self.server, server_hostname=self.server_hostname
-            )
-        except ssl.SSLError as e:
-            raise exception.BoofuzzTargetConnectionFailedError(str(e))
+        super(SSLSocketConnection, self).open()
 
     def recv(self, max_bytes):
         """

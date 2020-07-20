@@ -10,6 +10,7 @@ Fixes
 ^^^^^
 - Fixed UDPSocketConnection data truncation when sending more data than the socket supports.
 - Fixed execution of procmon stop_commands.
+- Fixed TCP and SSL server connections.
 
 v0.2.0
 ------

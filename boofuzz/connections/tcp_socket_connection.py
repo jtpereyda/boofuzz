@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import errno
 import socket
 import sys
+import ssl
 
 from future.utils import raise_
 
@@ -44,6 +45,18 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         # call superclass to set timeout sockopt
         super(TCPSocketConnection, self).open()
 
+        # Create SSL socket
+        try:
+            self._sock = self.sslcontext.wrap_socket(
+                self._sock, server_side=self.server, server_hostname=self.server_hostname
+            )
+        except ssl.SSLError as e:
+            self.close()
+            raise exception.BoofuzzTargetConnectionFailedError(str(e))
+        except AttributeError:
+            # No SSL context set
+            pass
+
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
@@ -66,16 +79,16 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
                     raise exception.BoofuzzTargetConnectionFailedError(str(e))
                 else:
                     raise
-
-        try:
-            self._sock.connect((self.host, self.port))
-        except socket.error as e:
-            if e.errno == errno.EADDRINUSE:
-                raise exception.BoofuzzOutOfAvailableSockets()
-            elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
-                raise exception.BoofuzzTargetConnectionFailedError(str(e))
-            else:
-                raise
+        else:
+            try:
+                self._sock.connect((self.host, self.port))
+            except socket.error as e:
+                if e.errno == errno.EADDRINUSE:
+                    raise exception.BoofuzzOutOfAvailableSockets()
+                elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
+                    raise exception.BoofuzzTargetConnectionFailedError(str(e))
+                else:
+                    raise
 
     def recv(self, max_bytes):
         """
