@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import errno
 import socket
 import sys
-import ssl
 
 from future.utils import raise_
 
@@ -40,23 +39,16 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
             self._serverSock.close()
 
     def open(self):
+        self._open_socket()
+        self._connect_socket()
+
+    def _open_socket(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # call superclass to set timeout sockopt
         super(TCPSocketConnection, self).open()
 
-        # Create SSL socket
-        try:
-            self._sock = self.sslcontext.wrap_socket(
-                self._sock, server_side=self.server, server_hostname=self.server_hostname
-            )
-        except ssl.SSLError as e:
-            self.close()
-            raise exception.BoofuzzTargetConnectionFailedError(str(e))
-        except AttributeError:
-            # No SSL context set
-            pass
-
+    def _connect_socket(self):
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:

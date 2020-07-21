@@ -44,7 +44,21 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             self.sslcontext.check_hostname = True
             self.sslcontext.verify_mode = ssl.CERT_REQUIRED
 
-        super(SSLSocketConnection, self).open()
+        super(SSLSocketConnection, self)._open_socket()
+
+        # Create SSL socket
+        try:
+            self._sock = self.sslcontext.wrap_socket(
+                self._sock, server_side=self.server, server_hostname=self.server_hostname
+            )
+        except ssl.SSLError as e:
+            self.close()
+            raise exception.BoofuzzTargetConnectionFailedError(str(e))
+        except AttributeError:
+            # No SSL context set
+            pass
+
+        super(SSLSocketConnection, self)._connect_socket()
 
     def recv(self, max_bytes):
         """
