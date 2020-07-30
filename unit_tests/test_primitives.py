@@ -69,7 +69,9 @@ class TestPrimitives(unittest.TestCase):
         mutations_generator = req.get_mutations()
         for i in xrange(0, 50):
             next(mutations_generator)
-            self.assertEqual(len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200)
+            self.assertEqual(
+                len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200
+            )
 
     def test_s_mirror(self):
         test_group_values = [b"a", b"bb", b"ccc", b"dddd"]
@@ -93,10 +95,16 @@ class TestPrimitives(unittest.TestCase):
             next(mutations_generator)
             group_start_value = req.resolve_name(context_path="test_s_mirror", name="group_start").render()
             self.assertEqual(
-                int(req.resolve_name(context_path="test_s_mirror", name="size").render()), len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8")))
+                int(req.resolve_name(context_path="test_s_mirror", name="size").render()),
+                len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8"))),
             )
-            self.assertEqual(req.resolve_name(context_path="test_s_mirror", name="group_end").render(), group_start_value)
-            self.assertEqual(req.resolve_name(context_path="test_s_mirror", name="size_mirror").render(), req.resolve_name("size").render())
+            self.assertEqual(
+                req.resolve_name(context_path="test_s_mirror", name="group_end").render(), group_start_value
+            )
+            self.assertEqual(
+                req.resolve_name(context_path="test_s_mirror", name="size_mirror").render(),
+                req.resolve_name("size").render(),
+            )
 
     def test_bytes(self):
         # test if s_bytes works with empty input
@@ -115,7 +123,9 @@ class TestPrimitives(unittest.TestCase):
         mutations_generator = req.get_mutations()
         with self.assertRaises(StopIteration):
             while next(mutations_generator):
-                self.assertLessEqual(len(req.resolve_name(context_path="test_bytes_max_len", name="bytes_max_len").render()), 5)
+                self.assertLessEqual(
+                    len(req.resolve_name(context_path="test_bytes_max_len", name="bytes_max_len").render()), 5
+                )
 
         # test if size works
         s_initialize("test_bytes_size")
@@ -133,7 +143,7 @@ class TestPrimitives(unittest.TestCase):
         req = s_get("test_bytes_fuzzable")
         mutations_generator = req.get_mutations()
         with self.assertRaises(StopIteration):
-            next(mutations_generator) 
+            next(mutations_generator)
 
     @pytest.mark.skip(reason="Feature not implemented")
     def test_fuzz_extension(self):

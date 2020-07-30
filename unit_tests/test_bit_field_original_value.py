@@ -40,7 +40,7 @@ def mutate_thrice(context):
 
 @when("Calling original_value")
 def call_original_value(context):
-    context.result = context.uut.original_value().to_bytes(1, 'little')
+    context.result = context.uut.original_value().to_bytes(1, "little")
 
 
 @when("Calling render")
