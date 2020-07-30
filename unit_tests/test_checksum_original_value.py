@@ -12,8 +12,8 @@ def a_checksum(context):
     block = Block(name="unit-test-block", request=request)
     request.push(block)
 
-    byte1 = Byte(0x01, name="Byte block 1")
-    byte2 = Byte(0x02, name="Byte block 2")
+    byte1 = Byte(default_value=0x01, name="Byte block 1")
+    byte2 = Byte(default_value=0x02, name="Byte block 2")
     block.push(byte1)
     block.push(byte2)
 
@@ -42,7 +42,7 @@ def udp_checksum(context):
     request.push(ipv4_dst)
 
     checksum = Checksum(
-        block_name="IPv4 Packet",
+        block_name="unit-test-block.IPv4 Packet",
         ipv4_src_block_name="IPv4 Src Block",
         ipv4_dst_block_name="IPv4 Dst Block",
         request=request,

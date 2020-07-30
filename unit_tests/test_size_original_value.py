@@ -26,8 +26,8 @@ def request_one_block(context):
     block = Block(name="unit-test-block", request=Request)
     request.push(block)
 
-    byte1 = Byte(0x01, name="Byte block 1")
-    byte2 = Byte(0x02, name="Byte block 2")
+    byte1 = Byte(default_value=0x01, name="Byte block 1")
+    byte2 = Byte(default_value=0x02, name="Byte block 2")
     request.push(byte1)
     request.push(byte2)
 
@@ -98,7 +98,7 @@ def mutate_target_block_thrice(context):
 @when("Calling original_value")
 def call_original_value(context):
     context.uut.render()  # Ensure UUT object state is updated
-    context.result = context.uut.original_value
+    context.result = context.uut.original_value()
 
 
 @then("Result equals .render()")

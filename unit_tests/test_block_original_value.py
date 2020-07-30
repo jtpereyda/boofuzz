@@ -12,7 +12,7 @@ def request_one_block(context):
     block = Block(name="unit-test-block", request=request)
     request.push(block)
 
-    byte1 = Byte(0x01, name="Byte block 1")
+    byte1 = Byte(default_value=0x01, name="Byte block 1")
     request.push(byte1)
 
     request.pop()
@@ -41,15 +41,9 @@ def mutate_thrice(context):
 @when("Calling original_value")
 def call_original_value(context):
     context.uut.render()  # Ensure UUT object state is updated
-    context.result = context.uut.original_value
+    context.result = context.uut.original_value()
 
 
 @then("Result equals .render()")
 def result_equals_render(context):
-    assert context.result == context.uut.render()
-
-
-@then("Result equals .render() after .reset()")
-def result_equals_render_after_reset(context):
-    context.uut.reset()
     assert context.result == context.uut.render()
