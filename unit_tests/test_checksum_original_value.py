@@ -1,4 +1,4 @@
-from pytest_bdd import given, scenarios, then, when
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import Block, Byte, Checksum, DWord, QWord, Request
 
@@ -17,7 +17,9 @@ def a_checksum(context):
     block.push(byte1)
     block.push(byte2)
 
-    checksum = Checksum(block_name="unit-test-block", request=request, fuzzable=True, name="Checksum block")
+    checksum = Checksum(
+        block_name="unit-test-request.unit-test-block", request=request, fuzzable=True, name="Checksum block"
+    )
     request.push(checksum)
 
     request.pop()
@@ -42,7 +44,7 @@ def udp_checksum(context):
     request.push(ipv4_dst)
 
     checksum = Checksum(
-        block_name="unit-test-block.IPv4 Packet",
+        block_name="unit-test-request.unit-test-block.IPv4 Packet",
         ipv4_src_block_name="IPv4 Src Block",
         ipv4_dst_block_name="IPv4 Dst Block",
         request=request,
@@ -67,6 +69,6 @@ def call_original_value(context):
     context.result = context.uut.original_value
 
 
-@then("Result equals .render()")
-def result_equals_render(context):
-    assert context.result == context.uut.render()
+@then(parsers.parse("Render() equals 0x{value:x}"))
+def result_equals_render(context, value):
+    assert context.uut.render() == value.to_bytes(4, "big")
