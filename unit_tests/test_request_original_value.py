@@ -28,9 +28,9 @@ def call_original_value(context):
 
 @then(parsers.parse("Render() equals 0x{value:x}"))
 def result_equals_render(context, value):
-    assert context.uut.render() == value.to_bytes(1, 'little')
+    assert context.uut.render() == value.to_bytes(1, "little")
 
 
-@then(parsers.parse("Render() equals \"{value}\""))
+@then(parsers.parse('Render() equals "{value}"'))
 def result_equals_render(context, value):
-    assert context.uut.render() == b'\x01' + helpers.str_to_bytes(value)
+    assert context.uut.render() == b"\x01" + helpers.str_to_bytes(value)
