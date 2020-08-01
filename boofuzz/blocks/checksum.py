@@ -50,6 +50,7 @@ class Checksum(primitives.BasePrimitive):
 
     def __init__(
         self,
+        name,
         block_name,
         request,
         algorithm="crc32",
