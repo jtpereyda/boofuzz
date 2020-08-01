@@ -39,62 +39,6 @@ def request_one_block(context):
     context.uut = size
 
 
-@given("A Size whose target block will change size upon mutation")
-def request_one_block_with_size_change(context):
-    request = Request("unit-test-request")
-
-    block = Block(name="unit-test-block", request=Request)
-    request.push(block)
-
-    size_changing_block = SizeChangingBlock(name="size-changing-block")
-    request.push(size_changing_block)
-
-    request.pop()
-
-    size = Size(block_name="size-changing-block", request=request, fuzzable=True, name="Size block")
-    request.push(size)
-
-    context.uut = size
-    context.block = block
-    context.request = request
-
-
-@given("Mutated once")
-def mutate_once(context):
-    context.uut.mutate()
-
-
-@given("Mutated twice")
-def mutate_twice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-
-
-@given("Mutated thrice")
-def mutate_thrice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-    context.uut.mutate()
-
-
-@given("Target block mutated once")
-def mutate_target_block_once(context):
-    context.block.mutate()
-
-
-@given("Target block mutated twice")
-def mutate_target_block_twice(context):
-    context.block.mutate()
-    context.block.mutate()
-
-
-@given("Target block mutated thrice")
-def mutate_target_block_thrice(context):
-    context.block.mutate()
-    context.block.mutate()
-    context.block.mutate()
-
-
 @when("Calling original_value")
 def call_original_value(context):
     context.uut.render()  # Ensure UUT object state is updated
@@ -103,16 +47,4 @@ def call_original_value(context):
 
 @then("Result equals .render()")
 def result_equals_render(context):
-    assert context.result == context.uut.render()
-
-
-@then("Result equals .render() after .reset()")
-def result_equals_render_after_reset(context):
-    context.uut.reset()
-    assert context.result == context.uut.render()
-
-
-@then("Result equals .render() after Request reset()")
-def result_equals_render_after_request_reset(context):
-    context.request.reset()
     assert context.result == context.uut.render()

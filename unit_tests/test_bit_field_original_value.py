@@ -20,24 +20,6 @@ def bitfield_4_bytes(context, value):
     context.uut = BitField(default_value=value, width=32, output_format="ascii", name="4_bytes")
 
 
-@given("Mutated once")
-def mutate_once(context):
-    next(context.uut.get_mutations())
-
-
-@given("Mutated twice")
-def mutate_twice(context):
-    next(context.uut.get_mutations())
-    next(context.uut.get_mutations())
-
-
-@given("Mutated thrice")
-def mutate_thrice(context):
-    next(context.uut.get_mutations())
-    next(context.uut.get_mutations())
-    next(context.uut.get_mutations())
-
-
 @when("Calling original_value")
 def call_original_value(context):
     context.result = context.uut.original_value().to_bytes(1, "little")
@@ -50,12 +32,6 @@ def call_render(context):
 
 @then("Result equals .render()")
 def result_equals_render(context):
-    assert context.result == context.uut.render()
-
-
-@then("Result equals .render() after .reset()")
-def result_equals_render_after_reset(context):
-    context.uut.reset()
     assert context.result == context.uut.render()
 
 

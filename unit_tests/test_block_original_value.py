@@ -20,24 +20,6 @@ def request_one_block(context):
     context.uut = block
 
 
-@given("Mutated once")
-def mutate_once(context):
-    context.uut.mutate()
-
-
-@given("Mutated twice")
-def mutate_twice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-
-
-@given("Mutated thrice")
-def mutate_thrice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-    context.uut.mutate()
-
-
 @when("Calling original_value")
 def call_original_value(context):
     context.uut.render()  # Ensure UUT object state is updated

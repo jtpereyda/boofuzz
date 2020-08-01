@@ -20,24 +20,6 @@ def request_multiple_blocks(context):
     context.uut = r
 
 
-@given("Request is mutated once")
-def mutate_once(context):
-    context.uut.mutate()
-
-
-@given("Request is mutated twice")
-def mutate_twice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-
-
-@given("Request is mutated thrice")
-def mutate_thrice(context):
-    context.uut.mutate()
-    context.uut.mutate()
-    context.uut.mutate()
-
-
 @when("Calling original_value")
 def call_original_value(context):
     #    context.uut.render()  # Ensure UUT object state is updated
@@ -46,10 +28,4 @@ def call_original_value(context):
 
 @then("Result equals .render()")
 def result_equals_render(context):
-    assert context.result == context.uut.render()
-
-
-@then("Result equals .render() after .reset()")
-def result_equals_render_after_reset(context):
-    context.uut.reset()
     assert context.result == context.uut.render()
