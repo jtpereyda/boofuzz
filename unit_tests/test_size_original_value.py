@@ -1,4 +1,4 @@
-from pytest_bdd import given, scenarios, then, when
+from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import BasePrimitive, Block, Byte, Request, Size
 
@@ -45,6 +45,6 @@ def call_original_value(context):
     context.result = context.uut.original_value()
 
 
-@then("Result equals .render()")
-def result_equals_render(context):
-    assert context.result == context.uut.render()
+@then(parsers.parse("Render() equals 0x{value:x}"))
+def result_equals_render(context, value):
+    assert context.uut.render() == value.to_bytes(4, 'big')
