@@ -25,7 +25,7 @@ def scenario_output_is(context, value):
 
 
 @then("Scenario can render all mutations")
-def scenario_can_be_rendered(context):
+def scenario_can_render_all_mutations(context):
     mutations = list(context.req.get_mutations())
     for mutation in mutations:
         context.req.render(MutationContext(mutation=mutation))
