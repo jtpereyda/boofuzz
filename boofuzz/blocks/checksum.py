@@ -76,12 +76,12 @@ class Checksum(primitives.BasePrimitive):
 
         # Edge cases and a couple arbitrary strings (all 1s, all Es)
         self._fuzz_library = [
-            "\x00" * self._length,
-            "\x11" * self._length,
-            "\xEE" * self._length,
-            "\xFF" * self._length,
-            "\xFF" * (self._length - 1) + "\xFE",
-            "\x00" * (self._length - 1) + "\x01",
+            b"\x00" * self._length,
+            b"\x11" * self._length,
+            b"\xEE" * self._length,
+            b"\xFF" * self._length,
+            b"\xFF" * (self._length - 1) + b"\xFE",
+            b"\x00" * (self._length - 1) + b"\x01",
         ]
 
         if self._algorithm == "udp":
