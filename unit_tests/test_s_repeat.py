@@ -3,15 +3,15 @@ from pytest_bdd import given, parsers, scenarios, then, when
 from boofuzz import *
 from boofuzz.mutation_context import MutationContext
 
-scenarios("test_s_checksum.feature")
+scenarios("test_s_repeat.feature")
 
 
 @given("Scenario can be defined")
 def scenario_can_be_defined(context):
-    s_initialize("test_s_checksum")
+    s_initialize("test_s_repeat")
     s_static(b"\x00", name="1_static_byte")
-    s_checksum("test_s_checksum.1_static_byte")
-    context.req = s_get("test_s_checksum")
+    s_repeat("1_static_byte", min_reps=5, max_reps=10)
+    context.req = s_get("test_s_repeat")
 
 
 @when("Scenario can be rendered")
@@ -21,7 +21,7 @@ def scenario_can_be_rendered(context):
 
 @then(parsers.parse("Scenario output is 0x{value:x}"))
 def scenario_output_is(context, value):
-    assert context.output == value.to_bytes(5, "big")
+    assert context.output == value.to_bytes(1, "big")
 
 
 @then("Scenario can render all mutations")
