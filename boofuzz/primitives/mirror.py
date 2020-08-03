@@ -2,7 +2,8 @@ from functools import wraps
 
 from .base_primitive import BasePrimitive
 from .. import helpers
-from ..mutation import Mutation
+from boofuzz.mutation import Mutation
+from ..mutation_context import MutationContext
 
 
 def _may_recurse(f):
@@ -48,19 +49,23 @@ class Mirror(BasePrimitive):
     def mutations(self, default_value):
         return iter(())  # empty generator
 
-    def original_value(self, mutation_context):
-        return self._original_value_of_primitive(self._primitive_name, mutation_context)
+    def original_value(self, test_case_context=None):
+        return self._original_value_of_primitive(self._primitive_name, test_case_context)
 
     @_may_recurse
     def _render_primitive(self, primitive_name):
-        return self._request.names[primitive_name].render(Mutation()) if primitive_name is not None else None
+        return (
+            self._request.names[primitive_name].render(MutationContext(Mutation()))
+            if primitive_name is not None
+            else None
+        )
 
     @_may_recurse
-    def _original_value_of_primitive(self, primitive_name, mutation_context):
+    def _original_value_of_primitive(self, primitive_name, test_case_context=None):
         if primitive_name is None:
             return None
         else:
-            return self._request.names[primitive_name].original_value(mutation_context=mutation_context)
+            return self._request.names[primitive_name].original_value(test_case_context=test_case_context)
 
     @_may_recurse
     def get_length(self):

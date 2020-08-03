@@ -73,7 +73,6 @@ class TestPrimitives(unittest.TestCase):
                 len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200
             )
 
-    @pytest.mark.skip(reason="s_mirror is broken")
     def test_s_mirror(self):
         test_group_values = [b"a", b"bb", b"ccc", b"dddd"]
         s_initialize("test_s_mirror")
@@ -104,7 +103,7 @@ class TestPrimitives(unittest.TestCase):
             )
             self.assertEqual(
                 req.resolve_name(context_path="test_s_mirror", name="size_mirror").render(),
-                req.resolve_name("size").render(),
+                req.resolve_name(context_path="test_s_mirror", name="size").render(),
             )
 
     def test_bytes(self):
