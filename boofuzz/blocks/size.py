@@ -61,7 +61,7 @@ class Size(Fuzzable):
         :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
         """
 
-        super().__init__(name=name, default_value=None, *args, **kwargs)
+        super(Size, self).__init__(name=name, default_value=None, *args, **kwargs)
         self.block_name = block_name
         self.request = request
         self.offset = offset
