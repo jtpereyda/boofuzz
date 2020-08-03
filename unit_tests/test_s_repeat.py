@@ -2,6 +2,7 @@ from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import *
 from boofuzz.mutation_context import MutationContext
+import struct
 
 scenarios("test_s_repeat.feature")
 
@@ -21,7 +22,7 @@ def scenario_can_be_rendered(context):
 
 @then(parsers.parse("Scenario output is 0x{value:x}"))
 def scenario_output_is(context, value):
-    assert context.output == value.to_bytes(1, "big")
+    assert context.output == struct.pack("B", value)
 
 
 @then("Scenario can render all mutations")

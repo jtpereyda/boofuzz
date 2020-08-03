@@ -1,6 +1,7 @@
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import Block, Byte, Request
+import struct
 
 scenarios("block_original_value.feature")
 
@@ -28,4 +29,4 @@ def call_original_value(context):
 
 @then(parsers.parse("Render() equals 0x{value:x}"))
 def result_equals_render(context, value):
-    assert context.uut.render() == value.to_bytes(1, "little")
+    assert context.uut.render() == struct.pack("B", value)

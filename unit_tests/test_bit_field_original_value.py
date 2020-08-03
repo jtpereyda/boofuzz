@@ -1,6 +1,7 @@
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import BitField
+import struct
 
 scenarios("bit_field_original_value.feature")
 
@@ -22,7 +23,7 @@ def bitfield_4_bytes(context, value):
 
 @when("Calling original_value")
 def call_original_value(context):
-    context.result = context.uut.original_value().to_bytes(1, "little")
+    context.result = struct.pack("B", context.uut.original_value())
 
 
 @when("Calling render")
