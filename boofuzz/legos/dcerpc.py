@@ -63,7 +63,7 @@ class NdrString(blocks.Block):
         if not self.value:
             raise exception.SullyRuntimeError("MISSING LEGO.tag DEFAULT VALUE")
 
-        self.push(primitives.String())
+        self.push(primitives.String(name=name + "_STR", default_value=""))
 
     def render(self):
         """

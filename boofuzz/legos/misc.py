@@ -55,6 +55,6 @@ class Tag(blocks.Block):
         # <example>
         # [delim][string][delim]
 
-        self.push(primitives.Delim("<"))
-        self.push(primitives.String())
-        self.push(primitives.Delim(">"))
+        self.push(primitives.Delim(name=name + "_DELIM1", default_value="<"))
+        self.push(primitives.String(name=name + "_STR", default_value=""))
+        self.push(primitives.Delim(name=name + "_DELIM2", default_value=">"))
