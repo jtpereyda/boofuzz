@@ -1,10 +1,8 @@
 from past.builtins import range
 
-from .. import exception, helpers
-from ..test_case_session_reference import TestCaseSessionReference
+from .. import helpers
 from ..fuzzable import Fuzzable
-from ..mutation import Mutation
-from ..primitives.bit_field import BitField
+from ..test_case_session_reference import TestCaseSessionReference
 
 
 class Repeat(Fuzzable):

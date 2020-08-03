@@ -602,7 +602,7 @@ class Session(pgraph.Graph):
 
         Leverage callback methods to handle situations such as challenge response systems.
         A callback method must follow the message signature of :meth:`Session.example_test_case_callback`.
-        Remember to include \*\*kwargs for forward-compatibility.
+        Remember to include \\*\\*kwargs for forward-compatibility.
 
         Args:
             src (str or Request (pgrah.Node)): Source request name or request node

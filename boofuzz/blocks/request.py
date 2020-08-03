@@ -178,9 +178,10 @@ class Request(FuzzableBlock):
             elif len(found_names) == 1:
                 return self.names[found_names[0]]
             else:
-                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many potential matches: {1}".format(
-                    name, found_names
-                )
+                # fmt: off
+                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many " \
+                      "potential matches: {1}".format(name, found_names)
+                # fmt: on
         else:
             raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
 

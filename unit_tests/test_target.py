@@ -1,5 +1,3 @@
-import pytest
-import sys
 import time
 import unittest
 
@@ -64,7 +62,6 @@ class MockTimeConnection(ITargetConnection):
 class TestTarget(unittest.TestCase):
     SLEEP_TIME = 0.01
 
-    @pytest.mark.xfail(sys.platform == "win32", reason="known broken, fixed in pull #442")
     def test_count_repeater(self):
         repeater = CountRepeater(count=5, sleep_time=self.SLEEP_TIME)
         connection = MockCountConnection()
@@ -77,7 +74,6 @@ class TestTarget(unittest.TestCase):
         with self.assertRaises(ValueError):
             CountRepeater(count=0)
 
-    @pytest.mark.xfail(sys.platform == "win32", reason="known broken, fixed in pull #442")
     def test_time_repeater(self):
         repeater = TimeRepeater(duration=0.05, sleep_time=self.SLEEP_TIME)
         connection = MockTimeConnection()

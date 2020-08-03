@@ -1,7 +1,8 @@
+import struct
+
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import BasePrimitive, Block, Byte, Request, Size
-import struct
 
 scenarios("size_original_value.feature")
 

@@ -1,8 +1,9 @@
+import struct
+
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import *
 from boofuzz.mutation_context import MutationContext
-import struct
 
 scenarios("test_s_checksum.feature")
 

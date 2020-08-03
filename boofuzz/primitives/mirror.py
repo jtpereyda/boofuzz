@@ -1,8 +1,8 @@
 from functools import wraps
 
+from boofuzz.mutation import Mutation
 from .base_primitive import BasePrimitive
 from .. import helpers
-from boofuzz.mutation import Mutation
 from ..mutation_context import MutationContext
 
 
@@ -39,10 +39,10 @@ class Mirror(BasePrimitive):
         """
         Render the mirror.
 
+        :param value:
         :param mutation_context:
         :return: Rendered value.
         """
-        _ = value
         rendered = self._render_primitive(self._primitive_name)
         return helpers.str_to_bytes(rendered)
 

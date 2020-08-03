@@ -3,7 +3,6 @@ from future.moves import itertools
 
 from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext
-from .test_case_context import TestCaseContext
 from .test_case_session_reference import TestCaseSessionReference
 
 

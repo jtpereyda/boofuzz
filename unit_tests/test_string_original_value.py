@@ -1,6 +1,6 @@
 from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import String, helpers
+from boofuzz import helpers, String
 
 scenarios("string_original_value.feature")
 

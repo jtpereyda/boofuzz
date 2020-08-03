@@ -1,7 +1,8 @@
+import struct
+
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from boofuzz import BitField
-import struct
 
 scenarios("bit_field_original_value.feature")
 
