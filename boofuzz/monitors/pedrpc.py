@@ -256,7 +256,7 @@ class Server(object):
             try:
                 self.__client_sock.shutdown(socket.SHUT_RDWR)
             except socket.error as e:
-                if e.errno == errno.ENOTCONN:
+                if e.errno in [errno.ENOTCONN, errno.EBADF]:
                     pass
                 else:
                     raise

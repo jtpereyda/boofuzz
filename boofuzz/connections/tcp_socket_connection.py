@@ -39,11 +39,16 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
             self._serverSock.close()
 
     def open(self):
+        self._open_socket()
+        self._connect_socket()
+
+    def _open_socket(self):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # call superclass to set timeout sockopt
         super(TCPSocketConnection, self).open()
 
+    def _connect_socket(self):
         if self.server:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
@@ -66,16 +71,16 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
                     raise exception.BoofuzzTargetConnectionFailedError(str(e))
                 else:
                     raise
-
-        try:
-            self._sock.connect((self.host, self.port))
-        except socket.error as e:
-            if e.errno == errno.EADDRINUSE:
-                raise exception.BoofuzzOutOfAvailableSockets()
-            elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
-                raise exception.BoofuzzTargetConnectionFailedError(str(e))
-            else:
-                raise
+        else:
+            try:
+                self._sock.connect((self.host, self.port))
+            except socket.error as e:
+                if e.errno == errno.EADDRINUSE:
+                    raise exception.BoofuzzOutOfAvailableSockets()
+                elif e.errno in [errno.ECONNREFUSED, errno.EINPROGRESS, errno.ETIMEDOUT]:
+                    raise exception.BoofuzzTargetConnectionFailedError(str(e))
+                else:
+                    raise
 
     def recv(self, max_bytes):
         """

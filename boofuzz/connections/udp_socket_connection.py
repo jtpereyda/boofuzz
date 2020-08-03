@@ -42,6 +42,8 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         self._serverSock = None
         self._udp_client_port = None
 
+        self.max_payload()
+
         if self.bind and self.server:
             raise Exception("You cannot set both bind and server at the same time.")
 
@@ -114,6 +116,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
             int: Number of bytes actually sent.
         """
         num_sent = 0
+        data = data[: self._max_payload]
 
         try:
             if self.server:
