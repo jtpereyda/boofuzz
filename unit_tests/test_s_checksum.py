@@ -12,7 +12,7 @@ scenarios("test_s_checksum.feature")
 def scenario_can_be_defined(context):
     s_initialize("test_s_checksum")
     s_static(b"\x00", name="1_static_byte")
-    s_checksum("test_s_checksum.1_static_byte")
+    s_checksum("1_static_byte")
     context.req = s_get("test_s_checksum")
 
 
