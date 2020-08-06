@@ -115,7 +115,7 @@ class Checksum(primitives.BasePrimitive):
     @_may_recurse
     def _render_block(self, block_name, mutation_context):
         return (
-            self._request.names[block_name].render(mutation_context=mutation_context)
+            self._request.resolve_name(self.context_path, block_name).render(mutation_context=mutation_context)
             if block_name is not None
             else None
         )
