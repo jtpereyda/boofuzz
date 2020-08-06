@@ -102,11 +102,3 @@ class Repeat(Fuzzable):
 
     def __len__(self):
         return self.current_reps * len(self.request.names[self.block_name])
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True

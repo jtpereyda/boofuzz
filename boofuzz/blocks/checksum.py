@@ -190,11 +190,3 @@ class Checksum(primitives.BasePrimitive):
 
     def __len__(self):
         return self._length
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True
