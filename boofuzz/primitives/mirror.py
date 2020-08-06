@@ -55,21 +55,30 @@ class Mirror(BasePrimitive):
     @_may_recurse
     def _render_primitive(self, primitive_name):
         return (
-            self._request.names[primitive_name].render(MutationContext(Mutation()))
+            self._request.resolve_name(self.context_path, primitive_name).render(
+                mutation_context=MutationContext(Mutation())
+            )
             if primitive_name is not None
             else None
         )
 
     @_may_recurse
     def _original_value_of_primitive(self, primitive_name, test_case_context=None):
-        if primitive_name is None:
-            return None
-        else:
-            return self._request.names[primitive_name].original_value(test_case_context=test_case_context)
+        return (
+            self._request.resolve_name(self.context_path, primitive_name).original_value(
+                test_case_context=test_case_context
+            )
+            if primitive_name is not None
+            else None
+        )
 
     @_may_recurse
     def get_length(self):
-        return len(self._request.names[self._primitive_name]) if self._primitive_name is not None else 0
+        return (
+            len(self._request.resolve_name(self.context_path, self._primitive_name))
+            if self._primitive_name is not None
+            else 0
+        )
 
     def __len__(self):
         return self.get_length()

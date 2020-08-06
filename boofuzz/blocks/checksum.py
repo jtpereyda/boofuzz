@@ -61,7 +61,7 @@ class Checksum(primitives.BasePrimitive):
         *args,
         **kwargs
     ):
-        super(Checksum, self).__init__(*args, **kwargs)
+        super(Checksum, self).__init__(name, *args, **kwargs)
 
         self._block_name = block_name
         self._request = request
