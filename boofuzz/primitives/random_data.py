@@ -42,11 +42,11 @@ class RandomData(Fuzzable):
         """
         Mutate the primitive value returning False on completion.
 
-        @rtype:  bool
-        @return: True on success, False otherwise.
-
         Args:
-            default_value:
+            default_value (str): Default value of element.
+
+        Yields:
+            str: Mutations
         """
         for i in range(0, self.get_num_mutations()):
             # select a random length for this string.
@@ -68,9 +68,11 @@ class RandomData(Fuzzable):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take
-        :param default_value:
+        Args:
+            default_value:
+
+        Returns:
+            int: Number of mutated forms this primitive can take
         """
 
         return self.max_mutations

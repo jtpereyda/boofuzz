@@ -739,7 +739,7 @@ class Session(pgraph.Graph):
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
 
         Args:
-            fuzz_case_iterator (Iterable): An iterator that walks through
+            path (list of Connection): Nodes (Requests) along the path to the target one.
 
         Returns:
             None
@@ -918,6 +918,10 @@ class Session(pgraph.Graph):
     def _check_for_passively_detected_failures(self, target, failure_already_detected=False):
         """Check for and log passively detected failures. Return True if any found.
 
+        Args:
+            target (Target): Target to be checked for failures.
+            failure_already_detected (bool): If a failure was already detected.
+
         Returns:
             bool: True if failures were found. False otherwise.
         """
@@ -956,7 +960,11 @@ class Session(pgraph.Graph):
         return has_crashed
 
     def _get_monitor_data(self, target):
-        # query monitors for any data they may want to add to this test case.
+        """Query monitors for any data they may want to add to this test case.
+
+        Args:
+            target (Target): Monitor to query data from.
+        """
         for monitor in target.monitors:
             data = monitor.retrieve_data()
             if data is not None and len(data) > 0:
@@ -1065,7 +1073,7 @@ class Session(pgraph.Graph):
                 Provided with a test case and test step already opened.
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
-            test_case_context (ProtocolSession): Context for test case -scoped data.
+            test_case_context (ProtocolSession): Context for test case-scoped data.
                 :py:class:`TestCaseContext` :py:attr:`session_variables <TestCaseContext.session_variables>`
                 values are generally set within a callback and referenced in elements via default values of type
                 :py:class:`ReferenceValueTestCaseSession`.
@@ -1108,7 +1116,8 @@ class Session(pgraph.Graph):
         Args:
             target (session.target): Target we are restarting
 
-        @raise exception.BoofuzzRestartFailedError if restart fails.
+        Raises:
+             exception.BoofuzzRestartFailedError: if restart fails.
         """
 
         # TODO: reuse_target_connection seems to be only handled when using
@@ -1158,6 +1167,11 @@ class Session(pgraph.Graph):
 
     def _callback_current_node(self, node, edge, test_case_context):
         """Execute callback preceding current node.
+
+        Args:
+            test_case_context (ProtocolSession): Context for test case-scoped data.
+            node (pgraph.node.node (Node), optional): Current Request/Node
+            edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
 
         Returns:
             bytes: Data rendered by current node if any; otherwise None.
@@ -1251,6 +1265,7 @@ class Session(pgraph.Graph):
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
             callback_data (bytes): Data from previous callback.
+            mutation_context (MutationContext): Current mutation context.
         """
         if callback_data:
             data = callback_data
@@ -1344,8 +1359,6 @@ class Session(pgraph.Graph):
         Args:
             this_node (node.Node): Current node that is being fuzzed.
             path (list of Connection): List of edges along the path to the current one being fuzzed.
-
-        :raise sex.SullyRuntimeError:
         """
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
@@ -1376,9 +1389,6 @@ class Session(pgraph.Graph):
 
         Yields:
             Mutation: Mutation object describing this mutation.
-
-        Raises:
-            sex.SullyRuntimeError:
         """
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
@@ -1438,8 +1448,7 @@ class Session(pgraph.Graph):
         Current test case is controlled by fuzz_case_iterator().
 
         Args:
-            path(list of Connection): Path to take to get to the target node.
-
+            mutation_context (MutationContext): Current mutation context.
         """
         target = self.targets[0]
         mutation = mutation_context.mutation
@@ -1633,10 +1642,10 @@ class Session(pgraph.Graph):
         """Get long test case name.
 
         Args:
-            mutation (Mutation):
+            mutation (Mutation): Mutation to get name from.
 
         Returns:
-
+            Long formatted test case name
         """
         message_path = self._message_path_to_str(mutation.message_path)
         primitive_path = next(iter(mutation.mutations))

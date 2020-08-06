@@ -268,9 +268,11 @@ class String(Fuzzable):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  int
-        @return: Number of mutated forms this primitive can take
-        :param default_value:
+        Args:
+            default_value:
+
+        Returns:
+            int: Number of mutated forms this primitive can take
         """
         return sum(
             (
