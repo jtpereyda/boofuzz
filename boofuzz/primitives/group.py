@@ -26,6 +26,8 @@ class Group(BasePrimitive):
 
         if default_value is None:
             default_value = values[0]
+        default_value = default_value if isinstance(default_value, bytes) else default_value.encode(encoding=encoding)
+
         super(Group, self).__init__(name, default_value, *args, **kwargs)
 
         self.values = values
