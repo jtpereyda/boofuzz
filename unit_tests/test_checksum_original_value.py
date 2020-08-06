@@ -19,9 +19,7 @@ def a_checksum(context):
     block.push(byte1)
     block.push(byte2)
 
-    checksum = Checksum(
-        block_name="unit-test-block", request=request, fuzzable=True, name="Checksum block"
-    )
+    checksum = Checksum(block_name="unit-test-block", request=request, fuzzable=True, name="Checksum block")
     request.push(checksum)
 
     request.pop()
