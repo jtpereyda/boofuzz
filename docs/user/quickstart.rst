@@ -88,7 +88,7 @@ current working directory. You can reopen the web interface on any of those data
 
 To do cool stuff like checking responses, you'll want to use ``post_test_case_callbacks`` in
 :class:`Session <boofuzz.Session>`. To use data from a response in a subsequent request, see
-:class:`TestCaseSessionReference <boofuzz.TestCaseSessionReference>`.
+:class:`ProtocolSessionReference <boofuzz.ProtocolSessionReference>`.
 
 You may also be interested in :ref:`custom-blocks`.
 

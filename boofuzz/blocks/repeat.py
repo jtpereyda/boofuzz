@@ -2,7 +2,7 @@ from past.builtins import range
 
 from .. import helpers
 from ..fuzzable import Fuzzable
-from ..test_case_session_reference import TestCaseSessionReference
+from ..protocol_session_reference import ProtocolSessionReference
 
 
 class Repeat(Fuzzable):
@@ -45,7 +45,7 @@ class Repeat(Fuzzable):
     ):
         if default_value is None:
             if variable is not None:
-                default_value = TestCaseSessionReference(name=variable, default_value=0)
+                default_value = ProtocolSessionReference(name=variable, default_value=0)
             else:
                 default_value = 0
 

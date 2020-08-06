@@ -6,14 +6,14 @@ Other Modules
 
 Test Case Session Reference
 ===========================
-.. autoclass:: boofuzz.TestCaseSessionReference
+.. autoclass:: boofuzz.ProtocolSessionReference
     :members:
     :undoc-members:
     :show-inheritance:
 
 Test Case Context
 =================
-.. autoclass:: boofuzz.TestCaseContext
+.. autoclass:: boofuzz.ProtocolSession
     :members:
     :undoc-members:
     :show-inheritance:

@@ -53,8 +53,8 @@ from .primitives import (
 )
 from .repeater import CountRepeater, Repeater, TimeRepeater
 from .sessions import open_test_run, Session, Target
-from .test_case_context import TestCaseContext
-from .test_case_session_reference import TestCaseSessionReference
+from .protocol_session import ProtocolSession
+from .protocol_session_reference import ProtocolSessionReference
 
 # workaround to make Tornado work in Python 3.8
 # https://github.com/tornadoweb/tornado/issues/2608
@@ -170,8 +170,8 @@ __all__ = [
     "SullyRuntimeError",
     "Target",
     "TCPSocketConnection",
-    "TestCaseContext",
-    "TestCaseSessionReference",
+    "ProtocolSession",
+    "ProtocolSessionReference",
     "TimeRepeater",
     "UDPSocketConnection",
     "Word",

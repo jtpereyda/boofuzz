@@ -1,7 +1,7 @@
 import attr
 
 from .mutation import Mutation
-from .test_case_context import TestCaseContext
+from .protocol_session import ProtocolSession
 
 
 @attr.s
@@ -14,9 +14,9 @@ class MutationContext(object):
     For complex Fuzzable types that refer to other elements' rendered values, the implementation will typically pass
     the MutationContext along to child/referenced elements to ensure they are rendered properly.
 
-    Note: Mutations are generated in the context of a Test Case, so a Mutation has a TestCaseContext, but a
-    TestCaseContext does not necessarily have a MutationContext.
+    Note: Mutations are generated in the context of a Test Case, so a Mutation has a ProtocolSession, but a
+    ProtocolSession does not necessarily have a MutationContext.
     """
 
     mutation = attr.ib(type=Mutation)
-    test_case_context = attr.ib(type=TestCaseContext, default=None)
+    test_case_context = attr.ib(type=ProtocolSession, default=None)

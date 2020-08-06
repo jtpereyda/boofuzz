@@ -3,7 +3,7 @@ from future.moves import itertools
 
 from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext
-from .test_case_session_reference import TestCaseSessionReference
+from .protocol_session_reference import ProtocolSessionReference
 
 
 class Fuzzable(object):
@@ -101,11 +101,11 @@ class Fuzzable(object):
         """Original, non-mutated value of element.
 
         Args:
-            test_case_context (TestCaseContext): Used to resolve ReferenceValueTestCaseSession type default values.
+            test_case_context (ProtocolSession): Used to resolve ReferenceValueTestCaseSession type default values.
 
         Returns:
         """
-        if isinstance(self._default_value, TestCaseSessionReference):
+        if isinstance(self._default_value, ProtocolSessionReference):
             if test_case_context is None:
                 return self._default_value.default_value
             else:

@@ -36,7 +36,7 @@ from boofuzz import (
 from boofuzz.monitors import CallbackMonitor
 from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
-from boofuzz.test_case_context import TestCaseContext
+from boofuzz.protocol_session import ProtocolSession
 from boofuzz.web.app import app
 from .exception import BoofuzzFailure
 
@@ -1065,7 +1065,7 @@ class Session(pgraph.Graph):
                 Provided with a test case and test step already opened.
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
-            test_case_context (TestCaseContext): Context for test case -scoped data.
+            test_case_context (ProtocolSession): Context for test case -scoped data.
                 :py:class:`TestCaseContext` :py:attr:`session_variables <TestCaseContext.session_variables>`
                 values are generally set within a callback and referenced in elements via default values of type
                 :py:class:`ReferenceValueTestCaseSession`.
@@ -1460,7 +1460,7 @@ class Session(pgraph.Graph):
 
         try:
             self._open_connection_keep_trying(target)
-            test_case_context = TestCaseContext()
+            test_case_context = ProtocolSession()
             mutation_context.test_case_context = test_case_context
 
             self._pre_send(target)
@@ -1542,7 +1542,7 @@ class Session(pgraph.Graph):
 
         try:
             self._open_connection_keep_trying(target)
-            test_case_context = TestCaseContext()
+            test_case_context = ProtocolSession()
             mutation_context.test_case_context = test_case_context
 
             self._pre_send(target)
