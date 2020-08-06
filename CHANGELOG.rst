@@ -5,12 +5,21 @@ Upcoming
 --------
 Features
 ^^^^^^^^
+- Efficient mutation generation and smarter string reuse -- decrease memory consumption by orders of magnitude.
+- Added `Aligned` block.
+- Internal mutation rewrite -- simpler definitions for new fuzz primitives.
+- Name references for `Checksum`, `Size`, etc. now resolve absolute and relative names.
+- Block and primitive names no longer need to be globally unique within a message, they only need to be locally unique within a block.
+- Independent mutation and encoding steps -- will enable multiple mutations and code coverage feedback
+- Callbacks now have `ProtocolSession` object to which one can save data to be used later in the protocol definition.
+- Added `ProtocolSessionReference`, with which can use data from a past reply in a request definition
 
 Fixes
 ^^^^^
 - Fixed UDPSocketConnection data truncation when sending more data than the socket supports.
 - Fixed execution of procmon stop_commands.
 - Fixed TCP and SSL server connections.
+- Various web interface fixes.
 
 v0.2.0
 ------
