@@ -11,14 +11,14 @@ scenarios("test_s_group.feature")
 @given("Scenario with str can be defined")
 def scenario_with_str_can_be_defined(context):
     s_initialize("test_s_group_str")
-    s_group("1_group_str", values=["\x06"])
+    s_group("1_group_str", values=["\x06"], default_value="\x06")
     context.req = s_get("test_s_group_str")
 
 
 @given("Scenario with byte can be defined")
 def scenario_with_byte_can_be_defined(context):
     s_initialize("test_s_group_byte")
-    s_group("1_group_byte", values=[b"\x06"])
+    s_group("1_group_byte", values=[b"\x06"], default_value=b"\x06")
     context.req = s_get("test_s_group_byte")
 
 
