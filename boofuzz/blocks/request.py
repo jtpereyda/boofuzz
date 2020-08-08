@@ -181,8 +181,8 @@ class Request(FuzzableBlock):
                 return self.names[found_names[0]]
             else:
                 # fmt: off
-                raise Exception("Unable to resolve block name '{0}'. Use an absolute or relative name instead." \
-                    " Too many potential matches: {1}".format(name, found_names))
+                raise Exception("Unable to resolve block name '{0}'. Use an absolute or relative name instead."
+                                " Too many potential matches: {1}".format(name, found_names))
                 # fmt: on
         else:
             raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
