@@ -147,21 +147,23 @@ class Request(FuzzableBlock):
                 yield item
 
     def resolve_name(self, context_path, name):
+        if name in self.names:
+            return self.names[name]
+
+        if ".".join([context_path, name]) in self.names:
+            return self.names[".".join([context_path, name])]
+
         context_components = context_path.split(".")
         name_components = name.split(".")
+        components = context_components + name_components
 
-        if name_components[0] == "_parent":  # if path is relative
-            del name_components[0]
-            components = context_components + name_components
-            i = 0
-            while i + 1 < len(components):
-                if components[i + 1] == "_parent":
-                    del components[i + 1]
-                    del components[i]
-                else:
-                    i += 1
-        else:
-            components = context_components + name_components
+        i = 0
+        while i + 1 < len(components):
+            if components[i + 1] == "_parent":
+                del components[i + 1]
+                del components[i]
+            else:
+                i += 1
 
         normalized_name = ".".join(components)
 
@@ -174,13 +176,13 @@ class Request(FuzzableBlock):
                 if name == n.rsplit(".", 1)[-1]:
                     found_names.append(n)
             if len(found_names) == 0:
-                raise "Unable to resolve block name '{0}'".format(name)
+                raise Exception("Unable to resolve block name '{0}'".format(name))
             elif len(found_names) == 1:
                 return self.names[found_names[0]]
             else:
                 # fmt: off
-                raise "Unable to resolve block name '{0}'. Use an absolute or relative name instead. Too many " \
-                      "potential matches: {1}".format(name, found_names)
+                raise Exception("Unable to resolve block name '{0}'. Use an absolute or relative name instead."
+                                " Too many potential matches: {1}".format(name, found_names))
                 # fmt: on
         else:
             raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
