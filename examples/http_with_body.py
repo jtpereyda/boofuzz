@@ -9,7 +9,7 @@ from boofuzz import *
 def main():
     session = Session(
             target=Target(
-                connection = SocketConnection("10.17.100.101", 80, proto='tcp'),
+                connection = SocketConnection("127.0.0.1", 80, proto='tcp'),
             ),
     )
 
