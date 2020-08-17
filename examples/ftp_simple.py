@@ -10,13 +10,9 @@ def main():
     (procmon) and assumes that the FTP server is already running.
     """
     port = 21
-    host = '127.0.0.1'
-    protocol = 'tcp'
-    session = Session(
-            target=Target(
-                connection = SocketConnection(host, port, proto=protocol),
-            ),
-    )
+    host = "127.0.0.1"
+    protocol = "tcp"
+    session = Session(target=Target(connection=SocketConnection(host, port, proto=protocol),),)
     s_initialize("user")
     s_string("USER")
     s_delim(" ")
