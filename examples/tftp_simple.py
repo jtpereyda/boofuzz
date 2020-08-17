@@ -37,7 +37,7 @@ def main():
     # session.connect(s_get("RRQ"))
 
     session.fuzz()
-    
+
 
 if __name__ == "__main__":
 
