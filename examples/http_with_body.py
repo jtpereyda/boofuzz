@@ -7,7 +7,11 @@ from boofuzz import *
 
 
 def main():
-    session = Session(target=Target(connection=TCPSocketConnection("127.0.0.1", 80)),)
+    session = Session(
+            target=Target(
+                connection = SocketConnection("10.17.100.101", 80, proto='tcp'),
+            ),
+    )
 
     s_initialize(name="Request")
     with s_block("Request-Line"):
