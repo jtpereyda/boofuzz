@@ -6,13 +6,11 @@
 from boofuzz import *
 
 
-host = '127.0.0.1'
+host = "127.0.0.1"
+
+
 def main():
-    session = Session(
-            target=Target(
-                connection = SocketConnection(host, 80, proto='tcp'),
-            ),
-    )
+    session = Session(target=Target(connection=SocketConnection(host, 80, proto="tcp"),),)
 
     s_initialize(name="Request")
     with s_block("Request-Line"):
