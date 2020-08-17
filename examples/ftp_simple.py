@@ -50,13 +50,6 @@ from boofuzz import *
     session.fuzz()
 
 
-    session.connect(s_get("user"))
-    session.connect(s_get("user"), s_get("pass"))
-    session.connect(s_get("pass"), s_get("stor"))
-    session.connect(s_get("pass"), s_get("retr"))
-
-    session.fuzz()
-
 
 if __name__ == "__main__":
     main()
