@@ -168,11 +168,3 @@ class Size(Fuzzable):
 
     def __len__(self):
         return len(self._render())  # TODO fix length method, if needed
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True

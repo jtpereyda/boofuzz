@@ -190,11 +190,3 @@ class BitField(Fuzzable):
             else:
                 _rendered = "%d" % value
         return _rendered
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True
