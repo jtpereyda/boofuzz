@@ -496,7 +496,7 @@ def s_update(name, value):
     if name not in map(lambda o: o.name, blocks.CURRENT.walk()):
         raise exception.SullyRuntimeError("NO OBJECT WITH NAME '%s' FOUND IN CURRENT REQUEST" % name)
 
-    blocks.CURRENT.names[name].value = value
+    blocks.CURRENT.names[name]._value = value
 
 
 # PRIMITIVES
