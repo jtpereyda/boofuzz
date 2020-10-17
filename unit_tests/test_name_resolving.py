@@ -1,10 +1,8 @@
-import struct
 import pytest
-
-from pytest_bdd import given, parsers, scenarios, then, when
+from pytest_bdd import given, scenarios, then, when
 
 from boofuzz import *
-from boofuzz.mutation_context import MutationContext
+from boofuzz.exception import BoofuzzNameResolutionError
 
 CONVERTERS = {
     "block_name": str,
@@ -20,49 +18,64 @@ def clear_requests():
     blocks.CURRENT = None
 
 
-@given("A flat scenario with block_name <block_name>")
-def a_flat_scenario(context, block_name):
-    s_initialize("test_name_resolving")
-    s_static(b"\xff\xff", name="2_static_bytes")
-    s_size(block_name, length=1)
-    s_static(b"\xff", name="1_static_byte")
-    context.req = s_get("test_name_resolving")
+@given("Complex request scenario with block <name> block_name <block_name>")
+def complex_request_scenario(context, name, block_name):
+    """
+    my_test_request                         [default] value
+    |-A                                     A1A1
+    |-B1                                    B1
+    |-sizer_l1 (default block_name: .A)     02
+    |-C
+      |-A                                   A2A2A2
+      |-B2                                  B2
+      |-sizer_l2 (default block_name: A)    03
+      |-C
+        |-A                                 A3A3A3A3
+        |-B3                                B3
+        |-sizer_l3 (default block_name: A)  04
+    """
+    block_names = {
+        "sizer_l1": block_name if name == "sizer_l1" else ".A",
+        "sizer_l2": block_name if name == "sizer_l2" else ".A",
+        "sizer_l3": block_name if name == "sizer_l3" else ".A",
+    }
+    s_initialize("test_req")
+    s_static(b"\xA1\xA1", name="A")
+    s_static(b"\xB1", name="B1")
+    s_size(block_names["sizer_l1"], name="sizer_l1", length=1)
+    with s_block("C"):
+        s_static(b"\xA2\xA2\xA2", name="A")
+        s_static(b"\xB2", name="B2")
+        s_size(block_names["sizer_l2"], name="sizer_l2", length=1)
+        with s_block("C"):
+            s_static(b"\xA3\xA3\xA3\xA3", name="A")
+            s_static(b"\xB3", name="B3")
+            s_size(block_names["sizer_l3"], name="sizer_l3", length=1)
+
+    context.req = s_get("test_req")
 
 
-@given("A 1 deep scenario with block_name <block_name>")
-def a_1_deep_scenario(context, block_name):
-    s_initialize("test_name_resolving")
-    s_static(b"\xff", name="header")
-    s_size(block_name, length=1)
-    with s_block("1_deep"):
-        s_static(b"\xfe", name="1_static_byte")
-    s_static(b"\xff", name="1_static_byte")
-    context.req = s_get("test_name_resolving")
-
-
-@given("A 1 deep higher scenario with block_name <block_name>")
-def a_1_deep_higher_scenario(context, block_name):
-    s_initialize("test_name_resolving")
-    s_static(b"\xff", name="header")
-    with s_block("1_deep"):
-        s_size(block_name, length=1)
-        s_static(b"\xfe", name="1_byte_inside")
-    s_static(b"\xff", name="1_byte_root")
-    context.req = s_get("test_name_resolving")
-
-
-@when("Scenario can be rendered")
+@when("Scenario is rendered")
 def scenario_can_be_rendered(context):
     context.output = context.req.render()
 
 
-@then(parsers.parse("Scenario output is 0x{value:x}"))
-def scenario_output_is(context, value):
-    assert context.output == struct.pack(">L", value)
+@when("We try to render the scenario")
+def scenario_try_render(context):
+    context.exc = None
+    try:
+        context.output = context.req.render()
+    except Exception as e:
+        context.exc = e
 
 
-@then("Scenario can render all mutations")
-def scenario_can_render_all_mutations(context):
-    mutations = list(context.req.get_mutations())
-    for mutation in mutations:
-        context.req.render(MutationContext(mutation=mutation))
+@then("Scenario output is <result>")
+def scenario_output_is(context, result):
+    if result.startswith("0x"):
+        result = result[2:]
+    assert context.output == bytes.fromhex(result)
+
+
+@then("A BoofuzzNameResolutionError is raised")
+def name_resolution_err(context):
+    assert isinstance(context.exc, BoofuzzNameResolutionError)

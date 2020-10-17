@@ -3,8 +3,14 @@ import collections
 from .aligned import Aligned
 from .block import Block
 from .. import exception
+from ..exception import BoofuzzNameResolutionError
 from ..fuzzable import Fuzzable
 from ..fuzzable_block import FuzzableBlock
+
+cannot_resolve_name = "Failed to resolve block name '{0}' in context '{1}'"
+name_not_found = "Cannot find block with name '{0}'"
+too_many_matches = "Unable to resolve block name '{0}'. Use an absolute or relative name instead." \
+                   " Too many potential matches: {1}"
 
 
 class Request(FuzzableBlock):
@@ -23,7 +29,7 @@ class Request(FuzzableBlock):
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
         self.callbacks = collections.defaultdict(list)
-        self.names = {}  # dictionary of directly accessible primitives.
+        self.names = {name: self}  # dictionary of directly accessible primitives.
         self._rendered = b""  # rendered block structure.
         self._mutant_index = 0  # current mutation index.
         self._element_mutant_index = None  # index of current mutant element within self.stack
@@ -147,45 +153,53 @@ class Request(FuzzableBlock):
                 yield item
 
     def resolve_name(self, context_path, name):
-        if name in self.names:
-            return self.names[name]
+        """
+        Names are resolved thus:
+        1. If the name starts with a dot, it is treated as a relative path name in the style of PEP 328.
+            1. "." refers to the current directory, so to speak.
+            2. ".." refers to the next directory up.
+            3. "..." refers to another directory up, and so forth.
+        2. If the name does _not_ start with a dot, it is treated as an absolute name.
+        3. Backwards compatibility: If the absolute name fails to resolve, the engine searches for any block or
+            primitive with that name. If more or less than exactly one match is found, an error results.
 
-        if ".".join([context_path, name]) in self.names:
-            return self.names[".".join([context_path, name])]
+        Args:
+            context_path: The "current working directory" for resolving the name. E.g. "block_1.block_2".
+            name: The name being resolved. May be absolute or relative.
 
-        context_components = context_path.split(".")
-        name_components = name.split(".")
-        components = context_components + name_components
+        Returns:
 
-        i = 0
-        while i + 1 < len(components):
-            if components[i + 1] == "_parent":
-                del components[i + 1]
-                del components[i]
-            else:
-                i += 1
-
-        normalized_name = ".".join(components)
-
-        if normalized_name in self.names:
-            return self.names[normalized_name]
-        elif "." not in name:
-            # attempt to look up by last name component
-            found_names = []
-            for n in self.names:
-                if name == n.rsplit(".", 1)[-1]:
-                    found_names.append(n)
-            if len(found_names) == 0:
-                raise Exception("Unable to resolve block name '{0}'".format(name))
-            elif len(found_names) == 1:
-                return self.names[found_names[0]]
-            else:
-                # fmt: off
-                raise Exception("Unable to resolve block name '{0}'. Use an absolute or relative name instead."
-                                " Too many potential matches: {1}".format(name, found_names))
-                # fmt: on
+        """
+        if name.startswith("."):  # Case 1 relative
+            components = (context_path + name).split(".")  # double dots leave an empty string; so do trailing dots
+            while "" in components:
+                i = components.index("")
+                if i <= 0:
+                    raise BoofuzzNameResolutionError(cannot_resolve_name.format(name, context_path))
+                elif i == len(components) - 1:  # last in list; indicates a trailing dot
+                    del components[i]
+                else:  # double dot
+                    del components[i]
+                    del components[i - 1]
+            return self._lookup_resolved_name(".".join(components))
         else:
-            raise Exception("Failed to resolve block name '{0}' in context '{1}'".format(name, context_path))
+            full_absolute_name = "{0}.{1}".format(self._name, name)
+            if full_absolute_name in self.names:  # Case 2 absolute
+                return self._lookup_resolved_name(full_absolute_name)
+            else:  # Case 3 backwards compatibility --  look up by last name component
+                found_names = [n for n in self.names if n.rsplit(".")[-1] == name]
+                if len(found_names) == 1:
+                    return self.names[found_names[0]]
+                elif len(found_names) == 0:
+                    raise BoofuzzNameResolutionError(name_not_found.format(name))
+                else:
+                    raise BoofuzzNameResolutionError(too_many_matches.format(name, found_names))
+
+    def _lookup_resolved_name(self, resolved_name):
+        if resolved_name in self.names:
+            return self.names[resolved_name]
+        else:
+            raise BoofuzzNameResolutionError(name_not_found.format(resolved_name))
 
     def get_mutations(self, default_value=None):
         return self.mutations(default_value=default_value)

@@ -116,7 +116,7 @@ class Size(Fuzzable):
             return self.bit_field.encode(value=value, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
-        return self.length * "\x00"
+        return self.length * b"\x00"
 
     def _render(self, value=None):
         if value is None:

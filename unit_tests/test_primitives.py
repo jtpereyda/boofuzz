@@ -78,7 +78,7 @@ class TestPrimitives(unittest.TestCase):
         s_initialize("test_s_mirror")
 
         s_size("data", output_format="ascii", fuzzable=False, name="size")
-        s_mirror("test_s_mirror.size", name="size_mirror")
+        s_mirror(".size", name="size_mirror")
 
         with s_block("data"):
             s_static("<")
@@ -86,7 +86,7 @@ class TestPrimitives(unittest.TestCase):
             s_static(">")
             s_static("hello")
             s_static("</")
-            s_mirror("test_s_mirror.data.group_start", name="group_end")
+            s_mirror("data.group_start", name="group_end")
             s_static(">")
 
         req = s_get("test_s_mirror")
