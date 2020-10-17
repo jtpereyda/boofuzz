@@ -7,7 +7,9 @@ from boofuzz import *
 
 
 def main():
-    session = Session(target=Target(connection=TCPSocketConnection("127.0.0.1", 80)),)
+    session = Session(
+        target=Target(connection=TCPSocketConnection("127.0.0.1", 80)),
+    )
 
     define_proto(session=session)
 

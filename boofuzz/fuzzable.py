@@ -220,7 +220,11 @@ class Fuzzable(object):
         return sum(1 for _ in self.mutations(default_value=default_value))
 
     def __repr__(self):
-        return "<%s %s %s>" % (self.__class__.__name__, self.name, repr(self.original_value(test_case_context=None)),)
+        return "<%s %s %s>" % (
+            self.__class__.__name__,
+            self.name,
+            repr(self.original_value(test_case_context=None)),
+        )
 
     def __len__(self):
         """Length of field. May vary if mutate() changes the length.

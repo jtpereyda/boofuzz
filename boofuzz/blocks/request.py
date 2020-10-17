@@ -9,8 +9,9 @@ from ..fuzzable_block import FuzzableBlock
 
 cannot_resolve_name = "Failed to resolve block name '{0}' in context '{1}'"
 name_not_found = "Cannot find block with name '{0}'"
-too_many_matches = "Unable to resolve block name '{0}'. Use an absolute or relative name instead." \
-                   " Too many potential matches: {1}"
+too_many_matches = (
+    "Unable to resolve block name '{0}'. Use an absolute or relative name instead." " Too many potential matches: {1}"
+)
 
 
 class Request(FuzzableBlock):
