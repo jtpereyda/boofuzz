@@ -69,7 +69,7 @@ class Block(FuzzableBlock):
     def num_mutations(self, default_value=None):
         n = super(Block, self).num_mutations(default_value=default_value)
         if self.group is not None:
-            n += n*self.request.resolve_name(self.context_path, self.group).get_num_mutations()
+            n += n * self.request.resolve_name(self.context_path, self.group).get_num_mutations()
         return n
 
     def _do_dependencies_allow_render(self, mutation_context):
