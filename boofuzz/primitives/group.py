@@ -23,9 +23,15 @@ class Group(BasePrimitive):
         for val in values:
             assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
         values = list(map(lambda value: value if isinstance(value, bytes) else value.encode(encoding=encoding), values))
+        if default_value is not None and not isinstance(default_value, bytes):
+            default_value = default_value.encode(encoding=encoding)
 
         if default_value is None:
             default_value = values[0]
+
+        if default_value in values:
+            values.remove(default_value)
+
         default_value = default_value if isinstance(default_value, bytes) else default_value.encode(encoding=encoding)
 
         super(Group, self).__init__(name, default_value, *args, **kwargs)

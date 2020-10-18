@@ -1,7 +1,5 @@
 Feature: test_name_resolving
 
-# TODO exceptions tests -- then clean up request.py code
-
     Scenario Outline: Complex scenario
       Given Complex request scenario with block <name> block_name <block_name>
       When Scenario is rendered

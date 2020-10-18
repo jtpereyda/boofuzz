@@ -82,7 +82,7 @@ class TestPrimitives(unittest.TestCase):
 
         with s_block("data"):
             s_static("<")
-            s_group("group_start", values=test_group_values)
+            s_group("group_start", default_value=b"x", values=test_group_values)
             s_static(">")
             s_static("hello")
             s_static("</")

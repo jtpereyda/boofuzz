@@ -65,7 +65,7 @@ class TestBlocks(DebuggableTestCase):
         self.assertEqual(random.get_num_mutations(), 100)
 
         # we specify the number of values in a group field, so ensure that matches.
-        self.assertEqual(group.get_num_mutations(), 4)
+        self.assertEqual(group.get_num_mutations(), 3)
 
         # assert that the number of block mutations equals the sum of the number of mutations of its components.
         self.assertEqual(
@@ -98,25 +98,28 @@ class TestBlocks(DebuggableTestCase):
 
     def test_dependencies(self):
         s_initialize("DEP TEST 1")
-        s_group("group", values=[b"1", b"2"])
+        s_group("group", default_value=b"0", values=[b"1", b"2"])
 
         if s_block_start("ONE", dep="group", dep_values=[b"1"]):
-            s_static("ONE" * 100)
+            s_static("ONE")
             s_block_end()
 
         if s_block_start("TWO", dep="group", dep_values=[b"2"]):
-            s_static("TWO" * 100)
+            s_static("TWO")
+            s_group("group2", default_value=b"0", values=[b"1", b"2"])
             s_block_end()
 
-        self.assertEqual(s_num_mutations(), 2)
         mutations = list(blocks.CURRENT.get_mutations())
+        rendered = blocks.CURRENT.render()
+        assert b"ONE" not in rendered
+        assert b"TWO" not in rendered
         rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[0]))
         assert b"ONE" in rendered
         assert b"TWO" not in rendered
         rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[1]))
         assert b"ONE" not in rendered
         assert b"TWO" in rendered
-        assert len(mutations) == 2
+        assert len(mutations) == 4
 
     def test_repeaters(self):
         s_initialize("REP TEST 1")
