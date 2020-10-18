@@ -73,7 +73,7 @@ def scenario_try_render(context):
 def scenario_output_is(context, result):
     if result.startswith("0x"):
         result = result[2:]
-    assert context.output == bytes.fromhex(result)
+    assert context.output == bytes(bytearray.fromhex(result))
 
 
 @then("A BoofuzzNameResolutionError is raised")

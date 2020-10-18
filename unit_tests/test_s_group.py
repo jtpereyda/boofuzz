@@ -46,14 +46,14 @@ def scenario_can_be_rendered(context):
 
 @then(parsers.parse("Scenario output is 0x{value}"))
 def scenario_output_is(context, value):
-    assert context.output == bytes.fromhex(value)
+    assert context.output == bytes(bytearray.fromhex(value))
 
 
 @then("Output of mutation <mutation> is <result>")
 def scenario_output_as(context, mutation, result):
     if result.startswith("0x"):
         result = result[2:]
-        result = bytes.fromhex(result)
+        result = bytes(bytearray.fromhex(result))
     mutation = int(mutation)
     assert context.req.render(MutationContext(mutation=context.mutations[mutation])) == result
 
