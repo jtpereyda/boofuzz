@@ -118,13 +118,6 @@ class Size(Fuzzable):
     def _get_dummy_value(self):
         return self.length * b"\x00"
 
-    def _render(self, value=None):
-        if value is None:
-            length = self._calculated_length(Mutation())
-            return helpers.str_to_bytes(self._length_to_bytes(length))
-        else:
-            return self.bit_field.encode(value=value)
-
     def _calculated_length(self, mutation_context):
         return (
             self.offset
@@ -167,4 +160,4 @@ class Size(Fuzzable):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return len(self._render())  # TODO fix length method, if needed
+        return self.length
