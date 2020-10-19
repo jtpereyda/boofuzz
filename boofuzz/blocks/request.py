@@ -3,15 +3,10 @@ import collections
 from .aligned import Aligned
 from .block import Block
 from .. import exception
+from ..constants import ERR_NAME_NO_RESOLVE, ERR_NAME_NOT_FOUND, ERR_NAME_TOO_MANY
 from ..exception import BoofuzzNameResolutionError
 from ..fuzzable import Fuzzable
 from ..fuzzable_block import FuzzableBlock
-
-cannot_resolve_name = "Failed to resolve block name '{0}' in context '{1}'"
-name_not_found = "Cannot find block with name '{0}'"
-too_many_matches = (
-    "Unable to resolve block name '{0}'. Use an absolute or relative name instead." " Too many potential matches: {1}"
-)
 
 
 class Request(FuzzableBlock):
@@ -176,7 +171,7 @@ class Request(FuzzableBlock):
             while "" in components:
                 i = components.index("")
                 if i <= 0:
-                    raise BoofuzzNameResolutionError(cannot_resolve_name.format(name, context_path))
+                    raise BoofuzzNameResolutionError(ERR_NAME_NO_RESOLVE.format(name, context_path))
                 elif i == len(components) - 1:  # last in list; indicates a trailing dot
                     del components[i]
                 else:  # double dot
@@ -192,15 +187,15 @@ class Request(FuzzableBlock):
                 if len(found_names) == 1:
                     return self.names[found_names[0]]
                 elif len(found_names) == 0:
-                    raise BoofuzzNameResolutionError(name_not_found.format(name))
+                    raise BoofuzzNameResolutionError(ERR_NAME_NOT_FOUND.format(name))
                 else:
-                    raise BoofuzzNameResolutionError(too_many_matches.format(name, found_names))
+                    raise BoofuzzNameResolutionError(ERR_NAME_TOO_MANY.format(name, found_names))
 
     def _lookup_resolved_name(self, resolved_name):
         if resolved_name in self.names:
             return self.names[resolved_name]
         else:
-            raise BoofuzzNameResolutionError(name_not_found.format(resolved_name))
+            raise BoofuzzNameResolutionError(ERR_NAME_NOT_FOUND.format(resolved_name))
 
     def get_mutations(self, default_value=None):
         return self.mutations(default_value=default_value)
