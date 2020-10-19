@@ -1,10 +1,11 @@
 Changelog
 =========
 
-Upcoming
---------
+v0.2.1
+------
 Features
 ^^^^^^^^
+- Added simple TFTP fuzzer example.
 
 Fixes
 ^^^^^
