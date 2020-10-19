@@ -9,8 +9,7 @@ scenarios("size_original_value.feature")
 
 class SizeChangingBlock(BasePrimitive):
     def __init__(self, value=b"\x01", name=None):
-        """A block that changes size with each mutation.
-        """
+        """A block that changes size with each mutation."""
         super(SizeChangingBlock, self).__init__()
 
         self._name = name

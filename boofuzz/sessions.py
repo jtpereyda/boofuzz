@@ -333,8 +333,7 @@ class WebApp(object):
         return flask_thread
 
     def server_init(self):
-        """Called by fuzz() to initialize variables, web interface, etc.
-        """
+        """Called by fuzz() to initialize variables, web interface, etc."""
         if not self._web_interface_thread.is_alive():
             # spawn the web interface.
             self._web_interface_thread.start()
@@ -1058,7 +1057,7 @@ class Session(pgraph.Graph):
 
         Args:
             method (function): A method with the same parameters as :func:`~Session.post_send`
-            """
+        """
         self._callback_monitor.on_post_send.append(method)
 
     # noinspection PyUnusedLocal
@@ -1159,8 +1158,7 @@ class Session(pgraph.Graph):
         target.monitors_alive()
 
     def server_init(self):
-        """Called by fuzz() to initialize variables, web interface, etc.
-        """
+        """Called by fuzz() to initialize variables, web interface, etc."""
         if not self.web_interface_thread.is_alive():
             # spawn the web interface.
             self.web_interface_thread.start()
@@ -1590,7 +1588,7 @@ class Session(pgraph.Graph):
             self.export_file()
 
     def _open_connection_keep_trying(self, target):
-        """ Open connection and if it fails, keep retrying.
+        """Open connection and if it fails, keep retrying.
 
         Args:
             target (Target): Target to open.

@@ -85,9 +85,9 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
             self.__hot_transmit(("set_{}".format(key), ((val,), {})))
 
     def set_proc_name(self, new_proc_name):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
@@ -98,9 +98,9 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(proc_name=new_proc_name)
 
     def set_start_commands(self, new_start_commands):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
@@ -111,9 +111,9 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(start_commands=new_start_commands)
 
     def set_stop_commands(self, new_stop_commands):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
@@ -124,9 +124,9 @@ class ProcessMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(stop_commands=new_stop_commands)
 
     def set_crash_filename(self, new_crash_filename):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
