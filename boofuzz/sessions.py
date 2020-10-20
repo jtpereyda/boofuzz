@@ -66,8 +66,17 @@ class Target(object):
 
     """
 
-    def __init__(self, connection, monitors=None, monitor_alive=None, max_recv_bytes=10000, repeater=None,
-                 procmon=None, procmon_options=None, **kwargs):
+    def __init__(
+        self,
+        connection,
+        monitors=None,
+        monitor_alive=None,
+        max_recv_bytes=10000,
+        repeater=None,
+        procmon=None,
+        procmon_options=None,
+        **kwargs
+    ):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
