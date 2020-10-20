@@ -3,6 +3,24 @@ Changelog
 
 Upcoming
 --------
+
+Features
+^^^^^^^^
+- Refactor fuzzing engine to use iterators/generators instead of a weird stateful pseudo-iterator. Reduces memory usage by orders of magnitude.
+- Boofuzz now separates mutation and encoding. The mutations step generates new `Mutation` objects. The encoding step takes a protocol definition and a mutation and generates a message or messages. This distinction already existed in the implementation of some fuzz primitives, but it is now formalized. The distinction will enable multiple mutations in the future, and can even enable coverage-guided mutation stacking.
+- All fuzz elements now inherit from `Fuzzable` (the new `IFuzzable`). Its most important methods are `mutations()` and `encode()`. This makes new primitives simpler to implement. See `static.py` for an example of a very simple primitive.
+- Callbacks now have a `TestCaseContext` object to which one can save data to be used later in the test case. `TestCaseSessionReference` can be passed as a default value in a protocol definition. The name it references must have been saved by the time that message in the protocol is reached.
+- `FuzzableBlock` is a subclass of `Fuzzable` and superclass for Block types.
+- Added `Aligned`, a `FuzzableBlock` that aligns its contents to a certain number of bytes.
+- Protocols can now be defined with an object oriented rather than static approach.
+
+Fixes
+^^^^^
+- Various web interface fixes.
+- Various refactors and simplifications
+
+v0.2.1
+------
 Features
 ^^^^^^^^
 - Efficient mutation generation and smarter string reuse -- decrease memory consumption by orders of magnitude.
