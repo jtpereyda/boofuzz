@@ -4,7 +4,7 @@ from .base_primitive import BasePrimitive
 
 
 class Group(BasePrimitive):
-    def __init__(self, name, values, default_value=None):
+    def __init__(self, name, values, default_value=None, encoding="ascii", *args, **kwargs):
         """
         This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
         to a group primitive to specify that the block should cycle through all possible mutations for *each* value
@@ -12,61 +12,44 @@ class Group(BasePrimitive):
 
         @type  name:            str
         @param name:            Name of group
-        @type  values:          list or str
+        @type  values:          list or bytes
         @param values:          List of possible raw values this group can take.
 
         @param default_value:   Specifying a value when fuzzing() is complete
+        @type  encoding:        str
+        @param encoding:        (Optional, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
         """
-
-        super(Group, self).__init__()
-
-        self._name = name
-        self.values = values
-
-        assert len(self.values) > 0, "You can't have an empty value list for your group!"
+        assert len(values) > 0, "You can't have an empty value list for your group!"
+        for val in values:
+            assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
+        values = list(map(lambda value: value if isinstance(value, bytes) else value.encode(encoding=encoding), values))
+        if default_value is not None and not isinstance(default_value, bytes):
+            default_value = default_value.encode(encoding=encoding)
 
         if default_value is None:
-            default_value = self.values[0]
-        self._value = self._original_value = default_value
+            default_value = values[0]
 
-        for val in self.values:
-            assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
+        if default_value in values:
+            values.remove(default_value)
 
-    @property
-    def name(self):
-        return self._name
+        default_value = default_value if isinstance(default_value, bytes) else default_value.encode(encoding=encoding)
 
-    def mutate(self):
+        super(Group, self).__init__(name, default_value, *args, **kwargs)
+
+        self.values = values
+
+    def mutations(self, default_value):
+        for value in self.values:
+            yield value
+
+    def num_mutations(self, default_value):
         """
-        Move to the next item in the values list.
+        Calculate and return the total number of mutations for this individual primitive.
 
-        @rtype:  bool
-        @return: False
+        Args:
+            default_value:
+
+        Returns:
+            int: Number of mutated forms this primitive can take
         """
-        # TODO: See if num_mutations() can be done away with (me thinks yes).
-        if self._mutant_index == self.num_mutations():
-            self._fuzz_complete = True
-
-        # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-        if not self._fuzzable or self._fuzz_complete:
-            self._value = self._original_value
-            return False
-
-        # step through the value list.
-        # TODO: break this into a get_value() function, so we can keep mutate as close to standard as possible.
-        self._value = self.values[self._mutant_index]
-
-        # increment the mutation count.
-        self._mutant_index += 1
-
-        return True
-
-    def num_mutations(self):
-        """
-        Number of values in this primitive.
-
-        @rtype:  int
-        @return: Number of values in this primitive.
-        """
-
         return len(self.values)

@@ -12,7 +12,6 @@ import time
 import traceback
 import warnings
 import zlib
-from .exception import BoofuzzFailure
 from builtins import input
 from io import open
 
@@ -35,7 +34,11 @@ from boofuzz import (
     primitives,
 )
 from boofuzz.monitors import CallbackMonitor
+from boofuzz.mutation import Mutation
+from boofuzz.mutation_context import MutationContext
+from boofuzz.protocol_session import ProtocolSession
 from boofuzz.web.app import app
+from .exception import BoofuzzFailure
 
 
 class Target(object):
@@ -72,7 +75,7 @@ class Target(object):
         self.monitors = monitors if monitors is not None else []
         self.monitor_alive = monitor_alive if monitor_alive is not None else []
 
-        if "procmon" in kwargs.keys():
+        if "procmon" in kwargs.keys() and kwargs["procmon"] is not None:
             warnings.warn(
                 "Target(procmon=...) is deprecated. Please change your code"
                 " and add it to the monitors argument. For now, we do this "
@@ -81,7 +84,7 @@ class Target(object):
             )
             self.monitors.append(kwargs["procmon"])
 
-        if "netmon" in kwargs.keys():
+        if "netmon" in kwargs.keys() and kwargs["netmon"] is not None:
             warnings.warn(
                 "Target(netmon=...) is deprecated. Please change your code"
                 " and add it to the monitors argument. For now, we do this "
@@ -284,6 +287,10 @@ class SessionInfo(object):
         x = next(self._db_reader.query("SELECT COUNT(*) FROM cases"))[0]
         return x
 
+    @property
+    def mutant_index(self):
+        return None
+
     def test_case_data(self, index):
         """Return test case data object (for use by web server)
 
@@ -326,8 +333,7 @@ class WebApp(object):
         return flask_thread
 
     def server_init(self):
-        """Called by fuzz() to initialize variables, web interface, etc.
-        """
+        """Called by fuzz() to initialize variables, web interface, etc."""
         if not self._web_interface_thread.is_alive():
             # spawn the web interface.
             self._web_interface_thread.start()
@@ -355,7 +361,7 @@ class Session(pgraph.Graph):
         crash_threshold_element (int):  Maximum number of crashes allowed before an element is exhausted. Default 3.
         restart_sleep_time (int): Time in seconds to sleep when target can't be restarted. Default 5.
         restart_callbacks (list of method): The registered method will be called after a failed post_test_case_callback
-                                           Default None.
+                                            Default None.
         restart_threshold (int):    Maximum number of retries on lost target connection. Default None (indefinitely).
         restart_timeout (float):    Time in seconds for that a connection attempt should be retried. Default None
                                     (indefinitely).
@@ -500,6 +506,7 @@ class Session(pgraph.Graph):
 
         self.total_num_mutations = 0
         self.total_mutant_index = 0
+        self.mutant_index = 0
         self.fuzz_node = None
         self.targets = []
         self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
@@ -514,8 +521,7 @@ class Session(pgraph.Graph):
 
         # create a root node. we do this because we need to start fuzzing from a single point and the user may want
         # to specify a number of initial requests.
-        self.root = pgraph.Node()
-        self.root.name = "__ROOT_NODE__"
+        self.root = pgraph.Node(name="__ROOT_NODE__")
         self.root.label = self.root.name
         self.last_recv = None
         self.last_send = None
@@ -582,28 +588,20 @@ class Session(pgraph.Graph):
     def connect(self, src, dst=None, callback=None):
         """
         Create a connection between the two requests (nodes) and register an optional callback to process in between
-        transmissions of the source and destination request. Leverage this functionality to handle situations such as
-        challenge response systems. The session class maintains a top level node that all initial requests must be
-        connected to. Example::
+        transmissions of the source and destination request. The session class maintains a top level node that all
+        initial requests must be connected to. Example::
 
             sess = sessions.session()
             sess.connect(sess.root, s_get("HTTP"))
 
         If given only a single parameter, sess.connect() will default to attaching the supplied node to the root node.
-        This is a convenient alias and is identical to the second line from the above example::
+        This is a convenient alias. The following line is identical to the second line from the above example::
 
             sess.connect(s_get("HTTP"))
 
-        If you register callback method, it must follow this prototype::
-
-            def callback(target, fuzz_data_logger, session, node, edge, *args, **kwargs)
-
-        Where node is the node about to be sent, edge is the last edge along the current fuzz path to "node", session
-        is a pointer to the session instance which is useful for snagging data such as session.last_recv which contains
-        the data returned from the last socket transmission and sock is the live socket. A callback is also useful in
-        situations where, for example, the size of the next packet is specified in the first packet. As another
-        example, if you need to fill in the dynamic IP address of the target register a callback that snags the IP
-        from sock.getpeername()[0].
+        Leverage callback methods to handle situations such as challenge response systems.
+        A callback method must follow the message signature of :meth:`Session.example_test_case_callback`.
+        Remember to include \\*\\*kwargs for forward-compatibility.
 
         Args:
             src (str or Request (pgrah.Node)): Source request name or request node
@@ -613,7 +611,6 @@ class Session(pgraph.Graph):
         Returns:
             pgraph.Edge: The edge between the src and dst.
         """
-
         # if only a source was provided, then make it the destination and set the source to the root node.
         if dst is None:
             dst = src
@@ -627,7 +624,7 @@ class Session(pgraph.Graph):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
-        if src != self.root and not self.find_node("name", src.name):
+        if src != self.root and self.find_node("name", src.name) is None:
             self.add_node(src)
 
         if self.find_node("name", dst.name) is None:
@@ -676,7 +673,8 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._message_check(self._iterate_messages())
+        for path in self._iterate_protocol():
+            self._message_check(path)
 
     def fuzz(self):
         """Fuzz the entire protocol tree.
@@ -694,7 +692,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop(self._iterate_protocol())
+        self._main_fuzz_loop((m for path in self._iterate_protocol() for m in self._iterate_single_node(path)))
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -705,7 +703,7 @@ class Session(pgraph.Graph):
         node_edges = self._path_names_to_edges(node_names=node_names)
 
         self.total_mutant_index = 0
-        self.total_num_mutations = self.nodes[node_edges[-1].dst].num_mutations()
+        self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
 
         self._main_fuzz_loop(self._iterate_single_node(node_edges))
 
@@ -734,13 +732,13 @@ class Session(pgraph.Graph):
 
         self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
 
-    def _message_check(self, fuzz_case_iterator):
+    def _message_check(self, path):
         """Check messages for compatibility.
 
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
 
         Args:
-            fuzz_case_iterator (Iterable): An iterator that walks through
+            path (list of Connection): Nodes (Requests) along the path to the target one.
 
         Returns:
             None
@@ -748,8 +746,7 @@ class Session(pgraph.Graph):
         self.server_init()
 
         try:
-            for fuzz_args in fuzz_case_iterator:
-                self._check_message(*fuzz_args)
+            self._check_message(MutationContext(mutation=Mutation(message_path=path)))
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -773,7 +770,8 @@ class Session(pgraph.Graph):
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
 
         Args:
-            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases.
+            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases and yields MutationContext objects.
+                 See _iterate_single_node() for details.
 
         Returns:
             None
@@ -787,7 +785,7 @@ class Session(pgraph.Graph):
             if self._reuse_target_connection:
                 self.targets[0].open()
             num_cases_actually_fuzzed = 0
-            for fuzz_args in fuzz_case_iterator:
+            for mutation_context in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
                 elif self._index_end is not None and self.total_mutant_index > self._index_end:
@@ -802,7 +800,7 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                     self._restart_target(self.targets[0])
 
-                self._fuzz_current_case(*fuzz_args)
+                self._fuzz_current_case(mutation_context)
 
                 num_cases_actually_fuzzed += 1
             if self._reuse_target_connection:
@@ -893,7 +891,7 @@ class Session(pgraph.Graph):
 
         for edge in self.edges_from(this_node.id):
             next_node = self.nodes[edge.dst]
-            self.total_num_mutations += next_node.num_mutations()
+            self.total_num_mutations += next_node.get_num_mutations()
 
             if edge.src != self.root.id:
                 path.append(edge)
@@ -918,6 +916,10 @@ class Session(pgraph.Graph):
 
     def _check_for_passively_detected_failures(self, target, failure_already_detected=False):
         """Check for and log passively detected failures. Return True if any found.
+
+        Args:
+            target (Target): Target to be checked for failures.
+            failure_already_detected (bool): If a failure was already detected.
 
         Returns:
             bool: True if failures were found. False otherwise.
@@ -957,10 +959,14 @@ class Session(pgraph.Graph):
         return has_crashed
 
     def _get_monitor_data(self, target):
-        # query monitors for any data they may want to add to this test case.
+        """Query monitors for any data they may want to add to this test case.
+
+        Args:
+            target (Target): Monitor to query data from.
+        """
         for monitor in target.monitors:
             data = monitor.retrieve_data()
-            if len(data) > 0:
+            if data is not None and len(data) > 0:
                 self._fuzz_data_logger.log_info(
                     "{0} captured {1} bytes of additional data for test case #{2}".format(
                         str(monitor), len(data), self.total_mutant_index
@@ -1009,13 +1015,13 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node] >= self._crash_threshold_node
             ):
-                skipped = self.fuzz_node.num_mutations() - self.fuzz_node.mutant_index
+                skipped = max(0, self.fuzz_node.get_num_mutations() - self.mutant_index)
                 self._skip_current_node_after_current_test_case = True
                 self._fuzz_data_logger.open_test_step(
                     "Crash threshold reached for this request, exhausting {0} mutants.".format(skipped)
                 )
                 self.total_mutant_index += skipped
-                self.fuzz_node.mutant_index += skipped
+                self.mutant_index += skipped
             elif (
                 self.fuzz_node.mutant is not None
                 and self.crashing_primitives[self.fuzz_node.mutant] >= self._crash_threshold_element
@@ -1023,13 +1029,13 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = self.fuzz_node.mutant.num_mutations() - self.fuzz_node.mutant.mutant_index
+                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.mutant_index)
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
                     )
                     self.total_mutant_index += skipped
-                    self.fuzz_node.mutant_index += skipped
+                    self.mutant_index += skipped
 
             self._restart_target(target)
             return True
@@ -1051,22 +1057,25 @@ class Session(pgraph.Graph):
 
         Args:
             method (function): A method with the same parameters as :func:`~Session.post_send`
-            """
+        """
         self._callback_monitor.on_post_send.append(method)
 
     # noinspection PyUnusedLocal
-    def example_test_case_callback(self, target, fuzz_data_logger, session, *args, **kwargs):
+    def example_test_case_callback(self, target, fuzz_data_logger, session, test_case_context, *args, **kwargs):
         """
-        Example call signature for methods given to :func:`~Session.register_post_test_case_callback`.
+        Example call signature for methods given to :func:`~Session.connect` or
+        :func:`~Session.register_post_test_case_callback`
 
         Args:
             target (Target): Target with sock-like interface.
             fuzz_data_logger (ifuzz_logger.IFuzzLogger): Allows logging of test checks and passes/failures.
                 Provided with a test case and test step already opened.
-
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
-
+            test_case_context (ProtocolSession): Context for test case-scoped data.
+                :py:class:`TestCaseContext` :py:attr:`session_variables <TestCaseContext.session_variables>`
+                values are generally set within a callback and referenced in elements via default values of type
+                :py:class:`ReferenceValueTestCaseSession`.
             args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
             kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
         """
@@ -1106,7 +1115,8 @@ class Session(pgraph.Graph):
         Args:
             target (session.target): Target we are restarting
 
-        @raise exception.BoofuzzRestartFailedError if restart fails.
+        Raises:
+             exception.BoofuzzRestartFailedError: if restart fails.
         """
 
         # TODO: reuse_target_connection seems to be only handled when using
@@ -1148,14 +1158,18 @@ class Session(pgraph.Graph):
         target.monitors_alive()
 
     def server_init(self):
-        """Called by fuzz() to initialize variables, web interface, etc.
-        """
+        """Called by fuzz() to initialize variables, web interface, etc."""
         if not self.web_interface_thread.is_alive():
             # spawn the web interface.
             self.web_interface_thread.start()
 
-    def _callback_current_node(self, node, edge):
+    def _callback_current_node(self, node, edge, test_case_context):
         """Execute callback preceding current node.
+
+        Args:
+            test_case_context (ProtocolSession): Context for test case-scoped data.
+            node (pgraph.node.node (Node), optional): Current Request/Node
+            edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
 
         Returns:
             bytes: Data rendered by current node if any; otherwise None.
@@ -1165,11 +1179,18 @@ class Session(pgraph.Graph):
         # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
         if edge.callback:
             self._fuzz_data_logger.open_test_step("Callback function")
-            data = edge.callback(self.targets[0], self._fuzz_data_logger, session=self, node=node, edge=edge)
+            data = edge.callback(
+                self.targets[0],
+                self._fuzz_data_logger,
+                session=self,
+                node=node,
+                edge=edge,
+                test_case_context=test_case_context,
+            )
 
         return data
 
-    def transmit_normal(self, sock, node, edge, callback_data):
+    def transmit_normal(self, sock, node, edge, callback_data, mutation_context):
         """Render and transmit a non-fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1177,11 +1198,12 @@ class Session(pgraph.Graph):
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
             callback_data (bytes): Data from previous callback.
+            mutation_context (MutationContext): active mutation context
         """
         if callback_data:
             data = callback_data
         else:
-            data = node.render()
+            data = node.render(mutation_context=mutation_context)
 
         try:  # send
             self.targets[0].send(data)
@@ -1233,7 +1255,7 @@ class Session(pgraph.Graph):
             else:
                 raise BoofuzzFailure(str(e))
 
-    def transmit_fuzz(self, sock, node, edge, callback_data):
+    def transmit_fuzz(self, sock, node, edge, callback_data, mutation_context):
         """Render and transmit a fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1241,11 +1263,12 @@ class Session(pgraph.Graph):
             node (pgraph.node.node (Node), optional): Request/Node to transmit
             edge (pgraph.edge.edge (pgraph.edge), optional): Edge along the current fuzz path from "node" to next node.
             callback_data (bytes): Data from previous callback.
+            mutation_context (MutationContext): Current mutation context.
         """
         if callback_data:
             data = callback_data
         else:
-            data = node.render()
+            data = self.fuzz_node.render(mutation_context)
 
         try:  # send
             self.targets[0].send(data)
@@ -1267,9 +1290,10 @@ class Session(pgraph.Graph):
             else:
                 raise BoofuzzFailure(str(e))
 
+        received = b""
         try:  # recv
             if self._receive_data_after_fuzz:
-                self.last_recv = self.targets[0].recv()
+                received = self.targets[0].recv()
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
@@ -1286,7 +1310,9 @@ class Session(pgraph.Graph):
             if self._ignore_connection_ssl_errors:
                 self._fuzz_data_logger.log_info(str(e))
             else:
+                self._fuzz_data_logger.log_fail(str(e))
                 raise BoofuzzFailure(str(e))
+        self.last_recv = received
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
@@ -1306,52 +1332,6 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
-    def _iterate_messages(self):
-        """Iterates over each message without mutations.
-
-        :raise sex.SullyRuntimeError:
-        """
-        if not self.targets:
-            raise exception.SullyRuntimeError("No targets specified in session")
-
-        if not self.edges_from(self.root.id):
-            raise exception.SullyRuntimeError("No requests specified in session")
-
-        self._reset_fuzz_state()
-
-        for x in self._iterate_messages_recursive(this_node=self.root, path=[]):
-            yield x
-
-    def _iterate_messages_recursive(self, this_node, path):
-        """Recursively iterates over messages. Used by _iterate_messages.
-
-        Args:
-            this_node (node.Node): Current node that is being fuzzed.
-            path (list of Connection): List of edges along the path to the current one being fuzzed.
-
-        :raise sex.SullyRuntimeError:
-        """
-        # step through every edge from the current node.
-        for edge in self.edges_from(this_node.id):
-            # keep track of the path as we walk through it
-            # we keep track of edges as opposed to nodes because if there is more then one path through a set of
-            # given nodes we don't want any ambiguity.
-            path.append(edge)
-
-            message_path = "->".join([self.nodes[e.dst].name for e in path])
-            logging.debug("checking: {0}".format(message_path))
-
-            self.fuzz_node = self.nodes[path[-1].dst]
-            self.total_mutant_index += 1
-            yield path,
-
-            for x in self._iterate_messages_recursive(self.fuzz_node, path):
-                yield x
-
-        # finished with the last node on the path, pop it off the path stack.
-        if path:
-            path.pop()
-
     def _iterate_protocol(self):
         """
         Iterates over fuzz cases and mutates appropriately.
@@ -1367,8 +1347,6 @@ class Session(pgraph.Graph):
         if not self.edges_from(self.root.id):
             raise exception.SullyRuntimeError("No requests specified in session")
 
-        self._reset_fuzz_state()
-
         for x in self._iterate_protocol_recursive(this_node=self.root, path=[]):
             yield x
 
@@ -1379,8 +1357,6 @@ class Session(pgraph.Graph):
         Args:
             this_node (node.Node): Current node that is being fuzzed.
             path (list of Connection): List of edges along the path to the current one being fuzzed.
-
-        :raise sex.SullyRuntimeError:
         """
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
@@ -1389,11 +1365,11 @@ class Session(pgraph.Graph):
             # given nodes we don't want any ambiguity.
             path.append(edge)
 
-            message_path = "->".join([self.nodes[e.dst].name for e in path])
+            message_path = self._message_path_to_str(path)
             logging.debug("fuzzing: {0}".format(message_path))
+            self.fuzz_node = self.nodes[path[-1].dst]
 
-            for x in self._iterate_single_node(path):
-                yield x
+            yield path
 
             # recursively fuzz the remainder of the nodes in the session graph.
             for x in self._iterate_protocol_recursive(self.fuzz_node, path):
@@ -1407,34 +1383,38 @@ class Session(pgraph.Graph):
         """Iterate fuzz cases for the last node in path.
 
         Args:
-            path (list of Connection): Nodes along the path to the current one being fuzzed.
+            path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
 
-        Raises:
-            sex.SullyRuntimeError:
+        Yields:
+            Mutation: Mutation object describing this mutation.
         """
         self.fuzz_node = self.nodes[path[-1].dst]
-        # Loop through and yield all possible mutations of the fuzz node.
-        # Note: when mutate() returns False, the node has been reverted to the default (valid) state.
-        while self.fuzz_node.mutate():
+        self.mutant_index = 0
+
+        for mutation in self.fuzz_node.get_mutations(None):
+            self.mutant_index += 1
             self.total_mutant_index += 1
-            yield path,
+            mutation.message_path = path
+            yield MutationContext(mutation=mutation)
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False
                 break
             elif self._skip_current_element_after_current_test_case:
+                self.fuzz_node.mutant.stop_mutations()
                 self._skip_current_element_after_current_test_case = False
-                self.fuzz_node.skip_element()
-        self.fuzz_node.reset()
+                continue
+                # TODO reimplement node skip functionality
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
-        for fuzz_args in self._iterate_protocol():
-            if fuzz_index >= test_case_index:
-                self.total_mutant_index = 1
-                yield fuzz_args
-                break
-            fuzz_index += 1
+        for path in self._iterate_protocol():
+            for fuzz_args in self._iterate_single_node(path):
+                if fuzz_index >= test_case_index:
+                    self.total_mutant_index = 1
+                    yield fuzz_args
+                    break
+                fuzz_index += 1
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
@@ -1460,45 +1440,56 @@ class Session(pgraph.Graph):
                 cur_node = next_node
         return edge_path
 
-    def _check_message(self, path):
+    def _check_message(self, mutation_context):
         """Sends the current message without fuzzing.
 
         Current test case is controlled by fuzz_case_iterator().
 
         Args:
-            path(list of Connection): Path to take to get to the target node.
-
+            mutation_context (MutationContext): Current mutation context.
         """
         target = self.targets[0]
+        mutation = mutation_context.mutation
+        self.total_mutant_index += 1
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name_feature_check(path)
+        test_case_name = self._test_case_name_feature_check(mutation)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
             name=test_case_name,
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
-            current_index=self.fuzz_node.mutant_index,
-            current_num_mutations=self.fuzz_node.num_mutations(),
+            current_index=self.mutant_index,
+            current_num_mutations=self.fuzz_node.get_num_mutations(),
         )
 
         try:
             self._open_connection_keep_trying(target)
+            test_case_context = ProtocolSession()
+            mutation_context.test_case_context = test_case_context
 
             self._pre_send(target)
 
-            for e in path[:-1]:
+            for e in mutation.message_path[:-1]:
                 node = self.nodes[e.dst]
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                callback_data = self._callback_current_node(node=node, edge=e)
-                self.transmit_normal(target, node, e, callback_data=callback_data)
+                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=test_case_context)
+                self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            callback_data = self._callback_current_node(
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+            )
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
-            self.transmit_normal(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            self.transmit_normal(
+                target,
+                self.fuzz_node,
+                mutation.message_path[-1],
+                callback_data=callback_data,
+                mutation_context=mutation_context,
+            )
 
             self._check_for_passively_detected_failures(target)
             if not self._reuse_target_connection:
@@ -1518,35 +1509,39 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
-    def _fuzz_current_case(self, path):
+    def _fuzz_current_case(self, mutation_context):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
 
         Args:
-            path(list of Connection): Path to take to get to the target node.
+            mutation_context (MutationContext): Current mutation context.
 
         """
         target = self.targets[0]
+        mutation = mutation_context.mutation
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name(path, self.fuzz_node.mutant)
+        test_case_name = self._test_case_name(mutation)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
             name=test_case_name,
             index=self.total_mutant_index,
             num_mutations=self.total_num_mutations,
-            current_index=self.fuzz_node.mutant_index,
-            current_num_mutations=self.fuzz_node.num_mutations(),
+            current_index=self.mutant_index,
+            current_num_mutations=self.fuzz_node.get_num_mutations(),
         )
 
         self._fuzz_data_logger.log_info(
             "Type: %s. Default value: %s. Case %d of %d overall."
             % (
                 type(self.fuzz_node.mutant).__name__,
-                repr(self.fuzz_node.mutant.original_value),
+                # TODO: Original value is not always attainable here, in the case of dynamic default values.
+                # This output could be easily removed, and with some effort made dynamically available in the web view.
+                # repr(self.fuzz_node.mutant.original_value(mutation_context=mutation_context)),
+                b"",
                 self.total_mutant_index,
                 self.total_num_mutations,
             )
@@ -1554,18 +1549,28 @@ class Session(pgraph.Graph):
 
         try:
             self._open_connection_keep_trying(target)
+            test_case_context = ProtocolSession()
+            mutation_context.test_case_context = test_case_context
 
             self._pre_send(target)
 
-            for e in path[:-1]:
+            for e in mutation.message_path[:-1]:
                 node = self.nodes[e.dst]
-                callback_data = self._callback_current_node(node=node, edge=e)
+                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=test_case_context)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
-                self.transmit_normal(target, node, e, callback_data=callback_data)
+                self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            callback_data = self._callback_current_node(node=self.fuzz_node, edge=path[-1])
+            callback_data = self._callback_current_node(
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+            )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
-            self.transmit_fuzz(target, self.fuzz_node, path[-1], callback_data=callback_data)
+            self.transmit_fuzz(
+                target,
+                self.fuzz_node,
+                mutation.message_path[-1],
+                callback_data=callback_data,
+                mutation_context=mutation_context,
+            )
 
             self._check_for_passively_detected_failures(target=target)
             if not self._reuse_target_connection:
@@ -1583,7 +1588,7 @@ class Session(pgraph.Graph):
             self.export_file()
 
     def _open_connection_keep_trying(self, target):
-        """ Open connection and if it fails, keep retrying.
+        """Open connection and if it fails, keep retrying.
 
         Args:
             target (Target): Target to open.
@@ -1627,27 +1632,25 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)
         time.sleep(seconds)
 
-    def _test_case_name_feature_check(self, path):
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
+    def _test_case_name_feature_check(self, mutation):
+        message_path = self._message_path_to_str(mutation.message_path)
         return "FEATURE-CHECK->{0}".format(message_path)
 
-    def _test_case_name(self, path, mutated_element):
-        message_path = "->".join([self.nodes[e.dst].name for e in path])
-        if mutated_element.name:
-            primitive_under_test = mutated_element.name
-        else:
-            primitive_under_test = "no-name"
-        return "{0}.{1}.{2}".format(message_path, primitive_under_test, self.fuzz_node.mutant_index)
+    def _test_case_name(self, mutation):
+        """Get long test case name.
 
-    def _reset_fuzz_state(self):
-        """
-        Restart the object's fuzz state.
+        Args:
+            mutation (Mutation): Mutation to get name from.
 
-        :return: None
+        Returns:
+            Long formatted test case name
         """
-        self.total_mutant_index = 0
-        if self.fuzz_node:
-            self.fuzz_node.reset()
+        message_path = self._message_path_to_str(mutation.message_path)
+        primitive_path = next(iter(mutation.mutations))
+        return "{0}:{1}:{2}".format(message_path, primitive_path, self.mutant_index)
+
+    def _message_path_to_str(self, message_path):
+        return "->".join([self.nodes[e.dst].name for e in message_path])
 
     def test_case_data(self, index):
         """Return test case data object (for use by web server)

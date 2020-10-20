@@ -40,22 +40,22 @@ class TestPrimitives(unittest.TestCase):
 
         req = s_get("UNIT TEST 1")
 
-        self.assertEqual(req.names["byte_1"].render(), b"0")
-        self.assertEqual(req.names["byte_2"].render(), b"127")
-        self.assertEqual(req.names["byte_3"].render(), b"-128")
-        self.assertEqual(req.names["byte_4"].render(), b"-1")
-        self.assertEqual(req.names["word_1"].render(), b"0")
-        self.assertEqual(req.names["word_2"].render(), b"32767")
-        self.assertEqual(req.names["word_3"].render(), b"-32768")
-        self.assertEqual(req.names["word_4"].render(), b"-1")
-        self.assertEqual(req.names["dword_1"].render(), b"0")
-        self.assertEqual(req.names["dword_2"].render(), b"2147483647")
-        self.assertEqual(req.names["dword_3"].render(), b"-2147483648")
-        self.assertEqual(req.names["dword_4"].render(), b"-1")
-        self.assertEqual(req.names["qword_1"].render(), b"0")
-        self.assertEqual(req.names["qword_2"].render(), b"9223372036854775807")
-        self.assertEqual(req.names["qword_3"].render(), b"-9223372036854775808")
-        self.assertEqual(req.names["qword_4"].render(), b"-1")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="byte_1").render(), b"0")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="byte_2").render(), b"127")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="byte_3").render(), b"-128")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="byte_4").render(), b"-1")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="word_1").render(), b"0")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="word_2").render(), b"32767")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="word_3").render(), b"-32768")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="word_4").render(), b"-1")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="dword_1").render(), b"0")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="dword_2").render(), b"2147483647")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="dword_3").render(), b"-2147483648")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="dword_4").render(), b"-1")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="qword_1").render(), b"0")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="qword_2").render(), b"9223372036854775807")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="qword_3").render(), b"-9223372036854775808")
+        self.assertEqual(req.resolve_name(context_path="UNIT TEST 1", name="qword_4").render(), b"-1")
 
     def test_string(self):
         s_initialize("STRING UNIT TEST 1")
@@ -63,66 +63,87 @@ class TestPrimitives(unittest.TestCase):
 
         req = s_get("STRING UNIT TEST 1")
 
-        self.assertEqual(len(req.names["sized_string"].render()), 200)
+        self.assertEqual(len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200)
 
         # check that string padding and truncation are working correctly.
+        mutations_generator = req.get_mutations()
         for i in xrange(0, 50):
-            s_mutate()
-            self.assertEqual(len(req.names["sized_string"].render()), 200)
+            next(mutations_generator)
+            self.assertEqual(
+                len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200
+            )
 
     def test_s_mirror(self):
         test_group_values = [b"a", b"bb", b"ccc", b"dddd"]
         s_initialize("test_s_mirror")
 
         s_size("data", output_format="ascii", fuzzable=False, name="size")
-        s_mirror("size", name="size_mirror")
+        s_mirror(".size", name="size_mirror")
 
         with s_block("data"):
             s_static("<")
-            s_group("group_start", values=test_group_values)
+            s_group("group_start", default_value=b"x", values=test_group_values)
             s_static(">")
             s_static("hello")
             s_static("</")
-            s_mirror("group_start", name="group_end")
+            s_mirror("data.group_start", name="group_end")
             s_static(">")
 
         req = s_get("test_s_mirror")
+        mutations_generator = req.get_mutations()
         for _ in xrange(len(test_group_values)):
-            s_mutate()
-            group_start_value = req.names["group_start"].render()
+            next(mutations_generator)
+            group_start_value = req.resolve_name(context_path="test_s_mirror", name="group_start").render()
             self.assertEqual(
-                int(req.names["size"].render()), len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8")))
+                int(req.resolve_name(context_path="test_s_mirror", name="size").render()),
+                len("<{0}>hello</{0}>".format(group_start_value.decode("utf-8"))),
             )
-            self.assertEqual(req.names["group_end"].render(), group_start_value)
-            self.assertEqual(req.names["size_mirror"].render(), req.names["size"].render())
+            self.assertEqual(
+                req.resolve_name(context_path="test_s_mirror", name="group_end").render(), group_start_value
+            )
+            self.assertEqual(
+                req.resolve_name(context_path="test_s_mirror", name="size_mirror").render(),
+                req.resolve_name(context_path="test_s_mirror", name="size").render(),
+            )
 
     def test_bytes(self):
         # test if s_bytes works with empty input
         s_initialize("test_bytes_empty")
         s_bytes(b"", name="bytes_empty")
         req = s_get("test_bytes_empty")
-        while s_mutate():
-            req.names["bytes_empty"].render()
+        mutations_generator = req.get_mutations()
+        with self.assertRaises(StopIteration):
+            while next(mutations_generator):
+                req.resolve_name(context_path="test_bytes_empty", name="bytes_empty").render()
 
         # test if max_len works
         s_initialize("test_bytes_max_len")
         s_bytes(b"12345", name="bytes_max_len", max_len=5)
         req = s_get("test_bytes_max_len")
-        while s_mutate():
-            self.assertLessEqual(len(req.names["bytes_max_len"].render()), 5)
+        mutations_generator = req.get_mutations()
+        with self.assertRaises(StopIteration):
+            while next(mutations_generator):
+                self.assertLessEqual(
+                    len(req.resolve_name(context_path="test_bytes_max_len", name="bytes_max_len").render()), 5
+                )
 
         # test if size works
         s_initialize("test_bytes_size")
         s_bytes(b"1234567", name="bytes_size", size=7, padding=b"A")
         req = s_get("test_bytes_size")
-        while s_mutate():
-            self.assertEqual(len(req.names["bytes_size"].render()), 7)
+        mutations_generator = req.get_mutations()
+        with self.assertRaises(StopIteration):
+            while next(mutations_generator):
+                self.assertEqual(len(req.resolve_name(context_path="test_bytes_size", name="bytes_size").render()), 7)
 
-        # test if fuzzable works
+        # test if settting fuzzable to false works
         s_initialize("test_bytes_fuzzable")
         s_bytes(b"1234567", name="bytes_fuzzable", fuzzable=False)
         s_get("test_bytes_fuzzable")
-        self.assertFalse(s_mutate())
+        req = s_get("test_bytes_fuzzable")
+        mutations_generator = req.get_mutations()
+        with self.assertRaises(StopIteration):
+            next(mutations_generator)
 
     @pytest.mark.skip(reason="Feature not implemented")
     def test_fuzz_extension(self):
@@ -162,14 +183,14 @@ class TestPrimitives(unittest.TestCase):
             os.remove(fuzz_ints_path)
 
         # these should be here now.
-        self.assertIn("pedram", req.names["string"]._fuzz_library)
-        self.assertIn("amini", req.names["string"]._fuzz_library)
-        self.assertIn(0xDEADBEEF, req.names["int"]._fuzz_library)
-        self.assertIn(0xC0CAC01A, req.names["int"]._fuzz_library)
+        self.assertIn("pedram", req.resolve_name(context_path="EXTENSION TEST", name="string")._fuzz_library)
+        self.assertIn("amini", req.resolve_name(context_path="EXTENSION TEST", name="string")._fuzz_library)
+        self.assertIn(0xDEADBEEF, req.resolve_name(context_path="EXTENSION TEST", name="int")._fuzz_library)
+        self.assertIn(0xC0CAC01A, req.resolve_name(context_path="EXTENSION TEST", name="int")._fuzz_library)
 
         # these should not as a char is too small to store them.
-        self.assertNotIn(0xDEADBEEF, req.names["char"]._fuzz_library)
-        self.assertNotIn(0xC0CAC01A, req.names["char"]._fuzz_library)
+        self.assertNotIn(0xDEADBEEF, req.resolve_name(context_path="EXTENSION TEST", name="char")._fuzz_library)
+        self.assertNotIn(0xC0CAC01A, req.resolve_name(context_path="EXTENSION TEST", name="char")._fuzz_library)
 
 
 if __name__ == "__main__":

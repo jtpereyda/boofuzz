@@ -33,7 +33,18 @@ def get_long_description():
 
 
 extra_requirements = {
-    "dev": ["tox", "flake8", "check-manifest", "mock", "pytest", "pytest-bdd", "pytest-cov", "netifaces", "ipaddress"],
+    "dev": [
+        "tox",
+        "flake8",
+        "check-manifest",
+        "mock",
+        "pytest",
+        "pytest-bdd",
+        "pytest-cov",
+        "netifaces",
+        "ipaddress",
+        "wheel",
+    ],
     "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
 }
 extra_requirements["dev"] += extra_requirements["docs"]
@@ -59,6 +70,7 @@ setup(
         "click",
         "colorama",
         "Flask",
+        "funcy",
         "future",
         "impacket",
         "psutil",

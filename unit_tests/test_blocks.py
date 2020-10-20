@@ -3,6 +3,7 @@ import unittest
 import pytest
 
 from boofuzz import *
+from boofuzz.mutation_context import MutationContext
 
 
 @pytest.fixture(autouse=True)
@@ -12,7 +13,15 @@ def clear_requests():
     blocks.CURRENT = None
 
 
-class TestBlocks(unittest.TestCase):
+class DebuggableTestCase(unittest.TestCase):
+    @classmethod
+    def debugTestCase(cls):
+        loader = unittest.defaultTestLoader
+        testSuite = loader.loadTestsFromTestCase(cls)
+        testSuite.debug()
+
+
+class TestBlocks(DebuggableTestCase):
     def test_groups_and_num_cases(self):
         s_initialize("UNIT TEST 1")
         s_size("BLOCK", length=4, name="sizer")
@@ -27,42 +36,47 @@ class TestBlocks(unittest.TestCase):
             s_random(0, 5, 10, 100, name="random")
             s_block_end()
 
-        # count how many mutations we get per primitive type.
         req1 = s_get("UNIT TEST 1")
+        sizer = req1.resolve_name("BLOCK", "sizer")
+        group = req1.resolve_name("", "group")
+        block = req1.resolve_name("", "BLOCK")
+        delim = req1.resolve_name("BLOCK", "delim")
+        string = req1.resolve_name("BLOCK", "string")
+        byte = req1.resolve_name("BLOCK", "byte")
+        word = req1.resolve_name("BLOCK", "word")
+        dword = req1.resolve_name("BLOCK", "dword")
+        qword = req1.resolve_name("BLOCK", "qword")
+        random = req1.resolve_name("BLOCK", "random")
+
+        # count how many mutations we get per primitive type.
         print("PRIMITIVE MUTATION COUNTS (SIZES):")
 
-        print(
-            "\tdelim:  %d\t(%s)"
-            % (req1.names["delim"].num_mutations(), sum(map(len, req1.names["delim"]._fuzz_library)))
-        )
+        print("\tdelim:  %d\t(%s)" % (delim.get_num_mutations(), sum(map(len, delim._fuzz_library))))
 
-        print(
-            "\tstring: %d\t(%s)"
-            % (req1.names["string"].num_mutations(), sum(map(len, req1.names["string"]._fuzz_library)))
-        )
+        print("\tstring: %d\t(%s)" % (string.get_num_mutations(), sum(map(len, string._fuzz_library))))
 
-        print("\tbyte:   %d" % req1.names["byte"].num_mutations())
-        print("\tword:   %d" % req1.names["word"].num_mutations())
-        print("\tdword:  %d" % req1.names["dword"].num_mutations())
-        print("\tqword:  %d" % req1.names["qword"].num_mutations())
-        print("\tsizer:  %d" % req1.names["sizer"].num_mutations())
+        print("\tbyte:   %d" % byte.get_num_mutations())
+        print("\tword:   %d" % word.get_num_mutations())
+        print("\tdword:  %d" % dword.get_num_mutations())
+        print("\tqword:  %d" % qword.get_num_mutations())
+        print("\tsizer:  %d" % sizer.get_num_mutations())
 
         # we specify the number of mutations in a random field, so ensure that matches.
-        self.assertEqual(req1.names["random"].num_mutations(), 100)
+        self.assertEqual(random.get_num_mutations(), 100)
 
         # we specify the number of values in a group field, so ensure that matches.
-        self.assertEqual(req1.names["group"].num_mutations(), 4)
+        self.assertEqual(group.get_num_mutations(), 3)
 
         # assert that the number of block mutations equals the sum of the number of mutations of its components.
         self.assertEqual(
-            req1.names["BLOCK"].num_mutations(),
-            req1.names["delim"].num_mutations()
-            + req1.names["string"].num_mutations()
-            + req1.names["byte"].num_mutations()
-            + req1.names["word"].num_mutations()
-            + req1.names["dword"].num_mutations()
-            + req1.names["qword"].num_mutations()
-            + req1.names["random"].num_mutations(),
+            block.get_num_mutations(),
+            delim.get_num_mutations()
+            + string.get_num_mutations()
+            + byte.get_num_mutations()
+            + word.get_num_mutations()
+            + dword.get_num_mutations()
+            + qword.get_num_mutations()
+            + random.get_num_mutations(),
         )
 
         s_initialize("UNIT TEST 2")
@@ -77,28 +91,35 @@ class TestBlocks(unittest.TestCase):
             s_random(0, 5, 10, 100, name="random")
             s_block_end()
 
-        # assert that the number of block mutations in request 2 is len(group.values) (4) times that of request 1.
         req2 = s_get("UNIT TEST 2")
-        self.assertEqual(req2.names["BLOCK"].num_mutations(), req1.names["BLOCK"].num_mutations() * 4)
+        req2block = req2.resolve_name("", "BLOCK")
+
+        self.assertEqual(req2block.get_num_mutations(), block.get_num_mutations() * 4)
 
     def test_dependencies(self):
         s_initialize("DEP TEST 1")
-        s_group("group", values=[b"1", b"2"])
+        s_group("group", default_value=b"0", values=[b"1", b"2"])
 
-        if s_block_start("ONE", dep="group", dep_values=["1"]):
-            s_static("ONE" * 100)
+        if s_block_start("ONE", dep="group", dep_values=[b"1"]):
+            s_static("ONE")
             s_block_end()
 
-        if s_block_start("TWO", dep="group", dep_values=["2"]):
-            s_static("TWO" * 100)
+        if s_block_start("TWO", dep="group", dep_values=[b"2"]):
+            s_static("TWO")
+            s_group("group2", default_value=b"0", values=[b"1", b"2"])
             s_block_end()
 
-        self.assertEqual(s_num_mutations(), 2)
-        self.assertTrue(s_mutate())
-        self.assertEqual(s_render().find(b"TWO"), -1)
-        self.assertTrue(s_mutate())
-        self.assertEqual(s_render().find(b"ONE"), -1)
-        self.assertFalse(s_mutate())
+        mutations = list(blocks.CURRENT.get_mutations())
+        rendered = blocks.CURRENT.render()
+        assert b"ONE" not in rendered
+        assert b"TWO" not in rendered
+        rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[0]))
+        assert b"ONE" in rendered
+        assert b"TWO" not in rendered
+        rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[1]))
+        assert b"ONE" not in rendered
+        assert b"TWO" in rendered
+        assert len(mutations) == 4
 
     def test_repeaters(self):
         s_initialize("REP TEST 1")
@@ -109,34 +130,24 @@ class TestBlocks(unittest.TestCase):
             s_word(0xDEAD, name="word", fuzzable=False)
             s_dword(0xDEADBEEF, name="dword", fuzzable=False)
             s_qword(0xDEADBEEFDEADBEEF, name="qword", fuzzable=False)
-            s_random("0", 5, 10, 100, name="random", fuzzable=False)
+            s_random(b"0", 5, 10, 100, name="random", fuzzable=False)
             s_block_end()
         s_repeat("BLOCK", min_reps=5, max_reps=15, step=5)
 
-        data = s_render()
+        data = blocks.CURRENT.render()
         length = len(data)
+        self.assertEqual(23, length)
 
-        s_mutate()
-        data = s_render()
-        self.assertEqual(len(data), length + length * 5)
-
-        s_mutate()
-        data = s_render()
-        self.assertEqual(len(data), length + length * 10)
-
-        s_mutate()
-        data = s_render()
-        self.assertEqual(len(data), length + length * 15)
-
-        s_mutate()
-        data = s_render()
-        self.assertEqual(len(data), length)
+        expected_lengths = [length + length * 5, length + length * 10, length + length * 15]
+        for mutation, expected_length in zip(blocks.CURRENT.get_mutations(), expected_lengths):
+            data = blocks.CURRENT.render(MutationContext(mutation=mutation))
+            self.assertEqual(expected_length, len(data))
 
     def test_return_current_mutant(self):
         s_initialize("RETURN CURRENT MUTANT TEST 1")
 
-        s_dword(0xDEADBEEF, name="boss hog")
-        s_string("bloodhound gang", name="vagina")
+        s_dword(0xDEADBEEF, name="deadbeef")
+        s_string("str1", name="asdf")
 
         if s_block_start("BLOCK1"):
             s_string("foo", name="foo")
@@ -147,34 +158,32 @@ class TestBlocks(unittest.TestCase):
         s_dword(0xDEAD)
         s_dword(0x0FED)
 
-        s_string("sucka free at 2 in morning 7/18", name="uhntiss")
+        s_string("str2", name="findit")
 
         req1 = s_get("RETURN CURRENT MUTANT TEST 1")
 
-        # calculate the length of the mutation libraries dynamically since they may change with time.
-        num_str_mutations = req1.names["foo"].num_mutations()
-        num_int_mutations = req1.names["boss hog"].num_mutations()
+        num_str_mutations = req1.names["RETURN CURRENT MUTANT TEST 1.BLOCK1.foo"].get_num_mutations()
+        num_int_mutations = req1.names["RETURN CURRENT MUTANT TEST 1.deadbeef"].get_num_mutations()
 
-        for i in range(num_str_mutations + num_int_mutations - 10):
-            req1.mutate()
+        mutations_generator = req1.get_mutations()
+        for _ in range(num_str_mutations + num_int_mutations - 10):
+            next(mutations_generator)
+        self.assertEqual(req1.mutant.name, "asdf")
 
-        self.assertEqual(req1.mutant.name, "vagina")
-        req1.reset()
-
-        for i in range(num_int_mutations + num_str_mutations + 1):
-            req1.mutate()
+        mutations_generator = req1.get_mutations()
+        for _ in range(num_int_mutations + num_str_mutations + 1):
+            next(mutations_generator)
         self.assertEqual(req1.mutant.name, "foo")
-        req1.reset()
 
-        for i in range(num_str_mutations * 2 + num_int_mutations + 1):
-            req1.mutate()
+        mutations_generator = req1.get_mutations()
+        for _ in range(num_str_mutations * 2 + num_int_mutations + 1):
+            next(mutations_generator)
         self.assertEqual(req1.mutant.name, "bar")
-        req1.reset()
 
-        for i in range(num_str_mutations * 3 + num_int_mutations * 4 + 1):
-            req1.mutate()
-        self.assertEqual(req1.mutant.name, "uhntiss")
-        req1.reset()
+        mutations_generator = req1.get_mutations()
+        for _ in range(num_str_mutations * 3 + num_int_mutations * 4 + 1):
+            next(mutations_generator)
+        self.assertEqual(req1.mutant.name, "findit")
 
     def test_with_statements(self):
         s_initialize("WITH TEST")
@@ -187,24 +196,6 @@ class TestBlocks(unittest.TestCase):
         self.assertEqual(req.num_mutations(), 0)
         self.assertEqual(req.render(), b"test")
 
-    def test_skip_element(self):
-        s_initialize("SKIP TEST")
-
-        with s_block("BLOCK1"):
-            s_string("foo", name="foo")
-            s_string("bar", name="bar")
-        s_string("baz", name="baz")
-
-        req = s_get("SKIP TEST")
-        req.mutate()
-        self.assertEqual(req.mutant.name, "foo")
-        req.skip_element()
-        req.mutate()
-        self.assertEqual(req.mutant.name, "bar")
-        req.skip_element()
-        req.mutate()
-        self.assertEqual(req.mutant.name, "baz")
-
 
 if __name__ == "__main__":
-    unittest.main()
+    TestBlocks.debugTestCase()

@@ -441,7 +441,7 @@ def get_boofuzz_version(boofuzz_class):
 
 def str_to_bytes(value):
     result = value
-    # if python2, str is alread bytes compatible
+    # if python2, str is already bytes compatible
     if six.PY3:
         if isinstance(value, six.text_type):
             temp = [bytes([ord(i)]) for i in value]

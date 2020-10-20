@@ -3,9 +3,19 @@ import threading
 import time
 import unittest
 
-# pytest is required as an extras_require:
-# noinspection PyPackageRequirements
-from boofuzz import s_get, s_initialize, s_static, s_string, Session, SocketConnection, Target
+import mock
+
+from boofuzz import (
+    fuzz_logger,
+    ifuzz_logger_backend,
+    s_get,
+    s_initialize,
+    s_static,
+    s_string,
+    Session,
+    Target,
+    TCPSocketConnection,
+)
 
 THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it failed.
 
@@ -124,12 +134,9 @@ class MiniTestServer(object):
 
 class TestNoResponseFailure(unittest.TestCase):
     def setUp(self):
-        # self.mock_logger_1 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
-        # self.mock_logger_2 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
-        # self.logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self.mock_logger_1, self.mock_logger_2])
-
-        # self.some_text = "Some test text"
-        # self.some_data = bytes('1234567890\0')
+        self.mock_logger_1 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
+        self.mock_logger_2 = mock.MagicMock(spec=ifuzz_logger_backend.IFuzzLoggerBackend)
+        self.logger = fuzz_logger.FuzzLogger(fuzz_loggers=[self.mock_logger_1, self.mock_logger_2])
 
         self.restarts = 0
 
@@ -155,8 +162,8 @@ class TestNoResponseFailure(unittest.TestCase):
         t.start()
 
         session = Session(
-            target=Target(connection=SocketConnection("localhost", server.active_port, proto="tcp")),
-            fuzz_loggers=[],  # log to nothing
+            target=Target(connection=TCPSocketConnection("localhost", server.active_port)),
+            fuzz_loggers=[self.logger],  # log to nothing
             check_data_received_each_request=True,
             keep_web_open=False,
         )

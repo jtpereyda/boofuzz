@@ -6,12 +6,13 @@ from .bit_field import BitField
 
 
 class Byte(BitField):
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         # Inject the one parameter we care to pass in (width)
-        width = 8
-        max_num = None
+        kwargs["width"] = 8
 
-        super(Byte, self).__init__(value, width, max_num, *args, **kwargs)
+        super(Byte, self).__init__(*args, **kwargs)
 
-        if not isinstance(self._value, (six.integer_types, list, tuple)):
-            self._value = struct.unpack(self.endian + "B", self._value)[0]
+    def encode(self, value, mutation_context):
+        if not isinstance(value, (six.integer_types, list, tuple)):
+            value = struct.unpack(self.endian + "B", value)[0]
+        return super(Byte, self).encode(value, mutation_context)

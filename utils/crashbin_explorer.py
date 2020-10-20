@@ -1,9 +1,9 @@
 #!c:\\python\\python.exe
 import getopt
 import sys
+from builtins import int
 from io import open
 
-from builtins import int
 from future.utils import iteritems
 
 from boofuzz import pgraph, utils

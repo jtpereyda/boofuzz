@@ -4,8 +4,8 @@ import os
 import shlex
 import subprocess
 import time
-
 from builtins import str
+
 from past.builtins import map
 
 from boofuzz import pedrpc, utils

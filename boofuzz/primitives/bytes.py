@@ -1,8 +1,12 @@
-from .base_primitive import BasePrimitive
-from .. import helpers
+import functools
+import operator
+
+from funcy import compose
+
+from ..fuzzable import Fuzzable
 
 
-class Bytes(BasePrimitive):
+class Bytes(Fuzzable):
     # This binary strings will always included as testcases.
     _fuzz_library = [
         b"",
@@ -91,136 +95,109 @@ class Bytes(BasePrimitive):
         b"\xFF\xFF\xFF\xFF",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
-    def __init__(self, value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
+    _mutators_of_default_value = [
+        functools.partial(operator.mul, 2),
+        functools.partial(operator.mul, 10),
+        functools.partial(operator.mul, 100),
+    ]
+
+    def __init__(self, name, default_value, size=None, padding=b"\x00", max_len=None, *args, **kwargs):
         """
         Primitive that fuzzes a binary byte string with arbitrary length.
 
-        @type  value:      bytes
-        @param value:      Default string value
         @type  size:       int
         @param size:       (Optional, def=None) Static size of this field, leave None for dynamic.
         @type  padding:    chr
         @param padding:    (Optional, def=b"\\x00") Value to use as padding to fill static field size.
-        @type  fuzzable:   bool
-        @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
         @type  max_len:    int
         @param max_len:    (Optional, def=None) Maximum string length
-        @type  name:       str
-        @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
         """
 
-        super(Bytes, self).__init__()
+        super(Bytes, self).__init__(name, default_value, *args, **kwargs)
 
-        assert isinstance(value, bytes)
-        self._original_value = value
-        self._value = self._original_value
         self.size = size
         self.max_len = max_len
         if self.size is not None:
             self.max_len = self.size
         self.padding = padding
-        self._fuzzable = fuzzable
-        self._name = name
-        self.this_library = [self._value * 2, self._value * 10, self._value * 100]
 
-    @property
-    def name(self):
-        return self._name
-
-    def mutate(self):
-        """
-        Mutate the primitive by stepping through the fuzz library extended with the "this" library, return False on
-        completion.
-
-        @rtype:  bool
-        @return: True on success, False otherwise.
-        """
-
-        while True:
-            # if we've ran out of mutations, raise the completion flag.
-            if self._mutant_index == self.num_mutations():
-                self._fuzz_complete = True
-
-            # if fuzzing was disabled or complete, and mutate() is called, ensure the original value is restored.
-            if not self._fuzzable or self._fuzz_complete:
-                self._value = self._original_value
-                return False
-
-            if self._mutant_index < len(self._fuzz_library):
-                # stage 1a: replace with _fuzz_library items
-                alreadyDone = 0
-                self._value = self._fuzz_library[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library):
-                # stage 1b: replace with this_library items
-                alreadyDone = len(self._fuzz_library)
-                self._value = self.this_library[self._mutant_index - alreadyDone]
-            elif self._mutant_index < len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values):
-                # stage 1c: replace with _magic_debug_value items
-                alreadyDone = len(self._fuzz_library) + len(self.this_library)
-                self._value = self._magic_debug_values[self._mutant_index - alreadyDone]
+    def mutations(self, default_value):
+        for fuzz_value in self._iterate_fuzz_cases(default_value):
+            if callable(fuzz_value):
+                yield compose(self._adjust_mutation_for_size, fuzz_value)
             else:
-                # stage 2a: replace every single byte with a value from _fuzz_strings_1byte
-                # stage 2b: replace every double byte block with a value from _fuzz_strings_2byte
-                # stage 2c: replace every four byte block with a value from _fuzz_strings_4byte
-                alreadyDone = len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values)
-                testcase_nr = self._mutant_index - alreadyDone
-                testcases_2a = len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0)
-                testcases_2b = len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1)
-                testcases_2c = len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3)
-                if testcase_nr < testcases_2a:
-                    j = testcase_nr % len(self._fuzz_strings_1byte)
-                    i = testcase_nr // len(self._fuzz_strings_1byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_1byte[j] + self._original_value[i + 1 :]
-                elif testcase_nr < testcases_2a + testcases_2b:
-                    testcase_nr -= testcases_2a
-                    j = testcase_nr % len(self._fuzz_strings_2byte)
-                    i = testcase_nr // len(self._fuzz_strings_2byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_2byte[j] + self._original_value[i + 2 :]
-                elif testcase_nr < testcases_2a + testcases_2b + testcases_2c:
-                    testcase_nr -= testcases_2a
-                    testcase_nr -= testcases_2b
-                    j = testcase_nr % len(self._fuzz_strings_4byte)
-                    i = testcase_nr // len(self._fuzz_strings_4byte)
-                    self._value = self._original_value[:i] + self._fuzz_strings_4byte[j] + self._original_value[i + 4 :]
-                else:
-                    # should not be reachable!
-                    assert False
+                yield self._adjust_mutation_for_size(fuzz_value=fuzz_value)
 
-            # increment the mutation count.
-            self._mutant_index += 1
+    def _adjust_mutation_for_size(self, fuzz_value):
+        if self.size is not None:
+            if len(fuzz_value) > self.size:
+                return fuzz_value[: self.max_len]
+            else:
+                return fuzz_value + self.padding * (self.size - len(fuzz_value))
+        elif self.max_len is not None and len(fuzz_value) > self.max_len:
+            return fuzz_value[: self.max_len]
+        else:
+            return fuzz_value
 
-            # check if the current testcase aligns
-            if self.size is not None and len(self._value) > self.size:
-                continue  # too long, skip this one
-            if self.max_len is not None and len(self._value) > self.max_len:
-                # truncate the current value
-                self._value = self._value[: self.max_len]
+    def _iterate_fuzz_cases(self, default_value):
+        for fuzz_value in self._fuzz_library:
+            yield fuzz_value
+        for fuzz_value in self._mutators_of_default_value:
+            yield fuzz_value
+        for fuzz_value in self._magic_debug_values:
+            yield fuzz_value
+        for i in range(0, len(default_value)):
+            for fuzz_bytes in self._fuzz_strings_1byte:
 
-            # _value has now been mutated and therefore we return True to indicate success
-            return True
+                def f(value):
+                    if i < len(value):
+                        return value[:i] + fuzz_bytes + value[i + 1 :]
+                    else:
+                        return value
 
-    def num_mutations(self):
+                yield f
+        for i in range(0, len(default_value) - 1):
+            for fuzz_bytes in self._fuzz_strings_2byte:
+
+                def f(value):
+                    if i < len(value) - 1:
+                        return value[:i] + fuzz_bytes + value[i + 2 :]
+                    else:
+                        return value
+
+                yield f
+
+        for i in range(0, len(default_value) - 3):
+            for fuzz_bytes in self._fuzz_strings_4byte:
+
+                def f(value):
+                    if i < len(value) - 3:
+                        return value[:i] + fuzz_bytes + value[i + 4 :]
+                    else:
+                        return value
+
+                yield f
+
+    def num_mutations(self, default_value):
         """
         Calculate and return the total number of mutations for this individual primitive.
 
         @rtype:  int
         @return: Number of mutated forms this primitive can take
+        :param default_value:
         """
-        num = len(self._fuzz_library) + len(self.this_library) + len(self._magic_debug_values)
-        num += len(self._fuzz_strings_1byte) * max(0, len(self._original_value) - 0)
-        num += len(self._fuzz_strings_2byte) * max(0, len(self._original_value) - 1)
-        num += len(self._fuzz_strings_4byte) * max(0, len(self._original_value) - 3)
-        return num
+        return sum(
+            (
+                len(self._fuzz_library),
+                len(self._mutators_of_default_value),
+                len(self._magic_debug_values),
+                len(self._fuzz_strings_1byte) * max(0, len(default_value) - 0),
+                len(self._fuzz_strings_2byte) * max(0, len(default_value) - 1),
+                len(self._fuzz_strings_4byte) * max(0, len(default_value) - 3),
+            )
+        )
 
-    def _render(self, value):
-        """
-        Render string value, properly padded.
-        """
-
-        value = helpers.str_to_bytes(value)
-
-        # if size is set, then pad undersized values.
-        if self.size is not None:
-            value += self.padding * (self.size - len(value))
-
-        return helpers.str_to_bytes(value)
+    def encode(self, value, mutation_context):
+        if value is None:
+            value = b""
+        return value

@@ -1,36 +1,12 @@
-from .base_primitive import BasePrimitive
+from .. import helpers
+from ..fuzzable import Fuzzable
 
 
-class Static(BasePrimitive):
-    def __init__(self, value, name=None):
-        """
-        Primitive that contains static content.
+class Static(Fuzzable):
+    def __init__(self, *args, **kwargs):
+        super(Static, self).__init__(*args, **kwargs)
 
-        @type  value: str
-        @param value: Raw static data
-        @type  name:  str
-        @param name:  (Optional, def=None) Specifying a name gives you direct access to a primitive
-        """
-
-        super(Static, self).__init__()
-
-        self._fuzz_complete = True
-        self._fuzzable = False
-        self._value = self._original_value = value
-        self._name = name
-
-    @property
-    def name(self):
-        return self._name
-
-    def mutate(self):
-        """
-        Always return false, don't fuzz
-        """
-        return False
-
-    def num_mutations(self):
-        """
-        We have no mutations
-        """
-        return 0
+    def encode(self, value, mutation_context):
+        if value is None:
+            value = b""
+        return helpers.str_to_bytes(value)

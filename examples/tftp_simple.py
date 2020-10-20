@@ -8,7 +8,11 @@ def main():
     port = 69
     host = "127.0.0.1"
 
-    session = Session(target=Target(connection=UDPSocketConnection(host, port),),)
+    session = Session(
+        target=Target(
+            connection=UDPSocketConnection(host, port),
+        ),
+    )
 
     s_initialize("RRQ")
     s_static("\x00\x01")

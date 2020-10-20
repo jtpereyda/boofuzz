@@ -15,10 +15,10 @@
 
 import pydot
 
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 
 
-class Node(IFuzzable):
+class Node(Fuzzable):
     id = 0
     number = 0
 
@@ -41,14 +41,14 @@ class Node(IFuzzable):
     udraw_image = None
     udraw_info = ""
 
-    def __init__(self, node_id=None):
+    def __init__(self, node_id=None, name=None):
         self.id = node_id
         self.number = 0
 
         # general graph attributes
         self.color = 0xEEF7FF
         self.border_color = 0xEEEEEE
-        self._name = ""
+        self._name = name
         self.label = ""
         self.shape = "box"
 
@@ -66,8 +66,8 @@ class Node(IFuzzable):
         return self._name
 
     @name.setter
-    def name(self, value):
-        self._name = value
+    def name(self, name):
+        self._name = name
 
     def render_node_gml(self):
         """

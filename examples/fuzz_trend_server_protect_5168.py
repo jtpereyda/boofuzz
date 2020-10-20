@@ -21,7 +21,7 @@
 # uncomment the req/num to do a single test case.
 #
 
-from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, utils, TCPSocketConnection
+from boofuzz import pedrpc, s_get, s_mutate, s_render, sessions, TCPSocketConnection, utils
 
 # noinspection PyUnresolvedReferences
 # pytype: disable=import-error

@@ -81,9 +81,9 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         return False
 
     def set_filter(self, new_filter):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."
@@ -94,9 +94,9 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         return self.set_options(filter=new_filter)
 
     def set_log_path(self, new_log_path):
-        """ .. deprecated :: 0.2.0
+        """.. deprecated :: 0.2.0
 
-            This option should be set via ``set_options``.
+        This option should be set via ``set_options``.
         """
         warnings.warn(
             "This method is deprecated and will be removed in a future Version of boofuzz."

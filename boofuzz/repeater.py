@@ -5,7 +5,7 @@ from six import with_metaclass
 
 
 class Repeater(with_metaclass(ABCMeta, object)):
-    """ Base Repeater class.
+    """Base Repeater class.
 
     :param sleep_time: Time to sleep between repetitions.
     :type sleep_time: float
@@ -21,7 +21,7 @@ class Repeater(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def repeat(self):
-        """ Decides whether the operation should repeat.
+        """Decides whether the operation should repeat.
 
         :return: True if the operation should repeat, False otherwise.
         :rtype: Bool
@@ -40,7 +40,7 @@ class Repeater(with_metaclass(ABCMeta, object)):
 
 
 class TimeRepeater(Repeater):
-    """ Time-based repeater class. Starts a timer, and repeats until `duration` seconds have passed.
+    """Time-based repeater class. Starts a timer, and repeats until `duration` seconds have passed.
 
     :raises ValueError: Raised if a time <= 0 is specified.
 
@@ -76,7 +76,7 @@ class TimeRepeater(Repeater):
 
 
 class CountRepeater(Repeater):
-    """ Count-Based repeater class. Repeats a fixed number of times.
+    """Count-Based repeater class. Repeats a fixed number of times.
 
     :raises ValueError: Raised if a count < 1 is specified.
 
