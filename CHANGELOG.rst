@@ -13,8 +13,8 @@ Features
 - `Fuzzable` rewrite: Simpler definitions for new fuzz primitives. See `static.py` for an example of a very simple primitive.
 - Protocol definition: Protocols can now be defined with an object oriented rather than static approach.
 - Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
-- Procmon: Additional debug steps. Partial backwards compatibility for old interface.
-
+- Procmon: Additional debug steps. Partial backwards compatibility for old interface. Silences target STDOUT by default.
+- Logging: Session adds no default logger, making quiet usage easier.
 
 Fixes
 ^^^^^

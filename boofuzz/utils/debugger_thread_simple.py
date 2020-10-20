@@ -109,7 +109,7 @@ class DebuggerThreadSimple(threading.Thread):
                 if self.capture_output:
                     self._process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
                 else:
-                    self._process = subprocess.Popen(command)
+                    self._process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except WindowsError as e:
                 print(
                     'WindowsError {errno}: "{strerror} while starting "{cmd}"'.format(
