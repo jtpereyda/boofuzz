@@ -54,25 +54,40 @@ class Target(object):
     Example:
         tcp_target = Target(SocketConnection(host='127.0.0.1', port=17971))
 
-    :param connection: Connection to system under test.
-    :type connection: itarget_connection.ITargetConnection
-    :param monitors: List of Monitors for this Target.
-    :type monitors: List[Union[IMonitor, pedrpc.Client]]
-    :param monitor_alive: List of Functions that are called when a Monitor is alive. It is passed
+    Args:
+        connection (itarget_connection.ITargetConnection): Connection to system under test.
+        monitors (List[Union[IMonitor, pedrpc.Client]]): List of Monitors for this Target.
+        monitor_alive: List of Functions that are called when a Monitor is alive. It is passed
                           the monitor instance that became alive. Use it to e.g. set options
                           on restart.
-    :param repeater: Repeater to use for sending. Default None.
-    :type repeater: repeater.Repeater
+        repeater (repeater.Repeater): Repeater to use for sending. Default None.
+        procmon: Deprecated interface for adding a process monitor.
+        procmon_options: Deprecated interface for adding a process monitor.
 
     """
 
-    def __init__(self, connection, monitors=None, monitor_alive=None, max_recv_bytes=10000, repeater=None, **kwargs):
+    def __init__(
+        self,
+        connection,
+        monitors=None,
+        monitor_alive=None,
+        max_recv_bytes=10000,
+        repeater=None,
+        procmon=None,
+        procmon_options=None,
+        **kwargs
+    ):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
         self.max_recv_bytes = max_recv_bytes
         self.repeater = repeater
         self.monitors = monitors if monitors is not None else []
+        if procmon is not None:
+            if procmon_options is not None:
+                procmon.set_options(**procmon_options)
+            self.monitors.append(procmon)
+
         self.monitor_alive = monitor_alive if monitor_alive is not None else []
 
         if "procmon" in kwargs.keys() and kwargs["procmon"] is not None:

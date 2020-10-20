@@ -104,6 +104,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.log("starting target process")
 
         for command in self.start_commands:
+            self.log("exec start command: {0}".format(command))
             try:
                 if self.capture_output:
                     self._process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
