@@ -1,13 +1,13 @@
-#!c:\\python\\python.exe
 import getopt
 import os
 import sys
 import threading
 import time
 from io import open
-
 import impacket
 import impacket.ImpactDecoder
+
+import netifaces as ni
 
 # noinspection PyUnresolvedReferences
 import pcapy  # pytype: disable=import-error
@@ -74,6 +74,12 @@ Network Device List:
                 except Exception:
                     ip = winreg.QueryValueEx(key, "IPAddress")[0][0]
 
+                pcapy_device = pcapy_device + "\t" + ip
+            except Exception:
+                pass
+        elif sys.platform.startswith("lin"):
+            try:
+                ip = ni.ifaddresses(pcapy_device)[ni.AF_INET][0]["addr"]
                 pcapy_device = pcapy_device + "\t" + ip
             except Exception:
                 pass
