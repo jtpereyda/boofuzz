@@ -253,6 +253,10 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         self.log("updating log path to '%s'" % new_log_path)
         self.log_path = new_log_path
 
+    def set_crash_filename(self, new_crash_filename):
+        """Stub to prevent a crash when this function is called on all monitors in session.py"""
+        return
+
 
 def main():
     ifs = get_ifs()
