@@ -1,13 +1,13 @@
-#!c:\\python\\python.exe
 import getopt
 import os
 import sys
 import threading
 import time
 from io import open
-
 import impacket
 import impacket.ImpactDecoder
+
+import netifaces as ni
 
 # noinspection PyUnresolvedReferences
 import pcapy  # pytype: disable=import-error
@@ -74,6 +74,12 @@ Network Device List:
                 except Exception:
                     ip = winreg.QueryValueEx(key, "IPAddress")[0][0]
 
+                pcapy_device = pcapy_device + "\t" + ip
+            except Exception:
+                pass
+        elif sys.platform.startswith("lin"):
+            try:
+                ip = ni.ifaddresses(pcapy_device)[ni.AF_INET][0]["addr"]
                 pcapy_device = pcapy_device + "\t" + ip
             except Exception:
                 pass
@@ -155,16 +161,23 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         self.log("\t log_level: %d" % self.log_level)
         self.log("Awaiting requests...")
 
-    def __stop(self):
+    def __stop_capture(self):
         """
-        Kill the PCAP thread.
+        Stop the PCAP thread, wait all handler and return data_bytes.
         """
+        res = 0
 
         if self.pcap_thread:
             self.log("stopping active packet capture thread.", 10)
 
             self.pcap_thread.active = False
+            self.pcap_thread.join()
+
+            res = self.pcap_thread.data_bytes
+
             self.pcap_thread = None
+
+        return res
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -182,12 +195,8 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         @rtype:  Integer
         @return: Number of bytes captured in PCAP thread.
         """
-
-        # grab the number of recorded bytes.
-        data_bytes = self.pcap_thread.data_bytes
-
-        # stop the packet capture thread.
-        self.__stop()
+        # stop the packet capture thread and grab the number of recorded bytes.
+        data_bytes = self.__stop_capture()
 
         self.log("stopped PCAP thread, snagged %d bytes of data" % data_bytes)
         return data_bytes

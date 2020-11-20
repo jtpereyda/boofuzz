@@ -14,6 +14,7 @@ Features
 - Protocol definition: Protocols can now be defined with an object oriented rather than static approach.
 - Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
 - Procmon: Additional debug steps. Partial backwards compatibility for old interface.
+- Network monitor: improved network interface discovery (Linux support)
 
 
 Fixes
@@ -21,6 +22,7 @@ Fixes
 - Various web interface fixes.
 - Various refactors and simplifications.
 - Fewer duplicates from `Group` primitives.
+- Network monitor: fixed data_bytes calculation and PcapThread synchronization
 
 v0.2.1
 ------
