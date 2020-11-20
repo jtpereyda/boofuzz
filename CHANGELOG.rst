@@ -15,12 +15,12 @@ Features
 - Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
 - Procmon: Additional debug steps. Partial backwards compatibility for old interface.
 
-
 Fixes
 ^^^^^
 - Various web interface fixes.
 - Various refactors and simplifications.
 - Fewer duplicates from `Group` primitives.
+- Fixed a crash when using the network monitor
 
 v0.2.1
 ------
