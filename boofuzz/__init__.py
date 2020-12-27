@@ -22,6 +22,7 @@ from .connections import (
     SSLSocketConnection,
     TCPSocketConnection,
     UDPSocketConnection,
+    UnixSocketConnection,
 )
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
@@ -174,6 +175,7 @@ __all__ = [
     "ProtocolSessionReference",
     "TimeRepeater",
     "UDPSocketConnection",
+    "UnixSocketConnection",
     "Word",
 ]
 
