@@ -34,9 +34,7 @@ def _split_command_if_str(command):
 
 
 class ProcessMonitorLocal(BaseMonitor):
-    def __init__(
-        self, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None
-    ):
+    def __init__(self, crash_filename, debugger_class, proc_name=None, pid_to_ignore=None, level=1, coredump_dir=None):
         """
         @type  crash_filename: str
         @param crash_filename: Name of file to (un)serialize crash bin to/from
