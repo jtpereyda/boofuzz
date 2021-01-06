@@ -24,6 +24,7 @@ Fixes
 - Fewer duplicates from `Group` primitives.
 - Network monitor: fixed data_bytes calculation and PcapThread synchronization
 - Fixed a crash when using the network monitor
+- Session can now be "quiet" by passing an empty list of loggers
 
 v0.2.1
 ------
