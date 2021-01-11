@@ -8,7 +8,7 @@ from builtins import str
 
 from past.builtins import map
 
-from boofuzz import pedrpc, utils
+from boofuzz import utils
 from boofuzz.monitors.base_monitor import BaseMonitor
 
 

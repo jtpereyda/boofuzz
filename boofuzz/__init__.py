@@ -109,6 +109,7 @@ __all__ = [
     "pedrpc",
     "primitives",
     "ProcessMonitor",
+    "ProcessMonitorLocal",
     "QWord",
     "RandomData",
     "RawL2SocketConnection",
