@@ -36,6 +36,7 @@ from .fuzzable_block import FuzzableBlock
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .monitors import BaseMonitor, CallbackMonitor, NetworkMonitor, pedrpc, ProcessMonitor
+from .utils.process_monitor_local import ProcessMonitorLocal
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -108,6 +109,7 @@ __all__ = [
     "pedrpc",
     "primitives",
     "ProcessMonitor",
+    "ProcessMonitorLocal",
     "QWord",
     "RandomData",
     "RawL2SocketConnection",

@@ -212,7 +212,10 @@ class DebuggerThreadSimple(threading.Thread):
         try:
             os.kill(self.pid, signal.SIGKILL)
         except OSError as e:
-            print(e.errno)  # TODO interpret some basic errors
+            print(
+                'Error while killing process. PID: {0} errno: {1} "{2}"'.format(self.pid, e.errno, os.strerror(e.errno))
+            )
+            raise e
 
     def pre_send(self):
         pass

@@ -467,11 +467,11 @@ class Session(pgraph.Graph):
         self.restart_timeout = restart_timeout
         if fuzz_loggers is None:
             fuzz_loggers = []
-        if self.console_gui and os.name != "nt":
-            fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
-            self._keep_web_open = False
-        if len(fuzz_loggers) == 0:
-            fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
+            if self.console_gui and os.name != "nt":
+                fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
+                self._keep_web_open = False
+            else:
+                fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
         helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-")

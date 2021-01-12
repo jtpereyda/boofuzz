@@ -14,6 +14,7 @@ Features
 - Protocol definition: Protocols can now be defined with an object oriented rather than static approach.
 - Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
 - Procmon: Additional debug steps. Partial backwards compatibility for old interface.
+- `ProcessMonitorLocal` allows running procmon as part of fuzzer process.
 - Network monitor: improved network interface discovery (Linux support)
 - Add support for fuzzing Unix sockets with the `UnixSocketConnection` class.
 
@@ -24,6 +25,7 @@ Fixes
 - Fewer duplicates from `Group` primitives.
 - Network monitor: fixed data_bytes calculation and PcapThread synchronization
 - Fixed a crash when using the network monitor
+- Session can now be "quiet" by passing an empty list of loggers
 
 v0.2.1
 ------
