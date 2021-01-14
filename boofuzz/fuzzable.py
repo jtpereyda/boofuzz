@@ -159,11 +159,11 @@ class Fuzzable(object):
         if self.qualified_name in mutation_context.mutation.mutations:
             mutation = mutation_context.mutation.mutations[self.qualified_name]
             if callable(mutation):
-                value = mutation(self.original_value(test_case_context=mutation_context.test_case_context))
+                value = mutation(self.original_value(test_case_context=mutation_context.protocol_session))
             else:
                 value = mutation
         else:
-            value = self.original_value(test_case_context=mutation_context.test_case_context)
+            value = self.original_value(test_case_context=mutation_context.protocol_session)
 
         return value
 
