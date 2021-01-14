@@ -1193,7 +1193,7 @@ class Session(pgraph.Graph):
 
         # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
         if edge.callback:
-            self._fuzz_data_logger.open_test_step("Callback function")
+            self._fuzz_data_logger.open_test_step("Callback function '{0}'".format(edge.callback.__name__))
             data = edge.callback(
                 self.targets[0],
                 self._fuzz_data_logger,
