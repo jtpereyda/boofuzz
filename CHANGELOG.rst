@@ -26,6 +26,7 @@ Fixes
 - Network monitor: fixed data_bytes calculation and PcapThread synchronization
 - Fixed a crash when using the network monitor
 - Session can now be "quiet" by passing an empty list of loggers
+- Process Monitor stop_target was failing when process had already died
 
 v0.2.1
 ------

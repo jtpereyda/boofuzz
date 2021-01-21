@@ -211,6 +211,8 @@ class DebuggerThreadSimple(threading.Thread):
     def stop_target(self):
         try:
             os.kill(self.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass  # already dead :thumbsup:
         except OSError as e:
             print(
                 'Error while killing process. PID: {0} errno: {1} "{2}"'.format(self.pid, e.errno, os.strerror(e.errno))
