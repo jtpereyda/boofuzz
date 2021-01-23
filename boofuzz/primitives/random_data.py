@@ -9,28 +9,29 @@ from ..mutation import Mutation
 
 
 class RandomData(Fuzzable):
-    def __init__(self, name, value, min_length, max_length, max_mutations=25, step=None, *args, **kwargs):
-        """
-        Generate a random chunk of data while maintaining a copy of the original. A random length range
-        can be specified.
+    """Generate a random chunk of data while maintaining a copy of the original. A random length range can be specified.
 
-        For a static length, set min/max length to be the same.
+    For a static length, set min/max length to be the same.
 
-        @type  value:         str
-        @param value:         Original value
-        @type  min_length:    int
-        @param min_length:    Minimum length of random block
-        @type  max_length:    int
-        @param max_length:    Maximum length of random block
-        @type  max_mutations: int
-        @param max_mutations: (Optional, def=25) Number of mutations to make before reverting to default
-        @type  step:          int
-        @param step:          (Optional, def=None) If not null, step count between min and max reps, otherwise random
-        """
+    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :type default_value: Any, optional
+    :param min_length: Minimum length of random block
+    :type min_length: int
+    :param max_length: Maximum length of random block
+    :type max_length: int
+    :param max_mutations: Number of mutations to make before reverting to default, defaults to 25
+    :type max_mutations: int, optional
+    :param step: If not None, step count between min and max reps, otherwise random, defaults to None
+    :type step: int, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
+    """
 
-        super(RandomData, self).__init__(name, value, *args, **kwargs)
+    def __init__(self, default_value, min_length, max_length, max_mutations=25, step=None, name=None, *args, **kwargs):
+        super(RandomData, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
-        self._value = self._original_value = helpers.str_to_bytes(value)
+        self._value = self._original_value = helpers.str_to_bytes(default_value)
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations

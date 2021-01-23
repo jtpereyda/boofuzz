@@ -7,6 +7,21 @@ from ..fuzzable import Fuzzable
 
 
 class Bytes(Fuzzable):
+    """Primitive that fuzzes a binary byte string with arbitrary length.
+
+    :type default_value: bytes
+    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :type size: int, optional
+    :param size: Static size of this field, leave None for dynamic, defaults to None
+    :type padding: chr, optional
+    :param padding: Value to use as padding to fill static field size, defaults to b"\\x00"
+    :type max_len: int, optional
+    :param max_len: Maximum string length, defaults to None
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    """
+
     # This binary strings will always included as testcases.
     _fuzz_library = [
         b"",
@@ -101,19 +116,8 @@ class Bytes(Fuzzable):
         functools.partial(operator.mul, 100),
     ]
 
-    def __init__(self, name, default_value, size=None, padding=b"\x00", max_len=None, *args, **kwargs):
-        """
-        Primitive that fuzzes a binary byte string with arbitrary length.
-
-        @type  size:       int
-        @param size:       (Optional, def=None) Static size of this field, leave None for dynamic.
-        @type  padding:    chr
-        @param padding:    (Optional, def=b"\\x00") Value to use as padding to fill static field size.
-        @type  max_len:    int
-        @param max_len:    (Optional, def=None) Maximum string length
-        """
-
-        super(Bytes, self).__init__(name, default_value, *args, **kwargs)
+    def __init__(self, default_value, size=None, padding=b"\x00", max_len=None, name=None, *args, **kwargs):
+        super(Bytes, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self.size = size
         self.max_len = max_len

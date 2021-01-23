@@ -9,6 +9,26 @@ from ..fuzzable import Fuzzable
 
 
 class String(Fuzzable):
+    """Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
+    smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
+    the instantiated primitive. This allows us to avoid copying the near ~70MB fuzz_library data structure across
+    each instantiated primitive.
+
+    :type default_value: str
+    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :type size: int, optional
+    :param size: Static size of this field, leave -1 for dynamic, defaults to -1
+    :type padding: chr, optional
+    :param padding: Value to use as padding to fill static field size, defaults to "\\x00"
+    :type encoding: str, optional
+    :param encoding: String encoding, ex: utf_16_le for Microsoft Unicode, defaults to ascii
+    :type max_len: int, optional
+    :param max_len: Maximum string length, defaults to -1
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    """
+
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
     _fuzz_library = [
         "",
@@ -168,26 +188,10 @@ class String(Fuzzable):
 
     _variable_mutation_multipliers = [2, 10, 100]
 
-    def __init__(self, name, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, *args, **kwargs):
-        """
-        Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
-        smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
-        the instantiated primitive. This allows us to avoid copying the near ~70MB fuzz_library data structure across
-        each instantiated primitive.
-
-        @type  value:    str
-        @param value:    Default string value
-        @type  size:     int
-        @param size:     (Optional, def=-1) Static size of this field, leave -1 for dynamic.
-        @type  padding:  chr
-        @param padding:  (Optional, def="\\x00") Value to use as padding to fill static field size.
-        @type  encoding: str
-        @param encoding: (Optional, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
-        @type  max_len:  int
-        @param max_len:  (Optional, def=-1) Maximum string length
-        """
-
-        super(String, self).__init__(name, default_value, *args, **kwargs)
+    def __init__(
+        self, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, name=None, *args, **kwargs
+    ):
+        super(String, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self.size = size
         self.max_len = max_len

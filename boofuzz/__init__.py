@@ -310,22 +310,16 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
     return ScopedBlock(block)
 
 
-def s_aligned(name, modulus, pattern=b"\x00"):
-    """
-    Open a new block under the current request. The returned instance supports the "with" interface so it will
-    be automatically closed for you::
+def s_aligned(modulus, pattern=b"\x00", name=None):
+    """FuzzableBlock that aligns its contents to a certain number of bytes
 
-        with s_block("header"):
-            s_static("\\x00\\x01")
-            if s_block_start("body"):
-                ...
-
-    :type  name:        str
-    :param name:        Name of block being opened
     :type  modulus:     int
     :param modulus:     Pad length of child content to this many bytes
     :type  pattern:     bytes
     :param pattern:     Pad using these byte(s)
+    :type  name:        str, optional
+    :param name:        Name, for referencing later. Names should always be provided, but if not, a default name will
+                        be given, defaults to None
     """
 
     class ScopedAligned(object):
@@ -364,7 +358,7 @@ def s_block_start(name, *args, **kwargs):
     :note Prefer using s_block to this function directly
     :see s_block
     """
-    block = Block(name, *args, **kwargs)
+    block = Block(name=name, *args, **kwargs)
     blocks.CURRENT.push(block)
 
     return block
@@ -392,34 +386,38 @@ def s_checksum(
     ipv4_dst_block_name=None,
 ):
     """
-    Create a checksum block bound to the block with the specified name. You *can not* create a checksum for any
-    currently open blocks.
+    Checksum bound to the block with the specified name.
+
+    The algorithm may be chosen by name with the algorithm parameter, or a custom function may be specified with
+    the algorithm parameter.
+
+    The length field is only necessary for custom algorithms.
+
+    Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
+    or length calculations.
 
     :type  block_name: str
-    :param block_name: Name of block for checksum calculations
-
-    :type  algorithm:  str, function
-    :param algorithm:  (Optional, def=crc32) Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
-                       Pass a function to use a custom algorithm. This function has to take and return byte-type data.
-
-    :type  length:     int
-    :param length:     (Optional, def=0) Length of checksum, auto-calculated by default. Must be specified manually when
-                       using a custom algorithm.
-
-    :type  endian:     Character
-    :param endian:     (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-
+    :param block_name: Name of target block for checksum calculations.
+    :type  algorithm: str, function, optional
+    :param algorithm: Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
+        Pass a function to use a custom algorithm. This function has to take and return byte-type data,
+        defaults to crc32
+    :type  length: int, optional
+    :param length: Length of checksum, auto-calculated by default. Must be specified manually when using custom
+        algorithm, defaults to 0
+    :type  endian: chr, optional
+    :param endian: Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
     :type  fuzzable:   bool
     :param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
-
-    :type  name:       str
-    :param name:       Name of this checksum field
-
-    :type ipv4_src_block_name: str
-    :param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address.
-
-    :type ipv4_dst_block_name: str
-    :param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
+    :type  name: str
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type  ipv4_src_block_name: str, optional
+    :param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address,
+        defaults to None
+    :type  ipv4_dst_block_name: str, optional
+    :param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address,
+        defaults to None
     """
 
     # you can't add a checksum for a block currently in the stack.
@@ -427,12 +425,13 @@ def s_checksum(
         raise exception.SullyRuntimeError("CAN N0T ADD A CHECKSUM FOR A BLOCK CURRENTLY IN THE STACK")
 
     checksum = Checksum(
-        name,
-        block_name,
-        blocks.CURRENT,
-        algorithm,
-        length,
-        endian,
+        name=name,
+        block_name=block_name,
+        request=blocks.CURRENT,
+        algorithm=algorithm,
+        length=length,
+        endian=endian,
+        fuzzable=fuzzable,
         ipv4_src_block_name=ipv4_src_block_name,
         ipv4_dst_block_name=ipv4_dst_block_name,
     )
@@ -463,7 +462,18 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     :param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    blocks.CURRENT.push(Repeat(name, block_name, blocks.CURRENT, min_reps, max_reps, step, variable, fuzzable))
+    blocks.CURRENT.push(
+        Repeat(
+            name=name,
+            block_name=block_name,
+            request=blocks.CURRENT,
+            min_reps=min_reps,
+            max_reps=max_reps,
+            step=step,
+            variable=variable,
+            fuzzable=fuzzable,
+        )
+    )
 
 
 def s_size(
@@ -485,21 +495,21 @@ def s_size(
     :see: Aliases: s_sizer()
 
     :type  block_name:    str
-    :param block_name:    Name of block to apply sizer to
-    :type  offset:        int
-    :param offset:        (Optional, def=0) Offset to calculated size of block
-    :type  length:        int
-    :param length:        (Optional, def=4) Length of sizer
-    :type  endian:        Character
-    :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-    :type  output_format: str
-    :param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
-    :type  inclusive:     bool
-    :param inclusive:     (Optional, def=False) Should the sizer count its own length?
-    :type  signed:        bool
-    :param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-    :type  math:          Function
-    :param math:          (Optional, def=None) Apply the mathematical operations defined in this function to the size
+    :param block_name:    Name of block to apply sizer to.
+    :type  offset:        int, optional
+    :param offset:        Offset for calculated size value, defaults to 0
+    :type  length:        int, optional
+    :param length:        Length of sizer, defaults to 4
+    :type  endian:        chr, optional
+    :param endian:        Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
+    :type  output_format: str, optional
+    :param output_format: Output format, "binary" or "ascii", defaults to binary
+    :type  inclusive:     bool, optional
+    :param inclusive:     Should the sizer count its own length? Defaults to False
+    :type  signed:        bool, optional
+    :param signed:        Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
+    :type  math:          def, optional
+    :param math:          Apply the mathematical op defined in this function to the size, defaults to None
     :type  fuzzable:      bool
     :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
     :type  name:          str
@@ -508,16 +518,16 @@ def s_size(
 
     blocks.CURRENT.push(
         Size(
-            name,
-            block_name,
-            blocks.CURRENT,
-            offset,
-            length,
-            endian,
-            output_format,
-            inclusive,
-            signed,
-            math,
+            name=name,
+            block_name=block_name,
+            request=blocks.CURRENT,
+            offset=offset,
+            length=length,
+            endian=endian,
+            output_format=output_format,
+            inclusive=inclusive,
+            signed=signed,
+            math=math,
             fuzzable=fuzzable,
         )
     )
@@ -651,7 +661,17 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    blocks.CURRENT.push(RandomData(name, value, min_length, max_length, num_mutations, step, fuzzable=fuzzable))
+    blocks.CURRENT.push(
+        RandomData(
+            name=name,
+            default_value=value,
+            min_length=min_length,
+            max_length=max_length,
+            num_mutations=num_mutations,
+            step=step,
+            fuzzable=fuzzable,
+        )
+    )
 
 
 def s_static(value, name=None):
@@ -666,7 +686,7 @@ def s_static(value, name=None):
     :param name:  (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    blocks.CURRENT.push(Static(name=name, default_value=value, fuzzable=False))
+    blocks.CURRENT.push(Static(name=name, default_value=value))
 
 
 def s_mirror(primitive_name, name=None):
@@ -678,7 +698,7 @@ def s_mirror(primitive_name, name=None):
     :type name:             str
     :param name:            (Optional, def=None) Name of current primitive
     """
-    blocks.CURRENT.push(Mirror(name, primitive_name, blocks.CURRENT, fuzzable=True))
+    blocks.CURRENT.push(Mirror(name=name, primitive_name=primitive_name, request=blocks.CURRENT))
 
 
 def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
@@ -701,15 +721,27 @@ def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, m
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
 
-    blocks.CURRENT.push(String(name, value, size, padding, encoding, max_len, fuzzable=fuzzable))
+    blocks.CURRENT.push(
+        String(
+            name=name,
+            default_value=value,
+            size=size,
+            padding=padding,
+            encoding=encoding,
+            max_len=max_len,
+            fuzzable=fuzzable,
+        )
+    )
 
 
-def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, filename=None):
+def s_from_file(value, filename, encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a value from file onto the current block stack.
 
     :type  value:    str
     :param value:    Default string value
+    :type  filename: str
+    :param filename: Filename pattern to load all fuzz value
     :type  encoding: str
     :param encoding: (DEPRECIATED, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
     :type  fuzzable: bool
@@ -718,11 +750,9 @@ def s_from_file(value, encoding="ascii", fuzzable=True, max_len=0, name=None, fi
     :param max_len:  (Optional, def=0) Maximum string length
     :type  name:     str
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
-    :type  filename: str
-    :param filename: (Mandatory) Specify filename where to read fuzz list
     """
 
-    blocks.CURRENT.push(FromFile(name, value, max_len, filename, fuzzable=fuzzable))
+    blocks.CURRENT.push(FromFile(name=name, default_value=value, max_len=max_len, filename=filename, fuzzable=fuzzable))
 
 
 # noinspection PyTypeChecker
@@ -764,14 +794,13 @@ def s_bit_field(
 
     blocks.CURRENT.push(
         BitField(
-            name,
-            value,
-            width,
-            None,
-            endian,
-            output_format,
-            signed,
-            full_range,
+            name=name,
+            default_value=value,
+            width=width,
+            endian=endian,
+            output_format=output_format,
+            signed=signed,
+            full_range=full_range,
             fuzzable=fuzzable,
             fuzz_values=fuzz_values,
         )

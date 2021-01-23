@@ -33,24 +33,34 @@ class Checksum(primitives.BasePrimitive):
     Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
     or length calculations.
 
-    Args:
-        block_name (str): Name of target block for checksum calculations.
-        request (s_request): Request this block belongs to.
-        algorithm (str, function, optional): Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
-            Pass a function to use a custom algorithm. This function has to take and return byte-type data.
-        length (int, optional): Length of checksum, auto-calculated by default.
-            Must be specified manually when using custom algorithm.
-        endian (str, optional): Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >).
-            Defaults to LITTLE_ENDIAN.
-        ipv4_src_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 source address.
-        ipv4_dst_block_name (str): Required for 'udp' algorithm. Name of block yielding IPv4 destination address.
+    :type  block_name: str
+    :param block_name: Name of target block for checksum calculations.
+    :type  request: boofuzz.Request
+    :param request: Request this block belongs to.
+    :type  algorithm: str, function, optional
+    :param algorithm: Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
+        Pass a function to use a custom algorithm. This function has to take and return byte-type data,
+        defaults to crc32
+    :type  length: int, optional
+    :param length: Length of checksum, auto-calculated by default. Must be specified manually when using custom
+        algorithm, defaults to 0
+    :type  endian: chr, optional
+    :param endian: Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
+    :type  ipv4_src_block_name: str, optional
+    :param ipv4_src_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 source address,
+        defaults to None
+    :type  ipv4_dst_block_name: str, optional
+    :param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address,
+        defaults to None
+    :type  name: str
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
     """
 
     checksum_lengths = {"crc32": 4, "crc32c": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
 
     def __init__(
         self,
-        name,
         block_name,
         request,
         algorithm="crc32",
@@ -58,10 +68,11 @@ class Checksum(primitives.BasePrimitive):
         endian=LITTLE_ENDIAN,
         ipv4_src_block_name=None,
         ipv4_dst_block_name=None,
+        name=None,
         *args,
         **kwargs
     ):
-        super(Checksum, self).__init__(name, *args, **kwargs)
+        super(Checksum, self).__init__(name=name, *args, **kwargs)
 
         self._block_name = block_name
         self._request = request

@@ -39,9 +39,32 @@ def int_to_binary_string(number, bit_width):
 
 
 class BitField(Fuzzable):
+    """
+    The bit field primitive represents a number of variable length and is used to define all other integer types.
+
+    :type  default_value: int
+    :param default_value: Default integer value
+    :type  width: int
+    :param width: Width in bits
+    :type  max_num: int, optional
+    :param max_num: Maximum number to iterate up to, defaults to None
+    :type  endian: char, optional
+    :param endian: Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
+    :type  output_format: str, optional
+    :param output_format: Output format, "binary" or "ascii", defaults to binary
+    :type  signed: bool, optional
+    :param signed: Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
+    :type  full_range: bool, optional
+    :param full_range: If enabled the field mutates through *all* possible values, defaults to False
+    :type fuzz_values: list, optional
+    :param fuzz_values: List of custom fuzz values to add to the normal mutations, defaults to None
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    """
+
     def __init__(
         self,
-        name,
         default_value,
         width,
         max_num=None,
@@ -49,25 +72,10 @@ class BitField(Fuzzable):
         output_format="binary",
         signed=False,
         full_range=False,
+        name=None,
         *args,
         **kwargs
     ):
-        """
-        The bit field primitive represents a number of variable length and is used to define all other integer types.
-
-        @type  width:         int
-        @param width:         Width in bits
-        @type  max_num:       int
-        @param max_num:       Maximum number to iterate up to
-        @type  endian:        chr
-        @param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-        @type  output_format: str
-        @param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
-        @type  signed:        bool
-        @param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-        @type  full_range:    bool
-        @param full_range:    (Optional, def=False) If enabled the field mutates through *all* possible values.
-        """
         super(BitField, self).__init__(name, default_value, *args, **kwargs)
 
         assert isinstance(width, six.integer_types), "width must be an integer!"

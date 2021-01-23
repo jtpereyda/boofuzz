@@ -6,10 +6,11 @@ from boofuzz.primitives.bit_field import BitField
 
 
 class QWord(BitField):
-    def __init__(self, *args, **kwargs):
-        kwargs["width"] = 64
+    """The 8 byte sized bit field primitive. Inherits parameters from :class:`boofuzz.BitField`"""
 
-        super(QWord, self).__init__(*args, **kwargs)
+    def __init__(self, default_value, *args, **kwargs):
+        # Inject our width argument
+        super(QWord, self).__init__(default_value=default_value, width=64, *args, **kwargs)
 
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):

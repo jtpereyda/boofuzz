@@ -12,7 +12,7 @@ class ProtocolSessionReference(object):
         name (str): Refers to a test case session key. Must be set in the
             :class:`ProtocolSession <boofuzz.ProtocolSession>` by the time the value is required in the protocol
             definition. See :class:`Session <boofuzz.Session>`.
-        default_value: The default default value, used if the element must be rendered outside the context of a test
+        default_value: The default value, used if the element must be rendered outside the context of a test
             case, or sometimes for generating mutations.
     """
 

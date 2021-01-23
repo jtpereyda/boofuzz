@@ -5,22 +5,24 @@ from .base_primitive import BasePrimitive
 
 
 class FromFile(BasePrimitive):
-    def __init__(self, name, value, max_len=0, filename=None, *args, **kwargs):
-        """
-        Cycles through a list of "bad" values from a file(s). Takes filename and open the file(s) to read
-        the values to use in fuzzing process. filename may contain glob characters.
+    """Cycles through a list of "bad" values from a file(s). Takes filename and open the file(s) to read
+    the values to use in fuzzing process. filename may contain glob characters.
 
-        @type  value:    str
-        @param value:    Default string value
-        @type  max_len:  int
-        @param max_len:  (Optional, def=0) Maximum string length
-        @type  filename: str
-        @param filename: Filename pattern to load all fuzz value
-        """
+    :type default_value: str
+    :param default_value: Default string value
+    :type  filename: str
+    :param filename: Filename pattern to load all fuzz value
+    :type  max_len: int, optional
+    :param max_len: Maximum string length, defaults to 0
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    """
 
-        super(FromFile, self).__init__(name, value, *args, **kwargs)
+    def __init__(self, default_value, filename, max_len=0, name=None, *args, **kwargs):
 
-        self._default_value = value
+        super(FromFile, self).__init__(name=name, default_value=default_value, *args, **kwargs)
+
         self._filename = filename
         self._fuzz_library = []
         list_of_files = glob.glob(self._filename)

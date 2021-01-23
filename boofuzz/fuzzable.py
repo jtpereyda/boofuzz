@@ -22,13 +22,16 @@ class Fuzzable(object):
 
     The rest of the methods are used by boofuzz to handle fuzzing and are typically not overridden.
 
-    Args:
-        fuzzable (bool): Enable fuzzing of this primitive. Default: True.
-        name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
-            be given.
-        default_value: Value used when the element is not being fuzzed -- should typically represent a valid value.
-            Can be a static value, or a ReferenceValueTestCaseSession.
-        fuzz_values (list): List of custom fuzz values to add to the normal mutations.
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type default_value: Any
+    :param default_value: Value used when the element is not being fuzzed -- should typically represent a valid value.
+        Can be a static value, or a ReferenceValueTestCaseSession, defaults to None
+    :type fuzzable: bool
+    :param fuzzable: Enable fuzzing of this primitive, defaults to True
+    :type fuzz_values: list
+    :param fuzz_values: List of custom fuzz values to add to the normal mutations, defaults to None
     """
 
     name_counter = 0

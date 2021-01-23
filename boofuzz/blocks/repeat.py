@@ -6,40 +6,40 @@ from ..protocol_session_reference import ProtocolSessionReference
 
 
 class Repeat(Fuzzable):
-    """
-    Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
+    """Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
     default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
     modifier MUST come after the block it is being applied to.
 
-    @type  block_name: str
-    @param block_name: Name of block to repeat
-    @type  request:    s_request
-    @param request:    Request this block belongs to
-    @type  min_reps:   int
-    @param min_reps:   (Optional, def=0) Minimum number of block repetitions
-    @type  max_reps:   int
-    @param max_reps:   (Optional, def=None) Maximum number of block repetitions
-    @type  step:       int
-    @param step:       (Optional, def=1) Step count between min and max reps
-    @type  variable:   Sulley Integer Primitive
-    @param variable:   (Optional, def=None) Repetitions will be derived from this variable, disables fuzzing
-    @type  fuzzable:   bool
-    @param fuzzable:   (Optional, def=True) Enable/disable fuzzing of this primitive
-    @type  name:       str
-    @param name:       (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :param block_name: Name of block to repeat
+    :type block_name: str
+    :param request: Request this block belongs to, defaults to None
+    :type request: boofuzz.Request, optional
+    :param min_reps: Minimum number of block repetitions, defaults to 0
+    :type min_reps: int, optional
+    :param max_reps: Maximum number of block repetitions, defaults to None
+    :type max_reps: int, optional
+    :param step: Step count between min and max reps, defaults to 1
+    :type step: int, optional
+    :param variable: Repetitions will be derived from this variable, disables fuzzing, defaults to None
+    :type variable: Boofuzz Integer Primitive, optional
+    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value,
+        defaults to None
+    :type default_value: Raw
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str
     """
 
     def __init__(
         self,
-        name,
         block_name,
         request,
         min_reps=0,
         max_reps=None,
         step=1,
         variable=None,
-        fuzzable=True,
         default_value=None,
+        name=None,
         *args,
         **kwargs
     ):
@@ -49,14 +49,13 @@ class Repeat(Fuzzable):
             else:
                 default_value = 0
 
-        super(Repeat, self).__init__(name, default_value, *args, **kwargs)
+        super(Repeat, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self.block_name = block_name
         self.request = request
         self.min_reps = min_reps
         self.max_reps = max_reps
         self.step = step
-        self._fuzzable = fuzzable
         self._name = name
 
         self._value = b""
@@ -69,10 +68,6 @@ class Repeat(Fuzzable):
 
         if self.max_reps is not None:
             self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
-
-    @property
-    def fuzzable(self):
-        return self._fuzzable
 
     def mutations(self, default_value):
         for fuzzed_reps_number in self._fuzz_library:

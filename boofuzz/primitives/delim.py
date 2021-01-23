@@ -3,15 +3,17 @@ from .. import helpers
 
 
 class Delim(BasePrimitive):
-    def __init__(self, name, default_value, *args, **kwargs):
-        """
-        Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
+    r"""Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
 
-        @type  default_value:    chr
-        @param default_value:    Original value
-        """
+    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :type default_value: char, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
+    """
 
-        super(Delim, self).__init__(name, default_value, *args, **kwargs)
+    def __init__(self, default_value, name=None, *args, **kwargs):
+        super(Delim, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self._default_value = default_value
 

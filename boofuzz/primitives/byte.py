@@ -6,11 +6,11 @@ from .bit_field import BitField
 
 
 class Byte(BitField):
-    def __init__(self, *args, **kwargs):
-        # Inject the one parameter we care to pass in (width)
-        kwargs["width"] = 8
+    """The byte sized bit field primitive. Inherits parameters from :class:`boofuzz.BitField`"""
 
-        super(Byte, self).__init__(*args, **kwargs)
+    def __init__(self, default_value, *args, **kwargs):
+        # Inject the one parameter we care to pass in (width)
+        super(Byte, self).__init__(default_value=default_value, width=8, *args, **kwargs)
 
     def encode(self, value, mutation_context):
         if not isinstance(value, (six.integer_types, list, tuple)):
