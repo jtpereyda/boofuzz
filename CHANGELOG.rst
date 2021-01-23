@@ -17,6 +17,7 @@ Features
 - `ProcessMonitorLocal` allows running procmon as part of fuzzer process.
 - Network monitor: improved network interface discovery (Linux support)
 - Add support for fuzzing Unix sockets with the `UnixSocketConnection` class.
+- Add metadata to ProtocolSession to support callbacks -- `current_message`, `previous_message`.
 
 Fixes
 ^^^^^

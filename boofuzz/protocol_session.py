@@ -11,3 +11,5 @@ class ProtocolSession(object):
     """
 
     session_variables = attr.ib(factory=dict)
+    previous_message = attr.ib(default=None)
+    current_message = attr.ib(default=None)
