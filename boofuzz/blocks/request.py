@@ -20,7 +20,7 @@ class Request(FuzzableBlock):
     """
 
     def __init__(self, name, children=None):
-        super(Request, self).__init__(name=name)
+        super(Request, self).__init__(name=name, request=self)
         self._name = name
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.

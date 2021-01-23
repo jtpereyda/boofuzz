@@ -9,10 +9,10 @@ class Group(BasePrimitive):
     within the group. The group primitive is useful for example for representing a list of valid opcodes.
 
     :param values: List of possible raw values this group can take.
-    :type values: list of bytes
+    :type values: list of bytes or list of str
     :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value,
         defaults to None
-    :type default_value: bytes, optional
+    :type default_value: str, optional
     :param encoding: String encoding, ex: utf_16_le for Microsoft Unicode, defaults to ascii
     :type encoding: str, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,

@@ -667,7 +667,7 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
             default_value=value,
             min_length=min_length,
             max_length=max_length,
-            num_mutations=num_mutations,
+            max_mutations=num_mutations,
             step=step,
             fuzzable=fuzzable,
         )

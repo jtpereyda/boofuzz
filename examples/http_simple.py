@@ -21,20 +21,20 @@ def define_proto(session):
     # fmt: off
     req = Request("HTTP-Request", children=(
         Block("Request-Line", children=(
-            Group("Method", values=["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"]),
-            Delim("space-1", " "),
-            String("URI", "/index.html"),
-            Delim("space-2", " "),
-            String("HTTP-Version", "HTTP/1.1"),
-            Static("CRLF", "\r\n"),
+            Group(name="Method", values=["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE"]),
+            Delim(name="space-1", default_value=" "),
+            String(name="URI", default_value="/index.html"),
+            Delim(name="space-2", default_value=" "),
+            String(name="HTTP-Version", default_value="HTTP/1.1"),
+            Static(name="CRLF", default_value="\r\n"),
         )),
         Block("Host-Line", children=(
-            String("Host-Key", "Host:"),
-            Delim("space", " "),
-            String("Host-Value", "example.com"),
-            Static("CRLF", "\r\n"),
+            String(name="Host-Key", default_value="Host:"),
+            Delim(name="space", default_value=" "),
+            String(name="Host-Value", default_value="example.com"),
+            Static(name="CRLF", default_value="\r\n"),
         )),
-        Static("CRLF", "\r\n"),
+        Static(name="CRLF", default_value="\r\n"),
     ))
     # fmt: on
 
