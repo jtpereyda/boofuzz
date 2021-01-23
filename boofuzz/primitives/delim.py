@@ -5,7 +5,7 @@ from .. import helpers
 class Delim(BasePrimitive):
     r"""Represent a delimiter such as :,\r,\n, ,=,>,< etc... Mutations include repetition, substitution and exclusion.
 
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
     :type default_value: char, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None

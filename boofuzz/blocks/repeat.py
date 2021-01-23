@@ -22,7 +22,7 @@ class Repeat(Fuzzable):
     :type step: int, optional
     :param variable: Repetitions will be derived from this variable, disables fuzzing, defaults to None
     :type variable: Boofuzz Integer Primitive, optional
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value,
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
         defaults to None
     :type default_value: Raw
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,

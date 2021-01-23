@@ -15,7 +15,7 @@ class String(Fuzzable):
     each instantiated primitive.
 
     :type default_value: str
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
     :type size: int, optional
     :param size: Static size of this field, leave -1 for dynamic, defaults to -1
     :type padding: chr, optional

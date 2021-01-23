@@ -26,7 +26,7 @@ class Fuzzable(object):
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None
     :type default_value: Any
-    :param default_value: Value used when the element is not being fuzzed -- should typically represent a valid value.
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
         Can be a static value, or a ReferenceValueTestCaseSession, defaults to None
     :type fuzzable: bool
     :param fuzzable: Enable fuzzing of this primitive, defaults to True

@@ -10,7 +10,7 @@ class Group(BasePrimitive):
 
     :param values: List of possible raw values this group can take.
     :type values: list of bytes or list of str
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value,
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
         defaults to None
     :type default_value: str, optional
     :param encoding: String encoding, ex: utf_16_le for Microsoft Unicode, defaults to ascii

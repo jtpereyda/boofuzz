@@ -10,7 +10,7 @@ class Bytes(Fuzzable):
     """Primitive that fuzzes a binary byte string with arbitrary length.
 
     :type default_value: bytes
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
     :type size: int, optional
     :param size: Static size of this field, leave None for dynamic, defaults to None
     :type padding: chr, optional

@@ -13,7 +13,7 @@ class RandomData(Fuzzable):
 
     For a static length, set min/max length to be the same.
 
-    :param default_value: Value used when the element is not being fuzzed – should typically represent a valid value.
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
     :type default_value: Any, optional
     :param min_length: Minimum length of random block
     :type min_length: int
