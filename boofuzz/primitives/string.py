@@ -251,7 +251,7 @@ class String(Fuzzable):
             self._yield_variable_mutations(default_value),
             self._yield_long_strings(self.long_string_seeds),
         ):
-            if self.size < 0 or len(val) <= self.size:
+            if self.max_len < 0 or len(val) <= self.max_len:
                 yield val
 
         # TODO: Add easy and sane string injection from external file/s

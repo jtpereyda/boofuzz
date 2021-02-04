@@ -685,7 +685,7 @@ def s_mirror(primitive_name, name=None):
     blocks.CURRENT.push(Mirror(name, primitive_name, blocks.CURRENT, fuzzable=True))
 
 
-def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
     """
     Push a string onto the current block stack.
 
@@ -700,7 +700,7 @@ def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, m
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  max_len:  int
-    :param max_len:  (Optional, def=0) Maximum string length
+    :param max_len:  (Optional, def=-1) Maximum string length
     :type  name:     str
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
