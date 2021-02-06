@@ -19,4 +19,4 @@ class MutationContext(object):
     """
 
     mutation = attr.ib(type=Mutation)
-    test_case_context = attr.ib(type=ProtocolSession, default=None)
+    protocol_session = attr.ib(type=ProtocolSession, default=None)

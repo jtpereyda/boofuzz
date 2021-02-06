@@ -467,11 +467,11 @@ class Session(pgraph.Graph):
         self.restart_timeout = restart_timeout
         if fuzz_loggers is None:
             fuzz_loggers = []
-        if self.console_gui and os.name != "nt":
-            fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
-            self._keep_web_open = False
-        if len(fuzz_loggers) == 0:
-            fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
+            if self.console_gui and os.name != "nt":
+                fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
+                self._keep_web_open = False
+            else:
+                fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
         helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-")
@@ -1088,9 +1088,9 @@ class Session(pgraph.Graph):
             session (Session): Session object calling post_send.
                 Useful properties include last_send and last_recv.
             test_case_context (ProtocolSession): Context for test case-scoped data.
-                :py:class:`TestCaseContext` :py:attr:`session_variables <TestCaseContext.session_variables>`
+                :py:class:`ProtocolSession` :py:attr:`session_variables <ProtocolSession.session_variables>`
                 values are generally set within a callback and referenced in elements via default values of type
-                :py:class:`ReferenceValueTestCaseSession`.
+                :py:class:`ProtocolSessionReference`.
             args: Implementations should include \\*args and \\**kwargs for forward-compatibility.
             kwargs: Implementations should include \\*args and \\**kwargs for forward-compatibility.
         """
@@ -1193,7 +1193,7 @@ class Session(pgraph.Graph):
 
         # if the edge has a callback, process it. the callback has the option to render the node, modify it and return.
         if edge.callback:
-            self._fuzz_data_logger.open_test_step("Callback function")
+            self._fuzz_data_logger.open_test_step("Callback function '{0}'".format(edge.callback.__name__))
             data = edge.callback(
                 self.targets[0],
                 self._fuzz_data_logger,
@@ -1482,19 +1482,29 @@ class Session(pgraph.Graph):
 
         try:
             self._open_connection_keep_trying(target)
-            test_case_context = ProtocolSession()
-            mutation_context.test_case_context = test_case_context
-
             self._pre_send(target)
 
             for e in mutation.message_path[:-1]:
+                prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
+                protocol_session = ProtocolSession(
+                    previous_message=prev_node,
+                    current_message=node,
+                )
+                mutation_context.protocol_session = protocol_session
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=test_case_context)
+                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
+            prev_node = self.nodes[mutation.message_path[-1].src]
+            node = self.nodes[mutation.message_path[-1].dst]
+            protocol_session = ProtocolSession(
+                previous_message=prev_node,
+                current_message=node,
+            )
+            mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=protocol_session
             )
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
@@ -1564,19 +1574,30 @@ class Session(pgraph.Graph):
 
         try:
             self._open_connection_keep_trying(target)
-            test_case_context = ProtocolSession()
-            mutation_context.test_case_context = test_case_context
 
             self._pre_send(target)
 
             for e in mutation.message_path[:-1]:
+                prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
-                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=test_case_context)
+                protocol_session = ProtocolSession(
+                    previous_message=prev_node,
+                    current_message=node,
+                )
+                mutation_context.protocol_session = protocol_session
+                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
+            prev_node = self.nodes[mutation.message_path[-1].src]
+            node = self.nodes[mutation.message_path[-1].dst]
+            protocol_session = ProtocolSession(
+                previous_message=prev_node,
+                current_message=node,
+            )
+            mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=test_case_context
+                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=protocol_session
             )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(

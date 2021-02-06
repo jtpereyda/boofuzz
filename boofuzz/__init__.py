@@ -22,6 +22,7 @@ from .connections import (
     SSLSocketConnection,
     TCPSocketConnection,
     UDPSocketConnection,
+    UnixSocketConnection,
 )
 from .constants import BIG_ENDIAN, DEFAULT_PROCMON_PORT, LITTLE_ENDIAN
 from .event_hook import EventHook
@@ -35,6 +36,7 @@ from .fuzzable_block import FuzzableBlock
 from .ifuzz_logger import IFuzzLogger
 from .ifuzz_logger_backend import IFuzzLoggerBackend
 from .monitors import BaseMonitor, CallbackMonitor, NetworkMonitor, pedrpc, ProcessMonitor
+from .utils.process_monitor_local import ProcessMonitorLocal
 from .primitives import (
     BasePrimitive,
     BitField,
@@ -107,6 +109,7 @@ __all__ = [
     "pedrpc",
     "primitives",
     "ProcessMonitor",
+    "ProcessMonitorLocal",
     "QWord",
     "RandomData",
     "RawL2SocketConnection",
@@ -174,6 +177,7 @@ __all__ = [
     "ProtocolSessionReference",
     "TimeRepeater",
     "UDPSocketConnection",
+    "UnixSocketConnection",
     "Word",
 ]
 
@@ -701,7 +705,7 @@ def s_mirror(primitive_name=None, name=None):
     blocks.CURRENT.push(Mirror(name=name, primitive_name=primitive_name, request=blocks.CURRENT))
 
 
-def s_string(value="", size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value="", size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
     """
     Push a string onto the current block stack.
 
@@ -716,7 +720,7 @@ def s_string(value="", size=-1, padding=b"\x00", encoding="ascii", fuzzable=True
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  max_len:  int
-    :param max_len:  (Optional, def=0) Maximum string length
+    :param max_len:  (Optional, def=-1) Maximum string length
     :type  name:     str
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
