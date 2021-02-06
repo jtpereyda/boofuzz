@@ -8,7 +8,7 @@ class Block(FuzzableBlock):
 
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None
-    :type name: str
+    :type name: str, optional
     :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
         defaults to None
     :type default_value: Any, optional

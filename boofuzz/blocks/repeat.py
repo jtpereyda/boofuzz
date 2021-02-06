@@ -6,12 +6,16 @@ from ..protocol_session_reference import ProtocolSessionReference
 
 
 class Repeat(Fuzzable):
-    """Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
-    default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
+    """Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step.
+
+    By default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
     modifier MUST come after the block it is being applied to.
 
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
     :param block_name: Name of block to repeat
-    :type block_name: str
+    :type block_name: str, optional
     :param request: Request this block belongs to, defaults to None
     :type request: boofuzz.Request, optional
     :param min_reps: Minimum number of block repetitions, defaults to 0
@@ -25,21 +29,20 @@ class Repeat(Fuzzable):
     :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
         defaults to None
     :type default_value: Raw
-    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
-        defaults to None
-    :type name: str
+    :param fuzzable: Enable/disable fuzzing of this block, defaults to true
+    :type fuzzable: bool, optional
     """
 
     def __init__(
         self,
-        block_name,
-        request,
+        name=None,
+        block_name=None,
+        request=None,
         min_reps=0,
-        max_reps=None,
+        max_reps=25,
         step=1,
         variable=None,
         default_value=None,
-        name=None,
         *args,
         **kwargs
     ):
@@ -56,7 +59,6 @@ class Repeat(Fuzzable):
         self.min_reps = min_reps
         self.max_reps = max_reps
         self.step = step
-        self._name = name
 
         self._value = b""
         self._original_value = b""  # default to nothing!
@@ -66,7 +68,7 @@ class Repeat(Fuzzable):
         self._mutant_index = 0  # current mutation number
         self.current_reps = min_reps  # current number of repetitions
 
-        if self.max_reps is not None:
+        if self.max_reps is not None and self.request is not None and self.block_name is not None:
             self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
 
     def mutations(self, default_value):
@@ -87,13 +89,20 @@ class Repeat(Fuzzable):
         return value * self._get_child_data(mutation_context=mutation_context)
 
     def _get_child_data(self, mutation_context):
-        _rendered = self.request.resolve_name(self.context_path, self.block_name).render(
-            mutation_context=mutation_context
-        )
+        if self.request is not None and self.block_name is not None:
+            _rendered = self.request.resolve_name(self.context_path, self.block_name).render(
+                mutation_context=mutation_context
+            )
+        else:
+            _rendered = ""
         return helpers.str_to_bytes(_rendered)
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return self.current_reps * len(self.request.names[self.block_name])
+        return (
+            self.current_reps * len(self.request.names[self.block_name])
+            if self.block_name is not None and self.request is not None
+            else 0
+        )

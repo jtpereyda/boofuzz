@@ -22,8 +22,7 @@ def _may_recurse(f):
 
 
 class Checksum(primitives.BasePrimitive):
-    """
-    Checksum bound to the block with the specified name.
+    """Checksum bound to the block with the specified name.
 
     The algorithm may be chosen by name with the algorithm parameter, or a custom function may be specified with
     the algorithm parameter.
@@ -33,9 +32,12 @@ class Checksum(primitives.BasePrimitive):
     Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
     or length calculations.
 
+    :type  name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
     :type  block_name: str
     :param block_name: Name of target block for checksum calculations.
-    :type  request: boofuzz.Request
+    :type  request: boofuzz.Request, optional
     :param request: Request this block belongs to.
     :type  algorithm: str, function, optional
     :param algorithm: Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
@@ -52,23 +54,22 @@ class Checksum(primitives.BasePrimitive):
     :type  ipv4_dst_block_name: str, optional
     :param ipv4_dst_block_name: Required for 'udp' algorithm. Name of block yielding IPv4 destination address,
         defaults to None
-    :type  name: str
-    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
-        defaults to None
+    :type  fuzzable: bool, optional
+    :param fuzzable: Enable/disable fuzzing of this block, defaults to true
     """
 
     checksum_lengths = {"crc32": 4, "crc32c": 4, "adler32": 4, "md5": 16, "sha1": 20, "ipv4": 2, "udp": 2}
 
     def __init__(
         self,
-        block_name,
-        request,
+        name=None,
+        block_name=None,
+        request=None,
         algorithm="crc32",
         length=0,
         endian=LITTLE_ENDIAN,
         ipv4_src_block_name=None,
         ipv4_dst_block_name=None,
-        name=None,
         *args,
         **kwargs
     ):
@@ -108,7 +109,7 @@ class Checksum(primitives.BasePrimitive):
 
     def encode(self, value, mutation_context):
         if value is None:
-            if self._recursion_flag:
+            if self._recursion_flag or self._request is None:
                 self._rendered = self._get_dummy_value()
             else:
                 self._rendered = self._checksum(
@@ -127,7 +128,7 @@ class Checksum(primitives.BasePrimitive):
     def _render_block(self, block_name, mutation_context):
         return (
             self._request.resolve_name(self.context_path, block_name).render(mutation_context=mutation_context)
-            if block_name is not None
+            if block_name is not None and self._request is not None
             else None
         )
 

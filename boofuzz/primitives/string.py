@@ -9,11 +9,16 @@ from ..fuzzable import Fuzzable
 
 
 class String(Fuzzable):
-    """Primitive that cycles through a library of "bad" strings. The class variable 'fuzz_library' contains a list of
+    """Primitive that cycles through a library of "bad" strings.
+
+    The class variable 'fuzz_library' contains a list of
     smart fuzz values global across all instances. The 'this_library' variable contains fuzz values specific to
     the instantiated primitive. This allows us to avoid copying the near ~70MB fuzz_library data structure across
     each instantiated primitive.
 
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
     :type default_value: str
     :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
     :type size: int, optional
@@ -24,9 +29,8 @@ class String(Fuzzable):
     :param encoding: String encoding, ex: utf_16_le for Microsoft Unicode, defaults to ascii
     :type max_len: int, optional
     :param max_len: Maximum string length, defaults to -1
-    :type name: str, optional
-    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
-        defaults to None
+    :type fuzzable: bool, optional
+    :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
     """
 
     # store fuzz_library as a class variable to avoid copying the ~70MB structure across each instantiated primitive.
@@ -189,7 +193,7 @@ class String(Fuzzable):
     _variable_mutation_multipliers = [2, 10, 100]
 
     def __init__(
-        self, default_value, size=-1, padding=b"\x00", encoding="ascii", max_len=-1, name=None, *args, **kwargs
+        self, name=None, default_value="", size=-1, padding=b"\x00", encoding="ascii", max_len=-1, *args, **kwargs
     ):
         super(String, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 

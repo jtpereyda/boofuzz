@@ -253,7 +253,7 @@ def s_switch(name):
 # ## BLOCK MANAGEMENT
 
 
-def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values=(), dep_compare="=="):
+def s_block(name=None, group=None, encoder=None, dep=None, dep_value=None, dep_values=None, dep_compare="=="):
     """
     Open a new block under the current request. The returned instance supports the "with" interface so it will
     be automatically closed for you::
@@ -263,19 +263,19 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
             if s_block_start("body"):
                 ...
 
-    :type  name:        str
+    :type  name:        str, optional
     :param name:        Name of block being opened
-    :type  group:       str
+    :type  group:       str, optional
     :param group:       (Optional, def=None) Name of group to associate this block with
-    :type  encoder:     Function Pointer
+    :type  encoder:     Function Pointer, optional
     :param encoder:     (Optional, def=None) Optional pointer to a function to pass rendered data to prior to return
-    :type  dep:         str
+    :type  dep:         str, optional
     :param dep:         (Optional, def=None) Optional primitive whose specific value this block is dependant on
-    :type  dep_value:   Mixed
+    :type  dep_value:   Mixed, optional
     :param dep_value:   (Optional, def=None) Value that field "dep" must contain for block to be rendered
-    :type  dep_values:  List of Mixed Types
-    :param dep_values:  (Optional, def=[]) Values that field "dep" may contain for block to be rendered
-    :type  dep_compare: str
+    :type  dep_values:  List of Mixed Types, optional
+    :param dep_values:  (Optional, def=None) Values that field "dep" may contain for block to be rendered
+    :type  dep_compare: str, optional
     :param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
 
@@ -310,12 +310,12 @@ def s_block(name, group=None, encoder=None, dep=None, dep_value=None, dep_values
     return ScopedBlock(block)
 
 
-def s_aligned(modulus, pattern=b"\x00", name=None):
+def s_aligned(modulus=1, pattern=b"\x00", name=None):
     """FuzzableBlock that aligns its contents to a certain number of bytes
 
-    :type  modulus:     int
-    :param modulus:     Pad length of child content to this many bytes
-    :type  pattern:     bytes
+    :type  modulus:     int, optional
+    :param modulus:     Pad length of child content to this many bytes, defaults to 1
+    :type  pattern:     bytes, optional
     :param pattern:     Pad using these byte(s)
     :type  name:        str, optional
     :param name:        Name, for referencing later. Names should always be provided, but if not, a default name will
@@ -344,7 +344,7 @@ def s_aligned(modulus, pattern=b"\x00", name=None):
     return ScopedAligned(aligned)
 
 
-def s_block_start(name, *args, **kwargs):
+def s_block_start(name=None, *args, **kwargs):
     """
     Open a new block under the current request. This routine always returns an instance so you can make your fuzzer
     pretty with indenting::
@@ -376,7 +376,7 @@ def s_block_end(name=None):
 
 
 def s_checksum(
-    block_name,
+    block_name=None,
     algorithm="crc32",
     length=0,
     endian=LITTLE_ENDIAN,
@@ -396,7 +396,7 @@ def s_checksum(
     Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
     or length calculations.
 
-    :type  block_name: str
+    :type  block_name: str, optional
     :param block_name: Name of target block for checksum calculations.
     :type  algorithm: str, function, optional
     :param algorithm: Checksum algorithm to use. (crc32, crc32c, adler32, md5, sha1, ipv4, udp)
@@ -407,9 +407,9 @@ def s_checksum(
         algorithm, defaults to 0
     :type  endian: chr, optional
     :param endian: Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
-    :type  fuzzable:   bool
-    :param fuzzable:   (Optional, def=True) Enable/disable fuzzing.
-    :type  name: str
+    :type  fuzzable:   bool, optional
+    :param fuzzable:   Enable/disable fuzzing.
+    :type  name: str, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None
     :type  ipv4_src_block_name: str, optional
@@ -438,7 +438,7 @@ def s_checksum(
     blocks.CURRENT.push(checksum)
 
 
-def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzzable=True, name=None):
+def s_repeat(block_name=None, min_reps=0, max_reps=25, step=1, variable=None, fuzzable=True, name=None):
     """
     Repeat the rendered contents of the specified block cycling from min_reps to max_reps counting by step. By
     default renders to nothing. This block modifier is useful for fuzzing overflows in table entries. This block
@@ -447,11 +447,11 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
     :see: Aliases: s_repeater()
 
     :type  block_name: str
-    :param block_name: Name of block to repeat
+    :param block_name: (Optional, def=None) Name of block to repeat
     :type  min_reps:   int
     :param min_reps:   (Optional, def=0) Minimum number of block repetitions
     :type  max_reps:   int
-    :param max_reps:   (Optional, def=None) Maximum number of block repetitions
+    :param max_reps:   (Optional, def=25) Maximum number of block repetitions
     :type  step:       int
     :param step:       (Optional, def=1) Step count between min and max reps
     :type  variable:   Sulley Integer Primitive
@@ -477,7 +477,7 @@ def s_repeat(block_name, min_reps=0, max_reps=None, step=1, variable=None, fuzza
 
 
 def s_size(
-    block_name,
+    block_name=None,
     offset=0,
     length=4,
     endian=LITTLE_ENDIAN,
@@ -494,7 +494,7 @@ def s_size(
 
     :see: Aliases: s_sizer()
 
-    :type  block_name:    str
+    :type  block_name:    str, optional
     :param block_name:    Name of block to apply sizer to.
     :type  offset:        int, optional
     :param offset:        Offset for calculated size value, defaults to 0
@@ -582,12 +582,12 @@ def s_binary(value, name=None):
     blocks.CURRENT.push(Static(name=name, default_value=parsed, fuzzable=False))
 
 
-def s_delim(value, fuzzable=True, name=None):
+def s_delim(value=" ", fuzzable=True, name=None):
     """
     Push a delimiter onto the current block stack.
 
     :type  value:    Character
-    :param value:    Original value
+    :param value:    (Optional, def=" ")Original value
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  name:     str
@@ -597,17 +597,17 @@ def s_delim(value, fuzzable=True, name=None):
     blocks.CURRENT.push(Delim(name=name, default_value=value, fuzzable=fuzzable))
 
 
-def s_group(name, values, default_value=None):
+def s_group(name=None, values=None, default_value=None):
     """
     This primitive represents a list of static values, stepping through each one on mutation. You can tie a block
     to a group primitive to specify that the block should cycle through all possible mutations for *each* value
     within the group. The group primitive is useful for example for representing a list of valid opcodes.
 
     :type  name:            str
-    :param name:            Name of group
+    :param name:            (Optional, def=None) Name of group
     :type  values:          List or raw data
-    :param values:          List of possible raw values this group can take.
-
+    :param values:          (Optional, def=None) List of possible raw values this group can take.
+    :type  default_value:   str or bytes
     :param default_value:   (Optional, def=None) Specifying a value when fuzzing() is complete
     """
 
@@ -640,17 +640,17 @@ def s_lego(lego_type, value=None, options=()):
     blocks.CURRENT.pop()
 
 
-def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, step=None, name=None):
+def s_random(value="", min_length=0, max_length=1, num_mutations=25, fuzzable=True, step=None, name=None):
     """
     Generate a random chunk of data while maintaining a copy of the original. A random length range can be specified.
     For a static length, set min/max length to be the same.
 
     :type  value:         Raw
-    :param value:         Original value
+    :param value:         (Optional, def="") Original value
     :type  min_length:    int
-    :param min_length:    Minimum length of random block
+    :param min_length:    (Optional, def=0) Minimum length of random block
     :type  max_length:    int
-    :param max_length:    Maximum length of random block
+    :param max_length:    (Optional, def=1) Maximum length of random block
     :type  num_mutations: int
     :param num_mutations: (Optional, def=25) Number of mutations to make before reverting to default
     :type  fuzzable:      bool
@@ -674,7 +674,7 @@ def s_random(value, min_length, max_length, num_mutations=25, fuzzable=True, ste
     )
 
 
-def s_static(value, name=None):
+def s_static(value=None, name=None):
     """
     Push a static value onto the current block stack.
 
@@ -689,24 +689,24 @@ def s_static(value, name=None):
     blocks.CURRENT.push(Static(name=name, default_value=value))
 
 
-def s_mirror(primitive_name, name=None):
+def s_mirror(primitive_name=None, name=None):
     """
     Push a mirror of another primitive onto the current block stack.
 
     :type primitive_name:   str
-    :param primitive_name:  Name of target primitive
+    :param primitive_name:  (Optional, def=None) Name of target primitive
     :type name:             str
     :param name:            (Optional, def=None) Name of current primitive
     """
     blocks.CURRENT.push(Mirror(name=name, primitive_name=primitive_name, request=blocks.CURRENT))
 
 
-def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_string(value="", size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a string onto the current block stack.
 
     :type  value:    str
-    :param value:    Default string value
+    :param value:    (Optional, def="")Default string value
     :type  size:     int
     :param size:     (Optional, def=-1) Static size of this field, leave -1 for dynamic.
     :type  padding:  Character
@@ -734,14 +734,14 @@ def s_string(value, size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, m
     )
 
 
-def s_from_file(value, filename, encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_from_file(value="", filename=None, encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a value from file onto the current block stack.
 
     :type  value:    str
-    :param value:    Default string value
+    :param value:    (Optional, def="") Default string value
     :type  filename: str
-    :param filename: Filename pattern to load all fuzz value
+    :param filename: (Optional, def=None) Filename pattern to load all fuzz value
     :type  encoding: str
     :param encoding: (DEPRECIATED, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
     :type  fuzzable: bool
@@ -757,8 +757,8 @@ def s_from_file(value, filename, encoding="ascii", fuzzable=True, max_len=0, nam
 
 # noinspection PyTypeChecker
 def s_bit_field(
-    value,
-    width,
+    value=0,
+    width=8,
     endian=LITTLE_ENDIAN,
     output_format="binary",
     signed=False,
@@ -773,11 +773,11 @@ def s_bit_field(
     :see: Aliases: s_bit(), s_bits()
 
     :type  value:          int
-    :param value:          Default integer value
+    :param value:          (Optional, def=0) Default integer value
     :type  width:          int
-    :param width:          Width of bit fields
+    :param width:          (Optional, def=8) Width of bit fields
     :type  endian:         Character
-    :param endian:         (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
+    :param endian:         (Optional, def=LITTLE_ENDIAN) Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
     :type  output_format:  str
     :param output_format:  (Optional, def=binary) Output format, "binary" or "ascii"
     :type  signed:         bool
@@ -808,7 +808,7 @@ def s_bit_field(
 
 
 def s_byte(
-    value,
+    value=0,
     endian=LITTLE_ENDIAN,
     output_format="binary",
     signed=False,
@@ -822,8 +822,8 @@ def s_byte(
 
     :see: Aliases: s_char()
 
-    :type  value:         int|str
-    :param value:         Default integer value
+    :type  value:         int|byte
+    :param value:         (Optional, def=0) Default integer value
     :type  endian:        Character
     :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
     :type  output_format: str
@@ -854,12 +854,12 @@ def s_byte(
     )
 
 
-def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
+def s_bytes(value=b"", size=None, padding=b"\x00", fuzzable=True, max_len=None, name=None):
     """
     Push a bytes field of arbitrary length onto the current block stack.
 
     :type  value:        bytes
-    :param value:        Default binary value
+    :param value:        (Optional, def=b"")Default binary value
     :type  size:         int
     :param size:         (Optional, def=None) Static size of this field, leave None for dynamic.
     :type  padding:      chr
@@ -878,7 +878,7 @@ def s_bytes(value, size=None, padding=b"\x00", fuzzable=True, max_len=None, name
 
 
 def s_word(
-    value,
+    value=0,
     endian=LITTLE_ENDIAN,
     output_format="binary",
     signed=False,
@@ -892,7 +892,7 @@ def s_word(
 
     :see: Aliases: s_short()
 
-    :type  value:         int
+    :type  value:         (Optional, def=0) int
     :param value:         Default integer value
     :type  endian:        chr
     :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
@@ -925,7 +925,7 @@ def s_word(
 
 
 def s_dword(
-    value,
+    value=0,
     endian=LITTLE_ENDIAN,
     output_format="binary",
     signed=False,
@@ -939,7 +939,7 @@ def s_dword(
 
     :see: Aliases: s_long(), s_int()
 
-    :type  value:         int
+    :type  value:         (Optional, def=0) int
     :param value:         Default integer value
     :type  endian:        Character
     :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
@@ -972,7 +972,7 @@ def s_dword(
 
 
 def s_qword(
-    value,
+    value=0,
     endian=LITTLE_ENDIAN,
     output_format="binary",
     signed=False,
@@ -986,7 +986,7 @@ def s_qword(
 
     :see: Aliases: s_double()
 
-    :type  value:         int
+    :type  value:         (Optional, def=0) int
     :param value:         Default integer value
     :type  endian:        Character
     :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)

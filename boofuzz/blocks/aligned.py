@@ -4,18 +4,20 @@ from ..fuzzable_block import FuzzableBlock
 class Aligned(FuzzableBlock):
     """FuzzableBlock that aligns its contents to a certain number of bytes
 
-    :type  modulus:     int
-    :param modulus:     Pad length of child content to this many bytes
-    :type  request:     boofuzz.Request
-    :param request:     Request this block belongs to
-    :type  pattern:     bytes
-    :param pattern:     Pad using these byte(s)
     :type  name:        str, optional
     :param name:        Name, for referencing later. Names should always be provided, but if not, a default name will
                         be given, defaults to None
+    :type  modulus:     int, optional
+    :param modulus:     Pad length of child content to this many bytes, defaults to 1
+    :type  request:     boofuzz.Request, optional
+    :param request:     Request this block belongs to
+    :type  pattern:     bytes, optional
+    :param pattern:     Pad using these byte(s)
+    :type  fuzzable:    bool, optional
+    :param fuzzable:    Enable/disable fuzzing of this block, defaults to true
     """
 
-    def __init__(self, modulus, request=None, pattern=b"\x00", name=None, *args, **kwargs):
+    def __init__(self, name=None, modulus=1, request=None, pattern=b"\x00", *args, **kwargs):
         super(Aligned, self).__init__(name=name, default_value=None, request=request, *args, **kwargs)
         self._modulus = modulus
         self._pattern = pattern

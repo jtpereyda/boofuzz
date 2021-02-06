@@ -1,6 +1,7 @@
 from functools import wraps
 
 from .. import helpers, primitives
+from ..exception import BoofuzzNameResolutionError
 from ..fuzzable import Fuzzable
 
 
@@ -16,12 +17,16 @@ def _may_recurse(f):
 
 
 class Size(Fuzzable):
-    """Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
-    grandparent are allowed.
+    """Create a sizer block bound to the block with the specified name.
 
-    :type  block_name:    str
+    Size blocks that size their own parent or grandparent are allowed.
+
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type  block_name:    str, optional
     :param block_name:    Name of block to apply sizer to.
-    :type  request:       boofuzz.Request
+    :type  request:       boofuzz.Request, optional
     :param request:       Request this block belongs to.
     :type  offset:        int, optional
     :param offset:        Offset for calculated size value, defaults to 0
@@ -37,14 +42,14 @@ class Size(Fuzzable):
     :param signed:        Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
     :type  math:          def, optional
     :param math:          Apply the mathematical op defined in this function to the size, defaults to None
-    :type name: str
-    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
-        defaults to None
+    :type  fuzzable:      bool, optional
+    :param fuzzable:      Enable/disable fuzzing of this block, defaults to true
     """
 
     def __init__(
         self,
-        block_name,
+        name=None,
+        block_name=None,
         request=None,
         offset=0,
         length=4,
@@ -53,7 +58,6 @@ class Size(Fuzzable):
         inclusive=False,
         signed=False,
         math=None,
-        name=None,
         *args,
         **kwargs
     ):
@@ -141,16 +145,22 @@ class Size(Fuzzable):
     @_may_recurse
     def _length_of_target_block(self, mutation_context):
         """Return length of target block, including mutations if mutation applies."""
-        target_block = self.request.resolve_name(self.context_path, self.block_name)
-        return len(target_block.render(mutation_context=mutation_context))
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            return len(target_block.render(mutation_context=mutation_context))
+        else:
+            return 0
 
     @property
     @_may_recurse
     def _original_length_of_target_block(self):
         """Return length of target block, including mutations if it is currently mutated."""
-        target_block = self.request.resolve_name(self.context_path, self.block_name)
-        length = len(target_block.original_value)
-        return length
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            length = len(target_block.original_value)
+            return length
+        else:
+            return 0
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

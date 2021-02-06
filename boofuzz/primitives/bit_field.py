@@ -42,10 +42,13 @@ class BitField(Fuzzable):
     """
     The bit field primitive represents a number of variable length and is used to define all other integer types.
 
-    :type  default_value: int
-    :param default_value: Default integer value
-    :type  width: int
-    :param width: Width in bits
+    :type  name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type  default_value: int, optional
+    :param default_value: Default integer value, defaults to 0
+    :type  width: int, optional
+    :param width: Width in bits, defaults to 8
     :type  max_num: int, optional
     :param max_num: Maximum number to iterate up to, defaults to None
     :type  endian: char, optional
@@ -56,27 +59,26 @@ class BitField(Fuzzable):
     :param signed: Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
     :type  full_range: bool, optional
     :param full_range: If enabled the field mutates through *all* possible values, defaults to False
-    :type fuzz_values: list, optional
+    :type  fuzz_values: list, optional
     :param fuzz_values: List of custom fuzz values to add to the normal mutations, defaults to None
-    :type name: str, optional
-    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
-        defaults to None
+    :type  fuzzable: bool, optional
+    :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
     """
 
     def __init__(
         self,
-        default_value,
-        width,
+        name=None,
+        default_value=0,
+        width=8,
         max_num=None,
         endian=LITTLE_ENDIAN,
         output_format="binary",
         signed=False,
         full_range=False,
-        name=None,
         *args,
         **kwargs
     ):
-        super(BitField, self).__init__(name, default_value, *args, **kwargs)
+        super(BitField, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         assert isinstance(width, six.integer_types), "width must be an integer!"
 

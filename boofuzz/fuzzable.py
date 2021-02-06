@@ -7,7 +7,7 @@ from .protocol_session_reference import ProtocolSessionReference
 
 
 class Fuzzable(object):
-    """Parent class for all primivites and blocks.
+    """Parent class for all primitives and blocks.
 
     When making new fuzzable types, one will typically override :meth:`mutations` and/or :meth:`encode`.
 
@@ -47,6 +47,10 @@ class Fuzzable(object):
             fuzz_values = list()
         self._fuzz_values = fuzz_values
 
+        if self._name is None:
+            Fuzzable.name_counter += 1
+            self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
+
     @property
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
@@ -58,9 +62,9 @@ class Fuzzable(object):
 
         :rtype: str
         """
-        if self._name is None:
-            Fuzzable.name_counter += 1
-            self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
+        # if self._name is None:
+        #     Fuzzable.name_counter += 1
+        #     self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
         return self._name
 
     @property
