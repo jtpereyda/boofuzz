@@ -1,7 +1,6 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..exception import BoofuzzNameResolutionError
 from ..fuzzable import Fuzzable
 
 
