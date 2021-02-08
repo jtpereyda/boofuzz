@@ -33,7 +33,7 @@ class TestBlocks(DebuggableTestCase):
             s_word(0xDEAD, name="word")
             s_dword(0xDEADBEEF, name="dword")
             s_qword(0xDEADBEEFDEADBEEF, name="qword")
-            s_random(0, 5, 10, 100, name="random")
+            s_random(b"\x00", 5, 10, 100, name="random")
             s_block_end()
 
         req1 = s_get("UNIT TEST 1")
@@ -88,7 +88,7 @@ class TestBlocks(DebuggableTestCase):
             s_word(0xDEAD, name="word")
             s_dword(0xDEADBEEF, name="dword")
             s_qword(0xDEADBEEFDEADBEEF, name="qword")
-            s_random(0, 5, 10, 100, name="random")
+            s_random(b"\x00", 5, 10, 100, name="random")
             s_block_end()
 
         req2 = s_get("UNIT TEST 2")
