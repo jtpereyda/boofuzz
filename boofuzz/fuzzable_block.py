@@ -15,12 +15,17 @@ class FuzzableBlock(Fuzzable):
     1. :meth:`get_child_data` Render and concatenate all child nodes.
     2. :meth:`push` Add an additional child node; generally used only internally.
 
-    Args:
-        children (Iterable): List of child nodes (typically given to FuzzableBlock types).
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
+    :param request: Request this block belongs to, defaults to None
+    :type request: boofuzz.Request, optional
+    :param children: List of child nodes (typically given to FuzzableBlock types)m defaults to None
+    :type children: boofuzz.Fuzzable, optional
     """
 
-    def __init__(self, name, request=None, children=None, *args, **kwargs):
-        super(FuzzableBlock, self).__init__(name, *args, **kwargs)
+    def __init__(self, name=None, request=None, children=None, *args, **kwargs):
+        super(FuzzableBlock, self).__init__(name=name, *args, **kwargs)
         self.request = request
 
         if children is None:

@@ -4,11 +4,38 @@ from ..fuzzable_block import FuzzableBlock
 
 
 class Block(FuzzableBlock):
+    """The basic building block. Can contain primitives, sizers, checksums or other blocks.
+
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
+        defaults to None
+    :type default_value: Any, optional
+    :param request: Request this block belongs to, defaults to None
+    :type request: boofuzz.Request, optional
+    :param children: Children of this block, defaults to None
+    :type children: boofuzz.Fuzzable, optional
+    :param group: Name of group to associate this block with, defaults to None
+    :type group: str, optional
+    :param encoder: Optional pointer to a function to pass rendered data to prior to return, defaults to None
+    :type encoder: callable, optional
+    :param dep: Optional primitive whose specific value this block is dependant on, defaults to None
+    :type dep: str, optional
+    :param dep_value: Value that field "dep" must contain for block to be rendered, defaults to None
+    :type dep_value: Any, optional
+    :param dep_values: Values that field "dep" may contain for block to be rendered, defaults to None
+    :type dep_values: list, optional
+    :param dep_compare: Comparison method to apply to dependency (==, !=, >, >=, <, <=), defaults to None
+    :type dep_compare: str, optional
+    """
+
     def __init__(
         self,
-        name,
+        name=None,
         default_value=None,
         request=None,
+        children=None,
         group=None,
         encoder=None,
         dep=None,
@@ -18,25 +45,9 @@ class Block(FuzzableBlock):
         *args,
         **kwargs
     ):
-        """
-        The basic building block. Can contain primitives, sizers, checksums or other blocks.
-
-        @type  request:     Request
-        @param request:     Request this block belongs to
-        @type  group:       str
-        @param group:       (Optional, def=None) Name of group to associate this block with
-        @type  encoder:     Function Pointer
-        @param encoder:     (Optional, def=None) Optional pointer to a function to pass rendered data to prior to return
-        @type  dep:         str
-        @param dep:         (Optional, def=None) Optional primitive whose specific value this block is dependant on
-        @type  dep_value:   Mixed
-        @param dep_value:   (Optional, def=None) Value that field "dep" must contain for block to be rendered
-        @type  dep_values:  List of Mixed Types
-        @param dep_values:  (Optional, def=[]) Values that field "dep" may contain for block to be rendered
-        @type  dep_compare: str
-        @param dep_compare: (Optional, def="==") Comparison method to apply to dependency (==, !=, >, >=, <, <=)
-        """
-        super(Block, self).__init__(name=name, default_value=default_value, request=request, *args, **kwargs)
+        super(Block, self).__init__(
+            name=name, default_value=default_value, request=request, children=children, *args, **kwargs
+        )
 
         self.request = request
         self.group = group

@@ -62,6 +62,7 @@ Primitives
 .. autofunction:: boofuzz.Static
 .. autofunction:: boofuzz.String
 .. autofunction:: boofuzz.FromFile
+.. autofunction:: boofuzz.Mirror
 .. autofunction:: boofuzz.BitField
 .. autofunction:: boofuzz.Byte
 .. autofunction:: boofuzz.Bytes

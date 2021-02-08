@@ -16,17 +16,17 @@ class TestString(unittest.TestCase):
     def _given_string(self):
         self.default_value = "ABCDEFGH"
         self.default_default_value = "\x00" * len(self.default_value)
-        return String("boofuzz-unit-test-name", self.default_value)
+        return String(name="boofuzz-unit-test-name", default_value=self.default_value)
 
     def _given_bytes_max_len(self, max_len):
-        self.default_value = "ABCDEFGH"
+        self.default_value = b"ABCDEFGH"
         self.default_default_value = "\x00" * len(self.default_value)
-        return Bytes("boofuzz-unit-test-name", self.default_value, max_len=max_len)
+        return Bytes(name="boofuzz-unit-test-name", default_value=self.default_value, max_len=max_len)
 
     def _given_bytes_size(self, size, padding):
-        self.default_value = "ABCDEFGH"
+        self.default_value = b"ABCDEFGH"
         self.default_default_value = "\x00" * len(self.default_value)
-        return Bytes("boofuzz-unit-test-name", self.default_value, size=size, padding=padding)
+        return Bytes(name="boofuzz-unit-test-name", default_value=self.default_value, size=size, padding=padding)
 
     def test_mutations(self):
         uut = self._given_string()

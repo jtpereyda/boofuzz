@@ -10,17 +10,18 @@ from ..fuzzable_block import FuzzableBlock
 
 
 class Request(FuzzableBlock):
-    def __init__(self, name, children=None):
-        """
-        Top level container instantiated by s_initialize(). Can hold any block structure or primitive. This can
-        essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
+    """Top level container. Can hold any block structure or primitive.
 
-        @type  name: str
-        @param name: Name of this request
-        """
+    This can essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
 
-        super(Request, self).__init__(name, self)
-        self._name = name
+    :param name: Name of this request
+    :type name: str, optional
+    :param children: Children of this request, defaults to None
+    :type children: boofuzz.Fuzzable, optional
+    """
+
+    def __init__(self, name=None, children=None):
+        super(Request, self).__init__(name=name, request=self)
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
@@ -166,6 +167,8 @@ class Request(FuzzableBlock):
         Returns:
 
         """
+        if name is None:
+            raise BoofuzzNameResolutionError(ERR_NAME_NOT_FOUND.format(name))
         if name.startswith("."):  # Case 1 relative
             components = (context_path + name).split(".")  # double dots leave an empty string; so do trailing dots
             while "" in components:

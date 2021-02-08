@@ -16,15 +16,39 @@ def _may_recurse(f):
 
 
 class Size(Fuzzable):
-    """
-    This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
-    user does not need to be wary of this fact.
+    """Create a sizer block bound to the block with the specified name.
+
+    Size blocks that size their own parent or grandparent are allowed.
+
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type  block_name:    str, optional
+    :param block_name:    Name of block to apply sizer to.
+    :type  request:       boofuzz.Request, optional
+    :param request:       Request this block belongs to.
+    :type  offset:        int, optional
+    :param offset:        Offset for calculated size value, defaults to 0
+    :type  length:        int, optional
+    :param length:        Length of sizer, defaults to 4
+    :type  endian:        chr, optional
+    :param endian:        Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
+    :type  output_format: str, optional
+    :param output_format: Output format, "binary" or "ascii", defaults to binary
+    :type  inclusive:     bool, optional
+    :param inclusive:     Should the sizer count its own length? Defaults to False
+    :type  signed:        bool, optional
+    :param signed:        Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
+    :type  math:          def, optional
+    :param math:          Apply the mathematical op defined in this function to the size, defaults to None
+    :type  fuzzable:      bool, optional
+    :param fuzzable:      Enable/disable fuzzing of this block, defaults to true
     """
 
     def __init__(
         self,
-        name,
-        block_name,
+        name=None,
+        block_name=None,
         request=None,
         offset=0,
         length=4,
@@ -36,30 +60,6 @@ class Size(Fuzzable):
         *args,
         **kwargs
     ):
-        """
-        Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
-        grandparent are allowed.
-
-        :type  block_name:    str
-        :param block_name:    Name of block to apply sizer to
-        :type  request:       Request
-        :param request:       Request this block belongs to
-        :type  length:        int
-        :param length:        (Optional, def=4) Length of sizer
-        :type  offset:        int
-        :param offset:        (Optional, def=0) Offset for calculated size value
-        :type  endian:        chr
-        :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-        :type  output_format: str
-        :param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
-        :type  inclusive:     bool
-        :param inclusive:     (Optional, def=False) Should the sizer count its own length?
-        :type  signed:        bool
-        :param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-        :type  math:          def
-        :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
-        """
-
         super(Size, self).__init__(name=name, default_value=None, *args, **kwargs)
         self.block_name = block_name
         self.request = request
@@ -144,16 +144,22 @@ class Size(Fuzzable):
     @_may_recurse
     def _length_of_target_block(self, mutation_context):
         """Return length of target block, including mutations if mutation applies."""
-        target_block = self.request.resolve_name(self.context_path, self.block_name)
-        return len(target_block.render(mutation_context=mutation_context))
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            return len(target_block.render(mutation_context=mutation_context))
+        else:
+            return 0
 
     @property
     @_may_recurse
     def _original_length_of_target_block(self):
         """Return length of target block, including mutations if it is currently mutated."""
-        target_block = self.request.resolve_name(self.context_path, self.block_name)
-        length = len(target_block.original_value)
-        return length
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            length = len(target_block.original_value)
+            return length
+        else:
+            return 0
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)

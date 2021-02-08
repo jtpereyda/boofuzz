@@ -9,28 +9,35 @@ from ..mutation import Mutation
 
 
 class RandomData(Fuzzable):
-    def __init__(self, name, value, min_length, max_length, max_mutations=25, step=None, *args, **kwargs):
-        """
-        Generate a random chunk of data while maintaining a copy of the original. A random length range
-        can be specified.
+    """Generate a random chunk of data while maintaining a copy of the original.
 
-        For a static length, set min/max length to be the same.
+    A random length range can be specified. For a static length, set min/max length to be the same.
 
-        @type  value:         str
-        @param value:         Original value
-        @type  min_length:    int
-        @param min_length:    Minimum length of random block
-        @type  max_length:    int
-        @param max_length:    Maximum length of random block
-        @type  max_mutations: int
-        @param max_mutations: (Optional, def=25) Number of mutations to make before reverting to default
-        @type  step:          int
-        @param step:          (Optional, def=None) If not null, step count between min and max reps, otherwise random
-        """
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type name: str, optional
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
+        defaults to None
+    :type default_value: Any, optional
+    :param min_length: Minimum length of random block, defaults to 0
+    :type min_length: int, optional
+    :param max_length: Maximum length of random block, defaults to 1
+    :type max_length: int, optional
+    :param max_mutations: Number of mutations to make before reverting to default, defaults to 25
+    :type max_mutations: int, optional
+    :param step: If not None, step count between min and max reps, otherwise random, defaults to None
+    :type step: int, optional
+    :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
+    :type fuzzable: bool, optional
+    """
 
-        super(RandomData, self).__init__(name, value, *args, **kwargs)
+    def __init__(
+        self, name=None, default_value="", min_length=0, max_length=1, max_mutations=25, step=None, *args, **kwargs
+    ):
+        default_value = helpers.str_to_bytes(default_value)
 
-        self._value = self._original_value = helpers.str_to_bytes(value)
+        super(RandomData, self).__init__(name=name, default_value=default_value, *args, **kwargs)
+
         self.min_length = min_length
         self.max_length = max_length
         self.max_mutations = max_mutations

@@ -7,7 +7,7 @@ from .protocol_session_reference import ProtocolSessionReference
 
 
 class Fuzzable(object):
-    """Parent class for all primivites and blocks.
+    """Parent class for all primitives and blocks.
 
     When making new fuzzable types, one will typically override :meth:`mutations` and/or :meth:`encode`.
 
@@ -22,13 +22,16 @@ class Fuzzable(object):
 
     The rest of the methods are used by boofuzz to handle fuzzing and are typically not overridden.
 
-    Args:
-        fuzzable (bool): Enable fuzzing of this primitive. Default: True.
-        name (str): Name, for referencing later. Names should always be provided, but if not, a default name will
-            be given.
-        default_value: Value used when the element is not being fuzzed -- should typically represent a valid value.
-            Can be a static value, or a ReferenceValueTestCaseSession.
-        fuzz_values (list): List of custom fuzz values to add to the normal mutations.
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type default_value: Any
+    :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
+        Can be a static value, or a ReferenceValueTestCaseSession, defaults to None
+    :type fuzzable: bool
+    :param fuzzable: Enable fuzzing of this primitive, defaults to True
+    :type fuzz_values: list
+    :param fuzz_values: List of custom fuzz values to add to the normal mutations, defaults to None
     """
 
     name_counter = 0
@@ -44,6 +47,10 @@ class Fuzzable(object):
             fuzz_values = list()
         self._fuzz_values = fuzz_values
 
+        if self._name is None:
+            Fuzzable.name_counter += 1
+            self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
+
     @property
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
@@ -55,9 +62,9 @@ class Fuzzable(object):
 
         :rtype: str
         """
-        if self._name is None:
-            Fuzzable.name_counter += 1
-            self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
+        # if self._name is None:
+        #     Fuzzable.name_counter += 1
+        #     self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
         return self._name
 
     @property

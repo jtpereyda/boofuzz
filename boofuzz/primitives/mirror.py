@@ -18,16 +18,21 @@ def _may_recurse(f):
 
 
 class Mirror(BasePrimitive):
-    """
-    Primitive used to keep updated with another primitive.
+    """Primitive used to keep updated with another primitive.
 
-    Args:
-        primitive_name (str):   Name of target primitive.
-        request (s_request):    Request this primitive belongs to.
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type primitive_name: str
+    :param primitive_name: Name of target primitive.
+    :type request: boofuzz.Request
+    :param request: Request this primitive belongs to.
+    :type fuzzable: bool, optional
+    :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
     """
 
-    def __init__(self, name, primitive_name, request, *args, **kwargs):
-        super(Mirror, self).__init__(name, default_value=None, *args, **kwargs)
+    def __init__(self, name=None, primitive_name=None, request=None, *args, **kwargs):
+        super(Mirror, self).__init__(name=name, default_value=None, *args, **kwargs)
 
         self._primitive_name = primitive_name
         self._request = request
