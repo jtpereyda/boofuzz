@@ -28,6 +28,7 @@ Fixes
 - Network monitor: fixed data_bytes calculation and PcapThread synchronization
 - Fixed a crash when using the network monitor
 - Session can now be "quiet" by passing an empty list of loggers
+- Process Monitor: fixed Thread.isAlive for Python 3.9 compability
 
 v0.2.1
 ------
