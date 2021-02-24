@@ -79,7 +79,7 @@ class ProcessMonitorLocal(BaseMonitor):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.debugger_thread is not None and self.debugger_thread.isAlive():
+        if self.debugger_thread is not None and self.debugger_thread.is_alive():
             self.debugger_thread.stop_target()
 
     # noinspection PyMethodMayBeStatic
@@ -142,7 +142,7 @@ class ProcessMonitorLocal(BaseMonitor):
         self.log("pre_send(%d)" % test_number, 10)
         self.test_number = test_number
 
-        if self.debugger_thread is None or not self.debugger_thread.isAlive():
+        if self.debugger_thread is None or not self.debugger_thread.is_alive():
             self.start_target()
             self.debugger_thread.pre_send()
 
@@ -198,20 +198,20 @@ class ProcessMonitorLocal(BaseMonitor):
         time.sleep(1)
         if len(self.stop_commands) < 1:
             self.debugger_thread.stop_target()
-            while self.debugger_thread.isAlive():
+            while self.debugger_thread.is_alive():
                 time.sleep(0.1)
         else:
             for command in self.stop_commands:
                 if command == ["TERMINATE_PID"] or command == "TERMINATE_PID":
                     self.debugger_thread.stop_target()
-                    while self.debugger_thread.isAlive():
+                    while self.debugger_thread.is_alive():
                         time.sleep(0.1)
                 else:
                     self.log("Executing stop command: '{0}'".format(command), 2)
                     subprocess.Popen(command)
 
     def _target_is_running(self):
-        return self.debugger_thread is not None and self.debugger_thread.isAlive()
+        return self.debugger_thread is not None and self.debugger_thread.is_alive()
 
     def restart_target(self, **kwargs):
         """

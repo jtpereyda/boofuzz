@@ -192,7 +192,7 @@ class DebuggerThreadPydbg(threading.Thread):
         # it is important to wait for the debugger thread to finish because it could be taking its sweet ass time
         # uncovering the details of the access violation.
         if av:
-            while self.isAlive():
+            while self.is_alive():
                 time.sleep(1)
 
         # serialize the crash bin to disk.
