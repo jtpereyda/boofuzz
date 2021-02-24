@@ -724,6 +724,7 @@ def s_string(value="", size=None, padding=b"\x00", encoding="ascii", fuzzable=Tr
     :type  name:     str
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
+    # support old interface where default was -1 instead of None
     if size == -1:
         size = None
     if max_len == -1:

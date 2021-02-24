@@ -1,5 +1,6 @@
 from __future__ import division
 
+import itertools
 import math
 import unittest
 from collections import Counter, OrderedDict
@@ -58,11 +59,13 @@ class TestString(unittest.TestCase):
             self.assertEqual(self.default_default_value * expected, actual)
 
         for sequence in String.long_string_seeds:
-            for size in String._long_string_lengths:
-                for delta in String._long_string_deltas:
-                    n += 1
-                    expected = sequence * math.ceil((size + delta) / len(sequence))
-                    self.assertEqual(expected[: size + delta], next(generator))
+            for size in [
+                length + delta
+                for length, delta in itertools.product(String._long_string_lengths, String._long_string_deltas)
+            ]:
+                n += 1
+                expected = sequence * math.ceil(size / len(sequence))
+                self.assertEqual(expected[:size], next(generator))
 
             for size in String._extra_long_string_lengths:
                 n += 1
@@ -91,7 +94,7 @@ class TestString(unittest.TestCase):
             generator = uut.mutations(default_value=self.default_default_value)
 
             def truncate(b):
-                return b[0:max_len]
+                return b[:max_len]
 
             n = 0
             for expected, actual in zip(OrderedDict.fromkeys(list(map(truncate, String._fuzz_library))), generator):
@@ -105,12 +108,14 @@ class TestString(unittest.TestCase):
                     break
 
             for sequence in String.long_string_seeds:
-                for size in String._long_string_lengths:
-                    for delta in String._long_string_deltas:
-                        if size + delta <= max_len:
-                            n += 1
-                            expected = sequence * math.ceil((size + delta) / len(sequence))
-                            self.assertEqual(truncate(expected[: size + delta]), next(generator))
+                for size in [
+                    length + delta
+                    for length, delta in itertools.product(String._long_string_lengths, String._long_string_deltas)
+                ]:
+                    if size <= max_len:
+                        n += 1
+                        expected = sequence * math.ceil(size / len(sequence))
+                        self.assertEqual(truncate(expected[:size]), next(generator))
 
                 for size in String._extra_long_string_lengths:
                     if size <= max_len:
@@ -118,14 +123,13 @@ class TestString(unittest.TestCase):
                         expected = sequence * math.ceil(size / len(sequence))
                         self.assertEqual(truncate(expected[:size]), next(generator))
 
-                if max_len < min(String._long_string_lengths[0], String._extra_long_string_lengths[0]) or max_len > max(
-                    String._long_string_lengths[-1] + String._long_string_deltas[-1],
-                    String._extra_long_string_lengths[-1],
-                ):
+                if max_len not in String._extra_long_string_lengths + [
+                    length + delta
+                    for length, delta in itertools.product(String._long_string_lengths, String._long_string_deltas)
+                ]:
                     n += 1
                     expected = sequence * math.ceil(max_len / len(sequence))
-                    actual = next(generator)
-                    self.assertEqual(truncate(expected[:max_len]), actual)
+                    self.assertEqual(truncate(expected), next(generator))
 
             for size in String._long_string_lengths:
                 if size <= max_len + 1:
@@ -168,12 +172,14 @@ class TestString(unittest.TestCase):
                     break
 
             for sequence in String.long_string_seeds:
-                for size in String._long_string_lengths:
-                    for delta in String._long_string_deltas:
-                        if size + delta <= max_len:
-                            n += 1
-                            expected = sequence * math.ceil((size + delta) / len(sequence))
-                            self.assertEqual(fit_to_size(expected[: size + delta]), uut.encode(next(generator)))
+                for size in [
+                    length + delta
+                    for length, delta in itertools.product(String._long_string_lengths, String._long_string_deltas)
+                ]:
+                    if size <= max_len:
+                        n += 1
+                        expected = sequence * math.ceil(size / len(sequence))
+                        self.assertEqual(fit_to_size(expected[:size]), uut.encode(next(generator)))
 
                 for size in String._extra_long_string_lengths:
                     if size <= max_len:
@@ -181,13 +187,13 @@ class TestString(unittest.TestCase):
                         expected = sequence * math.ceil(size / len(sequence))
                         self.assertEqual(fit_to_size(expected[:size]), uut.encode(next(generator)))
 
-                if max_len < min(String._long_string_lengths[0], String._extra_long_string_lengths[0]) or max_len > max(
-                    String._long_string_lengths[-1] + String._long_string_deltas[-1],
-                    String._extra_long_string_lengths[-1],
-                ):
+                if max_len not in String._extra_long_string_lengths + [
+                    length + delta
+                    for length, delta in itertools.product(String._long_string_lengths, String._long_string_deltas)
+                ]:
                     n += 1
                     expected = sequence * math.ceil(max_len / len(sequence))
-                    self.assertEqual(fit_to_size(expected[:max_len]), uut.encode(next(generator)))
+                    self.assertEqual(fit_to_size(expected), uut.encode(next(generator)))
 
             for length in String._long_string_lengths:
                 if length <= max_len + 1:

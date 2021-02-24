@@ -1,10 +1,10 @@
 from __future__ import division
 
+import itertools
 import math
 import random
 
 import six
-from future.moves import itertools
 from future.standard_library import install_aliases
 from six.moves import range
 
@@ -220,24 +220,26 @@ class String(Fuzzable):
         @param sequences: Sequence to repeat for creation of fuzz strings.
         """
         for sequence in sequences:
-            for size in self._long_string_lengths:
-                for delta in self._long_string_deltas:
-                    if self.max_len is None or size + delta <= self.max_len:
-                        data = sequence * math.ceil((size + delta) / len(sequence))
-                        yield data[: size + delta]
+            for size in [
+                length + delta
+                for length, delta in itertools.product(self._long_string_lengths, self._long_string_deltas)
+            ]:
+                if self.max_len is None or size <= self.max_len:
+                    data = sequence * math.ceil(size / len(sequence))
+                    yield data[:size]
+                else:
+                    break
 
             for size in self._extra_long_string_lengths:
                 if self.max_len is None or size <= self.max_len:
                     data = sequence * math.ceil(size / len(sequence))
                     yield data[:size]
+                else:
+                    break
 
-            if self.max_len is not None and (
-                self.max_len < min(self._long_string_lengths[0], self._extra_long_string_lengths[0])
-                or self.max_len
-                > max(self._long_string_lengths[-1] + self._long_string_deltas[-1], self._extra_long_string_lengths[-1])
-            ):
+            if self.max_len is not None:
                 data = sequence * math.ceil(self.max_len / len(sequence))
-                yield data[: self.max_len]
+                yield data
 
         for size in self._long_string_lengths:
             if self.max_len is None or size <= self.max_len + 1:
@@ -245,13 +247,15 @@ class String(Fuzzable):
                 for loc in self.random_indices[size]:
                     s = s[:loc] + "\x00" + s[loc:]  # Do we really have to insert a char or can we replace it?
                     yield s
+            else:
+                break
 
     def _yield_variable_mutations(self, default_value):
         for length in self._variable_mutation_multipliers:
             value = default_value * length
             if value not in self._fuzz_library:
                 yield value
-                if self.max_len is not None and self.max_len <= len(value):
+                if self.max_len is not None and len(value) >= self.max_len:
                     break
 
     def _adjust_mutation_for_size(self, fuzz_value):
