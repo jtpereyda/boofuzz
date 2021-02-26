@@ -190,7 +190,7 @@ class String(Fuzzable):
     _variable_mutation_multipliers = [2, 10, 100]
 
     def __init__(
-        self, name=None, default_value="", size=None, padding=b"\x00", encoding="ascii", max_len=None, *args, **kwargs
+        self, name=None, default_value="", size=None, padding=b"\x00", encoding="utf-8", max_len=None, *args, **kwargs
     ):
         super(String, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
@@ -209,7 +209,7 @@ class String(Fuzzable):
         for length in self._long_string_lengths:
             self.random_indices[length] = []
             for _ in range(random.randint(1, 10)):  # Number of null bytes to insert (random)
-                loc = random.randint(1, length)  # Location of random byte
+                loc = random.randint(0, length)  # Location of random byte
                 self.random_indices[length].append(loc)
 
     def _yield_long_strings(self, sequences):
@@ -242,11 +242,11 @@ class String(Fuzzable):
                 yield data
 
         for size in self._long_string_lengths:
-            if self.max_len is None or size <= self.max_len + 1:
+            if self.max_len is None or size <= self.max_len:
                 s = "D" * size
                 for loc in self.random_indices[size]:
-                    s = s[:loc] + "\x00" + s[loc:]  # Do we really have to insert a char or can we replace it?
-                    yield s
+                    s = s[:loc] + "\x00" + s[loc + 1 :]  # Replace character at loc with terminator
+                yield s
             else:
                 break
 

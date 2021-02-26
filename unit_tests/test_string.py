@@ -75,9 +75,9 @@ class TestString(unittest.TestCase):
         for size in String._long_string_lengths:
             s = "D" * size
             for loc in uut.random_indices[size]:
-                s = s[:loc] + "\x00" + s[loc:]
-                n += 1
-                self.assertEqual(s, next(generator))
+                s = s[:loc] + "\x00" + s[loc + 1 :]
+            n += 1
+            self.assertEqual(s, next(generator))
 
         self.assertRaises(StopIteration, lambda: next(generator))
         self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
@@ -132,12 +132,12 @@ class TestString(unittest.TestCase):
                     self.assertEqual(truncate(expected), next(generator))
 
             for size in String._long_string_lengths:
-                if size <= max_len + 1:
+                if size <= max_len:
                     s = "D" * size
                     for loc in uut.random_indices[size]:
-                        s = s[:loc] + "\x00" + s[loc:]
-                        n += 1
-                        self.assertEqual(truncate(s), next(generator))
+                        s = s[:loc] + "\x00" + s[loc + 1 :]
+                    n += 1
+                    self.assertEqual(truncate(s), next(generator))
 
             self.assertRaises(StopIteration, lambda: next(generator))
             self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
@@ -196,12 +196,12 @@ class TestString(unittest.TestCase):
                     self.assertEqual(fit_to_size(expected), uut.encode(next(generator)))
 
             for length in String._long_string_lengths:
-                if length <= max_len + 1:
+                if length <= max_len:
                     s = "D" * length
                     for loc in uut.random_indices[length]:
-                        s = s[:loc] + "\x00" + s[loc:]
-                        n += 1
-                        self.assertEqual(fit_to_size(s), uut.encode(next(generator)))
+                        s = s[:loc] + "\x00" + s[loc + 1 :]
+                    n += 1
+                    self.assertEqual(fit_to_size(s), uut.encode(next(generator)))
 
             self.assertRaises(StopIteration, lambda: next(generator))
             self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
