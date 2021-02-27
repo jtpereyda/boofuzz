@@ -205,12 +205,15 @@ class String(Fuzzable):
         self._static_num_mutations = None
         self.random_indices = {}
 
-        random.seed(0)
+        random.seed(0)  # We want constant random numbers to generate reproducible test cases
+        previous_length = 0
+        # For every length add a random number of random indices to the random_indices dict. Prevent duplicates by
+        # adding only indices in between previous_length and current length.
         for length in self._long_string_lengths:
-            self.random_indices[length] = []
-            for _ in range(random.randint(1, 10)):  # Number of null bytes to insert (random)
-                loc = random.randint(0, length)  # Location of random byte
-                self.random_indices[length].append(loc)
+            self.random_indices[length] = random.sample(
+                range(previous_length, length), random.randint(1, self._long_string_lengths[0])
+            )
+            previous_length = length
 
     def _yield_long_strings(self, sequences):
         """
@@ -245,8 +248,7 @@ class String(Fuzzable):
             if self.max_len is None or size <= self.max_len:
                 s = "D" * size
                 for loc in self.random_indices[size]:
-                    s = s[:loc] + "\x00" + s[loc + 1 :]  # Replace character at loc with terminator
-                yield s
+                    yield s[:loc] + "\x00" + s[loc + 1:]  # Replace character at loc with terminator
             else:
                 break
 

@@ -75,9 +75,9 @@ class TestString(unittest.TestCase):
         for size in String._long_string_lengths:
             s = "D" * size
             for loc in uut.random_indices[size]:
-                s = s[:loc] + "\x00" + s[loc + 1 :]
-            n += 1
-            self.assertEqual(s, next(generator))
+                n += 1
+                expected = s[:loc] + "\x00" + s[loc + 1 :]
+                self.assertEqual(expected, next(generator))
 
         self.assertRaises(StopIteration, lambda: next(generator))
         self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
@@ -135,9 +135,9 @@ class TestString(unittest.TestCase):
                 if size <= max_len:
                     s = "D" * size
                     for loc in uut.random_indices[size]:
-                        s = s[:loc] + "\x00" + s[loc + 1 :]
-                    n += 1
-                    self.assertEqual(truncate(s), next(generator))
+                        expected = s[:loc] + "\x00" + s[loc + 1 :]
+                        n += 1
+                        self.assertEqual(truncate(expected), next(generator))
 
             self.assertRaises(StopIteration, lambda: next(generator))
             self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
@@ -199,9 +199,9 @@ class TestString(unittest.TestCase):
                 if length <= max_len:
                     s = "D" * length
                     for loc in uut.random_indices[length]:
-                        s = s[:loc] + "\x00" + s[loc + 1 :]
-                    n += 1
-                    self.assertEqual(fit_to_size(s), uut.encode(next(generator)))
+                        expected = s[:loc] + "\x00" + s[loc + 1 :]
+                        n += 1
+                        self.assertEqual(fit_to_size(expected), uut.encode(next(generator)))
 
             self.assertRaises(StopIteration, lambda: next(generator))
             self.assertEqual(n, uut.num_mutations(default_value=self.default_value))
