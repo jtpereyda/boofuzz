@@ -248,7 +248,7 @@ class String(Fuzzable):
             if self.max_len is None or size <= self.max_len:
                 s = "D" * size
                 for loc in self.random_indices[size]:
-                    yield s[:loc] + "\x00" + s[loc + 1:]  # Replace character at loc with terminator
+                    yield s[:loc] + "\x00" + s[loc + 1 :]  # Replace character at loc with terminator
             else:
                 break
 
