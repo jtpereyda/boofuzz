@@ -29,6 +29,9 @@ Fixes
 - Fixed a crash when using the network monitor
 - Session can now be "quiet" by passing an empty list of loggers
 - Process Monitor: fixed Thread.isAlive for Python 3.9 compability
+- Correctly truncate values of the string primitive when max_len or size is set.
+- The string primitive will no longer generate duplicates when max_len or size is set.
+- Greatly improved string to bytes conversion speed.
 
 v0.2.1
 ------

@@ -649,7 +649,7 @@ def s_random(value="", min_length=0, max_length=1, num_mutations=25, fuzzable=Tr
     Generate a random chunk of data while maintaining a copy of the original. A random length range can be specified.
     For a static length, set min/max length to be the same.
 
-    :type  value:         Raw
+    :type  value:         str or bytes
     :param value:         (Optional, def="") Original value
     :type  min_length:    int
     :param min_length:    (Optional, def=0) Minimum length of random block
@@ -705,25 +705,30 @@ def s_mirror(primitive_name=None, name=None):
     blocks.CURRENT.push(Mirror(name=name, primitive_name=primitive_name, request=blocks.CURRENT))
 
 
-def s_string(value="", size=-1, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=-1, name=None):
+def s_string(value="", size=None, padding=b"\x00", encoding="ascii", fuzzable=True, max_len=None, name=None):
     """
     Push a string onto the current block stack.
 
     :type  value:    str
     :param value:    (Optional, def="")Default string value
     :type  size:     int
-    :param size:     (Optional, def=-1) Static size of this field, leave -1 for dynamic.
+    :param size:     (Optional, def=None) Static size of this field, leave None for dynamic.
     :type  padding:  Character
     :param padding:  (Optional, def="\\x00") Value to use as padding to fill static field size.
     :type  encoding: str
-    :param encoding: (Optonal, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
+    :param encoding: (Optional, def="ascii") String encoding, ex: utf_16_le for Microsoft Unicode.
     :type  fuzzable: bool
     :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
     :type  max_len:  int
-    :param max_len:  (Optional, def=-1) Maximum string length
+    :param max_len:  (Optional, def=None) Maximum string length
     :type  name:     str
     :param name:     (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
+    # support old interface where default was -1 instead of None
+    if size == -1:
+        size = None
+    if max_len == -1:
+        max_len = None
 
     blocks.CURRENT.push(
         String(

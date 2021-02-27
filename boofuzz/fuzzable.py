@@ -25,12 +25,12 @@ class Fuzzable(object):
     :type name: str, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None
-    :type default_value: Any
+    :type default_value: Any, optional
     :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value.
         Can be a static value, or a ReferenceValueTestCaseSession, defaults to None
-    :type fuzzable: bool
+    :type fuzzable: bool, optional
     :param fuzzable: Enable fuzzing of this primitive, defaults to True
-    :type fuzz_values: list
+    :type fuzz_values: list, optional
     :param fuzz_values: List of custom fuzz values to add to the normal mutations, defaults to None
     """
 
@@ -62,9 +62,6 @@ class Fuzzable(object):
 
         :rtype: str
         """
-        # if self._name is None:
-        #     Fuzzable.name_counter += 1
-        #     self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
         return self._name
 
     @property

@@ -18,7 +18,7 @@ class RandomData(Fuzzable):
     :type name: str, optional
     :param default_value: Value used when the element is not being fuzzed - should typically represent a valid value,
         defaults to None
-    :type default_value: Any, optional
+    :type default_value: str or bytes, optional
     :param min_length: Minimum length of random block, defaults to 0
     :type min_length: int, optional
     :param max_length: Maximum length of random block, defaults to 1
