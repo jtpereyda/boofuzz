@@ -1,23 +1,25 @@
 Changelog
 =========
 
-Upcoming
---------
-
+v0.3.0
+------
 Features
 ^^^^^^^^
 - Memory optimization: Efficient mutation generation and smarter string reuse -- decrease memory consumption by orders of magnitude.
 - `Aligned` block: Aligns content length to multiple of certain number of bytes.
-- Relative names: Name references for `Checksum`, `Size`, etc. now resolve absolute and relative names. Block and primitive names no longer need to be globally unique within a message, they only need to be locally unique within a block.
-- Passing data between messages: Callbacks now have a `TestCaseContext` object to which one can save data to be used later in the test case. `TestCaseSessionReference` can be passed as a default value in a protocol definition. The name it references must have been saved by the time that message in the protocol is reached.
+- Relative names: Name references for `Checksum`, `Size`, etc. now resolve absolute and relative names. Block and primitive
+  names no longer need to be globally unique within a message, they only need to be locally unique within a block.
+- Passing data between messages: Callbacks now have a `TestCaseContext` object to which one can save data to be used
+  later in the test case. `TestCaseSessionReference` can be passed as a default value in a protocol definition. The name
+  it references must have been saved by the time that message in the protocol is reached.
 - `Fuzzable` rewrite: Simpler definitions for new fuzz primitives. See `static.py` for an example of a very simple primitive.
 - Protocol definition: Protocols can now be defined with an object oriented rather than static approach.
 - Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
 - Procmon: Additional debug steps. Partial backwards compatibility for old interface.
 - `ProcessMonitorLocal` allows running procmon as part of fuzzer process.
-- Network monitor: improved network interface discovery (Linux support)
-- Add support for fuzzing Unix sockets with the `UnixSocketConnection` class.
-- Add metadata to ProtocolSession to support callbacks -- `current_message`, `previous_message`.
+- Network monitor: improved network interface discovery (Linux support).
+- Added support for fuzzing Unix sockets with the `UnixSocketConnection` class.
+- Added metadata to ProtocolSession to support callbacks -- `current_message`, `previous_message`.
 - All primitive arguments are now optional keyword arguments.
 
 Fixes
@@ -25,10 +27,10 @@ Fixes
 - Various web interface fixes.
 - Various refactors and simplifications.
 - Fewer duplicates from `Group` primitives.
-- Network monitor: fixed data_bytes calculation and PcapThread synchronization
-- Fixed a crash when using the network monitor
-- Session can now be "quiet" by passing an empty list of loggers
-- Process Monitor: fixed Thread.isAlive for Python 3.9 compability
+- Network monitor: fixed data_bytes calculation and PcapThread synchronization.
+- Fixed a crash when using the network monitor.
+- Session can now be "quiet" by passing an empty list of loggers.
+- Process Monitor: fixed Thread.isAlive for Python 3.9 compatibility.
 - Correctly truncate values of the string primitive when max_len or size is set.
 - The string primitive will no longer generate duplicates when max_len or size is set.
 - Greatly improved string to bytes conversion speed.
