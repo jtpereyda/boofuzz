@@ -77,7 +77,7 @@ def fuzz(
     elif tui:
         fuzz_loggers.append(FuzzLoggerCurses())
     if csv_out is not None:
-        f = open("boofuzz.csv", 'wb')
+        f = open("boofuzz.csv", "wb")
         fuzz_loggers.append(FuzzLoggerCsv(file_handle=f))
 
     procmon_options = {}
