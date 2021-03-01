@@ -11,6 +11,10 @@ from . import constants, sessions
 from .cli_context import CliContext
 from .constants import DEFAULT_PROCMON_PORT
 from .connections import TCPSocketConnection
+from .fuzz_logger_csv import FuzzLoggerCsv
+from .fuzz_logger_curses import FuzzLoggerCurses
+from .fuzz_logger_text import FuzzLoggerText
+from .monitors import ProcessMonitor
 from .utils.process_monitor_local import ProcessMonitorLocal
 from .utils.debugger_thread_simple import DebuggerThreadSimple
 
@@ -19,12 +23,12 @@ temp_static_procmon = None
 temp_static_fuzz_only_one_case = None
 
 
-@click.group()
+@click.group(help="boofuzz experimental CLI; usage may change over time")
 def cli():
     pass
 
 
-@cli.group()
+@cli.group(help="Must be run via a fuzz script")
 @click.option("--target-host", help="Host or IP address of target", required=True)
 @click.option("--target-port", type=int, help="Network port of target", required=True)
 @click.option("--test-case-index", help="Test case index", type=int)
@@ -61,7 +65,7 @@ def fuzz(
     if target_cmd is not None and procmon_host is None:
         local_procmon = ProcessMonitorLocal(
             crash_filename="boofuzz-crash-bin",
-            proc_name=None,  # "proftpd",
+            proc_name=None,
             pid_to_ignore=None,
             debugger_class=DebuggerThreadSimple,
             level=1,
@@ -73,7 +77,7 @@ def fuzz(
     elif tui:
         fuzz_loggers.append(FuzzLoggerCurses())
     if csv_out is not None:
-        f = open("ftp-fuzz.csv", "wb")  # TODO more generic filename, specifically in the boofuzz-results folder
+        f = open("boofuzz.csv", 'wb')
         fuzz_loggers.append(FuzzLoggerCsv(file_handle=f))
 
     procmon_options = {}
@@ -127,9 +131,6 @@ def fuzz(
     )
 
     ctx.obj = CliContext(session=session)
-
-    # TODO if no subcommand script provided then error out and warn
-    # Future: Either rely on a Click subcommand, or manually call a function provided by the user
 
     # The resultcallback is called after any subcommands, e.g. the one provided by the user
     @fuzz.resultcallback()
