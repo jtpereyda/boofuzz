@@ -707,7 +707,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop((m for path in self._iterate_protocol() for m in self._iterate_single_node(path)))
+        self._main_fuzz_loop((m for m in self._protocol_mutations()))
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -746,6 +746,16 @@ class Session(pgraph.Graph):
         self.total_num_mutations = 1
 
         self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
+
+    def _protocol_mutations(self):
+        """
+        Yields:
+            MutationContext: A MutationContext containing one mutation.
+
+        """
+        for path in self._iterate_protocol():
+            for m in self._iterate_single_node(path):
+                yield m
 
     def _message_check(self, path):
         """Check messages for compatibility.
@@ -1401,7 +1411,7 @@ class Session(pgraph.Graph):
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
 
         Yields:
-            Mutation: Mutation object describing this mutation.
+            MutationContext: Mutation object describing this mutation.
         """
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
