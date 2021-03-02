@@ -48,7 +48,7 @@ Sulley is affectionately named after the giant teal and purple creature
 from Monsters Inc. due to his fuzziness. Boofuzz is likewise named after
 the only creature known to have scared Sulley himself: Boo!
 
-.. figure:: _static/boo.png
+.. figure:: https://github.com/jtpereyda/boofuzz/raw/master/_static/boo.png
    :alt: Boo from Monsters Inc
 
    Boo from Monsters Inc
@@ -93,6 +93,7 @@ If you have an open source boofuzz protocol suite to share, please :ref:`let us 
     user/connections
     user/monitors
     user/logging
+    user/protocol-definition
     user/static-protocol-definition
     user/other-modules
 

@@ -4,8 +4,9 @@
 # Minimal example which act as a TLS server
 # It will listen on localhost and fuzz the connecting TLS client
 
-from boofuzz import *
 import ssl
+
+from boofuzz import *
 
 # In order to act as a SSL/TLS server, boofuzz requires a SSL/TLS
 # certificate. You can create a self-signed one with

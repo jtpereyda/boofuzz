@@ -1,7 +1,7 @@
 from functools import wraps
 
 from .. import helpers, primitives
-from ..ifuzzable import IFuzzable
+from ..fuzzable import Fuzzable
 
 
 def _may_recurse(f):
@@ -15,16 +15,41 @@ def _may_recurse(f):
     return safe_recurse
 
 
-class Size(IFuzzable):
-    """
-    This block type is kind of special in that it is a hybrid between a block and a primitive (it can be fuzzed). The
-    user does not need to be wary of this fact.
+class Size(Fuzzable):
+    """Create a sizer block bound to the block with the specified name.
+
+    Size blocks that size their own parent or grandparent are allowed.
+
+    :type name: str, optional
+    :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
+        defaults to None
+    :type  block_name:    str, optional
+    :param block_name:    Name of block to apply sizer to.
+    :type  request:       boofuzz.Request, optional
+    :param request:       Request this block belongs to.
+    :type  offset:        int, optional
+    :param offset:        Offset for calculated size value, defaults to 0
+    :type  length:        int, optional
+    :param length:        Length of sizer, defaults to 4
+    :type  endian:        chr, optional
+    :param endian:        Endianness of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >), defaults to LITTLE_ENDIAN
+    :type  output_format: str, optional
+    :param output_format: Output format, "binary" or "ascii", defaults to binary
+    :type  inclusive:     bool, optional
+    :param inclusive:     Should the sizer count its own length? Defaults to False
+    :type  signed:        bool, optional
+    :param signed:        Make size signed vs. unsigned (applicable only with format="ascii"), defaults to False
+    :type  math:          def, optional
+    :param math:          Apply the mathematical op defined in this function to the size, defaults to None
+    :type  fuzzable:      bool, optional
+    :param fuzzable:      Enable/disable fuzzing of this block, defaults to true
     """
 
     def __init__(
         self,
-        block_name,
-        request,
+        name=None,
+        block_name=None,
+        request=None,
         offset=0,
         length=4,
         endian="<",
@@ -32,37 +57,10 @@ class Size(IFuzzable):
         inclusive=False,
         signed=False,
         math=None,
-        fuzzable=True,
-        name=None,
+        *args,
+        **kwargs
     ):
-        """
-        Create a sizer block bound to the block with the specified name. Size blocks that size their own parent or
-        grandparent are allowed.
-
-        :type  block_name:    str
-        :param block_name:    Name of block to apply sizer to
-        :type  request:       Request
-        :param request:       Request this block belongs to
-        :type  length:        int
-        :param length:        (Optional, def=4) Length of sizer
-        :type  offset:        int
-        :param offset:        (Optional, def=0) Offset for calculated size value
-        :type  endian:        chr
-        :param endian:        (Optional, def=LITTLE_ENDIAN) Endianess of the bit field (LITTLE_ENDIAN: <, BIG_ENDIAN: >)
-        :type  output_format: str
-        :param output_format: (Optional, def=binary) Output format, "binary" or "ascii"
-        :type  inclusive:     bool
-        :param inclusive:     (Optional, def=False) Should the sizer count its own length?
-        :type  signed:        bool
-        :param signed:        (Optional, def=False) Make size signed vs. unsigned (applicable only with format="ascii")
-        :type  math:          def
-        :param math:          (Optional, def=None) Apply the mathematical op defined in this function to the size
-        :type  fuzzable:      bool
-        :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this sizer
-        :type  name:          str
-        :param name:          Name of this sizer field
-        """
-
+        super(Size, self).__init__(name=name, default_value=None, *args, **kwargs)
         self.block_name = block_name
         self.request = request
         self.offset = offset
@@ -72,15 +70,17 @@ class Size(IFuzzable):
         self.inclusive = inclusive
         self.signed = signed
         self.math = math
-        self._fuzzable = fuzzable
-        self._name = name
 
         self.bit_field = primitives.BitField(
-            0, self.length * 8, endian=self.endian, output_format=self.format, signed=self.signed
+            name="innerBitField",
+            default_value=0,
+            width=self.length * 8,
+            endian=self.endian,
+            output_format=self.format,
+            signed=self.signed,
         )
         self._rendered = b""
         self._fuzz_complete = False
-        self._mutant_index = self.bit_field.mutant_index
 
         if not self.math:
             self.math = lambda x: x
@@ -88,98 +88,44 @@ class Size(IFuzzable):
         # Set the recursion flag before calling a method that may cause a recursive loop.
         self._recursion_flag = False
 
-    @property
-    def name(self):
-        return self._name
+    def mutations(self, default_value):
+        for mutation in self.bit_field.mutations(None):
+            yield mutation
 
-    @property
-    def mutant_index(self):
-        return self._mutant_index
-
-    @property
-    def fuzzable(self):
-        return self._fuzzable
-
-    @property
-    def original_value(self):
-        length = self._original_calculated_length()
-        return self._length_to_bytes(length)
-
-    def _original_calculated_length(self):
-        return self.offset + self._inclusive_length_of_self + self._original_length_of_target_block
-
-    def exhaust(self):
-        """
-        Exhaust the possible mutations for this primitive.
-
-        :rtype:  int
-        :return: The number of mutations to reach exhaustion
-        """
-
-        num = self.num_mutations() - self._mutant_index
-
-        self._fuzz_complete = True
-        self._mutant_index = self.num_mutations()
-        self.bit_field._mutant_index = self.num_mutations()
-
-        return num
-
-    def mutate(self):
-        """
-        Wrap the mutation routine of the internal bit_field primitive.
-
-        :rtype:  Boolean
-        :return: True on success, False otherwise.
-        """
-
-        self._mutant_index += 1
-
-        not_finished_yet = self.bit_field.mutate()
-
-        self._fuzz_complete = not not_finished_yet  # double negatives for the win
-
-        return not_finished_yet
-
-    def num_mutations(self):
+    def num_mutations(self, default_value):
         """
         Wrap the num_mutations routine of the internal bit_field primitive.
 
+        :param default_value:
         :rtype:  int
         :return: Number of mutated forms this primitive can take.
         """
 
-        return self.bit_field.num_mutations()
+        return self.bit_field.get_num_mutations()
 
-    def render(self):
-        """
-        Render the sizer.
-
-        :return: Rendered value.
-        """
-        if self._should_render_fuzz_value():
-            self._rendered = self.bit_field.render()
-        elif self._recursion_flag:
-            self._rendered = self._get_dummy_value()
+    def encode(self, value, mutation_context):
+        if value is None:  # default
+            if self._recursion_flag:
+                return self._get_dummy_value()
+            else:
+                return helpers.str_to_bytes(
+                    self._length_to_bytes(self._calculated_length(mutation_context=mutation_context))
+                )
         else:
-            self._rendered = self._render()
-
-        return helpers.str_to_bytes(self._rendered)
-
-    def _should_render_fuzz_value(self):
-        return self._fuzzable and (self.bit_field.mutant_index != 0) and not self._fuzz_complete
+            return self.bit_field.encode(value=value, mutation_context=mutation_context)
 
     def _get_dummy_value(self):
-        return self.length * "\x00"
+        return self.length * b"\x00"
 
-    def _render(self):
-        length = self._calculated_length()
-        return helpers.str_to_bytes(self._length_to_bytes(length))
-
-    def _calculated_length(self):
-        return self.offset + self._inclusive_length_of_self + self._length_of_target_block
+    def _calculated_length(self, mutation_context):
+        return (
+            self.offset
+            + self._inclusive_length_of_self
+            + self._length_of_target_block(mutation_context=mutation_context)
+        )
 
     def _length_to_bytes(self, length):
-        return primitives.BitField.render_int(
+        return primitives.BitField._render_int(
             value=self.math(length),
             output_format=self.format,
             bit_width=self.length * 8,
@@ -195,37 +141,28 @@ class Size(IFuzzable):
         else:
             return 0
 
-    @property
     @_may_recurse
-    def _length_of_target_block(self):
-        """Return length of target block, including mutations if it is currently mutated."""
-        length = len(self.request.names[self.block_name])
-        return length
+    def _length_of_target_block(self, mutation_context):
+        """Return length of target block, including mutations if mutation applies."""
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            return len(target_block.render(mutation_context=mutation_context))
+        else:
+            return 0
 
     @property
     @_may_recurse
     def _original_length_of_target_block(self):
         """Return length of target block, including mutations if it is currently mutated."""
-        length = len(self.request.names[self.block_name].original_value)
-        return length
-
-    def reset(self):
-        """
-        Wrap the reset routine of the internal bit_field primitive.
-        """
-
-        self.bit_field.reset()
+        if self.request is not None and self.block_name is not None:
+            target_block = self.request.resolve_name(self.context_path, self.block_name)
+            length = len(target_block.original_value)
+            return length
+        else:
+            return 0
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self._name)
 
     def __len__(self):
-        return len(self._render())
-
-    def __bool__(self):
-        """
-        Make sure instances evaluate to True even if __len__ is zero.
-
-        :return: True
-        """
-        return True
+        return self.length

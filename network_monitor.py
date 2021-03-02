@@ -1,13 +1,13 @@
-#!c:\\python\\python.exe
 import getopt
 import os
 import sys
 import threading
 import time
 from io import open
-
 import impacket
 import impacket.ImpactDecoder
+
+import netifaces as ni
 
 # noinspection PyUnresolvedReferences
 import pcapy  # pytype: disable=import-error
@@ -60,20 +60,26 @@ Network Device List:
     for index, pcapy_device in enumerate(ifs):
         # if we are on windows, try and resolve the device UUID into an IP address.
         if sys.platform.startswith("win"):
-            import _winreg  # pytype: disable=import-error
+            from six.moves import winreg  # pytype: disable=import-error
 
             try:
                 # extract the device UUID and open the TCP/IP parameters key for it.
                 pcapy_device = pcapy_device[pcapy_device.index("{") : pcapy_device.index("}") + 1]
                 subkey = r"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\%s" % pcapy_device
-                key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey)
+                key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, subkey)
 
                 # if there is a DHCP address snag that, otherwise fall back to the IP address.
                 try:
-                    ip = _winreg.QueryValueEx(key, "DhcpIPAddress")[0]
+                    ip = winreg.QueryValueEx(key, "DhcpIPAddress")[0]
                 except Exception:
-                    ip = _winreg.QueryValueEx(key, "IPAddress")[0][0]
+                    ip = winreg.QueryValueEx(key, "IPAddress")[0][0]
 
+                pcapy_device = pcapy_device + "\t" + ip
+            except Exception:
+                pass
+        elif sys.platform.startswith("lin"):
+            try:
+                ip = ni.ifaddresses(pcapy_device)[ni.AF_INET][0]["addr"]
                 pcapy_device = pcapy_device + "\t" + ip
             except Exception:
                 pass
@@ -155,16 +161,23 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         self.log("\t log_level: %d" % self.log_level)
         self.log("Awaiting requests...")
 
-    def __stop(self):
+    def __stop_capture(self):
         """
-        Kill the PCAP thread.
+        Stop the PCAP thread, wait all handler and return data_bytes.
         """
+        res = 0
 
         if self.pcap_thread:
             self.log("stopping active packet capture thread.", 10)
 
             self.pcap_thread.active = False
+            self.pcap_thread.join()
+
+            res = self.pcap_thread.data_bytes
+
             self.pcap_thread = None
+
+        return res
 
     # noinspection PyMethodMayBeStatic
     def alive(self):
@@ -182,12 +195,8 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
         @rtype:  Integer
         @return: Number of bytes captured in PCAP thread.
         """
-
-        # grab the number of recorded bytes.
-        data_bytes = self.pcap_thread.data_bytes
-
-        # stop the packet capture thread.
-        self.__stop()
+        # stop the packet capture thread and grab the number of recorded bytes.
+        data_bytes = self.__stop_capture()
 
         self.log("stopped PCAP thread, snagged %d bytes of data" % data_bytes)
         return data_bytes
@@ -243,6 +252,10 @@ class NetworkMonitorPedrpcServer(pedrpc.Server):
     def set_log_path(self, new_log_path):
         self.log("updating log path to '%s'" % new_log_path)
         self.log_path = new_log_path
+
+    def set_crash_filename(self, new_crash_filename):
+        """Stub to prevent a crash when this function is called on all monitors in session.py"""
+        return
 
 
 def main():

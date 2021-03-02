@@ -1,8 +1,7 @@
 import re
-import os
 
 import flask
-from flask import Flask, redirect, render_template, send_from_directory
+from flask import Flask, redirect, render_template
 
 from .. import exception
 
@@ -19,13 +18,6 @@ def commify(number):
     while processing:
         (number, processing) = regex.subn(r"\1,\2", number)
     return number
-
-
-@app.route("/favicon.ico")
-def favicon():
-    return send_from_directory(
-        os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/vnd.microsoft.icon"
-    )
 
 
 @app.route("/togglepause")
@@ -77,8 +69,8 @@ def index_update():
             "is_paused": app.session.is_paused,
             "current_index": app.session.total_mutant_index,
             "num_mutations": app.session.total_num_mutations,
-            "current_index_element": app.session.fuzz_node.mutant_index if app.session.fuzz_node is not None else None,
-            "num_mutations_element": app.session.fuzz_node.num_mutations()
+            "current_index_element": app.session.mutant_index if app.session is not None else None,
+            "num_mutations_element": app.session.fuzz_node.get_num_mutations()
             if app.session.fuzz_node is not None
             else None,
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
@@ -101,8 +93,8 @@ def index():
 
     # render sweet progress bars.
     if app.session.fuzz_node is not None:
-        mutant_index = float(app.session.fuzz_node.mutant_index)
-        num_mutations = float(app.session.fuzz_node.num_mutations())
+        mutant_index = float(app.session.mutant_index)
+        num_mutations = float(app.session.fuzz_node.get_num_mutations())
 
         try:
             progress_current = mutant_index / num_mutations

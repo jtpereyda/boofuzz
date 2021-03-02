@@ -2,6 +2,7 @@ nbsp = '\xa0';
 let failure_map = {};
 let test_case_log_snap = true;
 let test_case_log_index = 0;
+let last_test_case_log_response = "";
 
 const StringUtilities = {
     repeat: function (str, times) {
@@ -66,7 +67,18 @@ function update_current_run_info(response) {
     }
 }
 
+function response_changed(old_response, new_response) {
+    // deep equals would be appropriate and more maintainable, but at time of writing we didn't want to add a JS library
+    return old_response["index"] !== new_response["index"] ||
+        old_response["log_data"].length !== new_response["log_data"].length;
+}
+
 function update_current_test_case_log(response) {
+    if (!response_changed(response, last_test_case_log_response)) {
+        return
+    }
+    last_test_case_log_response = response;
+
     logUpdateIndex(response.index);
 
     // Create log table entries
@@ -150,18 +162,6 @@ function continually_update_current_test_case_log()
     }
 }
 
-function updateTestCaseLog(index){
-    // function tryAgain()
-    // {
-    //     setTimeout(function(){updateTestCaseLog(document.getElementById('test-case-log-index-input').textContent.trim())}, 100);
-    // }
-    fetch(new Request('/api/test-case/' + index), {method: 'GET'})
-        .then(function(response) { return response.json() })
-        .then(function(response) {update_current_test_case_log(response);})
-        // .catch(tryAgain)
-    ;
-}
-
 function progress_bars(fraction){
     return '[' +
         StringUtilities.repeat('=', Math.round(fraction * 50)) +
@@ -218,8 +218,7 @@ function logNavMove(num){
 function logNavGoTo(num){
     logUpdateSnap(false);
     if (num > 0) {
-        logUpdateIndex(num);
-        logUpdateLogBody(num);
+        updateIndexToFetch(num);
     }
 }
 
@@ -229,19 +228,20 @@ function logUpdateSnap(on){
 }
 
 function logUpdateIndex(num){
-    test_case_log_index = num;
+    updateIndexToFetch(num);
 
     let test_case_log_title_index = document.getElementById('test-case-log-title-index');
     test_case_log_title_index.textContent = num;
+
+}
+
+function updateIndexToFetch(num){
+    test_case_log_index = num;
 
     let index_input = document.getElementById('test-case-log-index-input');
     if (document.activeElement !== index_input){
         index_input.value = num;
     }
-}
-
-function logUpdateLogBody(num){
-    updateTestCaseLog(num);
 }
 
 function initPage(){

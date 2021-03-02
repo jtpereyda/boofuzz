@@ -4,9 +4,16 @@
 Other Modules
 =============
 
-EventHook
-=========
-.. automodule:: boofuzz.event_hook
+Test Case Session Reference
+===========================
+.. autoclass:: boofuzz.ProtocolSessionReference
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Test Case Context
+=================
+.. autoclass:: boofuzz.ProtocolSession
     :members:
     :undoc-members:
     :show-inheritance:
@@ -55,3 +62,11 @@ Crash binning
     :members:
     :undoc-members:
     :show-inheritance:
+
+EventHook
+=========
+.. automodule:: boofuzz.event_hook
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

@@ -62,3 +62,4 @@ boofuzz-results/
 
 # Temporary Files
 *.swp
+.DS_Store

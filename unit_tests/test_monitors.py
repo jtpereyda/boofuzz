@@ -3,7 +3,7 @@ import time
 import unittest
 from multiprocessing import Process
 
-from boofuzz.monitors import pedrpc, ProcessMonitor
+from boofuzz.monitors import NetworkMonitor, pedrpc, ProcessMonitor
 
 RPC_HOST = "localhost"
 RPC_PORT = 31337
@@ -47,9 +47,6 @@ class MockRPCServer(pedrpc.Server):
     def stop_target(self):
         return True
 
-    def shutdown_rpc(self):
-        sys.exit(0)
-
     def set_foobar(self, value):
         self.foobar = value
 
@@ -57,74 +54,91 @@ class MockRPCServer(pedrpc.Server):
         return self.foobar
 
 
-def _start_rpc(host, port):
-    server = MockRPCServer(host, port)
+def _start_rpc(server):
     server.serve_forever()
 
 
+# https://github.com/jtpereyda/boofuzz/pull/409
+@unittest.skipIf(
+    sys.platform.startswith("win") and sys.version_info.major == 2, "Multithreading problem on Python2 Windows"
+)
 class TestProcessMonitor(unittest.TestCase):
     def setUp(self):
-        self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
-        self.rpc_server.start()
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
 
-        time.sleep(0.2)  # give the RPC server some time to start up
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
+        self.rpc_server_process.start()
+        time.sleep(0.01)  # give the RPC server some time to start up
+
+        self.process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
 
     def tearDown(self):
-        self.rpc_server.terminate()
+        self.rpc_server.stop()
+        self.rpc_server_process.terminate()
+
+        self.rpc_server = None
+        self.rpc_server_process = None
+        self.process_monitor = None
 
     def test_process_monitor_alive(self):
+        self.assertEqual(self.process_monitor.alive(), True)
 
-        process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
+        self.process_monitor.stop()
+        self.rpc_server_process.join()
 
-        self.assertEqual(process_monitor.alive(), True)
-
-        process_monitor.shutdown_rpc()
-
-        self.rpc_server.join()
-
-        self.assertEqual(self.rpc_server.exitcode, 0)
+        self.assertEqual(self.rpc_server_process.exitcode, 0)
 
     def test_set_options(self):
+        self.assertEqual(self.process_monitor.get_foobar(), "barbaz")
 
-        process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
+        self.process_monitor.set_options(foobar="bazbar")
 
-        self.assertEqual(process_monitor.get_foobar(), "barbaz")
+        self.assertEqual(self.process_monitor.get_foobar(), "bazbar")
 
-        process_monitor.set_options(foobar="bazbar")
+    def test_set_options_persistent(self):
+        self.process_monitor.set_options(foobar="bazbar")
 
-        self.assertEqual(process_monitor.get_foobar(), "bazbar")
+        self.rpc_server.stop()
+        self.rpc_server_process.terminate()
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
+        self.rpc_server_process.start()
+        time.sleep(0.01)  # give the RPC server some time to start up
 
-    def test_set_options_persistant(self):
-
-        process_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
-
-        process_monitor.set_options(foobar="bazbar")
-
-        self.rpc_server.terminate()
-        self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
-        self.rpc_server.start()
-        time.sleep(0.2)
-
-        self.assertEqual(process_monitor.alive(), True)
-        self.assertEqual(process_monitor.get_foobar(), "bazbar")
+        self.assertEqual(self.process_monitor.alive(), True)
+        self.assertEqual(self.process_monitor.get_foobar(), "bazbar")
 
 
+# https://github.com/jtpereyda/boofuzz/pull/409
+@unittest.skipIf(
+    sys.platform.startswith("win") and sys.version_info.major == 2, "Multithreading problem on Python2 Windows"
+)
 class TestNetworkMonitor(unittest.TestCase):
     def setUp(self):
-        self.rpc_server = Process(target=_start_rpc, args=(RPC_HOST, RPC_PORT))
-        self.rpc_server.start()
+        self.rpc_server = MockRPCServer(RPC_HOST, RPC_PORT)
 
-        time.sleep(0.2)  # give the RPC server some time to start up
+        self.rpc_server_process = Process(target=_start_rpc, args=(self.rpc_server,))
+        self.rpc_server_process.start()
+        time.sleep(0.01)  # give the RPC server some time to start up
+
+        self.network_monitor = NetworkMonitor(RPC_HOST, RPC_PORT)
 
     def tearDown(self):
-        self.rpc_server.terminate()
+        self.rpc_server.stop()
+        self.rpc_server_process.terminate()
+
+        self.rpc_server = None
+        self.rpc_server_process = None
+        self.network_monitor = None
 
     def test_network_monitor_alive(self):
-        network_monitor = ProcessMonitor(RPC_HOST, RPC_PORT)
+        self.assertEqual(self.network_monitor.alive(), True)
 
-        self.assertEqual(network_monitor.alive(), True)
+        self.network_monitor.stop()
+        self.rpc_server_process.join()
 
-        network_monitor.shutdown_rpc()
+        self.assertEqual(self.rpc_server_process.exitcode, 0)
 
-        self.rpc_server.join()
-        self.assertEqual(self.rpc_server.exitcode, 0)
+
+if __name__ == "__main__":
+    unittest.main()

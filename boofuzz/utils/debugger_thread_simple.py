@@ -31,6 +31,9 @@ if not getattr(__builtins__, "WindowsError", None):
         pass
 
 
+POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK = 30
+
+
 def _enumerate_processes():
     for pid in psutil.pids():
         yield (pid, psutil.Process(pid).name())
@@ -49,14 +52,24 @@ def _get_coredump_path():
 
 
 class DebuggerThreadSimple(threading.Thread):
+    """Simple debugger that gets exit code, stdout/stderr from a target process.
+
+    This class isn't actually ran as a thread, only the start_monitoring
+    method is. It can spawn/stop a process, wait for it to exit and report on
+    the exit status/code.
+    """
+
     def __init__(
-        self, start_commands, process_monitor, proc_name=None, ignore_pid=None, coredump_dir=None, log_level=1, **kwargs
+        self,
+        start_commands,
+        process_monitor,
+        proc_name=None,
+        ignore_pid=None,
+        coredump_dir=None,
+        log_level=1,
+        capture_output=False,
+        **kwargs
     ):
-        """
-        This class isn't actually ran as a thread, only the start_monitoring
-        method is. It can spawn/stop a process, wait for it to exit and report on
-        the exit status/code.
-        """
         threading.Thread.__init__(self)
 
         self.proc_name = proc_name
@@ -64,6 +77,7 @@ class DebuggerThreadSimple(threading.Thread):
         self.start_commands = start_commands
         self.process_monitor = process_monitor
         self.coredump_dir = coredump_dir
+        self.capture_output = capture_output
         self.finished_starting = threading.Event()
         # if isinstance(start_commands, basestring):
         #     self.tokens = start_commands.split(' ')
@@ -90,8 +104,12 @@ class DebuggerThreadSimple(threading.Thread):
         self.log("starting target process")
 
         for command in self.start_commands:
+            self.log("exec start command: {0}".format(command))
             try:
-                self._process = subprocess.Popen(command)
+                if self.capture_output:
+                    self._process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+                else:
+                    self._process = subprocess.Popen(command)
             except WindowsError as e:
                 print(
                     'WindowsError {errno}: "{strerror} while starting "{cmd}"'.format(
@@ -114,7 +132,7 @@ class DebuggerThreadSimple(threading.Thread):
             self.log('searching for process by name "{0}"'.format(self.proc_name))
             self.watch()
             self._psutil_proc = psutil.Process(pid=self.pid)
-            self.process_monitor.log("found match on pid %d".format(self.pid))
+            self.process_monitor.log("found match on pid {}".format(self.pid))
         else:
             self.log("done. target up and running, giving it 5 seconds to settle in.")
             time.sleep(5)
@@ -152,9 +170,24 @@ class DebuggerThreadSimple(threading.Thread):
         else:
             reason = default_reason
 
-        self.process_monitor.last_synopsis = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
+        outdata = None
+        errdata = None
+        try:
+            if self._process is not None:
+                outdata, errdata = self._process.communicate(timeout=POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK)
+        except subprocess.TimeoutExpired:
+            self.process_monitor.log(
+                msg="Expired waiting for process {0} to terminate".format(self._process.pid), level=1
+            )
+
+        msg = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
             time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason
         )
+        if errdata is not None:
+            msg += "STDERR:\n{0}\n".format(errdata.decode("ascii"))
+        if outdata is not None:
+            msg += "STDOUT:\n{0}\n".format(outdata.decode("ascii"))
+        self.process_monitor.last_synopsis = msg
 
     def watch(self):
         """
@@ -179,7 +212,10 @@ class DebuggerThreadSimple(threading.Thread):
         try:
             os.kill(self.pid, signal.SIGKILL)
         except OSError as e:
-            print(e.errno)  # TODO interpret some basic errors
+            print(
+                'Error while killing process. PID: {0} errno: {1} "{2}"'.format(self.pid, e.errno, os.strerror(e.errno))
+            )
+            raise e
 
     def pre_send(self):
         pass
@@ -191,11 +227,11 @@ class DebuggerThreadSimple(threading.Thread):
         Returns:
             bool: True if the target is still active, False otherwise.
         """
-        if self.isAlive():
+        if self.is_alive():
             return True
         else:
             with open(self.process_monitor.crash_filename, "a") as rec_file:
-                rec_file.write(self.process_monitor.last_synopsis.decode())
+                rec_file.write(self.process_monitor.last_synopsis)
 
             if self.process_monitor.coredump_dir is not None:
                 dest = os.path.join(self.process_monitor.coredump_dir, str(self.process_monitor.test_number))

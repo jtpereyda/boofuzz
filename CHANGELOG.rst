@@ -1,32 +1,89 @@
 Changelog
 =========
 
-Upcoming
---------
+v0.3.0
+------
+Features
+^^^^^^^^
+- Memory optimization: Efficient mutation generation and smarter string reuse -- decrease memory consumption by orders of magnitude.
+- `Aligned` block: Aligns content length to multiple of certain number of bytes.
+- Relative names: Name references for `Checksum`, `Size`, etc. now resolve absolute and relative names. Block and primitive
+  names no longer need to be globally unique within a message, they only need to be locally unique within a block.
+- Passing data between messages: Callbacks now have a `TestCaseContext` object to which one can save data to be used
+  later in the test case. `TestCaseSessionReference` can be passed as a default value in a protocol definition. The name
+  it references must have been saved by the time that message in the protocol is reached.
+- `Fuzzable` rewrite: Simpler definitions for new fuzz primitives. See `static.py` for an example of a very simple primitive.
+- Protocol definition: Protocols can now be defined with an object oriented rather than static approach.
+- Independent mutation and encoding steps: Will enable multiple mutations and code coverage feedback.
+- Procmon: Additional debug steps. Partial backwards compatibility for old interface.
+- `ProcessMonitorLocal` allows running procmon as part of fuzzer process.
+- Network monitor: improved network interface discovery (Linux support).
+- Added support for fuzzing Unix sockets with the `UnixSocketConnection` class.
+- Added metadata to ProtocolSession to support callbacks -- `current_message`, `previous_message`.
+- All primitive arguments are now optional keyword arguments.
+
+Fixes
+^^^^^
+- Various web interface fixes.
+- Various refactors and simplifications.
+- Fewer duplicates from `Group` primitives.
+- Network monitor: fixed data_bytes calculation and PcapThread synchronization.
+- Fixed a crash when using the network monitor.
+- Session can now be "quiet" by passing an empty list of loggers.
+- Process Monitor: fixed Thread.isAlive for Python 3.9 compatibility.
+- Correctly truncate values of the string primitive when max_len or size is set.
+- The string primitive will no longer generate duplicates when max_len or size is set.
+- Greatly improved string to bytes conversion speed.
+
+v0.2.1
+------
+Features
+^^^^^^^^
+- Added simple TFTP fuzzer example.
+
+Fixes
+^^^^^
+- Fixed UDPSocketConnection data truncation when sending more data than the socket supports.
+- Fixed execution of procmon stop_commands.
+- Fixed TCP and SSL server connections.
+
+v0.2.0
+------
 Features
 ^^^^^^^^
 - Rewrote and split the SocketConnection class into individual classes per socket type.
 - `SocketConnection` is now deprecated. Use the classes derived from `BaseSocketConnection` instead.
-- Added support for receiving on raw Layer 2 and Layer 3 connections
-- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes
-- Moved connection related modules into new `connections` subpacket
+- Added support for receiving on raw Layer 2 and Layer 3 connections.
+- Layer 2 and Layer 3 connections may now use arbitrary payload / MTU sizes.
+- Moved connection related modules into new `connections` submodule.
 - Added the ability to repeat sending of packages within a given time or count.
-- Added optional timeout and threshold to quit infinite connection retries
+- Added optional timeout and threshold to quit infinite connection retries.
 - Reworked Monitors, consolidated interface. Breaking change: session no longer has netmon_options and procmon_options.
 - `SessionInfo` has had attributes renamed; procmon_results and netmon_results are deprecated and now aliases for monitor_results and monitor_data respectively.
 - Implemented visual request-graph rendering functions for Session
+- New `BoofuzzFailure` exception type allows callback methods to signal a failure that should halt the current test case.
+- Added `capture_output` option to process monitor to capture target process stderr/stdout .
+- Added post-start-target callbacks (called every time a target is started or restarted).
+- Added method to gracefully stop PED-RPC Server.
+- Added new boofuzz logo and favicon to docs and webinterface.
+- Added `FileConnection` to dump messages to files.
+- Removed deprecated session arguments `fuzz_data_logger`, `log_level`, `logfile`, `logfile_level` and `log()`.
+- Removed deprecated logger `FuzzLoggerFile`.
+- `crc32c` is no longer a required package. Install manually if needed.
 
 Fixes
 ^^^^^
 - Fixed size of s_size block when output is ascii.
 - Fixed issue with tornado on Python 3.8 and Windows.
-- Fixed various potential type errors
-- Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module
-- Examples are up to date with current Boofuzz version
-- Modified timings on serial_connection unit tests to improve test reliability
-- Refactored old unit-tests
-- Removed deprecated session arguments `fuzz_data_logger`, `log_level`, `logfile`, `logfile_level` and `log()`.
-- Removed deprecated logger `FuzzLoggerFile`.
+- Fixed various potential type errors.
+- Renamed `requests` folder to `request_definitions` because it shadowed the name of the `requests` python module.
+- Examples are up to date with current Boofuzz version.
+- Modified timings on serial_connection unit tests to improve test reliability.
+- Refactored old unit-tests.
+- Fixed network monitor compatibility with Python 3.
+- Minor console GUI optimizations.
+- Fixed crash_threshold_element handling if blocks are used.
+- Fixed many bugs in which a failure would not stop the test case evaluation.
 
 v0.1.6
 ------

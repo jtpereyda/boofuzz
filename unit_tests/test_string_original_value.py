@@ -1,13 +1,13 @@
 from pytest_bdd import given, scenarios, then, when
 
-from boofuzz import String
+from boofuzz import helpers, String
 
 scenarios("string_original_value.feature")
 
 
 @given("A String")
 def request_one_block(context):
-    context.uut = String("unit-test-string")
+    context.uut = String(default_value="unit-test-string", name="unit-test-string")
 
 
 @given("Mutated once")
@@ -30,7 +30,7 @@ def mutate_thrice(context):
 
 @when("Calling original_value")
 def call_original_value(context):
-    context.result = context.uut.original_value
+    context.result = helpers.str_to_bytes(context.uut.original_value())
 
 
 @then("Result equals .render()")
