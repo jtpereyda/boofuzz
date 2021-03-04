@@ -1429,7 +1429,7 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
-    def _iterate_single_node_combinatorial(self, path, max_depth=3):
+    def _iterate_single_node_combinatorial(self, path, max_depth=None):
         """Iterate continually and combinatorially.
 
         While max_depth may be specified, a max_depth of 2 or more could result in very long runtimes.
@@ -1443,17 +1443,18 @@ class Session(pgraph.Graph):
         """
         depth = 1
         while max_depth is None or depth <= max_depth:
-            # for mutations in itertools.combinations(self._iterate_single_node(path), r=depth):
+            valid_test_found_at_this_depth = False
             for mutations in self.product(functools.partial(self._iterate_single_node, path), repeat=depth):
-                print("before: {0}, {1}".format(depth, len(mutations)))
+                # print("depth: {0}".format(depth))
                 if not self._mutations_contain_duplicate(mutations):
-                    print("after:  {0}, {1}".format(depth, len(mutations)))
-                    # yield mutations[0].merge_in(*mutations[1:])
                     yield mutations
+                    valid_test_found_at_this_depth = True
+            if not valid_test_found_at_this_depth:
+                break
             depth += 1
 
     def _mutations_contain_duplicate(self, mutations):
-        print(mutations)
+        # print(mutations)
         names = [m.qualified_name for m in mutations]
         for name1, name2 in itertools.combinations(names, r=2):
             if name1 in name2 or name2 in name1:
