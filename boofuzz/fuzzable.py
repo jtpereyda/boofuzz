@@ -66,6 +66,11 @@ class Fuzzable(object):
 
     @property
     def qualified_name(self):
+        """Dot-delimited name that describes the request name and the path to the element within the request.
+
+        Example: "request1.block1.block2.node1"
+
+        """
         return ".".join(s for s in (self._context_path, self.name) if s != "")
 
     @property
@@ -127,6 +132,7 @@ class Fuzzable(object):
         try:
             if not self.fuzzable:
                 return
+            index = 0
             for value in itertools.chain(self.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
@@ -134,7 +140,8 @@ class Fuzzable(object):
                 if isinstance(value, Mutation):
                     yield value
                 else:
-                    yield Mutation(mutations={self.qualified_name: value})
+                    yield Mutation(value=value, qualified_name=self.qualified_name, index=index)
+                    index += 1
         finally:
             self._halt_mutations = False  # in case stop_mutations is called when mutations were exhausted anyway
 
@@ -159,13 +166,13 @@ class Fuzzable(object):
 
         """
         if mutation_context is None:
-            mutation_context = MutationContext(Mutation())
-        if self.qualified_name in mutation_context.mutation.mutations:
-            mutation = mutation_context.mutation.mutations[self.qualified_name]
-            if callable(mutation):
-                value = mutation(self.original_value(test_case_context=mutation_context.protocol_session))
+            mutation_context = MutationContext()
+        if self.qualified_name in mutation_context.mutations:
+            mutation = mutation_context.mutations[self.qualified_name]
+            if callable(mutation.value):
+                value = mutation.value(self.original_value(test_case_context=mutation_context.protocol_session))
             else:
-                value = mutation
+                value = mutation.value
         else:
             value = self.original_value(test_case_context=mutation_context.protocol_session)
 
@@ -236,7 +243,7 @@ class Fuzzable(object):
         Returns:
             int: Length of element (length of mutated element if mutated).
         """
-        return len(self.render(MutationContext(mutation=Mutation())))
+        return len(self.render(MutationContext()))
 
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.

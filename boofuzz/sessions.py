@@ -2,6 +2,8 @@ from __future__ import absolute_import, print_function
 
 import datetime
 import errno
+import functools
+import itertools
 import logging
 import os
 import pickle
@@ -707,7 +709,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop((m for m in self._protocol_mutations()))
+        self._main_fuzz_loop(self._protocol_mutations())
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -747,6 +749,21 @@ class Session(pgraph.Graph):
 
         self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
 
+    def product(self, *iterables, **kwargs):
+        """re-implementation of itertools.product that does not hold the full iterables in memory
+
+        See https://stackoverflow.com/questions/12093364/cartesian-product-of-large-iterators-itertools
+        """
+
+        if len(iterables) == 0:
+            yield ()
+        else:
+            iterables = iterables * kwargs.get('repeat', 1)
+            it = iterables[0]
+            for item in it() if callable(it) else iter(it):
+                for items in self.product(*iterables[1:]):
+                    yield (item,) + items
+
     def _protocol_mutations(self):
         """
         Yields:
@@ -754,8 +771,9 @@ class Session(pgraph.Graph):
 
         """
         for path in self._iterate_protocol():
-            for m in self._iterate_single_node(path):
-                yield m
+            for m in self._iterate_single_node_combinatorial(path):  # TODO use max_depth
+                self.total_mutant_index += 1
+                yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in m})
 
     def _message_check(self, path):
         """Check messages for compatibility.
@@ -771,7 +789,7 @@ class Session(pgraph.Graph):
         self.server_init()
 
         try:
-            self._check_message(MutationContext(mutation=Mutation(message_path=path)))
+            self._check_message(MutationContext(message_path=path, mutations={}))
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -1363,7 +1381,11 @@ class Session(pgraph.Graph):
         On each iteration, one may call fuzz_current_case to do the
         actual fuzzing.
 
-        :raise sex.SullyRuntimeError:
+        Yields:
+            list of Connection: List of edges along the path to the current one being fuzzed.
+
+        Raises:
+            exception.SulleyRuntimeError: If no requests defined or no targets specified
         """
         # we can't fuzz if we don't have at least one target and one request.
         if not self.targets:
@@ -1382,6 +1404,9 @@ class Session(pgraph.Graph):
         Args:
             this_node (node.Node): Current node that is being fuzzed.
             path (list of Connection): List of edges along the path to the current one being fuzzed.
+
+        Yields:
+            list of Connection: List of edges along the path to the current one being fuzzed.
         """
         # step through every edge from the current node.
         for edge in self.edges_from(this_node.id):
@@ -1404,6 +1429,37 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
+    def _iterate_single_node_combinatorial(self, path, max_depth=3):
+        """Iterate continually and combinatorially.
+
+        While max_depth may be specified, a max_depth of 2 or more could result in very long runtimes.
+
+        Args:
+            path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
+            max_depth (int): Stop after exhausting mutation combinations up to length max_depth.
+
+        Yields:
+            iterable of Mutation: Mutation objects (one or more).
+        """
+        depth = 1
+        while max_depth is None or depth <= max_depth:
+            # for mutations in itertools.combinations(self._iterate_single_node(path), r=depth):
+            for mutations in self.product(functools.partial(self._iterate_single_node, path), repeat=depth):
+                print("before: {0}, {1}".format(depth, len(mutations)))
+                if not self._mutations_contain_duplicate(mutations):
+                    print("after:  {0}, {1}".format(depth, len(mutations)))
+                    # yield mutations[0].merge_in(*mutations[1:])
+                    yield mutations
+            depth += 1
+
+    def _mutations_contain_duplicate(self, mutations):
+        print(mutations)
+        names = [m.qualified_name for m in mutations]
+        for name1, name2 in itertools.combinations(names, r=2):
+            if name1 in name2 or name2 in name1:
+                return True
+        return False
+
     def _iterate_single_node(self, path):
         """Iterate fuzz cases for the last node in path.
 
@@ -1411,16 +1467,15 @@ class Session(pgraph.Graph):
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
 
         Yields:
-            MutationContext: Mutation object describing this mutation.
+            Mutation: Mutation object describing a single mutation.
         """
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
         for mutation in self.fuzz_node.get_mutations(None):
             self.mutant_index += 1
-            self.total_mutant_index += 1
             mutation.message_path = path
-            yield MutationContext(mutation=mutation)
+            yield mutation
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False
@@ -1554,11 +1609,10 @@ class Session(pgraph.Graph):
 
         """
         target = self.targets[0]
-        mutation = mutation_context.mutation
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name(mutation)
+        test_case_name = self._test_case_name(mutation_context)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
@@ -1587,7 +1641,7 @@ class Session(pgraph.Graph):
 
             self._pre_send(target)
 
-            for e in mutation.message_path[:-1]:
+            for e in mutation_context.message_path[:-1]:
                 prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
                 protocol_session = ProtocolSession(
@@ -1599,21 +1653,21 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            prev_node = self.nodes[mutation.message_path[-1].src]
-            node = self.nodes[mutation.message_path[-1].dst]
+            prev_node = self.nodes[mutation_context.message_path[-1].src]
+            node = self.nodes[mutation_context.message_path[-1].dst]
             protocol_session = ProtocolSession(
                 previous_message=prev_node,
                 current_message=node,
             )
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=protocol_session
+                node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
             )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(
                 target,
                 self.fuzz_node,
-                mutation.message_path[-1],
+                mutation_context.message_path[-1],
                 callback_data=callback_data,
                 mutation_context=mutation_context,
             )
@@ -1682,18 +1736,18 @@ class Session(pgraph.Graph):
         message_path = self._message_path_to_str(mutation.message_path)
         return "FEATURE-CHECK->{0}".format(message_path)
 
-    def _test_case_name(self, mutation):
+    def _test_case_name(self, mutation_context):
         """Get long test case name.
 
         Args:
-            mutation (Mutation): Mutation to get name from.
+            mutation_context (MutationContext): MutationContext to get name from.
 
         Returns:
             Long formatted test case name
         """
-        message_path = self._message_path_to_str(mutation.message_path)
-        primitive_path = next(iter(mutation.mutations))
-        return "{0}:{1}:{2}".format(message_path, primitive_path, self.mutant_index)
+        message_path = self._message_path_to_str(mutation_context.message_path)
+        mutation_names = ("{0}:{1}".format(qualified_name, mutation.index) for qualified_name, mutation in mutation_context.mutations.items())
+        return "{0}:[{1}]".format(message_path, ", ".join(mutation_names))
 
     def _message_path_to_str(self, message_path):
         return "->".join([self.nodes[e.dst].name for e in message_path])

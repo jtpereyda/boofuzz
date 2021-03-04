@@ -18,5 +18,21 @@ class MutationContext(object):
     ProtocolSession does not necessarily have a MutationContext.
     """
 
-    mutation = attr.ib(type=Mutation)
+    mutations = attr.ib(factory=dict)  # maps qualified names to a Mutation
+    message_path = attr.ib(factory=list)
     protocol_session = attr.ib(type=ProtocolSession, default=None)
+
+    def merge_in(self, *mutations):
+        """Merge Mutation objects into this Mutation.
+
+        Args:
+            *args (Mutation): Mutation objects to merge in
+
+        Returns:
+            MutationContext: self
+        """
+        for mutation in mutations:
+            # if self.message_path != mutation.message_path:
+            #     raise ValueError("Cannot merge Mutation objects with differing message paths")
+            self.mutations.update(mutation.mutations)
+        return self
