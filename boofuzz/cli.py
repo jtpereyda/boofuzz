@@ -34,7 +34,9 @@ def cli():
 @click.option("--test-case-index", help="Test case index", type=int)
 @click.option("--test-case-name", help="Name of node or specific test case")
 @click.option("--csv-out", help="Output to CSV file")
-@click.option("--sleep-between-cases", help="Wait FLOAT (seconds) between test cases (partial seconds OK)", type=float, default=0)
+@click.option(
+    "--sleep-between-cases", help="Wait FLOAT (seconds) between test cases (partial seconds OK)", type=float, default=0
+)
 @click.option("--procmon-host", help="Process monitor port host or IP")
 @click.option("--procmon-port", type=int, default=DEFAULT_PROCMON_PORT, help="Process monitor port")
 @click.option("--procmon-start", help="Process monitor start command")
