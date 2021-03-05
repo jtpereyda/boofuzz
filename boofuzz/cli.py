@@ -14,6 +14,7 @@ from .connections import TCPSocketConnection
 from .fuzz_logger_csv import FuzzLoggerCsv
 from .fuzz_logger_curses import FuzzLoggerCurses
 from .fuzz_logger_text import FuzzLoggerText
+from .helpers import parse_target
 from .monitors import ProcessMonitor
 from .utils.process_monitor_local import ProcessMonitorLocal
 from .utils.debugger_thread_simple import DebuggerThreadSimple
@@ -29,12 +30,13 @@ def cli():
 
 
 @cli.group(help="Must be run via a fuzz script")
-@click.option("--target-host", help="Host or IP address of target", required=True)
-@click.option("--target-port", type=int, help="Network port of target", required=True)
+@click.option("--target", metavar="HOST:PORT", help="Target network address", required=True)
 @click.option("--test-case-index", help="Test case index", type=int)
 @click.option("--test-case-name", help="Name of node or specific test case")
 @click.option("--csv-out", help="Output to CSV file")
-@click.option("--sleep-between-cases", help="Wait time between test cases (floating point)", type=float, default=0)
+@click.option(
+    "--sleep-between-cases", help="Wait FLOAT (seconds) between test cases (partial seconds OK)", type=float, default=0
+)
 @click.option("--procmon-host", help="Process monitor port host or IP")
 @click.option("--procmon-port", type=int, default=DEFAULT_PROCMON_PORT, help="Process monitor port")
 @click.option("--procmon-start", help="Process monitor start command")
@@ -46,8 +48,7 @@ def cli():
 @click.pass_context
 def fuzz(
     ctx,
-    target_host,
-    target_port,
+    target,
     test_case_index,
     test_case_name,
     csv_out,
@@ -77,7 +78,7 @@ def fuzz(
     elif tui:
         fuzz_loggers.append(FuzzLoggerCurses())
     if csv_out is not None:
-        f = open("boofuzz.csv", 'wb')
+        f = open("boofuzz.csv", "wb")
         fuzz_loggers.append(FuzzLoggerCsv(file_handle=f))
 
     procmon_options = {}
@@ -117,7 +118,7 @@ def fuzz(
     else:
         fuzz_only_one_case = int(test_case_index)
 
-    connection = TCPSocketConnection(target_host, target_port)
+    connection = TCPSocketConnection(*parse_target(target_name=target))
 
     session = sessions.Session(
         target=sessions.Target(
