@@ -89,7 +89,7 @@ class Node(object):
                 while self.label[cursor + amount] == "\\" or self.label[cursor + amount] == '"':
                     amount -= 1
 
-            chunked_label += self.label[cursor: cursor + amount] + "\\\n"
+            chunked_label += self.label[cursor : cursor + amount] + "\\\n"
             cursor += amount
 
         # if node width and height were not explicitly specified, make a best effort guess to create something nice.
