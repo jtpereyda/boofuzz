@@ -37,7 +37,7 @@ class Fuzzable(Node):
     name_counter = 0
 
     def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
-        super().__init__(name=name)
+        super(Fuzzable, self).__init__(name=name)
         self._fuzzable = fuzzable
         self._default_value = default_value
         self._context_path = ""
