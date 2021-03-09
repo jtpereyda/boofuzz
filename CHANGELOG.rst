@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Upcoming
+--------
+Features
+^^^^^^^^
+- Fuzzing CLI -- Use main_helper() to use boofuzz's generic fuzzing CLI with your script.
+
 v0.3.0
 ------
 Features

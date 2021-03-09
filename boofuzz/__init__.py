@@ -8,6 +8,7 @@ from past.builtins import map
 
 from . import blocks, exception, legos, primitives
 from .blocks import Aligned, Block, Checksum, Repeat, Request, REQUESTS, Size
+from .cli import main_helper
 from .connections import (
     BaseSocketConnection,
     FileConnection,
@@ -102,6 +103,7 @@ __all__ = [
     "ITargetConnection",
     "legos",
     "LITTLE_ENDIAN",
+    "main_helper",
     "Mirror",
     "MustImplementException",
     "NetworkMonitor",
