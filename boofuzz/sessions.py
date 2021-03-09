@@ -709,7 +709,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop(self._protocol_mutations())
+        self._main_fuzz_loop(self._mutations_for_protocol())
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -722,7 +722,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
 
-        self._main_fuzz_loop(self._iterate_node(node_edges))
+        self._main_fuzz_loop(self._mutations_for_path(node_edges))
 
     def fuzz_by_name(self, name):
         """Fuzz a particular test case or node by name.
@@ -730,7 +730,15 @@ class Session(pgraph.Graph):
         Args:
             name (str): Name of node.
         """
-        self.fuzz_single_node_by_path(re.split("->", name))
+        path, mutations = helpers.parse_test_case_name(name)
+        if len(mutations) < 1:
+            self.fuzz_single_node_by_path(path)
+        else:
+            self.total_mutant_index = 0
+            self.total_num_mutations = 1
+
+            node_edges = self._path_names_to_edges(node_names=path)
+            self._main_fuzz_loop(self._iterate_single_case_by_named_mutations(node_edges, mutations))
 
     def fuzz_single_case(self, mutant_index):
         """Fuzz a test case by mutant_index.
@@ -764,16 +772,23 @@ class Session(pgraph.Graph):
                 for items in self.product(*iterables[1:]):
                     yield (item,) + items
 
-    def _protocol_mutations(self):
+    def _mutations_for_protocol(self):
         """
         Yields:
             MutationContext: A MutationContext containing one mutation.
-
         """
         for path in self._iterate_protocol():
-            for m in self._iterate_node_combinatorial(path):  # TODO use max_depth
-                self.total_mutant_index += 1
-                yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in m})
+            for m in self._mutations_for_path(path):
+                yield m
+
+    def _mutations_for_path(self, path):
+        """
+        Yields:
+            MutationContext: A MutationContext containing one mutation.
+        """
+        for m in self._iterate_node_combinatorial(path):  # TODO use max_depth
+            self.total_mutant_index += 1
+            yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in m})
 
     def _message_check(self, path):
         """Check messages for compatibility.
@@ -1499,6 +1514,21 @@ class Session(pgraph.Graph):
                 self._skip_current_element_after_current_test_case = False
                 continue
                 # TODO reimplement node skip functionality
+
+    def _iterate_single_case_by_named_mutations(self, path, mutation_names):
+        # need a way to get the mutation value based on the mutation index
+        self.fuzz_node = self.nodes[path[-1].dst]
+        self.mutant_index = 0
+
+        mutations = []
+        for mutation_name in mutation_names:
+            qualified_name, index = mutation_name.rsplit(":")
+            index = int(index)
+            fuzzable = self.fuzz_node.names[qualified_name]
+            mutation = next(itertools.islice(fuzzable.get_mutations(), index, index+1))
+            mutations.append(mutation)
+        self.total_mutant_index += 1
+        yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1

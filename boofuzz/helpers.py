@@ -449,3 +449,28 @@ def parse_target(target_name):
         return host, int(ip)
     except ValueError:
         raise ValueError("Target format is HOST:PORT")
+
+
+def parse_test_case_name(test_case):
+    """Parse a test case name into a message path and a list of mutation names.
+
+    Example:
+        Input: "message1:[message1.first_byte:2, message1.second_byte:1, message1.third_byte:2]"
+        Output: ["message1"], ["message1.first_byte:2", "message1.second_byte:1", "message1.third_byte:2"]
+
+    Returns:
+        A message path (list of message names) and a list of mutation names.
+    """
+    components = test_case.split(":", 1)
+    message_path = components[0]
+    path = re.split("->", message_path)
+    if len (components) < 2:
+        return path, []
+    else:
+        mutations = components[1]
+        match = re.match("\[(.*)\]", mutations)
+        if match is None:
+            raise BoofuzzError("could not parse test case name: {0}".format(test_case))
+        mutations = match.group(1)
+        mutations = re.split(",\s*", mutations)
+        return path, mutations
