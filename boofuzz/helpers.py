@@ -441,3 +441,11 @@ def get_boofuzz_version(boofuzz_class):
 
 def str_to_bytes(value, encoding="utf-8", errors="replace"):
     return six.ensure_binary(value, encoding=encoding, errors=errors)
+
+
+def parse_target(target_name):
+    try:
+        host, ip = target_name.split(":")
+        return host, int(ip)
+    except ValueError:
+        raise ValueError("Target format is HOST:PORT")
