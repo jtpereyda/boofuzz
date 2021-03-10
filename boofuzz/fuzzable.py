@@ -1,12 +1,12 @@
+from future.builtins import object
 from future.moves import itertools
 
-from .mutation import Mutation
+from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext
-from .pgraph.node import Node
 from .protocol_session_reference import ProtocolSessionReference
 
 
-class Fuzzable(Node):
+class Fuzzable(object):
     """Parent class for all primitives and blocks.
 
     When making new fuzzable types, one will typically override :meth:`mutations` and/or :meth:`encode`.
@@ -37,8 +37,8 @@ class Fuzzable(Node):
     name_counter = 0
 
     def __init__(self, name=None, default_value=None, fuzzable=True, fuzz_values=None):
-        super(Fuzzable, self).__init__(name=name)
         self._fuzzable = fuzzable
+        self._name = name
         self._default_value = default_value
         self._context_path = ""
         self._request = None
@@ -55,6 +55,14 @@ class Fuzzable(Node):
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
         return self._fuzzable
+
+    @property
+    def name(self):
+        """Element name, should be unique for each instance.
+
+        :rtype: str
+        """
+        return self._name
 
     @property
     def qualified_name(self):

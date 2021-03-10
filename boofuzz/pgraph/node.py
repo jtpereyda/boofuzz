@@ -40,14 +40,13 @@ class Node(object):
     udraw_image = None
     udraw_info = ""
 
-    def __init__(self, node_id=None, name=None):
+    def __init__(self, node_id=None):
         self.id = node_id
         self.number = 0
 
         # general graph attributes
         self.color = 0xEEF7FF
         self.border_color = 0xEEEEEE
-        self._name = name
         self.label = ""
         self.shape = "box"
 
@@ -59,14 +58,6 @@ class Node(object):
         self.gml_line_width = 1.0
         self.gml_type = "rectangle"
         self.gml_width_shape = 1.0
-
-    @property
-    def name(self):
-        """Node name, should be unique for each instance.
-
-        :rtype: str
-        """
-        return self._name
 
     def render_node_gml(self):
         """
