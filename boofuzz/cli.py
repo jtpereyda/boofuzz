@@ -31,7 +31,7 @@ def cli():
 
 @cli.group(help="Must be run via a fuzz script")
 @click.option("--target", metavar="HOST:PORT", help="Target network address", required=True)
-@click.option("--test-case-index", help="Test case index", type=int)
+@click.option("--test-case-index", help="Test case index", type=str)
 @click.option("--test-case-name", help="Name of node or specific test case")
 @click.option("--csv-out", help="Output to CSV file")
 @click.option(
@@ -102,7 +102,6 @@ def fuzz(
 
     start = None
     end = None
-    fuzz_only_one_case = None
     if test_case_index is None:
         start = 1
     elif "-" in test_case_index:
@@ -116,7 +115,7 @@ def fuzz(
         else:
             end = int(end)
     else:
-        fuzz_only_one_case = int(test_case_index)
+        start = end = int(test_case_index)
 
     connection = TCPSocketConnection(*parse_target(target_name=target))
 
@@ -138,8 +137,6 @@ def fuzz(
     def fuzzcallback(result, *args, **kwargs):
         if feature_check:
             session.feature_check()
-        elif fuzz_only_one_case is not None:
-            session.fuzz_single_case(mutant_index=fuzz_only_one_case)
         elif test_case_name is not None:
             session.fuzz_by_name(test_case_name)
         else:

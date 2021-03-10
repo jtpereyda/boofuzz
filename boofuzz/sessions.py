@@ -681,198 +681,6 @@ class Session(pgraph.Graph):
         fh.write(zlib.compress(pickle.dumps(data, protocol=2)))
         fh.close()
 
-    def feature_check(self):
-        """Check all messages/features.
-
-        Returns:
-            None
-        """
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations()
-
-        for path in self._iterate_protocol_message_paths():
-            self._message_check(path)
-
-    def fuzz(self):
-        """Fuzz the entire protocol tree.
-
-        Iterates through and fuzzes all fuzz cases, skipping according to
-        self.skip and restarting based on self.restart_interval.
-
-        If you want the web server to be available, your program must persist
-        after calling this method. helpers.pause_for_signal() is
-        available to this end.
-
-        Returns:
-            None
-        """
-        max_depth = 3
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations()
-
-        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
-
-    def fuzz_single_node_by_path(self, node_names):
-        """Fuzz a particular node via the path in node_names.
-
-        Args:
-            node_names (list of str): List of node names leading to target.
-        """
-        node_edges = self._path_names_to_edges(node_names=node_names)
-
-        self.total_mutant_index = 0
-        self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
-
-        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=3, path=node_edges))
-
-    def fuzz_by_name(self, name):
-        """Fuzz a particular test case or node by name.
-
-        Args:
-            name (str): Name of node.
-        """
-        path, mutations = helpers.parse_test_case_name(name)
-        if len(mutations) < 1:
-            self.fuzz_single_node_by_path(path)
-        else:
-            self.total_mutant_index = 0
-            self.total_num_mutations = 1
-
-            node_edges = self._path_names_to_edges(node_names=path)
-            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
-
-    def fuzz_single_case(self, mutant_index):
-        """Fuzz a test case by mutant_index.
-
-        Args:
-            mutant_index (int): Positive non-zero integer.
-
-        Returns:
-            None
-
-        Raises:
-            sex.SulleyRuntimeError: If any error is encountered while executing the test case.
-        """
-        self.total_mutant_index = 0
-        self.total_num_mutations = 1
-
-        self._main_fuzz_loop(self._generate_single_case_by_index(mutant_index))
-
-    def _generate_mutations_indefinitely(self, max_depth=None, path=None):
-        depth = 1
-        while max_depth is None or depth <= max_depth:
-            valid_case_found_at_this_depth = False
-            for m in self._generate_n_mutations(depth=depth, path=path):
-                valid_case_found_at_this_depth = True
-                yield m
-            if not valid_case_found_at_this_depth:
-                break
-            depth += 1
-
-    def _generate_n_mutations(self, depth, path):
-        for path in self._iterate_protocol_message_paths(path=path):
-            for m in self._generate_n_mutations_for_path(path, depth=depth):
-                yield m
-
-    def _message_check(self, path):
-        """Check messages for compatibility.
-
-        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
-
-        Args:
-            path (list of Connection): Nodes (Requests) along the path to the target one.
-
-        Returns:
-            None
-        """
-        self.server_init()
-
-        try:
-            self._check_message(MutationContext(message_path=path, mutations={}))
-        except KeyboardInterrupt:
-            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-            self.export_file()
-            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
-            raise
-        except exception.BoofuzzRestartFailedError:
-            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
-            self.export_file()
-            raise
-        except exception.BoofuzzTargetConnectionFailedError:
-            # exception should have already been handled but rethrown in order to escape test run
-            pass
-        except Exception:
-            self._fuzz_data_logger.log_error("Unexpected exception! {0}".format(traceback.format_exc()))
-            self.export_file()
-            raise
-
-    def _main_fuzz_loop(self, fuzz_case_iterator):
-        """Execute main fuzz logic; takes an iterator of test cases.
-
-        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
-
-        Args:
-            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases and yields MutationContext objects.
-                 See _iterate_single_node() for details.
-
-        Returns:
-            None
-        """
-        if self.web_port is not None:
-            self.server_init()
-
-        try:
-            self._start_target(self.targets[0])
-
-            if self._reuse_target_connection:
-                self.targets[0].open()
-            num_cases_actually_fuzzed = 0
-            for mutation_context in fuzz_case_iterator:
-                if self.total_mutant_index < self._index_start:
-                    continue
-                elif self._index_end is not None and self.total_mutant_index > self._index_end:
-                    break
-
-                # Check restart interval
-                if (
-                    num_cases_actually_fuzzed
-                    and self.restart_interval
-                    and num_cases_actually_fuzzed % self.restart_interval == 0
-                ):
-                    self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                    self._restart_target(self.targets[0])
-
-                self._fuzz_current_case(mutation_context)
-
-                num_cases_actually_fuzzed += 1
-            if self._reuse_target_connection:
-                self.targets[0].close()
-
-            if self._keep_web_open and self.web_port is not None:
-                print(
-                    "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
-                    "\nPress ENTER to close webinterface",
-                )
-                input()
-        except KeyboardInterrupt:
-            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
-            self.export_file()
-            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
-            raise
-        except exception.BoofuzzRestartFailedError:
-            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
-            self.export_file()
-            raise
-        except exception.BoofuzzTargetConnectionFailedError:
-            # exception should have already been handled but rethrown in order to escape test run
-            pass
-        except Exception:
-            self._fuzz_data_logger.log_error("Unexpected exception! {0}".format(traceback.format_exc()))
-            self.export_file()
-            raise
-        finally:
-            self._fuzz_data_logger.close_test()
-
     def _start_target(self, target):
         started = False
         for monitor in target.monitors:
@@ -1374,6 +1182,236 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
+    def feature_check(self):
+        """Check all messages/features.
+
+        Returns:
+            None
+        """
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.num_mutations()
+
+        for path in self._iterate_protocol_message_paths():
+            self._message_check(path)
+
+    def fuzz(self):
+        """Fuzz the entire protocol tree.
+
+        Iterates through and fuzzes all fuzz cases, skipping according to
+        self.skip and restarting based on self.restart_interval.
+
+        If you want the web server to be available, your program must persist
+        after calling this method. helpers.pause_for_signal() is
+        available to this end.
+
+        Returns:
+            None
+        """
+        max_depth = 3
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.num_mutations()
+
+        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
+
+    def fuzz_single_node_by_path(self, node_names):
+        """Fuzz a particular node via the path in node_names.
+
+        Args:
+            node_names (list of str): List of node names leading to target.
+        """
+        node_edges = self._path_names_to_edges(node_names=node_names)
+
+        self.total_mutant_index = 0
+        self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
+
+        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=3, path=node_edges))
+
+    def fuzz_by_name(self, name):
+        """Fuzz a particular test case or node by name.
+
+        Args:
+            name (str): Name of node.
+        """
+        path, mutations = helpers.parse_test_case_name(name)
+        if len(mutations) < 1:
+            self.fuzz_single_node_by_path(path)
+        else:
+            self.total_mutant_index = 0
+            self.total_num_mutations = 1
+
+            node_edges = self._path_names_to_edges(node_names=path)
+            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
+
+    def fuzz_single_case(self, mutant_index):
+        """Deprecated: Fuzz a test case by mutant_index.
+
+        Deprecation note: The new approach is to set Session's start and end indices to the same value.
+
+        Args:
+            mutant_index (int): Positive non-zero integer.
+
+        Returns:
+            None
+
+        Raises:
+            sex.SulleyRuntimeError: If any error is encountered while executing the test case.
+        """
+        warnings.warn("Session.fuzz_single_case is deprecated in favor of Session's index_start and index_end constructor parameters.")
+        self.total_mutant_index = 0
+        self.total_num_mutations = 1
+
+        self._main_fuzz_loop(self._generate_single_case_by_index(mutant_index))
+
+    def _message_check(self, path):
+        """Check messages for compatibility.
+
+        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
+
+        Args:
+            path (list of Connection): Nodes (Requests) along the path to the target one.
+
+        Returns:
+            None
+        """
+        self.server_init()
+
+        try:
+            self._check_message(MutationContext(message_path=path, mutations={}))
+        except KeyboardInterrupt:
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            self.export_file()
+            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
+            raise
+        except exception.BoofuzzRestartFailedError:
+            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
+            self.export_file()
+            raise
+        except exception.BoofuzzTargetConnectionFailedError:
+            # exception should have already been handled but rethrown in order to escape test run
+            pass
+        except Exception:
+            self._fuzz_data_logger.log_error("Unexpected exception! {0}".format(traceback.format_exc()))
+            self.export_file()
+            raise
+
+    def _main_fuzz_loop(self, fuzz_case_iterator):
+        """Execute main fuzz logic; takes an iterator of test cases.
+
+        Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
+
+        Args:
+            fuzz_case_iterator (Iterable): An iterator that walks through fuzz cases and yields MutationContext objects.
+                 See _iterate_single_node() for details.
+
+        Returns:
+            None
+        """
+        if self.web_port is not None:
+            self.server_init()
+
+        try:
+            self._start_target(self.targets[0])
+
+            if self._reuse_target_connection:
+                self.targets[0].open()
+            num_cases_actually_fuzzed = 0
+            for mutation_context in fuzz_case_iterator:
+                if self.total_mutant_index < self._index_start:
+                    continue
+                elif self._index_end is not None and self.total_mutant_index > self._index_end:
+                    break
+
+                # Check restart interval
+                if (
+                    num_cases_actually_fuzzed
+                    and self.restart_interval
+                    and num_cases_actually_fuzzed % self.restart_interval == 0
+                ):
+                    self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
+                    self._restart_target(self.targets[0])
+
+                self._fuzz_current_case(mutation_context)
+
+                num_cases_actually_fuzzed += 1
+            if self._reuse_target_connection:
+                self.targets[0].close()
+
+            if self._keep_web_open and self.web_port is not None:
+                print(
+                    "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
+                    "\nPress ENTER to close webinterface",
+                )
+                input()
+        except KeyboardInterrupt:
+            # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
+            self.export_file()
+            self._fuzz_data_logger.log_error("SIGINT received ... exiting")
+            raise
+        except exception.BoofuzzRestartFailedError:
+            self._fuzz_data_logger.log_error("Restarting the target failed, exiting.")
+            self.export_file()
+            raise
+        except exception.BoofuzzTargetConnectionFailedError:
+            # exception should have already been handled but rethrown in order to escape test run
+            pass
+        except Exception:
+            self._fuzz_data_logger.log_error("Unexpected exception! {0}".format(traceback.format_exc()))
+            self.export_file()
+            raise
+        finally:
+            self._fuzz_data_logger.close_test()
+
+    def _generate_single_case_by_index(self, test_case_index):
+        fuzz_index = 1
+        for m in self._generate_mutations_indefinitely():
+            if fuzz_index >= test_case_index:
+                self.total_mutant_index = 1
+                yield m
+                break
+            fuzz_index += 1
+
+    def _generate_mutations_indefinitely(self, max_depth=None, path=None):
+        depth = 1
+        while max_depth is None or depth <= max_depth:
+            valid_case_found_at_this_depth = False
+            for m in self._generate_n_mutations(depth=depth, path=path):
+                valid_case_found_at_this_depth = True
+                yield m
+            if not valid_case_found_at_this_depth:
+                break
+            depth += 1
+
+    def _generate_n_mutations(self, depth, path):
+        for path in self._iterate_protocol_message_paths(path=path):
+            for m in self._generate_n_mutations_for_path(path, depth=depth):
+                yield m
+
+    def _generate_n_mutations_for_path(self, path, depth):
+        """Iterate node combinatorially for specified combinatorial depth.
+
+        Args:
+            path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
+            depth (int): Yield sets of depth mutations.
+
+        Yields:
+            MutationContext: A MutationContext containing one mutation.
+        """
+        for mutations in self._generate_n_mutations_for_path_recursive(path, depth=depth):
+            if not self._mutations_contain_duplicate(mutations):
+                self.total_mutant_index += 1
+                yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
+
+    def _generate_n_mutations_for_path_recursive(self, path, depth, skip_elements=None):
+        if skip_elements is None:
+            skip_elements = set()
+        if depth == 0:
+            yield ()
+        new_skip = set(skip_elements)
+        for m in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
+            new_skip.add(m.qualified_name)
+            for ms in self._generate_n_mutations_for_path_recursive(path, depth=depth - 1, skip_elements=new_skip):
+                yield (m,) + ms
+
     def _iterate_protocol_message_paths(self, path=None):
         """
         Iterates over protocol and yields a path (list of Connection) leading to a given message).
@@ -1431,32 +1469,6 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
-    def _generate_n_mutations_for_path(self, path, depth):
-        """Iterate node combinatorially for specified combinatorial depth.
-
-        Args:
-            path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
-            depth (int): Yield sets of depth mutations.
-
-        Yields:
-            MutationContext: A MutationContext containing one mutation.
-        """
-        for mutations in self._generate_n_mutations_for_path_recursive(path, depth=depth):
-            if not self._mutations_contain_duplicate(mutations):
-                self.total_mutant_index += 1
-                yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
-
-    def _generate_n_mutations_for_path_recursive(self, path, depth, skip_elements=None):
-        if skip_elements is None:
-            skip_elements = set()
-        if depth == 0:
-            yield ()
-        new_skip = set(skip_elements)
-        for m in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
-            new_skip.add(m.qualified_name)
-            for ms in self._generate_n_mutations_for_path_recursive(path, depth=depth - 1, skip_elements=new_skip):
-                yield (m,) + ms
-
     def _mutations_contain_duplicate(self, mutations):
         # print(mutations)
         names = [m.qualified_name for m in mutations]
@@ -1508,15 +1520,6 @@ class Session(pgraph.Graph):
             mutations.append(mutation)
         self.total_mutant_index += 1
         yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
-
-    def _generate_single_case_by_index(self, test_case_index):
-        fuzz_index = 1
-        for m in self._generate_mutations_indefinitely():
-            if fuzz_index >= test_case_index:
-                self.total_mutant_index = 1
-                yield m
-                break
-            fuzz_index += 1
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
