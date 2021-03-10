@@ -1380,6 +1380,7 @@ class Session(pgraph.Graph):
             fuzz_index += 1
 
     def _generate_mutations_indefinitely(self, max_depth=None, path=None):
+        """Yield MutationContext with n mutations per message over all messages, with n increasing indefinitely."""
         depth = 1
         while max_depth is None or depth <= max_depth:
             valid_case_found_at_this_depth = False
@@ -1391,12 +1392,13 @@ class Session(pgraph.Graph):
             depth += 1
 
     def _generate_n_mutations(self, depth, path):
+        """Yield MutationContext with n mutations per message over all messages."""
         for path in self._iterate_protocol_message_paths(path=path):
             for m in self._generate_n_mutations_for_path(path, depth=depth):
                 yield m
 
     def _generate_n_mutations_for_path(self, path, depth):
-        """Iterate node combinatorially for specified combinatorial depth.
+        """Yield MutationContext with n mutations for a specific message.
 
         Args:
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
@@ -1487,7 +1489,7 @@ class Session(pgraph.Graph):
         return False
 
     def _generate_mutations_for_request(self, path, skip_elements=None):
-        """Iterate fuzz cases for the last node in path.
+        """Yield each mutation for a specific message (the last message in path).
 
         Args:
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
