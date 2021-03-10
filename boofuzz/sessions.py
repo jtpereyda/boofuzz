@@ -756,36 +756,23 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = 1
 
-        self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
+        self._main_fuzz_loop(self._generate_single_case_by_index(mutant_index))
 
     def _generate_mutations_indefinitely(self, max_depth=None, path=None):
         depth = 1
         while max_depth is None or depth <= max_depth:
             valid_case_found_at_this_depth = False
-            for m in self._generate_mutations_at_combinatorial_depth(depth=depth, path=path):
+            for m in self._generate_n_mutations(depth=depth, path=path):
                 valid_case_found_at_this_depth = True
                 yield m
             if not valid_case_found_at_this_depth:
                 break
             depth += 1
 
-    def _generate_mutations_at_combinatorial_depth(self, depth, path):
-        if path is not None:
-            for m in self._generate_mutations_for_path(path, depth=depth):
+    def _generate_n_mutations(self, depth, path):
+        for path in self._iterate_protocol_message_paths(path=path):
+            for m in self._generate_n_mutations_for_path(path, depth=depth):
                 yield m
-        else:
-            for path in self._iterate_protocol_message_paths():
-                for m in self._generate_mutations_for_path(path, depth=depth):
-                    yield m
-
-    def _generate_mutations_for_path(self, path, depth):
-        """
-        Yields:
-            MutationContext: A MutationContext containing one mutation.
-        """
-        for m in self._iterate_node_combinatorial(path, depth=depth):
-            self.total_mutant_index += 1
-            yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in m})
 
     def _message_check(self, path):
         """Check messages for compatibility.
@@ -1387,9 +1374,12 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
-    def _iterate_protocol_message_paths(self):
+    def _iterate_protocol_message_paths(self, path=None):
         """
         Iterates over protocol and yields a path (list of Connection) leading to a given message).
+
+        Args:
+            path (list of Connection): Provide a specific path to yield only that specific path.
 
         Yields:
             list of Connection: List of edges along the path to the current one being fuzzed.
@@ -1404,8 +1394,11 @@ class Session(pgraph.Graph):
         if not self.edges_from(self.root.id):
             raise exception.SullyRuntimeError("No requests specified in session")
 
-        for x in self._iterate_protocol_message_paths_recursive(this_node=self.root, path=[]):
-            yield x
+        if path is not None:
+            yield path
+        else:
+            for x in self._iterate_protocol_message_paths_recursive(this_node=self.root, path=[]):
+                yield x
 
     def _iterate_protocol_message_paths_recursive(self, this_node, path):
         """Recursive helper for _iterate_protocol.
@@ -1438,7 +1431,7 @@ class Session(pgraph.Graph):
         if path:
             path.pop()
 
-    def _iterate_node_combinatorial(self, path, depth):
+    def _generate_n_mutations_for_path(self, path, depth):
         """Iterate node combinatorially for specified combinatorial depth.
 
         Args:
@@ -1446,21 +1439,22 @@ class Session(pgraph.Graph):
             depth (int): Yield sets of depth mutations.
 
         Yields:
-            iterable of Mutation: Mutation objects (one or more).
+            MutationContext: A MutationContext containing one mutation.
         """
-        for mutations in self._iterate_node_combinatorial_recursive(path, depth=depth):
+        for mutations in self._generate_n_mutations_for_path_recursive(path, depth=depth):
             if not self._mutations_contain_duplicate(mutations):
-                yield mutations
+                self.total_mutant_index += 1
+                yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
 
-    def _iterate_node_combinatorial_recursive(self, path, depth, skip_elements=None):
+    def _generate_n_mutations_for_path_recursive(self, path, depth, skip_elements=None):
         if skip_elements is None:
             skip_elements = set()
         if depth == 0:
             yield ()
         new_skip = set(skip_elements)
-        for m in self._iterate_node(path=path, skip_elements=skip_elements):
+        for m in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
             new_skip.add(m.qualified_name)
-            for ms in self._iterate_node_combinatorial_recursive(path, depth=depth - 1, skip_elements=new_skip):
+            for ms in self._generate_n_mutations_for_path_recursive(path, depth=depth - 1, skip_elements=new_skip):
                 yield (m,) + ms
 
     def _mutations_contain_duplicate(self, mutations):
@@ -1471,7 +1465,7 @@ class Session(pgraph.Graph):
                 return True
         return False
 
-    def _iterate_node(self, path, skip_elements=None):
+    def _generate_mutations_for_request(self, path, skip_elements=None):
         """Iterate fuzz cases for the last node in path.
 
         Args:
@@ -1515,15 +1509,14 @@ class Session(pgraph.Graph):
         self.total_mutant_index += 1
         yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
 
-    def _iterate_single_case_by_index(self, test_case_index):
+    def _generate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
-        for path in self._iterate_protocol_message_paths():
-            for fuzz_args in self._iterate_node(path):
-                if fuzz_index >= test_case_index:
-                    self.total_mutant_index = 1
-                    yield fuzz_args
-                    break
-                fuzz_index += 1
+        for m in self._generate_mutations_indefinitely():
+            if fuzz_index >= test_case_index:
+                self.total_mutant_index = 1
+                yield m
+                break
+            fuzz_index += 1
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.
