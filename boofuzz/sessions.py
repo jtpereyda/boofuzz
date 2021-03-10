@@ -690,7 +690,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        for path in self._iterate_protocol():
+        for path in self._iterate_protocol_message_paths():
             self._message_check(path)
 
     def fuzz(self):
@@ -706,10 +706,11 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
+        max_depth = 3
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop(self._mutations_for_protocol())
+        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
 
     def fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -722,7 +723,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
 
-        self._main_fuzz_loop(self._mutations_for_path(node_edges))
+        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=3, path=node_edges))
 
     def fuzz_by_name(self, name):
         """Fuzz a particular test case or node by name.
@@ -738,7 +739,7 @@ class Session(pgraph.Graph):
             self.total_num_mutations = 1
 
             node_edges = self._path_names_to_edges(node_names=path)
-            self._main_fuzz_loop(self._iterate_single_case_by_named_mutations(node_edges, mutations))
+            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
 
     def fuzz_single_case(self, mutant_index):
         """Fuzz a test case by mutant_index.
@@ -757,36 +758,32 @@ class Session(pgraph.Graph):
 
         self._main_fuzz_loop(self._iterate_single_case_by_index(mutant_index))
 
-    def product(self, *iterables, **kwargs):
-        """re-implementation of itertools.product that does not hold the full iterables in memory
-
-        See https://stackoverflow.com/questions/12093364/cartesian-product-of-large-iterators-itertools
-        """
-
-        if len(iterables) == 0:
-            yield ()
-        else:
-            iterables = iterables * kwargs.get('repeat', 1)
-            it = iterables[0]
-            for item in it() if callable(it) else iter(it):
-                for items in self.product(*iterables[1:]):
-                    yield (item,) + items
-
-    def _mutations_for_protocol(self):
-        """
-        Yields:
-            MutationContext: A MutationContext containing one mutation.
-        """
-        for path in self._iterate_protocol():
-            for m in self._mutations_for_path(path):
+    def _generate_mutations_indefinitely(self, max_depth=None, path=None):
+        depth = 1
+        while max_depth is None or depth <= max_depth:
+            valid_case_found_at_this_depth = False
+            for m in self._generate_mutations_at_combinatorial_depth(depth=depth, path=path):
+                valid_case_found_at_this_depth = True
                 yield m
+            if not valid_case_found_at_this_depth:
+                break
+            depth += 1
 
-    def _mutations_for_path(self, path):
+    def _generate_mutations_at_combinatorial_depth(self, depth, path):
+        if path is not None:
+            for m in self._generate_mutations_for_path(path, depth=depth):
+                yield m
+        else:
+            for path in self._iterate_protocol_message_paths():
+                for m in self._generate_mutations_for_path(path, depth=depth):
+                    yield m
+
+    def _generate_mutations_for_path(self, path, depth):
         """
         Yields:
             MutationContext: A MutationContext containing one mutation.
         """
-        for m in self._iterate_node_combinatorial(path):  # TODO use max_depth
+        for m in self._iterate_node_combinatorial(path, depth=depth):
             self.total_mutant_index += 1
             yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in m})
 
@@ -1390,11 +1387,9 @@ class Session(pgraph.Graph):
         flask_thread.daemon = True
         return flask_thread
 
-    def _iterate_protocol(self):
+    def _iterate_protocol_message_paths(self):
         """
-        Iterates over fuzz cases and mutates appropriately.
-        On each iteration, one may call fuzz_current_case to do the
-        actual fuzzing.
+        Iterates over protocol and yields a path (list of Connection) leading to a given message).
 
         Yields:
             list of Connection: List of edges along the path to the current one being fuzzed.
@@ -1409,12 +1404,11 @@ class Session(pgraph.Graph):
         if not self.edges_from(self.root.id):
             raise exception.SullyRuntimeError("No requests specified in session")
 
-        for x in self._iterate_protocol_recursive(this_node=self.root, path=[]):
+        for x in self._iterate_protocol_message_paths_recursive(this_node=self.root, path=[]):
             yield x
 
-    def _iterate_protocol_recursive(self, this_node, path):
-        """
-        Recursively iterates over fuzz nodes. Used by _fuzz_case_iterator.
+    def _iterate_protocol_message_paths_recursive(self, this_node, path):
+        """Recursive helper for _iterate_protocol.
 
         Args:
             this_node (node.Node): Current node that is being fuzzed.
@@ -1437,37 +1431,28 @@ class Session(pgraph.Graph):
             yield path
 
             # recursively fuzz the remainder of the nodes in the session graph.
-            for x in self._iterate_protocol_recursive(self.fuzz_node, path):
+            for x in self._iterate_protocol_message_paths_recursive(self.fuzz_node, path):
                 yield x
 
         # finished with the last node on the path, pop it off the path stack.
         if path:
             path.pop()
 
-    def _iterate_node_combinatorial(self, path, max_depth=None):
-        """Iterate continually and combinatorially.
-
-        While max_depth may be specified, a max_depth of 2 or more could result in very long runtimes.
+    def _iterate_node_combinatorial(self, path, depth):
+        """Iterate node combinatorially for specified combinatorial depth.
 
         Args:
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
-            max_depth (int): Stop after exhausting mutation combinations up to length max_depth.
+            depth (int): Yield sets of depth mutations.
 
         Yields:
             iterable of Mutation: Mutation objects (one or more).
         """
-        depth = 1
-        while max_depth is None or depth <= max_depth:
-            valid_test_found_at_this_depth = False
-            for mutations in self._iterate_node_combinatorial_n(path, depth=depth):
-                if not self._mutations_contain_duplicate(mutations):
-                    yield mutations
-                    valid_test_found_at_this_depth = True
-            if not valid_test_found_at_this_depth:
-                break
-            depth += 1
+        for mutations in self._iterate_node_combinatorial_recursive(path, depth=depth):
+            if not self._mutations_contain_duplicate(mutations):
+                yield mutations
 
-    def _iterate_node_combinatorial_n(self, path, depth, skip_elements=None):
+    def _iterate_node_combinatorial_recursive(self, path, depth, skip_elements=None):
         if skip_elements is None:
             skip_elements = set()
         if depth == 0:
@@ -1475,7 +1460,7 @@ class Session(pgraph.Graph):
         new_skip = set(skip_elements)
         for m in self._iterate_node(path=path, skip_elements=skip_elements):
             new_skip.add(m.qualified_name)
-            for ms in self._iterate_node_combinatorial_n(path, depth=depth - 1, skip_elements=new_skip):
+            for ms in self._iterate_node_combinatorial_recursive(path, depth=depth - 1, skip_elements=new_skip):
                 yield (m,) + ms
 
     def _mutations_contain_duplicate(self, mutations):
@@ -1515,7 +1500,7 @@ class Session(pgraph.Graph):
                 continue
                 # TODO reimplement node skip functionality
 
-    def _iterate_single_case_by_named_mutations(self, path, mutation_names):
+    def _generate_test_case_from_named_named_mutations(self, path, mutation_names):
         # need a way to get the mutation value based on the mutation index
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
@@ -1532,7 +1517,7 @@ class Session(pgraph.Graph):
 
     def _iterate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
-        for path in self._iterate_protocol():
+        for path in self._iterate_protocol_message_paths():
             for fuzz_args in self._iterate_node(path):
                 if fuzz_index >= test_case_index:
                     self.total_mutant_index = 1
