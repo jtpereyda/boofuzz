@@ -137,10 +137,8 @@ def fuzz(
     def fuzzcallback(result, *args, **kwargs):
         if feature_check:
             session.feature_check()
-        elif test_case_name is not None:
-            session.fuzz_by_name(test_case_name)
         else:
-            session.fuzz()
+            session.fuzz(name=test_case_name)
 
         if procmon is not None:
             procmon.stop_target()

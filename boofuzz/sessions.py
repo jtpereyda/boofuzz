@@ -1194,7 +1194,7 @@ class Session(pgraph.Graph):
         for path in self._iterate_protocol_message_paths():
             self._message_check(path)
 
-    def fuzz(self):
+    def fuzz(self, name=None):
         """Fuzz the entire protocol tree.
 
         Iterates through and fuzzes all fuzz cases, skipping according to
@@ -1204,16 +1204,39 @@ class Session(pgraph.Graph):
         after calling this method. helpers.pause_for_signal() is
         available to this end.
 
+        Args:
+            name (str): Pass in a Request name to fuzz only a single request message. Pass in a test case name to fuzz
+                        only a single test case.
+
         Returns:
             None
         """
-        max_depth = 3
         self.total_mutant_index = 0
         self.total_num_mutations = self.num_mutations()
 
-        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
+        if name is None or name == "":
+            self._main_fuzz_loop(self._generate_mutations_indefinitely())
+        else:
+            self.fuzz_by_name(name=name)
 
-    def fuzz_single_node_by_path(self, node_names):
+    def fuzz_by_name(self, name):
+        """Fuzz a particular test case or node by name.
+
+        Args:
+            name (str): Name of node.
+        """
+        warnings.warn("Session.fuzz_by_name is deprecated in favor of Session.fuzz(name=name).")
+        path, mutations = helpers.parse_test_case_name(name)
+        if len(mutations) < 1:
+            self._fuzz_single_node_by_path(path)
+        else:
+            self.total_mutant_index = 0
+            self.total_num_mutations = 1
+
+            node_edges = self._path_names_to_edges(node_names=path)
+            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
+
+    def _fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
 
         Args:
@@ -1224,23 +1247,7 @@ class Session(pgraph.Graph):
         self.total_mutant_index = 0
         self.total_num_mutations = self.nodes[node_edges[-1].dst].get_num_mutations()
 
-        self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=3, path=node_edges))
-
-    def fuzz_by_name(self, name):
-        """Fuzz a particular test case or node by name.
-
-        Args:
-            name (str): Name of node.
-        """
-        path, mutations = helpers.parse_test_case_name(name)
-        if len(mutations) < 1:
-            self.fuzz_single_node_by_path(path)
-        else:
-            self.total_mutant_index = 0
-            self.total_num_mutations = 1
-
-            node_edges = self._path_names_to_edges(node_names=path)
-            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
+        self._main_fuzz_loop(self._generate_mutations_indefinitely(path=node_edges))
 
     def fuzz_single_case(self, mutant_index):
         """Deprecated: Fuzz a test case by mutant_index.
