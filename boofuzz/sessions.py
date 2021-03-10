@@ -1318,8 +1318,6 @@ class Session(pgraph.Graph):
             for mutation_context in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
-                elif self._index_end is not None and self.total_mutant_index > self._index_end:
-                    break
 
                 # Check restart interval
                 if (
@@ -1333,6 +1331,10 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(mutation_context)
 
                 num_cases_actually_fuzzed += 1
+
+                if self._index_end is not None and self.total_mutant_index >= self._index_end:
+                    break
+
             if self._reuse_target_connection:
                 self.targets[0].close()
 
