@@ -6,6 +6,7 @@ Upcoming
 Features
 ^^^^^^^^
 - Fuzzing CLI -- Use main_helper() to use boofuzz's generic fuzzing CLI with your script.
+- Implemented visual request-graph rendering functions for Session
 
 v0.3.0
 ------

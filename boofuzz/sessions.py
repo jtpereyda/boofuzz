@@ -536,8 +536,8 @@ class Session(pgraph.Graph):
 
         # create a root node. we do this because we need to start fuzzing from a single point and the user may want
         # to specify a number of initial requests.
-        self.root = pgraph.Node(name="__ROOT_NODE__")
-        self.root.label = self.root.name
+        self.root = pgraph.Node()
+        self.root.label = "__ROOT_NODE__"
         self.last_recv = None
         self.last_send = None
 
@@ -655,7 +655,7 @@ class Session(pgraph.Graph):
         """
         Dump various object values to disk.
 
-        @see: import_file()
+        :see: import_file()
         """
 
         if not self.session_filename:
@@ -860,7 +860,7 @@ class Session(pgraph.Graph):
         """
         Load various object values from disk.
 
-        @see: export_file()
+        :see: export_file()
         """
         if self.session_filename is None:
             return
@@ -1105,8 +1105,6 @@ class Session(pgraph.Graph):
             pre_send() - req - callback ... req - callback - post_send()
 
         When fuzzing RPC for example, register this method to establish the RPC bind.
-
-        @see: pre_send()
 
         Args:
             target (session.target): Target we are sending data to
