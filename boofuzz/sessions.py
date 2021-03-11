@@ -1417,6 +1417,7 @@ class Session(pgraph.Graph):
             skip_elements = set()
         if depth == 0:
             yield ()
+            return
         new_skip = set(skip_elements)
         for m in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
             new_skip.add(m.qualified_name)
