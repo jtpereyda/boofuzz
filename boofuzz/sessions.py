@@ -844,7 +844,7 @@ class Session(pgraph.Graph):
         Returns:
             bool: True if any failures were found; False otherwise.
         """
-        crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self._fuzz_data_logger.all_test_cases[-1], [])
+        crash_synopses = self._fuzz_data_logger.failed_test_cases.get(self._fuzz_data_logger.most_recent_test_id, [])
         if len(crash_synopses) > 0:
             self._fuzz_data_logger.open_test_step("Failure summary")
 
