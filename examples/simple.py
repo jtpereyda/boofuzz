@@ -7,7 +7,7 @@ import click
 
 @click.command()
 @click.pass_context
-def ftp(ctx):
+def simple(ctx):
     cli_context = ctx.obj
     session = cli_context.session
     session._receive_data_after_each_request = False
@@ -34,4 +34,4 @@ def ftp(ctx):
 
 
 if __name__ == "__main__":
-    boofuzz.main_helper(click_command=ftp)
+    boofuzz.main_helper(click_command=simple)
