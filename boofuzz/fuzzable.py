@@ -126,7 +126,7 @@ class Fuzzable(object):
         """Iterate mutations. Used by boofuzz framework.
 
         Yields:
-            Mutation: Mutations
+            list of Mutation: Mutations
 
         """
         try:
@@ -137,10 +137,12 @@ class Fuzzable(object):
                 if self._halt_mutations:
                     self._halt_mutations = False
                     return
-                if isinstance(value, Mutation):
+                if isinstance(value, list):
                     yield value
+                elif isinstance(value, Mutation):
+                    yield [value]
                 else:
-                    yield Mutation(value=value, qualified_name=self.qualified_name, index=index)
+                    yield [Mutation(value=value, qualified_name=self.qualified_name, index=index)]
                     index += 1
         finally:
             self._halt_mutations = False  # in case stop_mutations is called when mutations were exhausted anyway

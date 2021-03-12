@@ -1445,13 +1445,13 @@ class Session(pgraph.Graph):
         if skip_elements is None:
             skip_elements = set()
         if depth == 0:
-            yield ()
+            yield []
             return
-        new_skip = set(skip_elements)
-        for m in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
-            new_skip.add(m.qualified_name)
+        new_skip = skip_elements.copy()
+        for mutations in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
+            new_skip.update(m.qualified_name for m in mutations)
             for ms in self._generate_n_mutations_for_path_recursive(path, depth=depth - 1, skip_elements=new_skip):
-                yield (m,) + ms
+                yield mutations + ms
 
     def _iterate_protocol_message_paths(self, path=None):
         """
@@ -1533,10 +1533,9 @@ class Session(pgraph.Graph):
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
-        for mutation in self.fuzz_node.get_mutations(skip_elements=skip_elements):
+        for mutations in self.fuzz_node.get_mutations(skip_elements=skip_elements):
             self.mutant_index += 1
-            mutation.message_path = path
-            yield mutation
+            yield mutations
 
             if self._skip_current_node_after_current_test_case:
                 self._skip_current_node_after_current_test_case = False
@@ -1545,7 +1544,6 @@ class Session(pgraph.Graph):
                 self.fuzz_node.mutant.stop_mutations()
                 self._skip_current_element_after_current_test_case = False
                 continue
-                # TODO reimplement node skip functionality
 
     def _generate_test_case_from_named_named_mutations(self, path, mutation_names):
         # need a way to get the mutation value based on the mutation index
@@ -1557,8 +1555,7 @@ class Session(pgraph.Graph):
             qualified_name, index = mutation_name.rsplit(":")
             index = int(index)
             fuzzable = self.fuzz_node.names[qualified_name]
-            mutation = next(itertools.islice(fuzzable.get_mutations(), index, index+1))
-            mutations.append(mutation)
+            mutations += next(itertools.islice(fuzzable.get_mutations(), index, index + 1))
         self.total_mutant_index += 1
         yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
 
