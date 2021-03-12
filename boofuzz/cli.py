@@ -45,6 +45,8 @@ def cli():
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
+@click.option("--keep-web/--no-keep-web", is_flag=True, default=True, help="Keep web server for web UI open")
+@click.option("--record_pre_failure_test_cases", default=10, type=int, help="Record this many cases before each failure. Set to 0 to record all test cases, which can use a lot of disk space.")
 @click.pass_context
 def fuzz(
     ctx,
@@ -61,6 +63,8 @@ def fuzz(
     text_dump,
     feature_check,
     target_cmd,
+    keep_web,
+    record_pre_failure_test_cases,
 ):
     local_procmon = None
     if target_cmd is not None and procmon_host is None:
@@ -128,6 +132,8 @@ def fuzz(
         sleep_time=sleep_between_cases,
         index_start=start,
         index_end=end,
+        keep_web_open=keep_web,
+        fuzz_db_keep_only_n_pass_cases=record_pre_failure_test_cases,
     )
 
     ctx.obj = CliContext(session=session)
