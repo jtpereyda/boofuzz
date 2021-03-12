@@ -1589,12 +1589,11 @@ class Session(pgraph.Graph):
             mutation_context (MutationContext): Current mutation context.
         """
         target = self.targets[0]
-        mutation = mutation_context.mutation
         self.total_mutant_index += 1
 
         self._pause_if_pause_flag_is_set()
 
-        test_case_name = self._test_case_name_feature_check(mutation)
+        test_case_name = self._test_case_name_feature_check(mutation_context)
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),
@@ -1609,7 +1608,7 @@ class Session(pgraph.Graph):
             self._open_connection_keep_trying(target)
             self._pre_send(target)
 
-            for e in mutation.message_path[:-1]:
+            for e in mutation_context.message_path[:-1]:
                 prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
                 protocol_session = ProtocolSession(
@@ -1621,22 +1620,22 @@ class Session(pgraph.Graph):
                 callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
-            prev_node = self.nodes[mutation.message_path[-1].src]
-            node = self.nodes[mutation.message_path[-1].dst]
+            prev_node = self.nodes[mutation_context.message_path[-1].src]
+            node = self.nodes[mutation_context.message_path[-1].dst]
             protocol_session = ProtocolSession(
                 previous_message=prev_node,
                 current_message=node,
             )
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation.message_path[-1], test_case_context=protocol_session
+                node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
             )
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
             self.transmit_normal(
                 target,
                 self.fuzz_node,
-                mutation.message_path[-1],
+                mutation_context.message_path[-1],
                 callback_data=callback_data,
                 mutation_context=mutation_context,
             )
@@ -1792,8 +1791,8 @@ class Session(pgraph.Graph):
         self._fuzz_data_logger.log_info("sleeping for %f seconds" % seconds)
         time.sleep(seconds)
 
-    def _test_case_name_feature_check(self, mutation):
-        message_path = self._message_path_to_str(mutation.message_path)
+    def _test_case_name_feature_check(self, mutation_context):
+        message_path = self._message_path_to_str(mutation_context.message_path)
         return "FEATURE-CHECK->{0}".format(message_path)
 
     def _test_case_name(self, mutation_context):
