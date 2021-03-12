@@ -498,7 +498,6 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
-        self.num_cases_actually_fuzzed = 0
         self.start_time = time.time()
         self.end_time = None
         self.cumulative_pause_time = 0
@@ -533,10 +532,11 @@ class Session(pgraph.Graph):
             on_post_start_target=post_start_target_methods,
         )
 
-        self.total_num_mutations = 0
-        self.total_mutant_index = 0
-        self.mutant_index = 0
-        self.fuzz_node = None
+        self.total_num_mutations = 0  # total available protocol mutations (before combining multiple mutations)
+        self.total_mutant_index = 0  # index within all mutations iterated through, including skipped mutations
+        self.mutant_index = 0  # index within currently mutating element
+        self.num_cases_actually_fuzzed = 0
+        self.fuzz_node = None  # Request object currently being fuzzed
         self.targets = []
         self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
         # map of test case indices to list of supplement captured data (all cases where data was captured)

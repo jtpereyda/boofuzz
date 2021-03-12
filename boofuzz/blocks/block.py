@@ -62,7 +62,7 @@ class Block(FuzzableBlock):
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
 
-    def mutations(self, default_value):
+    def mutations(self, default_value, skip_elements=None):
         for item in self.stack:
             self.request.mutant = item
             for mutations in item.get_mutations():

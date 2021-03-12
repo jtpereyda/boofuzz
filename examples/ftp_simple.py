@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.2.0
+"""Demo FTP fuzzer as a standalone script."""
 
 from boofuzz import *
 
