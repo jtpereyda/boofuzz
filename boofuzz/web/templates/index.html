@@ -32,6 +32,14 @@
                     <td id="progress_bar_element" class="fixed"> {{ state.progress_current_bar | safe }} </td>
                     <td id="progress_percentage_element"> {{ state.progress_current }} </td>
                 </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">run time</td>
+                    <td id="run_time"> {{ state.session.runtime }} seconds </td>
+                </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">exec speed</td>
+                    <td id="exec_speed"> {{ state.session.exec_speed }}/sec </td>
+                </tr>
             </table> </td> </tr>
             <tr> <td>
                 <form method=get action="/togglepause">

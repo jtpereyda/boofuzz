@@ -327,6 +327,14 @@ class SessionInfo(object):
     def state(self):
         return "finished"
 
+    @property
+    def exec_speed(self):
+        return 0
+
+    @property
+    def runtime(self):
+        return 0
+
 
 class WebApp(object):
     """Serve fuzz data over HTTP.
@@ -490,6 +498,9 @@ class Session(pgraph.Graph):
         self._receive_data_after_fuzz = receive_data_after_fuzz
         self._skip_current_node_after_current_test_case = False
         self._skip_current_element_after_current_test_case = False
+        self.num_cases_actually_fuzzed = 0
+        self.start_time = time.time()
+        self.cumulative_pause_time = 0
 
         if self.web_port is not None:
             self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
@@ -653,6 +664,14 @@ class Session(pgraph.Graph):
 
         return edge
 
+    @property
+    def exec_speed(self):
+        return self.num_cases_actually_fuzzed / self.runtime
+
+    @property
+    def runtime(self):
+        return time.time() - self.start_time - self.cumulative_pause_time
+
     def export_file(self):
         """
         Dump various object values to disk.
@@ -758,11 +777,14 @@ class Session(pgraph.Graph):
         """
         If that pause flag is raised, enter an endless loop until it is lowered.
         """
-        while 1:
-            if self.is_paused:
-                time.sleep(1)
-            else:
-                break
+        if self.is_paused:
+            pause_start = time.time()
+            while 1:
+                if self.is_paused:
+                    time.sleep(1)
+                else:
+                    break
+            self.cumulative_pause_time += (time.time() - pause_start)
 
     def _check_for_passively_detected_failures(self, target, failure_already_detected=False):
         """Check for and log passively detected failures. Return True if any found.
@@ -1321,23 +1343,24 @@ class Session(pgraph.Graph):
 
             if self._reuse_target_connection:
                 self.targets[0].open()
-            num_cases_actually_fuzzed = 0
+            self.num_cases_actually_fuzzed = 0
+            self.start_time = time.time()
             for mutation_context in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
 
                 # Check restart interval
                 if (
-                    num_cases_actually_fuzzed
+                    self.num_cases_actually_fuzzed
                     and self.restart_interval
-                    and num_cases_actually_fuzzed % self.restart_interval == 0
+                    and self.num_cases_actually_fuzzed % self.restart_interval == 0
                 ):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                     self._restart_target(self.targets[0])
 
                 self._fuzz_current_case(mutation_context)
 
-                num_cases_actually_fuzzed += 1
+                self.num_cases_actually_fuzzed += 1
 
                 if self._index_end is not None and self.total_mutant_index >= self._index_end:
                     break

@@ -75,6 +75,8 @@ def index_update():
             else None,
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
             "crashes": _crash_summary_info(),
+            "runtime": app.session.runtime,
+            "exec_speed": app.session.exec_speed,
         }
     }
 
@@ -97,7 +99,7 @@ def index():
         num_mutations = float(app.session.fuzz_node.get_num_mutations())
 
         try:
-            progress_current = mutant_index / num_mutations
+            progress_current = min(mutant_index / num_mutations, 1)
         except ZeroDivisionError:
             progress_current = 0
         num_bars = int(progress_current * 50)

@@ -16,6 +16,8 @@ function update_current_run_info(response) {
     document.getElementById('current_index_element').textContent = response.session_info.current_index_element;
     document.getElementById('num_mutations_element').textContent = response.session_info.num_mutations_element;
     document.getElementById('current_element').textContent = response.session_info.current_element;
+    document.getElementById('exec_speed').textContent = response.session_info.exec_speed.toFixed(1) + "/sec";
+    document.getElementById('run_time').textContent = response.session_info.runtime.toFixed(0) + " sec";
 
 
     let fraction_complete_total = response.session_info.current_index / response.session_info.num_mutations;
