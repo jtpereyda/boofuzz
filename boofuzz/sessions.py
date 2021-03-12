@@ -500,6 +500,7 @@ class Session(pgraph.Graph):
         self._skip_current_element_after_current_test_case = False
         self.num_cases_actually_fuzzed = 0
         self.start_time = time.time()
+        self.end_time = None
         self.cumulative_pause_time = 0
 
         if self.web_port is not None:
@@ -670,7 +671,11 @@ class Session(pgraph.Graph):
 
     @property
     def runtime(self):
-        return time.time() - self.start_time - self.cumulative_pause_time
+        if self.end_time is not None:
+            t = self.end_time
+        else:
+            t = time.time()
+        return t - self.start_time - self.cumulative_pause_time
 
     def export_file(self):
         """
@@ -1369,6 +1374,7 @@ class Session(pgraph.Graph):
                 self.targets[0].close()
 
             if self._keep_web_open and self.web_port is not None:
+                self.end_time = time.time()
                 print(
                     "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
                     "\nPress ENTER to close webinterface",
