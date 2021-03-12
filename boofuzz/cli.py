@@ -47,7 +47,7 @@ def cli():
 @click.option("--target-cmd", help="Target command and arguments")
 @click.option("--keep-web/--no-keep-web", is_flag=True, default=True, help="Keep web server for web UI open")
 @click.option(
-    "--record_pre_failure_test_cases",
+    "--record-passes",
     default=10,
     type=int,
     help="Record this many cases before each failure. Set to 0 to record all test cases, which can use a lot of disk space.",
@@ -69,7 +69,7 @@ def fuzz(
     feature_check,
     target_cmd,
     keep_web,
-    record_pre_failure_test_cases,
+    record_passes,
 ):
     local_procmon = None
     if target_cmd is not None and procmon_host is None:
@@ -138,7 +138,7 @@ def fuzz(
         index_start=start,
         index_end=end,
         keep_web_open=keep_web,
-        fuzz_db_keep_only_n_pass_cases=record_pre_failure_test_cases,
+        fuzz_db_keep_only_n_pass_cases=record_passes,
     )
 
     ctx.obj = CliContext(session=session)
