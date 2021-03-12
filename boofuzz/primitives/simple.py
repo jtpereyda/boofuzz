@@ -1,4 +1,3 @@
-from .. import helpers
 from ..fuzzable import Fuzzable
 
 

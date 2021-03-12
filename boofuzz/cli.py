@@ -50,7 +50,7 @@ def cli():
     "--record-passes",
     default=10,
     type=int,
-    help="Record this many cases before each failure. Set to 0 to record all test cases, which can use a lot of disk space.",
+    help="Record this many cases before each failure. Set to 0 to record all test cases (high disk space usage!).",
 )
 @click.pass_context
 def fuzz(

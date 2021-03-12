@@ -17,8 +17,10 @@ from colorama import Back, Fore, Style
 from past.builtins import map, range
 
 from boofuzz.connections import ip_constants, udp_socket_connection
+from boofuzz.exception import BoofuzzError
 
 # Curses color pairs
+
 COLOR_PAIR_WHITE = 1
 COLOR_PAIR_CYAN = 2
 COLOR_PAIR_RED = 3
@@ -468,9 +470,9 @@ def parse_test_case_name(test_case):
         return path, []
     else:
         mutations = components[1]
-        match = re.match("\[(.*)\]", mutations)
+        match = re.match(r"\[(.*)\]", mutations)
         if match is None:
             raise BoofuzzError("could not parse test case name: {0}".format(test_case))
         mutations = match.group(1)
-        mutations = re.split(",\s*", mutations)
+        mutations = re.split(r",\s*", mutations)
         return path, mutations

@@ -2,12 +2,10 @@ from __future__ import absolute_import, print_function
 
 import datetime
 import errno
-import functools
 import itertools
 import logging
 import os
 import pickle
-import re
 import socket
 import threading
 import time
@@ -1291,7 +1289,8 @@ class Session(pgraph.Graph):
             sex.SulleyRuntimeError: If any error is encountered while executing the test case.
         """
         warnings.warn(
-            "Session.fuzz_single_case is deprecated in favor of Session's index_start and index_end constructor parameters."
+            "Session.fuzz_single_case is deprecated in favor of Session's index_start and index_end constructor "
+            "parameters."
         )
         self.total_mutant_index = 0
         self.total_num_mutations = 1
