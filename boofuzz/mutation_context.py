@@ -9,7 +9,7 @@ def mutations_list_to_dict(mutations_list_or_dict):
     if isinstance(mutations_list_or_dict, dict):
         return mutations_list_or_dict
     elif isinstance(mutations_list_or_dict, collections.Iterable):
-        return {mutation.qualified_name:mutation for mutation in mutations_list_or_dict}
+        return {mutation.qualified_name: mutation for mutation in mutations_list_or_dict}
     else:
         raise ValueError("Cannot initialize a MutationContext with mutations {0}".format(mutations_list_or_dict))
 

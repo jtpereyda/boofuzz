@@ -46,7 +46,12 @@ def cli():
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
 @click.option("--keep-web/--no-keep-web", is_flag=True, default=True, help="Keep web server for web UI open")
-@click.option("--record_pre_failure_test_cases", default=10, type=int, help="Record this many cases before each failure. Set to 0 to record all test cases, which can use a lot of disk space.")
+@click.option(
+    "--record_pre_failure_test_cases",
+    default=10,
+    type=int,
+    help="Record this many cases before each failure. Set to 0 to record all test cases, which can use a lot of disk space.",
+)
 @click.pass_context
 def fuzz(
     ctx,

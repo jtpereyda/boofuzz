@@ -464,7 +464,7 @@ def parse_test_case_name(test_case):
     components = test_case.split(":", 1)
     message_path = components[0]
     path = re.split("->", message_path)
-    if len (components) < 2:
+    if len(components) < 2:
         return path, []
     else:
         mutations = components[1]

@@ -789,7 +789,7 @@ class Session(pgraph.Graph):
                     time.sleep(1)
                 else:
                     break
-            self.cumulative_pause_time += (time.time() - pause_start)
+            self.cumulative_pause_time += time.time() - pause_start
 
     def _check_for_passively_detected_failures(self, target, failure_already_detected=False):
         """Check for and log passively detected failures. Return True if any found.
@@ -1290,7 +1290,9 @@ class Session(pgraph.Graph):
         Raises:
             sex.SulleyRuntimeError: If any error is encountered while executing the test case.
         """
-        warnings.warn("Session.fuzz_single_case is deprecated in favor of Session's index_start and index_end constructor parameters.")
+        warnings.warn(
+            "Session.fuzz_single_case is deprecated in favor of Session's index_start and index_end constructor parameters."
+        )
         self.total_mutant_index = 0
         self.total_num_mutations = 1
 
@@ -1808,7 +1810,10 @@ class Session(pgraph.Graph):
             Long formatted test case name
         """
         message_path = self._message_path_to_str(mutation_context.message_path)
-        mutation_names = ("{0}:{1}".format(qualified_name, mutation.index) for qualified_name, mutation in mutation_context.mutations.items())
+        mutation_names = (
+            "{0}:{1}".format(qualified_name, mutation.index)
+            for qualified_name, mutation in mutation_context.mutations.items()
+        )
         return "{0}:[{1}]".format(message_path, ", ".join(mutation_names))
 
     def _message_path_to_str(self, message_path):

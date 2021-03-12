@@ -16,10 +16,13 @@ def groups_demo(ctx):
         "message1",
         children=(
             Simple(name="first_byte", default_value=b"\x01", fuzz_values=[b"A", b"B", b"C"]),
-            Block(name="first_block", group=".first_byte", children=(
-                Simple(name="second_byte", default_value=b"\x02", fuzz_values=[b"1", b"2", b"3"]),
-                # Simple(name="third_byte", default_value=b"\x03", fuzz_values=[b"X", b"Y", b"Z"]),
-                )
+            Block(
+                name="first_block",
+                group=".first_byte",
+                children=(
+                    Simple(name="second_byte", default_value=b"\x02", fuzz_values=[b"1", b"2", b"3"]),
+                    # Simple(name="third_byte", default_value=b"\x03", fuzz_values=[b"X", b"Y", b"Z"]),
+                ),
             ),
         ),
     )
