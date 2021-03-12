@@ -117,7 +117,7 @@ def index():
         progress_total = 0
     else:
         try:
-            progress_total = total_mutant_index / total_num_mutations
+            progress_total = min(total_mutant_index / total_num_mutations, 1)
         except ZeroDivisionError:
             progress_total = 0
 

@@ -11,11 +11,11 @@ const StringUtilities = {
 };
 
 function update_current_run_info(response) {
-    document.getElementById('current_index').textContent = response.session_info.current_index;
-    document.getElementById('num_mutations').textContent = response.session_info.num_mutations;
-    document.getElementById('current_index_element').textContent = response.session_info.current_index_element;
-    document.getElementById('num_mutations_element').textContent = response.session_info.num_mutations_element;
-    document.getElementById('current_element').textContent = response.session_info.current_element;
+    document.getElementById('current_index').textContent = response.session_info.current_index.toLocaleString();
+    document.getElementById('num_mutations').textContent = response.session_info.num_mutations.toLocaleString();
+    document.getElementById('current_index_element').textContent = response.session_info.current_index_element.toLocaleString();
+    document.getElementById('num_mutations_element').textContent = response.session_info.num_mutations_element.toLocaleString();
+    document.getElementById('current_element').textContent = response.session_info.current_element + ":";
     document.getElementById('exec_speed').textContent = response.session_info.exec_speed.toFixed(1) + "/sec";
     document.getElementById('run_time').textContent = response.session_info.runtime.toFixed(0) + " sec";
 
@@ -166,8 +166,8 @@ function continually_update_current_test_case_log()
 
 function progress_bars(fraction){
     return '[' +
-        StringUtilities.repeat('=', Math.round(fraction * 50)) +
-        StringUtilities.repeat(nbsp, 50 - Math.round(fraction * 50)) + ']';
+        StringUtilities.repeat('=', Math.round(Math.min(fraction, 1) * 50)) +
+        StringUtilities.repeat(nbsp, 50 - Math.round(Math.min(fraction, 1) * 50)) + ']';
 }
 
 function progress_percentage(fraction){

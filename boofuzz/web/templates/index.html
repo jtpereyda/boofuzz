@@ -34,11 +34,11 @@
                 </tr>
                 <tr>
                     <td class="summary-content-row-header-text">run time</td>
-                    <td id="run_time"> {{ state.session.runtime }} seconds </td>
+                    <td id="run_time"> {{ state.session.runtime | round | int }} sec</td>
                 </tr>
                 <tr>
                     <td class="summary-content-row-header-text">exec speed</td>
-                    <td id="exec_speed"> {{ state.session.exec_speed }}/sec </td>
+                    <td id="exec_speed"> {{ state.session.exec_speed | round(1) }}/sec</td>
                 </tr>
             </table> </td> </tr>
             <tr> <td>
