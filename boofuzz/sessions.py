@@ -1712,7 +1712,11 @@ class Session(pgraph.Graph):
                 )
             )
         else:
-            self._fuzz_data_logger.log_info("Type: {0}".format(type(self.fuzz_node.mutant).__name__,))
+            self._fuzz_data_logger.log_info(
+                "Type: {0}".format(
+                    type(self.fuzz_node.mutant).__name__,
+                )
+            )
 
         try:
             self._open_connection_keep_trying(target)

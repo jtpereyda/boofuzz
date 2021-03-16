@@ -45,10 +45,15 @@ def cli():
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
-@click.option("--keep-web/--no-keep-web", is_flag=True, default=True,
-              help="Keep web server for web UI open when out of fuzz cases")
-@click.option("--combinatorial/--no-combinatorial", is_flag=True, default=True,
-              help="Enable fuzzing with multiple mutations")
+@click.option(
+    "--keep-web/--no-keep-web",
+    is_flag=True,
+    default=True,
+    help="Keep web server for web UI open when out of fuzz cases",
+)
+@click.option(
+    "--combinatorial/--no-combinatorial", is_flag=True, default=True, help="Enable fuzzing with multiple mutations"
+)
 @click.option(
     "--record-passes",
     default=10,
@@ -174,7 +179,7 @@ def fuzz(
 @click.option(
     "--ui-addr",
     help="Address on which to serve the web interface (default localhost). Set to empty "
-         "string to serve on all interfaces.",
+    "string to serve on all interfaces.",
     type=str,
     default="localhost",
 )
