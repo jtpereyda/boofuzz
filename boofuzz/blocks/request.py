@@ -7,9 +7,10 @@ from ..constants import ERR_NAME_NO_RESOLVE, ERR_NAME_NOT_FOUND, ERR_NAME_TOO_MA
 from ..exception import BoofuzzNameResolutionError
 from ..fuzzable import Fuzzable
 from ..fuzzable_block import FuzzableBlock
+from ..pgraph.node import Node
 
 
-class Request(FuzzableBlock):
+class Request(FuzzableBlock, Node):
     """Top level container. Can hold any block structure or primitive.
 
     This can essentially be thought of as a super-block, root-block, daddy-block or whatever other alias you prefer.
@@ -21,7 +22,8 @@ class Request(FuzzableBlock):
     """
 
     def __init__(self, name=None, children=None):
-        super(Request, self).__init__(name=name, request=self)
+        FuzzableBlock.__init__(self, name=name, request=self)
+        Node.__init__(self)
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.

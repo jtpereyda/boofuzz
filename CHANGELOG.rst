@@ -10,6 +10,7 @@ Features
 - Added `Simple` primitive that uses only the specified values for fuzzing.
 - Fixed two memory leaks in the fuzz logger.
 - Test cases can now be specified and re-run by name.
+- Implemented visual request-graph rendering functions for Session
 
 v0.3.0
 ------
