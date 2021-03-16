@@ -20,9 +20,15 @@
                     <td class="summary-content-row-header-text">Total:</td>
                     <td id="current_index"> {{ state.total_mutant_index }} </td>
                     <td> of </td>
-                    <td id="num_mutations"> {{ state.total_num_mutations }} </td>
-                    <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
-                    <td id="progress_percentage_total"> {{ state.progress_total }} </td>
+                    {% if state.total_num_mutations is not none %}
+                        <td id="num_mutations"> {{ state.total_num_mutations }} </td>
+                        <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
+                        <td id="progress_percentage_total"> {{ state.progress_total }} </td>
+                    {% else %}
+                        <td id="num_mutations"> <em>many</em> </td>
+                        <td class="fixed" id="progress_bar_total"> </td>
+                        <td id="progress_percentage_total"> </td>
+                    {% endif %}
                 </tr>
                 <tr>
                     <td id="current_element" class="summary-content-row-header-text"> {{ state.current_name }}: </td>

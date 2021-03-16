@@ -45,7 +45,10 @@ def cli():
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
-@click.option("--keep-web/--no-keep-web", is_flag=True, default=True, help="Keep web server for web UI open")
+@click.option("--keep-web/--no-keep-web", is_flag=True, default=True,
+              help="Keep web server for web UI open when out of fuzz cases")
+@click.option("--combinatorial/--no-combinatorial", is_flag=True, default=True,
+              help="Enable fuzzing with multiple mutations")
 @click.option(
     "--record-passes",
     default=10,
@@ -69,6 +72,7 @@ def fuzz(
     feature_check,
     target_cmd,
     keep_web,
+    combinatorial,
     record_passes,
 ):
     local_procmon = None
@@ -109,10 +113,14 @@ def fuzz(
         procmon = None
         monitors = []
 
-    start = None
-    end = None
+    if combinatorial:
+        max_depth = None
+    else:
+        max_depth = 1
+
     if test_case_index is None:
         start = 1
+        end = None
     elif "-" in test_case_index:
         start, end = test_case_index.split("-")
         if not start:
@@ -149,7 +157,7 @@ def fuzz(
         if feature_check:
             session.feature_check()
         else:
-            session.fuzz(name=test_case_name)
+            session.fuzz(name=test_case_name, max_depth=max_depth)
 
         if procmon is not None:
             procmon.stop_target()
@@ -166,7 +174,7 @@ def fuzz(
 @click.option(
     "--ui-addr",
     help="Address on which to serve the web interface (default localhost). Set to empty "
-    "string to serve on all interfaces.",
+         "string to serve on all interfaces.",
     type=str,
     default="localhost",
 )

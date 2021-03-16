@@ -154,7 +154,7 @@ class Fuzzable(object):
         return self.encode(value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context)
 
     def get_num_mutations(self):
-        return self.num_mutations(default_value=self.original_value(test_case_context=None))
+        return self.num_mutations(default_value=self.original_value(test_case_context=None)) + len(self._fuzz_values)
 
     def get_value(self, mutation_context=None):
         """Helper method to get the currently applicable value.
@@ -217,7 +217,7 @@ class Fuzzable(object):
         return value
 
     def num_mutations(self, default_value):
-        """Return the total number of mutations for this element.
+        """Return the total number of mutations for this element (not counting "fuzz_values").
 
         Default implementation exhausts the mutations() generator, which is inefficient. Override if you can provide a
         value more efficiently, or if exhausting the mutations() generator has side effects.

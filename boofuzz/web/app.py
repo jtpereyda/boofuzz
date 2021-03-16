@@ -135,7 +135,7 @@ def index():
         "progress_total": progress_total,
         "progress_total_bar": progress_total_bar,
         "total_mutant_index": commify(int(total_mutant_index)),
-        "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else "N/A",
+        "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else None,
     }
 
     return render_template("index.html", state=state, crashes=crashes)

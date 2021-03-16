@@ -741,10 +741,26 @@ class Session(pgraph.Graph):
         self.monitor_results = data["monitor_results"]
         self.is_paused = data["is_paused"]
 
-    def num_mutations(self, this_node=None, path=()):
+    def num_mutations(self, max_depth=None):
         """
         Number of total mutations in the graph. The logic of this routine is identical to that of fuzz(). See fuzz()
         for inline comments. The member variable self.total_num_mutations is updated appropriately by this routine.
+
+        Args:
+            max_depth (int): Maximum combinatorial depth used for fuzzing. num_mutations returns None if this value is
+            None or greater than 1, as the number of mutations is typically very large when using combinatorial fuzzing.
+
+        Returns:
+            int: Total number of mutations in this session.
+        """
+        if max_depth is None or max_depth > 1:
+            self.total_num_mutations = None
+            return self.total_num_mutations
+
+        return self._num_mutations_recursive()
+
+    def _num_mutations_recursive(self, this_node=None, path=None):
+        """Helper for num_mutations.
 
         Args:
             this_node (request (node)): Current node that is being fuzzed. Default None.
@@ -758,8 +774,8 @@ class Session(pgraph.Graph):
             this_node = self.root
             self.total_num_mutations = 0
 
-        if isinstance(path, tuple):
-            path = list(path)
+        if path is None:
+            path = []
 
         for edge in self.edges_from(this_node.id):
             next_node = self.nodes[edge.dst]
@@ -768,7 +784,7 @@ class Session(pgraph.Graph):
             if edge.src != self.root.id:
                 path.append(edge)
 
-            self.num_mutations(next_node, path)
+            self._num_mutations_recursive(next_node, path)
 
         # finished with the last node on the path, pop it off the path stack.
         if path:
@@ -1219,7 +1235,7 @@ class Session(pgraph.Graph):
         for path in self._iterate_protocol_message_paths():
             self._message_check(path)
 
-    def fuzz(self, name=None):
+    def fuzz(self, name=None, max_depth=None):
         """Fuzz the entire protocol tree.
 
         Iterates through and fuzzes all fuzz cases, skipping according to
@@ -1232,15 +1248,16 @@ class Session(pgraph.Graph):
         Args:
             name (str): Pass in a Request name to fuzz only a single request message. Pass in a test case name to fuzz
                         only a single test case.
+            max_depth (int): Maximum combinatorial depth; set to 1 for "simple" fuzzing.
 
         Returns:
             None
         """
         self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations()
+        self.total_num_mutations = self.num_mutations(max_depth=max_depth)
 
         if name is None or name == "":
-            self._main_fuzz_loop(self._generate_mutations_indefinitely())
+            self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
         else:
             self.fuzz_by_name(name=name)
 
@@ -1259,7 +1276,7 @@ class Session(pgraph.Graph):
             self.total_num_mutations = 1
 
             node_edges = self._path_names_to_edges(node_names=path)
-            self._main_fuzz_loop(self._generate_test_case_from_named_named_mutations(node_edges, mutations))
+            self._main_fuzz_loop(self._generate_test_case_from_named_mutations(node_edges, mutations))
 
     def _fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.
@@ -1546,7 +1563,7 @@ class Session(pgraph.Graph):
                 self._skip_current_element_after_current_test_case = False
                 continue
 
-    def _generate_test_case_from_named_named_mutations(self, path, mutation_names):
+    def _generate_test_case_from_named_mutations(self, path, mutation_names):
         # need a way to get the mutation value based on the mutation index
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
@@ -1686,18 +1703,16 @@ class Session(pgraph.Graph):
             current_num_mutations=self.fuzz_node.get_num_mutations(),
         )
 
-        self._fuzz_data_logger.log_info(
-            "Type: %s. Default value: %s. Case %d of %d overall."
-            % (
-                type(self.fuzz_node.mutant).__name__,
-                # TODO: Original value is not always attainable here, in the case of dynamic default values.
-                # This output could be easily removed, and with some effort made dynamically available in the web view.
-                # repr(self.fuzz_node.mutant.original_value(mutation_context=mutation_context)),
-                b"",
-                self.total_mutant_index,
-                self.total_num_mutations,
+        if self.total_num_mutations is not None:
+            self._fuzz_data_logger.log_info(
+                "Type: {0}. Case {1} of {2} overall.".format(
+                    type(self.fuzz_node.mutant).__name__,
+                    self.total_mutant_index,
+                    self.total_num_mutations,
+                )
             )
-        )
+        else:
+            self._fuzz_data_logger.log_info("Type: {0}".format(type(self.fuzz_node.mutant).__name__,))
 
         try:
             self._open_connection_keep_trying(target)
