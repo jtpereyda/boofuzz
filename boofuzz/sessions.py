@@ -333,6 +333,10 @@ class SessionInfo(object):
     def runtime(self):
         return 0
 
+    @property
+    def current_test_case_name(self):
+        return ""
+
 
 class WebApp(object):
     """Serve fuzz data over HTTP.
@@ -535,6 +539,7 @@ class Session(pgraph.Graph):
         self.mutant_index = 0  # index within currently mutating element
         self.num_cases_actually_fuzzed = 0
         self.fuzz_node = None  # Request object currently being fuzzed
+        self.current_test_case_name = ""
         self.targets = []
         self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
         # map of test case indices to list of supplement captured data (all cases where data was captured)
@@ -550,6 +555,7 @@ class Session(pgraph.Graph):
         # to specify a number of initial requests.
         self.root = pgraph.Node()
         self.root.label = "__ROOT_NODE__"
+        self.root.name = self.root.label
         self.last_recv = None
         self.last_send = None
 
@@ -1691,6 +1697,7 @@ class Session(pgraph.Graph):
         self._pause_if_pause_flag_is_set()
 
         test_case_name = self._test_case_name(mutation_context)
+        self.current_test_case_name = test_case_name
 
         self._fuzz_data_logger.open_test_case(
             "{0}: {1}".format(self.total_mutant_index, test_case_name),

@@ -74,6 +74,7 @@ def index_update():
             if app.session.fuzz_node is not None
             else None,
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
+            "current_test_case_name": app.session.current_test_case_name,
             "crashes": _crash_summary_info(),
             "runtime": app.session.runtime,
             "exec_speed": app.session.exec_speed,
