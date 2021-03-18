@@ -31,7 +31,7 @@ def cli():
 
 @cli.group(help="Must be run via a fuzz script")
 @click.option("--target", metavar="HOST:PORT", help="Target network address", required=True)
-@click.option("--test-case-index", help="Test case index", type=int)
+@click.option("--test-case-index", help="Test case index", type=str)
 @click.option("--test-case-name", help="Name of node or specific test case")
 @click.option("--csv-out", help="Output to CSV file")
 @click.option(
@@ -45,6 +45,21 @@ def cli():
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
+@click.option(
+    "--keep-web/--no-keep-web",
+    is_flag=True,
+    default=True,
+    help="Keep web server for web UI open when out of fuzz cases",
+)
+@click.option(
+    "--combinatorial/--no-combinatorial", is_flag=True, default=True, help="Enable fuzzing with multiple mutations"
+)
+@click.option(
+    "--record-passes",
+    default=10,
+    type=int,
+    help="Record this many cases before each failure. Set to 0 to record all test cases (high disk space usage!).",
+)
 @click.pass_context
 def fuzz(
     ctx,
@@ -61,6 +76,9 @@ def fuzz(
     text_dump,
     feature_check,
     target_cmd,
+    keep_web,
+    combinatorial,
+    record_passes,
 ):
     local_procmon = None
     if target_cmd is not None and procmon_host is None:
@@ -100,11 +118,14 @@ def fuzz(
         procmon = None
         monitors = []
 
-    start = None
-    end = None
-    fuzz_only_one_case = None
+    if combinatorial:
+        max_depth = None
+    else:
+        max_depth = 1
+
     if test_case_index is None:
         start = 1
+        end = None
     elif "-" in test_case_index:
         start, end = test_case_index.split("-")
         if not start:
@@ -116,7 +137,7 @@ def fuzz(
         else:
             end = int(end)
     else:
-        fuzz_only_one_case = int(test_case_index)
+        start = end = int(test_case_index)
 
     connection = TCPSocketConnection(*parse_target(target_name=target))
 
@@ -129,6 +150,8 @@ def fuzz(
         sleep_time=sleep_between_cases,
         index_start=start,
         index_end=end,
+        keep_web_open=keep_web,
+        fuzz_db_keep_only_n_pass_cases=record_passes,
     )
 
     ctx.obj = CliContext(session=session)
@@ -138,12 +161,8 @@ def fuzz(
     def fuzzcallback(result, *args, **kwargs):
         if feature_check:
             session.feature_check()
-        elif fuzz_only_one_case is not None:
-            session.fuzz_single_case(mutant_index=fuzz_only_one_case)
-        elif test_case_name is not None:
-            session.fuzz_by_name(test_case_name)
         else:
-            session.fuzz()
+            session.fuzz(name=test_case_name, max_depth=max_depth)
 
         if procmon is not None:
             procmon.stop_target()

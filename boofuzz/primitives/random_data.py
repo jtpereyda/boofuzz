@@ -5,7 +5,6 @@ from past.builtins import xrange
 
 from boofuzz import helpers
 from ..fuzzable import Fuzzable
-from ..mutation import Mutation
 
 
 class RandomData(Fuzzable):
@@ -66,7 +65,7 @@ class RandomData(Fuzzable):
             value = b""
             for _ in xrange(length):
                 value += struct.pack("B", random.randint(0, 255))
-            yield Mutation(mutations={self.qualified_name: value})
+            yield value
 
     def encode(self, value, mutation_context):
         return value

@@ -3,7 +3,7 @@ from ..fuzzable import Fuzzable
 
 
 class Static(Fuzzable):
-    """Push a static value onto the current block stack.
+    """Static primitives are fixed and not mutated while fuzzing.
 
     :type name: str, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,

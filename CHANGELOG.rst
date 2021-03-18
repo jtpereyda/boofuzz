@@ -6,7 +6,12 @@ Upcoming
 Features
 ^^^^^^^^
 - Fuzzing CLI -- Use main_helper() to use boofuzz's generic fuzzing CLI with your script.
+- Combinatorial fuzzing -- now fuzzes multiple mutations at once by default.
+- Added `Simple` primitive that uses only the specified values for fuzzing.
+- Fixed two memory leaks in the fuzz logger.
+- Test cases can now be specified and re-run by name.
 - Implemented visual request-graph rendering functions for Session
+- Added to web UIL: runtime, exec speed, current test case name.
 
 v0.3.0
 ------

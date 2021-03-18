@@ -56,10 +56,11 @@ Blocks
 Primitives
 ----------
 
+.. autofunction:: boofuzz.Static
+.. autofunction:: boofuzz.Simple
 .. autofunction:: boofuzz.Delim
 .. autofunction:: boofuzz.Group
 .. autofunction:: boofuzz.RandomData
-.. autofunction:: boofuzz.Static
 .. autofunction:: boofuzz.String
 .. autofunction:: boofuzz.FromFile
 .. autofunction:: boofuzz.Mirror

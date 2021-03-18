@@ -202,8 +202,9 @@ class Request(FuzzableBlock, Node):
         else:
             raise BoofuzzNameResolutionError(ERR_NAME_NOT_FOUND.format(resolved_name))
 
-    def get_mutations(self, default_value=None):
-        return self.mutations(default_value=default_value)
+    def get_mutations(self, default_value=None, skip_elements=None):
+        return self.mutations(default_value=default_value, skip_elements=skip_elements)
+
 
     def get_num_mutations(self):
         return self.num_mutations()

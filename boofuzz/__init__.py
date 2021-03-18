@@ -50,6 +50,7 @@ from .primitives import (
     Mirror,
     QWord,
     RandomData,
+    Simple,
     Static,
     String,
     Word,
@@ -158,6 +159,7 @@ __all__ = [
     "s_size",
     "s_sizer",
     "s_static",
+    "s_simple",
     "s_string",
     "s_switch",
     "s_unknown",
@@ -170,6 +172,7 @@ __all__ = [
     "SizerNotUtilizedError",
     "SocketConnection",
     "SSLSocketConnection",
+    "Simple",
     "Static",
     "String",
     "SullyRuntimeError",
@@ -693,6 +696,25 @@ def s_static(value=None, name=None):
     """
 
     blocks.CURRENT.push(Static(name=name, default_value=value))
+
+
+def s_simple(value=None, name=None, fuzz_values=None, fuzzable=True):
+    """
+    Push a "Simple" primitive onto the current block stack. The only mutations will be those specified  in fuzz_values.
+
+    :see: Aliases: s_dunno(), s_raw(), s_unknown()
+
+    :type  value: Raw
+    :param value: Raw static data
+    :type  name:  str
+    :param name:  (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type  fuzz_values:  list
+    :param fuzz_values:  (Optional, def=None) List of fuzz values.
+    :type  fuzzable: bool
+    :param fuzzable: (Optional, def=True) Enable/disable fuzzing of this primitive
+    """
+
+    blocks.CURRENT.push(Simple(name=name, default_value=value, fuzz_values=fuzz_values, fuzzable=fuzzable))
 
 
 def s_mirror(primitive_name=None, name=None):
