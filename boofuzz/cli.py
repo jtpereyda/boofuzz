@@ -18,6 +18,8 @@ from .helpers import parse_target
 from .monitors import ProcessMonitor
 from .utils.process_monitor_local import ProcessMonitorLocal
 from .utils.debugger_thread_simple import DebuggerThreadSimple
+from .utils.debugger_thread_qemu import DebuggerThreadQemu
+from .utils import debugger_thread_qemu
 
 temp_static_session = None
 temp_static_procmon = None
@@ -39,7 +41,6 @@ def cli():
 )
 @click.option("--procmon-host", help="Process monitor port host or IP")
 @click.option("--procmon-port", type=int, default=DEFAULT_PROCMON_PORT, help="Process monitor port")
-@click.option("--procmon-start", help="Process monitor start command")
 @click.option("--procmon-capture", is_flag=True, help="Capture stdout/stderr from target process upon failure")
 @click.option("--tui/--no-tui", help="Enable/disable TUI")
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
@@ -60,6 +61,8 @@ def cli():
     type=int,
     help="Record this many cases before each failure. Set to 0 to record all test cases (high disk space usage!).",
 )
+@click.option("--qemu/--no-qemu", is_flag=True, default=False, help="Enable QEMU mode with code coverage feedbcak; requires afl-qemu-trace")
+@click.option("--qemu-path", help="afl-qemu-trace path; looks in PATH by default")
 @click.pass_context
 def fuzz(
     ctx,
@@ -70,7 +73,6 @@ def fuzz(
     sleep_between_cases,
     procmon_host,
     procmon_port,
-    procmon_start,
     procmon_capture,
     tui,
     text_dump,
@@ -79,14 +81,22 @@ def fuzz(
     keep_web,
     combinatorial,
     record_passes,
+    qemu,
+    qemu_path,
 ):
+    if qemu:
+        if qemu_path is not None:
+            debugger_thread_qemu.QEMU_PATH = qemu_path
+        debugger = DebuggerThreadQemu
+    else:
+        debugger = DebuggerThreadSimple
     local_procmon = None
     if target_cmd is not None and procmon_host is None:
         local_procmon = ProcessMonitorLocal(
             crash_filename="boofuzz-crash-bin",
             proc_name=None,
             pid_to_ignore=None,
-            debugger_class=DebuggerThreadSimple,
+            debugger_class=debugger,
             level=1,
         )
 
@@ -100,10 +110,8 @@ def fuzz(
         fuzz_loggers.append(FuzzLoggerCsv(file_handle=f))
 
     procmon_options = {}
-    if procmon_start is not None:
-        procmon_options["start_commands"] = [procmon_start]
     if target_cmd is not None:
-        procmon_options["start_commands"] = shlex.split(target_cmd)
+        procmon_options["start_commands"] = [shlex.split(target_cmd)]
     if procmon_capture:
         procmon_options["capture_output"] = True
 
@@ -162,7 +170,7 @@ def fuzz(
         if feature_check:
             session.feature_check()
         else:
-            session.fuzz(name=test_case_name, max_depth=max_depth)
+            session.fuzz(name=test_case_name, max_depth=max_depth, qemu=qemu)
 
         if procmon is not None:
             procmon.stop_target()

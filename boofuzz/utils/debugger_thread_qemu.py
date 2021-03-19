@@ -2,6 +2,8 @@ from __future__ import print_function
 
 import os
 
+from ..helpers import _reset_shm_map
+
 try:
     import resource  # Linux only
 
@@ -10,33 +12,88 @@ try:
     )
 except ImportError:
     pass
+import shutil
 import signal
-import subprocess
+import struct
 import sys
 import threading
 import time
 
-import psutil
 from io import open
 
-if not getattr(__builtins__, "WindowsError", None):
-
-    class WindowsError(OSError):
-        """Mock WindowsError since Linux Python lacks WindowsError"""
-
-        @property
-        def winerror(self):
-            return self.errno
-
-        pass
-
+import sysv_ipc
 
 POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK = 30
 
+# QEMU_PATH = os.path.dirname(os.path.realpath(__file__)) + "/afl-qemu-trace"
+QEMU_PATH = shutil.which("afl-qemu-trace")
 
-def _enumerate_processes():
-    for pid in psutil.pids():
-        yield (pid, psutil.Process(pid).name())
+# These AFL config settings must match AFL's config.h values
+AFL_FORKSRV_FD = 198
+AFL_MAP_SIZE_POW2 = 2 ** 16
+AFL_SHM_ENV_VAR = "__AFL_SHM_ID"
+
+
+class ForkServer:
+    def __init__(self, args):
+        self.hide_output = True
+        self.pid = None
+        self.forkserv_fd_to_server_out, self.forkserv_fd_to_server_in = os.pipe()
+        self.forkserv_fd_from_server_out, self.forkserv_fd_from_server_in = os.pipe()
+
+        self.shm = sysv_ipc.SharedMemory(None, sysv_ipc.IPC_CREX, size=AFL_MAP_SIZE_POW2)
+        self.shm_id = self.shm.id
+        self.shm_mv = memoryview(self.shm)
+        _reset_shm_map(self.shm_mv)  # set to all zeros
+
+        fork_pid = os.fork()  # fork to take advantage of inherited file descriptors
+        if fork_pid == 0:
+            self.child(args)
+        else:
+            self.parent()
+
+    def child(self, args):
+        """Execute afl-qemu-trace with appropriate inputs: target command args, env var settings, and file descriptors.
+        """
+        os.dup2(self.forkserv_fd_to_server_out, AFL_FORKSRV_FD)
+        os.dup2(self.forkserv_fd_from_server_in, AFL_FORKSRV_FD + 1)
+
+        if self.hide_output:
+            null = open("/dev/null", "w")
+            os.dup2(null.fileno(), 1)
+            os.dup2(null.fileno(), 2)
+            null.close()
+
+        os.close(self.forkserv_fd_to_server_in)
+        os.close(self.forkserv_fd_to_server_out)
+        os.close(self.forkserv_fd_from_server_in)
+        os.close(self.forkserv_fd_from_server_out)
+        env = {"QEMU_LOG": "nochain",
+               AFL_SHM_ENV_VAR: str(self.shm_id),
+               }
+        os.execve(QEMU_PATH, ["afl-qemu-trace"] + args, env)
+
+    def parent(self):
+        os.close(self.forkserv_fd_to_server_out)
+        os.close(self.forkserv_fd_from_server_in)
+        os.read(self.forkserv_fd_from_server_out, 4)
+
+    def run(self):  # only the parent runs run()
+        """Runs the testcase in QEMU (by sending a command to the fork server) and returns the pid.
+        """
+        os.write(self.forkserv_fd_to_server_in, b"\0\0\0\0")  # Tell AFL Fork Server to start the target
+        pid = struct.unpack("I", os.read(self.forkserv_fd_from_server_out, 4))[0]  # Read PID from Fork Server
+        self.pid = pid
+        return pid
+
+    def wait_for_status(self):
+        while True:
+            try:
+                status = os.read(self.forkserv_fd_from_server_out, 4)
+            except OSError:
+                continue
+            break
+        return struct.unpack("I", status)[0]
 
 
 def _get_coredump_path():
@@ -51,13 +108,14 @@ def _get_coredump_path():
     return None
 
 
-class DebuggerThreadSimple(threading.Thread):
+class DebuggerThreadQemu(threading.Thread):
     """Simple debugger that gets exit code, stdout/stderr from a target process.
 
     This class isn't actually ran as a thread, only the start_monitoring
     method is. It can spawn/stop a process, wait for it to exit and report on
     the exit status/code.
     """
+    fork_server = None  # use class attribute due to the procmon's behavior of creating a new debugger thread on restart
 
     def __init__(
         self,
@@ -74,20 +132,19 @@ class DebuggerThreadSimple(threading.Thread):
 
         self.proc_name = proc_name
         self.ignore_pid = ignore_pid
+        if len(start_commands) > 1:
+            raise Exception("QEMU Debugger can run only one command")
         self.start_commands = start_commands
         self.process_monitor = process_monitor
         self.coredump_dir = coredump_dir
         self.capture_output = capture_output
         self.finished_starting = threading.Event()
-        # if isinstance(start_commands, basestring):
-        #     self.tokens = start_commands.split(' ')
-        # else:
-        #     self.tokens = start_commands
         self.cmd_args = []
         self.pid = None
         self.exit_status = None
         self.log_level = log_level
         self._process = None
+        self.fork_server = None
 
     def log(self, msg="", level=1):
         """
@@ -101,42 +158,19 @@ class DebuggerThreadSimple(threading.Thread):
             print("[%s] %s" % (time.strftime("%I:%M.%S"), msg))
 
     def spawn_target(self):
-        self.log("starting target process")
+        """Spawn target and let it run. Used by run()."""
+        self.log("starting target process via QEMU")
 
-        for command in self.start_commands:
-            self.log("exec start command: {0}".format(command))
-            try:
-                if self.capture_output:
-                    self._process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-                else:
-                    self._process = subprocess.Popen(command)
-            except WindowsError as e:
-                print(
-                    'WindowsError {errno}: "{strerror} while starting "{cmd}"'.format(
-                        errno=e.winerror, strerror=e.strerror, cmd=command
-                    ),
-                    file=sys.stderr,
-                )
-                return False
-            except OSError as e:
-                print(
-                    'OSError {errno}: "{strerror} while starting "{cmd}"'.format(
-                        errno=e.errno, strerror=e.strerror, cmd=command
-                    ),
-                    file=sys.stderr,
-                )
-                return False
-        if self.proc_name:
-            self.log("done. waiting for start command to terminate.")
-            os.waitpid(self._process.pid, 0)
-            self.log('searching for process by name "{0}"'.format(self.proc_name))
-            self.watch()
-            self._psutil_proc = psutil.Process(pid=self.pid)
-            self.process_monitor.log("found match on pid {}".format(self.pid))
-        else:
-            self.log("done. target up and running, giving it 5 seconds to settle in.")
-            time.sleep(5)
-            self.pid = self._process.pid
+        command = self.start_commands[0]
+        self.log("exec start command: {0}".format(command))
+        if DebuggerThreadQemu.fork_server is None:  # create fork server only once
+            DebuggerThreadQemu.fork_server = ForkServer(args=command)
+            DebuggerThreadQemu.fork_server.run()
+        self.fork_server = DebuggerThreadQemu.fork_server
+        self.pid = self.fork_server.pid
+
+        self.log("done. target up and running, giving it 5 seconds to settle in.")
+        time.sleep(5)
         self.process_monitor.log("attached to pid: {0}".format(self.pid))
 
     def run(self):
@@ -148,14 +182,10 @@ class DebuggerThreadSimple(threading.Thread):
         self.spawn_target()
 
         self.finished_starting.set()
-        if self.proc_name:
-            gone, _ = psutil.wait_procs([self._psutil_proc])
-            self.exit_status = gone[0].returncode
-        else:
-            exit_info = os.waitpid(self.pid, 0)
-            self.exit_status = exit_info[1]  # [0] is the pid
 
-        default_reason = "Process died for unknown reason"
+        self.exit_status = self.fork_server.wait_for_status()
+
+        reason = "Process died for unknown reason"
         if self.exit_status is not None:
             if os.WCOREDUMP(self.exit_status):
                 reason = "Segmentation fault"
@@ -165,45 +195,11 @@ class DebuggerThreadSimple(threading.Thread):
                 reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
             elif os.WIFEXITED(self.exit_status):
                 reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
-            else:
-                reason = default_reason
-        else:
-            reason = default_reason
-
-        outdata = None
-        errdata = None
-        try:
-            if self._process is not None:
-                outdata, errdata = self._process.communicate(timeout=POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK)
-        except subprocess.TimeoutExpired:
-            self.process_monitor.log(
-                msg="Expired waiting for process {0} to terminate".format(self._process.pid), level=1
-            )
 
         msg = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
             time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason
         )
-        if errdata is not None:
-            msg += "STDERR:\n{0}\n".format(repr(errdata))
-        if outdata is not None:
-            msg += "STDOUT:\n{0}\n".format(repr(outdata))
         self.process_monitor.last_synopsis = msg
-
-    def watch(self):
-        """
-        Continuously loop, watching for the target process. This routine "blocks" until the target process is found.
-        Update self.pid when found and return.
-        """
-        self.pid = None
-        while not self.pid:
-            for (pid, name) in _enumerate_processes():
-                # ignore the optionally specified PID.
-                if pid == self.ignore_pid:
-                    continue
-
-                if name.lower() == self.proc_name.lower():
-                    self.pid = pid
-                    break
 
     def get_exit_status(self):
         return self.exit_status
@@ -241,3 +237,7 @@ class DebuggerThreadSimple(threading.Thread):
                     self.log("moving core dump %s -> %s" % (src, dest))
                     os.rename(src, dest)
             return False
+
+    @property
+    def shm_mv(self):
+        return self.fork_server.shm_mv

@@ -476,3 +476,8 @@ def parse_test_case_name(test_case):
         mutations = match.group(1)
         mutations = re.split(r",\s*", mutations)
         return path, mutations
+
+
+def _reset_shm_map(shm_map):
+    for i in range(0, len(shm_map)):
+        shm_map[i] = 0

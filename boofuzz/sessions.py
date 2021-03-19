@@ -38,6 +38,7 @@ from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
 from boofuzz.protocol_session import ProtocolSession
 from boofuzz.web.app import app
+from boofuzz.helpers import _reset_shm_map
 from .exception import BoofuzzFailure
 
 
@@ -1239,7 +1240,7 @@ class Session(pgraph.Graph):
         for path in self._iterate_protocol_message_paths():
             self._message_check(path)
 
-    def fuzz(self, name=None, max_depth=None):
+    def fuzz(self, name=None, max_depth=None, qemu=False):
         """Fuzz the entire protocol tree.
 
         Iterates through and fuzzes all fuzz cases, skipping according to
@@ -1261,7 +1262,7 @@ class Session(pgraph.Graph):
         self.total_num_mutations = self.num_mutations(max_depth=max_depth)
 
         if name is None or name == "":
-            self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
+            self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth), qemu=qemu)
         else:
             self.fuzz_by_name(name=name)
 
@@ -1350,7 +1351,7 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
 
-    def _main_fuzz_loop(self, fuzz_case_iterator):
+    def _main_fuzz_loop(self, fuzz_case_iterator, qemu=False):
         """Execute main fuzz logic; takes an iterator of test cases.
 
         Preconditions: `self.total_mutant_index` and `self.total_num_mutations` are set properly.
@@ -1367,6 +1368,20 @@ class Session(pgraph.Graph):
 
         try:
             self._start_target(self.targets[0])
+            shm_map = None
+            global_map = None
+            interesting_cases = []
+            if qemu:
+                debugger = None
+                for monitor in self.targets[0].monitors:
+                    if hasattr(monitor, "debugger_thread"):
+                        debugger = monitor.debugger_thread
+                        shm_map = debugger.shm_mv
+                if debugger is None:
+                    raise Exception("Fuzzing with qemu mode but no QEMU debugger found")
+                if shm_map is None:
+                    raise Exception("QEMU Debugger has no initialized shm_mv")
+                global_map = bytearray(b"\xFF"*len(shm_map))
 
             if self._reuse_target_connection:
                 self.targets[0].open()
@@ -1388,6 +1403,18 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(mutation_context)
 
                 self.num_cases_actually_fuzzed += 1
+
+                if qemu:
+                    case_is_interesting = False
+                    for offset in range(0, len(shm_map)):
+                        # Check whether any bits set in the current map are not-yet-cleared in the global map:
+                        if shm_map[offset] & global_map[offset]:
+                            global_map[offset] = global_map[offset] & ~shm_map[offset]  # clear new bits
+                            case_is_interesting = True
+                    if case_is_interesting:
+                        interesting_cases.append(self.current_test_case_name)
+                        print("INTERESTING CASE: {0}".format(self.current_test_case_name))
+                    _reset_shm_map(shm_map)
 
                 if self._index_end is not None and self.total_mutant_index >= self._index_end:
                     break
