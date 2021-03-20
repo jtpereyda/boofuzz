@@ -162,10 +162,12 @@ class DebuggerThreadQemu(threading.Thread):
         self.log("starting target process via QEMU")
 
         command = self.start_commands[0]
-        self.log("exec start command: {0}".format(command))
         if DebuggerThreadQemu.fork_server is None:  # create fork server only once
+            self.log("exec start command: {0}".format(command))
             DebuggerThreadQemu.fork_server = ForkServer(args=command)
             DebuggerThreadQemu.fork_server.run()
+        else:
+            self.log("Fork server already running; restarting via server")
         self.fork_server = DebuggerThreadQemu.fork_server
         self.pid = self.fork_server.pid
 
@@ -207,6 +209,8 @@ class DebuggerThreadQemu(threading.Thread):
     def stop_target(self):
         try:
             os.kill(self.pid, signal.SIGKILL)
+        except ProcessLookupError:  # process was already dead
+            pass
         except OSError as e:
             print(
                 'Error while killing process. PID: {0} errno: {1} "{2}"'.format(self.pid, e.errno, os.strerror(e.errno))

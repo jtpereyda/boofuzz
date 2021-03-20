@@ -338,6 +338,10 @@ class SessionInfo(object):
     def current_test_case_name(self):
         return ""
 
+    @property
+    def queue_upcoming(self):
+        return 0
+
 
 class WebApp(object):
     """Serve fuzz data over HTTP.
@@ -541,6 +545,8 @@ class Session(pgraph.Graph):
         self.num_cases_actually_fuzzed = 0
         self.fuzz_node = None  # Request object currently being fuzzed
         self.current_test_case_name = ""
+        self.queue_upcoming = []
+        self.queue_covered = []
         self.targets = []
         self.monitor_results = {}  # map of test case indices to list of crash synopsis strings (failed cases only)
         # map of test case indices to list of supplement captured data (all cases where data was captured)
@@ -1262,7 +1268,10 @@ class Session(pgraph.Graph):
         self.total_num_mutations = self.num_mutations(max_depth=max_depth)
 
         if name is None or name == "":
-            self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth), qemu=qemu)
+            if qemu:
+                self._main_fuzz_loop(self._generate_mutations_feedback(), qemu=qemu)
+            else:
+                self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth), qemu=qemu)
         else:
             self.fuzz_by_name(name=name)
 
@@ -1369,8 +1378,8 @@ class Session(pgraph.Graph):
         try:
             self._start_target(self.targets[0])
             shm_map = None
+            self.queue_upcoming = []
             global_map = None
-            interesting_cases = []
             if qemu:
                 debugger = None
                 for monitor in self.targets[0].monitors:
@@ -1381,7 +1390,7 @@ class Session(pgraph.Graph):
                     raise Exception("Fuzzing with qemu mode but no QEMU debugger found")
                 if shm_map is None:
                     raise Exception("QEMU Debugger has no initialized shm_mv")
-                global_map = bytearray(b"\xFF"*len(shm_map))
+                global_map = bytearray(b"\xFF" * len(shm_map))
 
             if self._reuse_target_connection:
                 self.targets[0].open()
@@ -1412,8 +1421,7 @@ class Session(pgraph.Graph):
                             global_map[offset] = global_map[offset] & ~shm_map[offset]  # clear new bits
                             case_is_interesting = True
                     if case_is_interesting:
-                        interesting_cases.append(self.current_test_case_name)
-                        print("INTERESTING CASE: {0}".format(self.current_test_case_name))
+                        self.queue_upcoming.append(self.current_test_case_name)
                     _reset_shm_map(shm_map)
 
                 if self._index_end is not None and self.total_mutant_index >= self._index_end:
@@ -1457,6 +1465,23 @@ class Session(pgraph.Graph):
                 break
             fuzz_index += 1
 
+    def _generate_mutations_feedback(self):
+        """Yield MutationContext with n mutations per message over all messages, with n increasing indefinitely."""
+        # First, iterate all normal cases
+        depth = 1
+        for m in self._generate_n_mutations(depth=depth):
+            yield m
+        # Then, deque the interesting cases and combine those
+        while len(self.queue_upcoming) > 0:
+            base_case = self.queue_upcoming.pop(0)
+            self.queue_covered.append(base_case)
+            path, mutation_names = helpers.parse_test_case_name(base_case)
+            path = self._path_names_to_edges(path)
+            mutations = self._parse_mutation_names(mutation_names)
+            for m in self._generate_n_mutations(depth=depth, path=path, base_mutations=mutations):
+                yield m
+        # Future: Second stage approach when the entire queue has been exhausted, e.g., random N-tuple fuzzing
+
     def _generate_mutations_indefinitely(self, max_depth=None, path=None):
         """Yield MutationContext with n mutations per message over all messages, with n increasing indefinitely."""
         depth = 1
@@ -1469,38 +1494,45 @@ class Session(pgraph.Graph):
                 break
             depth += 1
 
-    def _generate_n_mutations(self, depth, path):
+    def _generate_n_mutations(self, depth, path=None, base_mutations=None):
         """Yield MutationContext with n mutations per message over all messages."""
         for path in self._iterate_protocol_message_paths(path=path):
-            for m in self._generate_n_mutations_for_path(path, depth=depth):
+            for m in self._generate_n_mutations_for_path(path, depth=depth, base_mutations=base_mutations):
                 yield m
 
-    def _generate_n_mutations_for_path(self, path, depth):
+    def _generate_n_mutations_for_path(self, path, depth, base_mutations=None):
         """Yield MutationContext with n mutations for a specific message.
 
         Args:
             path (list of Connection): Nodes (Requests) along the path to the current one being fuzzed.
             depth (int): Yield sets of depth mutations.
+            base_mutations (list): List of mutation names to use as a basis.
 
         Yields:
             MutationContext: A MutationContext containing one mutation.
         """
-        for mutations in self._generate_n_mutations_for_path_recursive(path, depth=depth):
+        skip_elements = set()
+        if base_mutations is not None:
+            skip_elements.update(m.qualified_name for m in base_mutations)
+        for mutations in self._generate_n_mutations_for_path_recursive(
+                path, depth=depth, skip_elements=skip_elements, base_mutations=base_mutations):
             if not self._mutations_contain_duplicate(mutations):
                 self.total_mutant_index += 1
                 yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
 
-    def _generate_n_mutations_for_path_recursive(self, path, depth, skip_elements=None):
-        if skip_elements is None:
-            skip_elements = set()
+    def _generate_n_mutations_for_path_recursive(self, path, depth, skip_elements=None, base_mutations=None):
         if depth == 0:
             yield []
             return
+        if skip_elements is None:
+            skip_elements = set()
+        if base_mutations is None:
+            base_mutations = []
         new_skip = skip_elements.copy()
         for mutations in self._generate_mutations_for_request(path=path, skip_elements=skip_elements):
             new_skip.update(m.qualified_name for m in mutations)
             for ms in self._generate_n_mutations_for_path_recursive(path, depth=depth - 1, skip_elements=new_skip):
-                yield mutations + ms
+                yield base_mutations + mutations + ms
 
     def _iterate_protocol_message_paths(self, path=None):
         """
@@ -1599,14 +1631,18 @@ class Session(pgraph.Graph):
         self.fuzz_node = self.nodes[path[-1].dst]
         self.mutant_index = 0
 
+        mutations = self._parse_mutation_names(mutation_names)
+        self.total_mutant_index += 1
+        yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
+
+    def _parse_mutation_names(self, mutation_names):
         mutations = []
         for mutation_name in mutation_names:
             qualified_name, index = mutation_name.rsplit(":")
             index = int(index)
             fuzzable = self.fuzz_node.names[qualified_name]
             mutations += next(itertools.islice(fuzzable.get_mutations(), index, index + 1))
-        self.total_mutant_index += 1
-        yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
+        return mutations
 
     def _path_names_to_edges(self, node_names):
         """Take a list of node names and return a list of edges describing that path.

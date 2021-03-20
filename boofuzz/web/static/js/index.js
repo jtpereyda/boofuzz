@@ -19,6 +19,7 @@ function update_current_run_info(response) {
     document.getElementById('current_test_case_name').textContent = response.session_info.current_test_case_name;
     document.getElementById('exec_speed').textContent = response.session_info.exec_speed.toFixed(1) + "/sec";
     document.getElementById('run_time').textContent = response.session_info.runtime.toFixed(0) + " sec";
+    document.getElementById('queue_size').textContent = response.session_info.queue_size.toLocaleString();
 
 
     if (response.session_info.num_mutations != null) {
