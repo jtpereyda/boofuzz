@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import logging
 import shlex
+import sys
 import time
 
 import click
@@ -89,7 +90,8 @@ def fuzz(
             debugger_thread_qemu.QEMU_PATH = qemu_path
         debugger = DebuggerThreadQemu
         if not debugger_thread_qemu.QEMU_PATH:
-            print("afl-qemu-trace not found. Is it available in PATH?")
+            print("afl-qemu-trace not found. Is it available in PATH?", file=sys.stderr)
+            sys.exit(1)
     else:
         debugger = DebuggerThreadSimple
     local_procmon = None
