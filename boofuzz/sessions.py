@@ -342,6 +342,10 @@ class SessionInfo(object):
     def queue_upcoming(self):
         return 0
 
+    @property
+    def queue_covered(self):
+        return 0
+
 
 class WebApp(object):
     """Serve fuzz data over HTTP.
@@ -560,9 +564,9 @@ class Session(pgraph.Graph):
 
         # create a root node. we do this because we need to start fuzzing from a single point and the user may want
         # to specify a number of initial requests.
-        self.root = pgraph.Node()
-        self.root.label = "__ROOT_NODE__"
-        self.root.name = self.root.label
+        self.root = pgraph.Node(node_id="__ROOT_NODE__")
+        self.root.label = self.root.id
+        self.root.name = self.root.id
         self.last_recv = None
         self.last_send = None
 
@@ -589,23 +593,6 @@ class Session(pgraph.Graph):
             "netmon_results is now part of monitor_results and thus can't be accessed directly."
             " Please update your code."
         )
-
-    def add_node(self, node):
-        """
-        Add a pgraph node to the graph. We overload this routine to automatically generate and assign an ID whenever a
-        node is added.
-
-        Args:
-            node (pgraph.Node): Node to add to session graph
-        """
-
-        node.number = len(self.nodes)
-        node.id = len(self.nodes)
-
-        if node.id not in self.nodes:
-            self.nodes[node.id] = node
-
-        return self
 
     def add_target(self, target):
         """
@@ -1008,6 +995,18 @@ class Session(pgraph.Graph):
                     constants.ERR_CALLBACK_FUNC.format(func_name="{}.pre_send()".format(str(monitor)))
                     + traceback.format_exc()
                 )
+
+    def _stop_targets(self):
+        """Attempt to stop stop target(s)."""
+        self._fuzz_data_logger.log_info("Stopping target")
+        for target in self.targets:
+            if target.vmcontrol:
+                self._fuzz_data_logger.log_info("Stopping target virtual machine")
+                target.vmcontrol.restart_target()
+            else:
+                for monitor in target.monitors:
+                    self._fuzz_data_logger.log_info("Stopping target process using {}".format(monitor.__class__.__name__))
+                    monitor.stop_target()
 
     def _restart_target(self, target):
         """
@@ -1454,6 +1453,7 @@ class Session(pgraph.Graph):
             self.export_file()
             raise
         finally:
+            self._stop_targets()
             self._fuzz_data_logger.close_test()
 
     def _generate_single_case_by_index(self, test_case_index):
@@ -1639,8 +1639,18 @@ class Session(pgraph.Graph):
         mutations = []
         for mutation_name in mutation_names:
             qualified_name, index = mutation_name.rsplit(":")
+            request_name = qualified_name.split(".", 1)[0]
             index = int(index)
-            fuzzable = self.fuzz_node.names[qualified_name]
+            try:
+                request = self.nodes[request_name]
+            except KeyError:
+                raise Exception(
+                    "Request {0} not found in blocks.REQUESTS: {1}".format(request_name, self.nodes))
+            try:
+                fuzzable = request.names[qualified_name]
+            except KeyError:
+                raise Exception("Name {0} not found in request {1}.names: {2}".format(
+                    qualified_name, request_name, request.names))
             mutations += next(itertools.islice(fuzzable.get_mutations(), index, index + 1))
         return mutations
 

@@ -78,7 +78,8 @@ def index_update():
             "crashes": _crash_summary_info(),
             "runtime": app.session.runtime,
             "exec_speed": app.session.exec_speed,
-            "queue_size": len(app.session.queue_upcoming),
+            "queue_upcoming": len(app.session.queue_upcoming),
+            "queue_covered": len(app.session.queue_covered),
         }
     }
 
