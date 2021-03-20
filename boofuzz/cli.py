@@ -88,6 +88,8 @@ def fuzz(
         if qemu_path is not None:
             debugger_thread_qemu.QEMU_PATH = qemu_path
         debugger = DebuggerThreadQemu
+        if not debugger_thread_qemu.QEMU_PATH:
+            print("afl-qemu-trace not found. Is it available in PATH?")
     else:
         debugger = DebuggerThreadSimple
     local_procmon = None
@@ -171,9 +173,6 @@ def fuzz(
             session.feature_check()
         else:
             session.fuzz(name=test_case_name, max_depth=max_depth, qemu=qemu)
-
-        if procmon is not None:
-            procmon.stop_target()
 
 
 @cli.command(name="open")
