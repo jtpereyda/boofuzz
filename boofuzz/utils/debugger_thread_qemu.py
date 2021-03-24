@@ -87,13 +87,16 @@ class ForkServer:
         return pid
 
     def wait_for_status(self):
+        status = None
         while True:
             try:
                 status = os.read(self.forkserv_fd_from_server_out, 4)
             except OSError:
                 continue
             break
-        return struct.unpack("I", status)[0]
+        if status is not None:
+            status = struct.unpack("I", status)[0]
+        return status
 
 
 def _get_coredump_path():
@@ -168,6 +171,7 @@ class DebuggerThreadQemu(threading.Thread):
             DebuggerThreadQemu.fork_server.run()
         else:
             self.log("Fork server already running; restarting via server")
+            DebuggerThreadQemu.fork_server.run()
         self.fork_server = DebuggerThreadQemu.fork_server
         self.pid = self.fork_server.pid
 
