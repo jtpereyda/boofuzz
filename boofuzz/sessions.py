@@ -1428,14 +1428,6 @@ class Session(pgraph.Graph):
 
             if self._reuse_target_connection:
                 self.targets[0].close()
-
-            if self._keep_web_open and self.web_port is not None:
-                self.end_time = time.time()
-                print(
-                    "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
-                    "\nPress ENTER to close webinterface",
-                )
-                input()
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -1455,6 +1447,14 @@ class Session(pgraph.Graph):
         finally:
             self._stop_targets()
             self._fuzz_data_logger.close_test()
+
+        if self._keep_web_open and self.web_port is not None:
+            self.end_time = time.time()
+            print(
+                "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
+                "\nPress ENTER to close webinterface",
+            )
+            input()
 
     def _generate_single_case_by_index(self, test_case_index):
         fuzz_index = 1
