@@ -60,6 +60,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
         self.ignore_pid = pid_to_ignore
         self.log_level = level
         self.capture_output = False
+        self.hide_output = False
+        self.startup_wait = 0
 
         self.stop_commands = []
         self.start_commands = []
@@ -165,6 +167,8 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
             log_level=self.log_level,
             coredump_dir=self.coredump_dir,
             capture_output=self.capture_output,
+            hide_output=self.hide_output,
+            startup_wait=self.startup_wait,
         )
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
@@ -228,6 +232,14 @@ class ProcessMonitorPedrpcServer(pedrpc.Server):
     def set_capture_output(self, capture_output):
         self.log("updating capture_output to '%s'" % capture_output)
         self.capture_output = capture_output
+
+    def set_hide_output(self, hide_output):
+        self.log("updating hide_output to '%s'" % hide_output)
+        self.hide_output = hide_output
+
+    def set_startup_wait(self, startup_wait):
+        self.log("updating startup_wait to '%s'" % startup_wait)
+        self.startup_wait = startup_wait
 
     def set_proc_name(self, new_proc_name):
         self.log("updating target process name to '%s'" % new_proc_name)

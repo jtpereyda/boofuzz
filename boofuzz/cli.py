@@ -42,7 +42,9 @@ def cli():
 )
 @click.option("--procmon-host", help="Process monitor port host or IP")
 @click.option("--procmon-port", type=int, default=DEFAULT_PROCMON_PORT, help="Process monitor port")
-@click.option("--procmon-capture", is_flag=True, help="Capture stdout/stderr from target process upon failure")
+@click.option("--stdout", type=click.Choice(["HIDE", "CAPTURE", "MIRROR"], case_sensitive=False), default="MIRROR",
+              help="How to handle stdout (and stderr) of target. CAPTURE saves output for crash reporting but can "
+                   "slow down fuzzing.")
 @click.option("--tui/--no-tui", help="Enable/disable TUI")
 @click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
@@ -64,6 +66,9 @@ def cli():
 )
 @click.option("--qemu/--no-qemu", is_flag=True, default=False, help="Enable QEMU mode with code coverage feedbcak; requires afl-qemu-trace")
 @click.option("--qemu-path", help="afl-qemu-trace path; looks in PATH by default")
+@click.option("--web-port", help="port for web GUI")
+@click.option("--restart-interval", type=int, help="restart every n test cases")
+@click.option("--target-start-wait", type=float, default=0, help="wait n seconds for target to settle in before fuzzing")
 @click.pass_context
 def fuzz(
     ctx,
@@ -74,7 +79,7 @@ def fuzz(
     sleep_between_cases,
     procmon_host,
     procmon_port,
-    procmon_capture,
+    stdout,
     tui,
     text_dump,
     feature_check,
@@ -84,14 +89,17 @@ def fuzz(
     record_passes,
     qemu,
     qemu_path,
+    web_port,
+    restart_interval,
+    target_start_wait,
 ):
     if qemu:
         if qemu_path is not None:
             debugger_thread_qemu.QEMU_PATH = qemu_path
-        debugger = DebuggerThreadQemu
         if not debugger_thread_qemu.QEMU_PATH:
             print("afl-qemu-trace not found. Is it available in PATH?", file=sys.stderr)
             sys.exit(1)
+        debugger = DebuggerThreadQemu
     else:
         debugger = DebuggerThreadSimple
     local_procmon = None
@@ -116,8 +124,14 @@ def fuzz(
     procmon_options = {}
     if target_cmd is not None:
         procmon_options["start_commands"] = [shlex.split(target_cmd)]
-    if procmon_capture:
+    if target_start_wait:
+        procmon_options["startup_wait"] = target_start_wait
+    if stdout == "CAPTURE":
         procmon_options["capture_output"] = True
+    elif stdout == "HIDE":
+        procmon_options["hide_output"] = True
+    elif stdout == "MIRROR":
+        pass
 
     if local_procmon is not None or procmon_host is not None:
         if procmon_host is not None:
@@ -164,6 +178,8 @@ def fuzz(
         index_end=end,
         keep_web_open=keep_web,
         fuzz_db_keep_only_n_pass_cases=record_passes,
+        web_port=int(web_port),
+        restart_interval=restart_interval,
     )
 
     ctx.obj = CliContext(session=session)

@@ -35,8 +35,8 @@ AFL_SHM_ENV_VAR = "__AFL_SHM_ID"
 
 
 class ForkServer:
-    def __init__(self, args):
-        self.hide_output = True
+    def __init__(self, args, hide_output):
+        self.hide_output = hide_output
         self.pid = None
         self.forkserv_fd_to_server_out, self.forkserv_fd_to_server_in = os.pipe()
         self.forkserv_fd_from_server_out, self.forkserv_fd_from_server_in = os.pipe()
@@ -129,6 +129,8 @@ class DebuggerThreadQemu(threading.Thread):
         coredump_dir=None,
         log_level=1,
         capture_output=False,
+        hide_output=False,
+        startup_wait=0,
         **kwargs
     ):
         threading.Thread.__init__(self)
@@ -141,6 +143,8 @@ class DebuggerThreadQemu(threading.Thread):
         self.process_monitor = process_monitor
         self.coredump_dir = coredump_dir
         self.capture_output = capture_output
+        self.hide_output = hide_output
+        self.startup_wait = startup_wait
         self.finished_starting = threading.Event()
         self.cmd_args = []
         self.pid = None
@@ -167,7 +171,7 @@ class DebuggerThreadQemu(threading.Thread):
         command = self.start_commands[0]
         if DebuggerThreadQemu.fork_server is None:  # create fork server only once
             self.log("exec start command: {0}".format(command))
-            DebuggerThreadQemu.fork_server = ForkServer(args=command)
+            DebuggerThreadQemu.fork_server = ForkServer(args=command, hide_output=self.hide_output)
             DebuggerThreadQemu.fork_server.run()
         else:
             self.log("Fork server already running; restarting via server")
@@ -175,16 +179,12 @@ class DebuggerThreadQemu(threading.Thread):
         self.fork_server = DebuggerThreadQemu.fork_server
         self.pid = self.fork_server.pid
 
-        self.log("done. target up and running, giving it 5 seconds to settle in.")
-        time.sleep(5)
+        if self.startup_wait:
+            self.log("done. target up and running, giving it {0} to settle in.".format(self.startup_wait))
+            time.sleep(self.startup_wait)
         self.process_monitor.log("attached to pid: {0}".format(self.pid))
 
     def run(self):
-        """
-        self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
-        while self.exit_status == (0, 0):
-            self.exit_status = os.waitpid(self.pid, os.WNOHANG | os.WUNTRACED)
-        """
         self.spawn_target()
 
         self.finished_starting.set()

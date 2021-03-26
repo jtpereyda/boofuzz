@@ -68,6 +68,8 @@ class DebuggerThreadSimple(threading.Thread):
         coredump_dir=None,
         log_level=1,
         capture_output=False,
+        hide_output=False,
+        startup_wait=0,
         **kwargs
     ):
         threading.Thread.__init__(self)
@@ -78,6 +80,8 @@ class DebuggerThreadSimple(threading.Thread):
         self.process_monitor = process_monitor
         self.coredump_dir = coredump_dir
         self.capture_output = capture_output
+        self.hide_output = hide_output
+        self.startup_time = startup_wait
         self.finished_starting = threading.Event()
         # if isinstance(start_commands, basestring):
         #     self.tokens = start_commands.split(' ')
@@ -108,6 +112,8 @@ class DebuggerThreadSimple(threading.Thread):
             try:
                 if self.capture_output:
                     self._process = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+                elif self.hide_output:
+                    self._process = subprocess.Popen(command, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
                 else:
                     self._process = subprocess.Popen(command)
             except WindowsError as e:
@@ -134,8 +140,9 @@ class DebuggerThreadSimple(threading.Thread):
             self._psutil_proc = psutil.Process(pid=self.pid)
             self.process_monitor.log("found match on pid {}".format(self.pid))
         else:
-            self.log("done. target up and running, giving it 5 seconds to settle in.")
-            time.sleep(5)
+            if self.startup_time:
+                self.log("done. target up and running, giving it {0} to settle in.".format(self.startup_time))
+                time.sleep(self.startup_time)
             self.pid = self._process.pid
         self.process_monitor.log("attached to pid: {0}".format(self.pid))
 
