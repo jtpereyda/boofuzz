@@ -1136,6 +1136,11 @@ class Session(pgraph.Graph):
                         raise BoofuzzFailure(message="Nothing received from target.")
                     else:
                         self._fuzz_data_logger.log_pass("Some data received from target.")
+        except exception.BoofuzzTargetConnectionShutdown:
+            if self._check_data_received_each_request:
+                raise BoofuzzFailure(message=constants.ERR_CONN_SHUTDOWN)
+            else:
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_SHUTDOWN)
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
@@ -1192,6 +1197,11 @@ class Session(pgraph.Graph):
         try:  # recv
             if self._receive_data_after_fuzz:
                 received = self.targets[0].recv()
+        except exception.BoofuzzTargetConnectionShutdown:
+            if self._check_data_received_each_request:
+                raise BoofuzzFailure(message=constants.ERR_CONN_SHUTDOWN)
+            else:
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_SHUTDOWN)
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)

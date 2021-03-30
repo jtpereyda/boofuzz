@@ -33,6 +33,18 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         self._serverSock = None
 
     def close(self):
+        if True:
+            try:
+                self._sock.shutdown(socket.SHUT_RDWR)
+                while len(self._sock.recv(1024)) > 0:
+                    pass
+            except ConnectionError:
+                pass
+            except OSError as e:
+                if e.errno == errno.ENOTCONN:
+                    pass
+                else:
+                    raise
         super(TCPSocketConnection, self).close()
 
         if self.server:
@@ -96,6 +108,8 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
 
         try:
             data = self._sock.recv(max_bytes)
+            if len(data) == 0:
+                raise exception.BoofuzzTargetConnectionShutdown()
         except socket.timeout:
             data = b""
         except socket.error as e:

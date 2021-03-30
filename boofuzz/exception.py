@@ -34,6 +34,10 @@ class BoofuzzTargetConnectionReset(BoofuzzError):
     pass
 
 
+class BoofuzzTargetConnectionShutdown(BoofuzzError):
+    pass
+
+
 @attr.s
 class BoofuzzTargetConnectionAborted(BoofuzzError):
     """
