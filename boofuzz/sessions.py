@@ -951,6 +951,24 @@ class Session(pgraph.Graph):
         """
         self._callback_monitor.on_post_send.append(method)
 
+    def register_post_start_target_callback(self, method):
+        """Register a post- test case method.
+
+        The registered method will be called after each fuzz test case.
+
+        Potential uses:
+         * Closing down a connection.
+         * Checking for expected responses.
+
+        The order of callback events is as follows::
+
+            pre_send() - req - callback ... req - callback - post-test-case-callback
+
+        Args:
+            method (function): A method with the same parameters as :func:`~Session.post_send`
+        """
+        self._callback_monitor.on_post_start_target.append(method)
+
     # noinspection PyUnusedLocal
     def example_test_case_callback(self, target, fuzz_data_logger, session, test_case_context, *args, **kwargs):
         """
@@ -1279,15 +1297,18 @@ class Session(pgraph.Graph):
             else:
                 self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth), qemu=qemu)
         else:
-            self.fuzz_by_name(name=name)
+            self._fuzz_by_name(name=name)
 
     def fuzz_by_name(self, name):
-        """Fuzz a particular test case or node by name.
+        """Fuzz a particular test case or node by name. Deprecated. Use fuzz() instead.
 
         Args:
             name (str): Name of node.
         """
         warnings.warn("Session.fuzz_by_name is deprecated in favor of Session.fuzz(name=name).")
+        return self._fuzz_by_name(name=name)
+
+    def _fuzz_by_name(self, name):
         path, mutations = helpers.parse_test_case_name(name)
         if len(mutations) < 1:
             self._fuzz_single_node_by_path(path)
