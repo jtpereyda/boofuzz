@@ -66,7 +66,7 @@ def cli():
 )
 @click.option("--qemu/--no-qemu", is_flag=True, default=False, help="Enable QEMU mode with code coverage feedbcak; requires afl-qemu-trace")
 @click.option("--qemu-path", help="afl-qemu-trace path; looks in PATH by default")
-@click.option("--web-port", help="port for web GUI")
+@click.option("--web-port", type=int, default=constants.DEFAULT_WEB_UI_PORT, help="port for web GUI")
 @click.option("--restart-interval", type=int, help="restart every n test cases")
 @click.option("--target-start-wait", type=float, default=0, help="wait n seconds for target to settle in before fuzzing")
 @click.pass_context
@@ -178,7 +178,7 @@ def fuzz(
         index_end=end,
         keep_web_open=keep_web,
         fuzz_db_keep_only_n_pass_cases=record_passes,
-        web_port=int(web_port),
+        web_port=web_port,
         restart_interval=restart_interval,
     )
 
