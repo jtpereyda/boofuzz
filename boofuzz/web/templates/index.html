@@ -20,9 +20,15 @@
                     <td class="summary-content-row-header-text">Total:</td>
                     <td id="current_index"> {{ state.total_mutant_index }} </td>
                     <td> of </td>
-                    <td id="num_mutations"> {{ state.total_num_mutations }} </td>
-                    <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
-                    <td id="progress_percentage_total"> {{ state.progress_total }} </td>
+                    {% if state.total_num_mutations is not none %}
+                        <td id="num_mutations"> {{ state.total_num_mutations }} </td>
+                        <td class="fixed" id="progress_bar_total"> {{ state.progress_total_bar | safe }} </td>
+                        <td id="progress_percentage_total"> {{ state.progress_total }} </td>
+                    {% else %}
+                        <td id="num_mutations">many</td>
+                        <td class="fixed" id="progress_bar_total"> </td>
+                        <td id="progress_percentage_total"> </td>
+                    {% endif %}
                 </tr>
                 <tr>
                     <td id="current_element" class="summary-content-row-header-text"> {{ state.current_name }}: </td>
@@ -31,6 +37,18 @@
                     <td id="num_mutations_element"> {{ state.current_num_mutations }} </td>
                     <td id="progress_bar_element" class="fixed"> {{ state.progress_current_bar | safe }} </td>
                     <td id="progress_percentage_element"> {{ state.progress_current }} </td>
+                </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">run time</td>
+                    <td id="run_time"> {{ state.session.runtime | round | int }} sec</td>
+                </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">exec speed</td>
+                    <td id="exec_speed"> {{ state.session.exec_speed | round(1) }}/sec</td>
+                </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">current</td>
+                    <td id="current_test_case_name" colspan="5"> {{ state.session.current_test_case_name }} </td>
                 </tr>
             </table> </td> </tr>
             <tr> <td>

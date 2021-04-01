@@ -3,5 +3,6 @@ import attr
 
 @attr.s
 class Mutation(object):
-    mutations = attr.ib(factory=dict)
-    message_path = attr.ib(factory=list)
+    value = attr.ib(type=bytes)
+    qualified_name = attr.ib(type=str)
+    index = attr.ib(type=int)

@@ -113,10 +113,10 @@ class TestBlocks(DebuggableTestCase):
         rendered = blocks.CURRENT.render()
         assert b"ONE" not in rendered
         assert b"TWO" not in rendered
-        rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[0]))
+        rendered = blocks.CURRENT.render(MutationContext(mutations=mutations[0]))
         assert b"ONE" in rendered
         assert b"TWO" not in rendered
-        rendered = blocks.CURRENT.render(MutationContext(mutation=mutations[1]))
+        rendered = blocks.CURRENT.render(MutationContext(mutations=mutations[1]))
         assert b"ONE" not in rendered
         assert b"TWO" in rendered
         assert len(mutations) == 4
@@ -140,7 +140,7 @@ class TestBlocks(DebuggableTestCase):
 
         expected_lengths = [length + length * 5, length + length * 10, length + length * 15]
         for mutation, expected_length in zip(blocks.CURRENT.get_mutations(), expected_lengths):
-            data = blocks.CURRENT.render(MutationContext(mutation=mutation))
+            data = blocks.CURRENT.render(MutationContext(mutations=mutation))
             self.assertEqual(expected_length, len(data))
 
     def test_return_current_mutant(self):

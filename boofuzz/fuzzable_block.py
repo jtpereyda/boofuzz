@@ -35,8 +35,12 @@ class FuzzableBlock(Fuzzable):
         else:
             self.stack = list(children)
 
-    def mutations(self, default_value):
+    def mutations(self, default_value, skip_elements=None):
+        if skip_elements is None:
+            skip_elements = []
         for item in self.stack:
+            if item.qualified_name in skip_elements:
+                continue
             self.request.mutant = item
             for mutation in item.get_mutations():
                 yield mutation

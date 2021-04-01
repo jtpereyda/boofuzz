@@ -62,20 +62,18 @@ class Block(FuzzableBlock):
         self._fuzz_complete = False  # whether or not we are done fuzzing this block.
         self._mutant_index = 0  # current mutation index.
 
-    def mutations(self, default_value):
+    def mutations(self, default_value, skip_elements=None):
         for item in self.stack:
             self.request.mutant = item
-            for mutation in item.get_mutations():
-                yield mutation
+            for mutations in item.get_mutations():
+                yield mutations
         if self.group is not None:
-            g = self.request.resolve_name(self.context_path, self.group)
-            m = list(g.get_mutations())
-            for group_mutation in m:
+            group = self.request.resolve_name(self.context_path, self.group)
+            for group_mutations in group.get_mutations():
                 for item in self.stack:
                     self.request.mutant = item
-                    for mutation in item.get_mutations():
-                        mutation.mutations[g.qualified_name] = group_mutation.mutations[g.qualified_name]
-                        yield mutation
+                    for mutations in item.get_mutations():
+                        yield group_mutations + mutations
 
     def num_mutations(self, default_value=None):
         n = super(Block, self).num_mutations(default_value=default_value)

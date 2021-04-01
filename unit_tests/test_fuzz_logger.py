@@ -140,7 +140,7 @@ class TestFuzzLogger(unittest.TestCase):
         Then: failed_test_cases contains no failed test case info at first.
          and: failed_test_cases contains information from each log_fail,
               indexed by the opened test case, as each failure is added.
-         and: len(passed_test_cases) == 0
+         and: passed_test_case_count == 0
          and: len(error_test_cases) == 0
         """
         self.assertEqual(0, len(self.logger.failed_test_cases))
@@ -155,7 +155,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_fail("1110")
         self.assertEqual(["010", "11001", "1110"], self.logger.failed_test_cases["haiku"])
 
-        self.assertEqual(0, len(self.logger.passed_test_cases))
+        self.assertEqual(0, self.logger.passed_test_case_count)
         self.assertEqual(0, len(self.logger.error_test_cases))
 
     def test_error_count(self):
@@ -168,7 +168,7 @@ class TestFuzzLogger(unittest.TestCase):
         Then: error_test_cases contains no test error info at first.
          and: error_test_cases contains information from each log_error,
               indexed by the opened test case, as each error is added.
-         and: len(passed_test_cases) == 0
+         and: passed_test_case_count == 0
          and: len(failed_test_cases) == 0
         """
         self.assertEqual(0, len(self.logger.error_test_cases))
@@ -188,7 +188,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_error(line3)
         self.assertEqual([line1, line2, line3], self.logger.error_test_cases[5])
 
-        self.assertEqual(0, len(self.logger.passed_test_cases))
+        self.assertEqual(0, self.logger.passed_test_case_count)
         self.assertEqual(0, len(self.logger.failed_test_cases))
 
     def test_pass_count(self):
@@ -198,17 +198,16 @@ class TestFuzzLogger(unittest.TestCase):
          and: log_pass three times
          and: open_test_case
          and: log_pass once.
-        Then: passed_test_cases contains no test cases at first.
-         and: passed_test_cases contains information from each log_pass,
-              indexed by the opened test case, as each pass is added.
+        Then: passed_test_case_count == 0 at first.
+         and: passed_test_case_count == 1, then 2, as each pass is added.
          and: len(failed_test_cases) == 0
          and: len(error_test_cases) == 0
         """
-        self.assertEqual(0, len(self.logger.passed_test_cases))
+        self.assertEqual(0, self.logger.passed_test_case_count)
 
         self.logger.open_test_case(test_case_id="a", name=self.some_other_text, index=self.some_int)
         self.logger.log_pass("Good to go")
-        self.assertEqual(["Good to go"], self.logger.passed_test_cases["a"])
+        self.assertEqual(1, self.logger.passed_test_case_count)
 
         self.logger.open_test_case(test_case_id=-1, name=self.some_other_text, index=self.some_int)
 
@@ -218,7 +217,7 @@ class TestFuzzLogger(unittest.TestCase):
         self.logger.log_pass(line1)
         self.logger.log_pass(line2)
         self.logger.log_pass(line3)
-        self.assertEqual([line1, line2, line3], self.logger.passed_test_cases[-1])
+        self.assertEqual(2, self.logger.passed_test_case_count)
 
         self.assertEqual(0, len(self.logger.failed_test_cases))
         self.assertEqual(0, len(self.logger.error_test_cases))
@@ -233,25 +232,25 @@ class TestFuzzLogger(unittest.TestCase):
          and: log_fail
          and: open_test_case
          and: log_error
-        Then: all_test_cases contains no test cases at first.
-         and: all_test_cases contains each opened test case, as each is added.
+        Then: test_case_count contains no test cases at first.
+         and: test_case_count contains each opened test case, as each is added.
         """
-        self.assertEqual([], self.logger.all_test_cases)
+        self.assertEqual(0, self.logger.test_case_count)
 
         self.logger.open_test_case(test_case_id="a", name=self.some_other_text, index=self.some_int)
-        self.assertEqual(["a"], self.logger.all_test_cases)
+        self.assertEqual(1, self.logger.test_case_count)
 
         self.logger.open_test_case(test_case_id="b", name=self.some_other_text, index=self.some_int)
         self.logger.log_pass()
-        self.assertEqual(["a", "b"], self.logger.all_test_cases)
+        self.assertEqual(2, self.logger.test_case_count)
 
         self.logger.open_test_case(test_case_id="c", name=self.some_other_text, index=self.some_int)
         self.logger.log_fail()
-        self.assertEqual(["a", "b", "c"], self.logger.all_test_cases)
+        self.assertEqual(3, self.logger.test_case_count)
 
         self.logger.open_test_case(test_case_id="d", name=self.some_other_text, index=self.some_int)
         self.logger.log_error(description="uh oh!")
-        self.assertEqual(["a", "b", "c", "d"], self.logger.all_test_cases)
+        self.assertEqual(4, self.logger.test_case_count)
 
 
 if __name__ == "__main__":

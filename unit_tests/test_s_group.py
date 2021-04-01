@@ -55,13 +55,13 @@ def scenario_output_as(context, mutation, result):
         result = result[2:]
         result = bytes(bytearray.fromhex(result))
     mutation = int(mutation)
-    assert context.req.render(MutationContext(mutation=context.mutations[mutation])) == result
+    assert context.req.render(MutationContext(mutations=context.mutations[mutation])) == result
 
 
 @then("All mutations render")
 def scenario_can_render_all_mutations(context):
     for mutation in context.mutations:
-        context.req.render(MutationContext(mutation=mutation))
+        context.req.render(MutationContext(mutations=mutation))
 
 
 @then(parsers.parse("There are {value:d} total mutations"))

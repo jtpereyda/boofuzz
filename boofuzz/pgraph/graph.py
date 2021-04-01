@@ -16,6 +16,7 @@
 import copy
 
 import pydot
+from builtins import object
 from future.utils import listvalues
 
 
@@ -319,7 +320,7 @@ class Graph(object):
         from_node = self.find_node("id", from_node_id)
 
         if not from_node:
-            print("unable to resolve node %08x" % from_node_id)
+            print("unable to resolve node {:08x}".format(from_node_id))
             raise Exception
 
         levels_to_process = []
@@ -463,8 +464,8 @@ class Graph(object):
         """
         Render the GML graph description.
 
-        @rtype:  String
-        @return: GML graph description.
+        :returns: GML graph description.
+        :rtype: str
         """
 
         gml = 'Creator "pGRAPH - Pedram Amini <pedram.amini@gmail.com>"\n'
@@ -475,14 +476,14 @@ class Graph(object):
 
         # add the nodes to the GML definition.
         for node in listvalues(self.nodes):
-            gml += node.render_node_gml(self)
+            gml += node.render_node_gml()
 
         # add the edges to the GML definition.
         for edge in listvalues(self.edges):
             gml += edge.render_edge_gml(self)
 
         # close the graph tag.
-        gml += "]\n"
+        gml += "\n]\n"
 
         """
         TODO: Complete cluster rendering
@@ -510,16 +511,23 @@ class Graph(object):
         """
         Render the graphviz graph structure.
 
-        @rtype:  pydot.Dot
-        @return: Pydot object representing entire graph
+        Example to create a png:
+
+        .. code-block::
+
+            with open('somefile.png', 'wb') as file:
+                file.write(session.render_graph_graphviz().create_png())
+
+        :returns: Pydot object representing entire graph
+        :rtype: pydot.Dot
         """
         dot_graph = pydot.Dot()
 
         for node in listvalues(self.nodes):
-            dot_graph.add_node(node.render_node_graphviz(self))
+            dot_graph.add_node(node.render_node_graphviz())
 
         for edge in listvalues(self.edges):
-            dot_graph.add_edge(edge.render_edge_graphviz(self))
+            dot_graph.add_edge(edge.render_edge_graphviz())
 
         return dot_graph
 
@@ -527,8 +535,8 @@ class Graph(object):
         """
         Render the uDraw graph description.
 
-        @rtype:  str
-        @return: uDraw graph description.
+        :returns: uDraw graph description.
+        :rtype: str
         """
 
         udraw = "["
@@ -540,7 +548,7 @@ class Graph(object):
             udraw += ","
 
         # trim the extraneous comment and close the graph.
-        udraw = udraw[0:-1] + "]"
+        udraw = udraw[0:-1] + "\n]"
 
         return udraw
 
@@ -548,8 +556,8 @@ class Graph(object):
         """
         Render the uDraw graph update description.
 
-        @rtype:  String
-        @return: uDraw graph description.
+        :returns: uDraw graph description.
+        :rtype: str
         """
 
         udraw = "["

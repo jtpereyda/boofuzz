@@ -10,6 +10,7 @@ from .group import Group
 from .mirror import Mirror
 from .qword import QWord
 from .random_data import RandomData
+from .simple import Simple
 from .static import Static
 from .string import String
 from .word import Word
@@ -26,6 +27,7 @@ __all__ = [
     "Mirror",
     "QWord",
     "RandomData",
+    "Simple",
     "Static",
     "String",
     "Word",
