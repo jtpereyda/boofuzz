@@ -3,7 +3,7 @@
 #
 # CRC-16-CCITT
 # Using a look up table for speed and constant calculation time.
-# Polynomial representation "Normal" 0x1021 
+# Polynomial representation "Normal" 0x1021
 # X^16 + X^12 + X^5 + 1
 # Parity is Even.
 #
@@ -11,6 +11,7 @@
 
 import sys
 
+# fmt: off
 _CRC_TABLE = [
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7, 0x8108, 0x9129,
     0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef, 0x1231, 0x0210, 0x3273, 0x2252,
@@ -39,13 +40,14 @@ _CRC_TABLE = [
     0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8, 0x6e17, 0x7e36,
     0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 ]
+# fmt: on
 
 
 def _next_crc_left(old_crc, new_dat):
     return (((new_dat) | ((old_crc << 8) % 65536)) ^ _CRC_TABLE[(old_crc >> 8) % 256]) % 65536
 
 
-def getCrc16Ccitt(data, crcStart = 0xFFFF):
+def getCrc16Ccitt(data, crcStart=0xFFFF):
     assert 0 <= crcStart < 65536
 
     res = crcStart
@@ -53,4 +55,3 @@ def getCrc16Ccitt(data, crcStart = 0xFFFF):
         assert 0 <= byte < 256
         res = _next_crc_left(res, byte)
     return (res.to_bytes(length=2, byteorder=sys.byteorder, signed=False)).hex()
-
