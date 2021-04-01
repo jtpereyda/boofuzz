@@ -28,7 +28,7 @@ class Checksum(primitives.BasePrimitive):
     the algorithm parameter.
 
     The length field is only necessary for custom algorithms.
-    When using your own provided custom checksum function return is the calculated crc of the data. 
+    When using your own provided custom checksum function return is the calculated crc of the data.
 
     Function signature:  <function_name>(data_bytes, starting_value in hex. Returns a number.
 
@@ -43,7 +43,8 @@ class Checksum(primitives.BasePrimitive):
     :type  request: boofuzz.Request, optional
     :param request: Request this block belongs to
     :type  algorithm: str, function def name, optional
-    :param algorithm: Checksum algorithm to use from this list, default is crc32 (crc32, crc32c, adler32, md5, sha1, ipv4, udp). See above for custom checksum function.
+    :param algorithm: Checksum algorithm to use from this list, default is crc32 (crc32, crc32c, adler32, md5, sha1,
+        ipv4, udp). See above for custom checksum function.
 
     :type  length: int, optional
     :param length: Length of checksum, auto-calculated by default. Must be specified manually when using custom

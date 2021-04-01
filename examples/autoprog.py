@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Designed for use with boofuzz v0.2.0
 #
-# Fuzz Testing Autoprogramming 
+# Fuzz Testing Autoprogramming
 #
 # how to run basics: python autoprog.py -a <target ip address> -p <port number>
 #
@@ -24,12 +24,11 @@ g_autoprogram_port = 65534
 # noinspection PyMethodOverriding
 # noinspection PyMethodParameters
 class spaceTargetMonitor(NetworkMonitor):
-
     def alive():
         global g_target_ip_addr
-        param = '-n' if platform.system().lower() == 'windows' else '-c'
+        param = "-n" if platform.system().lower() == "windows" else "-c"
         # Russian Sub Commander Marco Ramius requests one ping only
-        command = ['ping', param, '1', g_target_ip_addr]
+        command = ["ping", param, "1", g_target_ip_addr]
         # noinspection PyTypeChecker
         message = "alive() sending a ping command to " + g_target_ip_addr
         mylogger.log_info(message)
@@ -85,15 +84,19 @@ def main(argv):
     global g_autoprogram_port
 
     try:
-        opts, args = getopt.getopt(
-             argv, "ha:p:s:e:", ["address=", "port=", "start_index=", "end_index="]
-        )
+        opts, args = getopt.getopt(argv, "ha:p:s:e:", ["address=", "port=", "start_index=", "end_index="])
     except getopt.GetoptError:
-        print('autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|-s <start of fuzzing index> --end_index|-e <end of fuzzing index>')
+        print(
+            "autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
+            -s <start of fuzzing index> --end_index|-e <end of fuzzing index>"
+        )
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
-            print('autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|-s <start of fuzzing index> --end_index|-e <end of fuzzing index>')
+        if opt == "-h":
+            print(
+                "autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
+                -s <start of fuzzing index> --end_index|-e <end of fuzzing index>"
+            )
             sys.exit()
         elif opt in ("-a", "--address"):
             target_ip_addr = arg
@@ -122,12 +125,12 @@ def main(argv):
         crash_threshold_element=2,
         index_start=int(start_index),
         index_end=int(end_index),
-
     )
     define_autoprog_static(session=session)
     mylogger.log_info("start fuzzing")
 
     session.fuzz()
+
 
 #################################################################
 # Single entry configuration within a Proposal list:
@@ -159,7 +162,9 @@ def main(argv):
 
 
 def define_autoprog_static(session):
-    dl_line_1 = String(name="proposal_header", default_value="<ProposalList xmlns=\"http://www.mycompany.com/HC/AutoProgramming\">")
+    dl_line_1 = String(
+        name="proposal_header", default_value='<ProposalList xmlns="http://www.mycompany.com/HC/AutoProgramming">'
+    )
     # insert crc here
     dl_line_9 = String(name="crc_end", default_value="</Checksum>", fuzzable=False)
     dl_line_11 = String(name="outer_crc", default_value="<ChecksumTotal>", fuzzable=False)
@@ -169,8 +174,12 @@ def define_autoprog_static(session):
     reqW = Request("autoprog")
     block = Block(name="autoprogB", request=reqW)
     reqW.push(block)
-    crcValue = Checksum(name="firstCRC16", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False)
-    crcValue_outer = Checksum(name="CRC16_outer", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False)
+    crcValue = Checksum(
+        name="firstCRC16", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False
+    )
+    crcValue_outer = Checksum(
+        name="CRC16_outer", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False
+    )
 
     block.push(dl_line_1)
     reqW.push(crcValue)
