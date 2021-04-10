@@ -24,8 +24,14 @@ class FuzzLogger(IFuzzLogger):
         self._cur_test_case_id = ""  # type: Union[int, str]
         self.failed_test_cases = {}
         self.error_test_cases = {}
-        self.passed_test_cases = {}
-        self.all_test_cases = []
+        self.passed_test_case_count = 0  # passed test cases are simply counted to avoid runaway memory usage
+        self._last_passed_id = ""  # helps avoid duplicates
+        self.test_case_count = 0
+
+    @property
+    def most_recent_test_id(self):
+        """Return a value (e.g. string) representing the most recent test case."""
+        return self._cur_test_case_id
 
     def open_test_step(self, description):
         for fuzz_logger in self._fuzz_loggers:
@@ -54,9 +60,9 @@ class FuzzLogger(IFuzzLogger):
             fuzz_logger.log_recv(data=data)
 
     def log_pass(self, description=""):
-        if self._cur_test_case_id not in self.passed_test_cases:
-            self.passed_test_cases[self._cur_test_case_id] = []
-        self.passed_test_cases[self._cur_test_case_id].append(description)
+        if self._cur_test_case_id != self._last_passed_id:
+            self.passed_test_case_count += 1
+            self._last_passed_id = self._cur_test_case_id
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.log_pass(description=description)
 
@@ -66,7 +72,7 @@ class FuzzLogger(IFuzzLogger):
 
     def open_test_case(self, test_case_id, name, index, *args, **kwargs):
         self._cur_test_case_id = test_case_id
-        self.all_test_cases.append(test_case_id)
+        self.test_case_count += 1
         for fuzz_logger in self._fuzz_loggers:
             fuzz_logger.open_test_case(test_case_id=test_case_id, name=name, index=index, *args, **kwargs)
 
@@ -87,8 +93,8 @@ class FuzzLogger(IFuzzLogger):
 
         :return: Test summary string, may be multi-line.
         """
-        summary = "Test Summary: {0} tests ran.\n".format(len(self.all_test_cases))
-        summary += "PASSED: {0} test cases.\n".format(len(self.passed_test_cases))
+        summary = "Test Summary: {0} tests ran.\n".format(self.test_case_count)
+        summary += "PASSED: {0} test cases.\n".format(self.passed_test_case_count)
 
         if len(self.failed_test_cases) > 0:
             summary += "FAILED: {0} test cases:\n".format(len(self.failed_test_cases))

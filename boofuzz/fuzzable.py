@@ -66,6 +66,11 @@ class Fuzzable(object):
 
     @property
     def qualified_name(self):
+        """Dot-delimited name that describes the request name and the path to the element within the request.
+
+        Example: "request1.block1.block2.node1"
+
+        """
         return ".".join(s for s in (self._context_path, self.name) if s != "")
 
     @property
@@ -121,20 +126,24 @@ class Fuzzable(object):
         """Iterate mutations. Used by boofuzz framework.
 
         Yields:
-            Mutation: Mutations
+            list of Mutation: Mutations
 
         """
         try:
             if not self.fuzzable:
                 return
+            index = 0
             for value in itertools.chain(self.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
                     return
-                if isinstance(value, Mutation):
+                if isinstance(value, list):
                     yield value
+                elif isinstance(value, Mutation):
+                    yield [value]
                 else:
-                    yield Mutation(mutations={self.qualified_name: value})
+                    yield [Mutation(value=value, qualified_name=self.qualified_name, index=index)]
+                    index += 1
         finally:
             self._halt_mutations = False  # in case stop_mutations is called when mutations were exhausted anyway
 
@@ -145,7 +154,7 @@ class Fuzzable(object):
         return self.encode(value=self.get_value(mutation_context=mutation_context), mutation_context=mutation_context)
 
     def get_num_mutations(self):
-        return self.num_mutations(default_value=self.original_value(test_case_context=None))
+        return self.num_mutations(default_value=self.original_value(test_case_context=None)) + len(self._fuzz_values)
 
     def get_value(self, mutation_context=None):
         """Helper method to get the currently applicable value.
@@ -159,13 +168,13 @@ class Fuzzable(object):
 
         """
         if mutation_context is None:
-            mutation_context = MutationContext(Mutation())
-        if self.qualified_name in mutation_context.mutation.mutations:
-            mutation = mutation_context.mutation.mutations[self.qualified_name]
-            if callable(mutation):
-                value = mutation(self.original_value(test_case_context=mutation_context.protocol_session))
+            mutation_context = MutationContext()
+        if self.qualified_name in mutation_context.mutations:
+            mutation = mutation_context.mutations[self.qualified_name]
+            if callable(mutation.value):
+                value = mutation.value(self.original_value(test_case_context=mutation_context.protocol_session))
             else:
-                value = mutation
+                value = mutation.value
         else:
             value = self.original_value(test_case_context=mutation_context.protocol_session)
 
@@ -208,7 +217,7 @@ class Fuzzable(object):
         return value
 
     def num_mutations(self, default_value):
-        """Return the total number of mutations for this element.
+        """Return the total number of mutations for this element (not counting "fuzz_values").
 
         Default implementation exhausts the mutations() generator, which is inefficient. Override if you can provide a
         value more efficiently, or if exhausting the mutations() generator has side effects.
@@ -236,7 +245,7 @@ class Fuzzable(object):
         Returns:
             int: Length of element (length of mutated element if mutated).
         """
-        return len(self.render(MutationContext(mutation=Mutation())))
+        return len(self.render(MutationContext()))
 
     def __bool__(self):
         """Make sure instances evaluate to True even if __len__ is zero.

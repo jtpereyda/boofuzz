@@ -74,7 +74,10 @@ def index_update():
             if app.session.fuzz_node is not None
             else None,
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
+            "current_test_case_name": app.session.current_test_case_name,
             "crashes": _crash_summary_info(),
+            "runtime": app.session.runtime,
+            "exec_speed": app.session.exec_speed,
         }
     }
 
@@ -97,7 +100,7 @@ def index():
         num_mutations = float(app.session.fuzz_node.get_num_mutations())
 
         try:
-            progress_current = mutant_index / num_mutations
+            progress_current = min(mutant_index / num_mutations, 1)
         except ZeroDivisionError:
             progress_current = 0
         num_bars = int(progress_current * 50)
@@ -115,7 +118,7 @@ def index():
         progress_total = 0
     else:
         try:
-            progress_total = total_mutant_index / total_num_mutations
+            progress_total = min(total_mutant_index / total_num_mutations, 1)
         except ZeroDivisionError:
             progress_total = 0
 
@@ -133,7 +136,7 @@ def index():
         "progress_total": progress_total,
         "progress_total_bar": progress_total_bar,
         "total_mutant_index": commify(int(total_mutant_index)),
-        "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else "N/A",
+        "total_num_mutations": commify(int(total_num_mutations)) if total_num_mutations is not None else None,
     }
 
     return render_template("index.html", state=state, crashes=crashes)
