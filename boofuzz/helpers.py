@@ -29,6 +29,9 @@ COLOR_PAIR_GREEN = 5
 COLOR_PAIR_MAGENTA = 6
 COLOR_PAIR_BLACK = 7
 
+sigmap = dict((k, v) for v, k in reversed(sorted(signal.__dict__.items()))
+              if v.startswith('SIG') and not v.startswith('SIG_'))
+
 test_step_info = {
     "test_case": {
         "indent": 0,
@@ -307,7 +310,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # If the packet is too big, the checksum is undefined since len(msg)
     # won't fit into two bytes. So we just pick our best definition.
     # "Truncate" the message as it appears in the checksum.
-    msg = msg[0 : ip_constants.UDP_MAX_LENGTH_THEORETICAL]
+    msg = msg[0: ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(_udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg)
 
@@ -481,3 +484,18 @@ def parse_test_case_name(test_case):
 def _reset_shm_map(shm_map):
     for i in range(0, len(shm_map)):
         shm_map[i] = 0
+
+
+def crash_reason(exit_status):
+    reason = "Process died for unknown reason"
+    if exit_status is not None:
+        if os.WCOREDUMP(exit_status):
+            reason = "Segmentation fault"
+        elif os.WIFSTOPPED(exit_status):
+            reason = "Stopped with signal " + str(os.WTERMSIG(exit_status))
+        elif os.WIFSIGNALED(exit_status):
+            sig = os.WTERMSIG(exit_status)
+            reason = "Terminated with signal {0} {1}".format(str(sig), sigmap[sig])
+        elif os.WIFEXITED(exit_status):
+            reason = "Exit with code - " + str(os.WEXITSTATUS(exit_status))
+    return reason

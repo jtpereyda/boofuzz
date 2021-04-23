@@ -1,9 +1,5 @@
 from __future__ import print_function
 
-import os
-
-from ..helpers import _reset_shm_map
-
 try:
     import resource  # Linux only
 
@@ -12,6 +8,7 @@ try:
     )
 except ImportError:
     pass
+import os
 import shutil
 import signal
 import struct
@@ -22,6 +19,8 @@ import time
 from io import open
 
 import sysv_ipc
+
+from .. import helpers
 
 POPEN_COMMUNICATE_TIMEOUT_FOR_ALREADY_DEAD_TASK = 30
 
@@ -44,7 +43,7 @@ class ForkServer:
         self.shm = sysv_ipc.SharedMemory(None, sysv_ipc.IPC_CREX, size=AFL_MAP_SIZE_POW2)
         self.shm_id = self.shm.id
         self.shm_mv = memoryview(self.shm)
-        _reset_shm_map(self.shm_mv)  # set to all zeros
+        helpers._reset_shm_map(self.shm_mv)  # set to all zeros
 
         fork_pid = os.fork()  # fork to take advantage of inherited file descriptors
         if fork_pid == 0:
@@ -191,16 +190,7 @@ class DebuggerThreadQemu(threading.Thread):
 
         self.exit_status = self.fork_server.wait_for_status()
 
-        reason = "Process died for unknown reason"
-        if self.exit_status is not None:
-            if os.WCOREDUMP(self.exit_status):
-                reason = "Segmentation fault"
-            elif os.WIFSTOPPED(self.exit_status):
-                reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFSIGNALED(self.exit_status):
-                reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFEXITED(self.exit_status):
-                reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
+        reason = helpers.crash_reason(self.exit_status)
 
         msg = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
             time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason

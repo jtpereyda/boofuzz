@@ -1,7 +1,5 @@
 from __future__ import print_function
 
-import os
-
 try:
     import resource  # Linux only
 
@@ -10,6 +8,7 @@ try:
     )
 except ImportError:
     pass
+import os
 import signal
 import subprocess
 import sys
@@ -18,6 +17,9 @@ import time
 
 import psutil
 from io import open
+
+from .. import helpers
+
 
 if not getattr(__builtins__, "WindowsError", None):
 
@@ -162,20 +164,7 @@ class DebuggerThreadSimple(threading.Thread):
             exit_info = os.waitpid(self.pid, 0)
             self.exit_status = exit_info[1]  # [0] is the pid
 
-        default_reason = "Process died for unknown reason"
-        if self.exit_status is not None:
-            if os.WCOREDUMP(self.exit_status):
-                reason = "Segmentation fault"
-            elif os.WIFSTOPPED(self.exit_status):
-                reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFSIGNALED(self.exit_status):
-                reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFEXITED(self.exit_status):
-                reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
-            else:
-                reason = default_reason
-        else:
-            reason = default_reason
+        reason = helpers.crash_reason(self.exit_status)
 
         outdata = None
         errdata = None
