@@ -4,9 +4,11 @@ Changelog
 Features
 ^^^^^^^^
 - Added simple custom checksum and example usage.
+
 Fixes
 ^^^^^
 - Clarified Checksum() data for custom checksum function.
+
 Upcoming
 --------
 Features
