@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.2.0
+# Designed for use with boofuzz v0.3.0
 #
 # Fuzz Testing Autoprogramming
 #
@@ -175,10 +175,10 @@ def define_autoprog_static(session):
     block = Block(name="autoprogB", request=reqW)
     reqW.push(block)
     crcValue = Checksum(
-        name="firstCRC16", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False
+        name="firstCRC16", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=2, fuzzable=False
     )
     crcValue_outer = Checksum(
-        name="CRC16_outer", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=16, fuzzable=False
+        name="CRC16_outer", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=2, fuzzable=False
     )
 
     block.push(dl_line_1)

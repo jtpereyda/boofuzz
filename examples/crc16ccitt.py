@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Designed for use with boofuzz v0.2.0
+# Designed for use with boofuzz v0.3.0
 #
 # CRC-16-CCITT
 # Using a look up table for speed and constant calculation time.

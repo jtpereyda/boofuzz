@@ -30,7 +30,7 @@ class Checksum(primitives.BasePrimitive):
     The length field is only necessary for custom algorithms.
     When using your own provided custom checksum function return is the calculated crc of the data.
 
-    Function signature:  <function_name>(data_bytes, starting_value in hex. Returns a number.
+    Function signature:  <function_name>(data_bytes, starting_value in hex). Returns a number represented as a bytes type.
 
     Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
     or length calculations.
@@ -44,7 +44,7 @@ class Checksum(primitives.BasePrimitive):
     :param request: Request this block belongs to
     :type  algorithm: str, function def name, optional
     :param algorithm: Checksum algorithm to use from this list, default is crc32 (crc32, crc32c, adler32, md5, sha1,
-        ipv4, udp). See above for custom checksum function.
+        ipv4, udp). See above for custom checksum function example.
 
     :type  length: int, optional
     :param length: Length of checksum, auto-calculated by default. Must be specified manually when using custom
