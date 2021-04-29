@@ -30,7 +30,7 @@ class Checksum(primitives.BasePrimitive):
     The length field is only necessary for custom algorithms.
     When using your own provided custom checksum function return is the calculated crc of the data.
 
-    Function signature:  <function_name>(data_bytes, starting_value in hex). Returns a number represented as a bytes type.
+    Function signature:  <function_name>(data_bytes). Returns a number represented as a bytes type.
 
     Recursive checksums are supported; the checksum field itself will render as all zeros for the sake of checksum
     or length calculations.
