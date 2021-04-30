@@ -29,8 +29,9 @@ COLOR_PAIR_GREEN = 5
 COLOR_PAIR_MAGENTA = 6
 COLOR_PAIR_BLACK = 7
 
-sigmap = dict((k, v) for v, k in reversed(sorted(signal.__dict__.items()))
-              if v.startswith('SIG') and not v.startswith('SIG_'))
+sigmap = dict(
+    (k, v) for v, k in reversed(sorted(signal.__dict__.items())) if v.startswith("SIG") and not v.startswith("SIG_")
+)
 
 test_step_info = {
     "test_case": {
@@ -310,7 +311,7 @@ def udp_checksum(msg, src_addr, dst_addr):
     # If the packet is too big, the checksum is undefined since len(msg)
     # won't fit into two bytes. So we just pick our best definition.
     # "Truncate" the message as it appears in the checksum.
-    msg = msg[0: ip_constants.UDP_MAX_LENGTH_THEORETICAL]
+    msg = msg[0 : ip_constants.UDP_MAX_LENGTH_THEORETICAL]
 
     return ipv4_checksum(_udp_checksum_pseudo_header(src_addr, dst_addr, len(msg)) + msg)
 

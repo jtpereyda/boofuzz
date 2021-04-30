@@ -1013,7 +1013,9 @@ class Session(pgraph.Graph):
                 target.vmcontrol.restart_target()
             else:
                 for monitor in target.monitors:
-                    self._fuzz_data_logger.log_info("Stopping target process using {}".format(monitor.__class__.__name__))
+                    self._fuzz_data_logger.log_info(
+                        "Stopping target process using {}".format(monitor.__class__.__name__)
+                    )
                     monitor.stop_target()
 
     def _restart_target(self, target):
@@ -1533,7 +1535,8 @@ class Session(pgraph.Graph):
         if base_mutations is not None:
             skip_elements.update(m.qualified_name for m in base_mutations)
         for mutations in self._generate_n_mutations_for_path_recursive(
-                path, depth=depth, skip_elements=skip_elements, base_mutations=base_mutations):
+            path, depth=depth, skip_elements=skip_elements, base_mutations=base_mutations
+        ):
             if not self._mutations_contain_duplicate(mutations):
                 self.total_mutant_index += 1
                 yield MutationContext(message_path=path, mutations={n.qualified_name: n for n in mutations})
@@ -1662,13 +1665,13 @@ class Session(pgraph.Graph):
             try:
                 request = self.nodes[request_name]
             except KeyError:
-                raise Exception(
-                    "Request {0} not found in blocks.REQUESTS: {1}".format(request_name, self.nodes))
+                raise Exception("Request {0} not found in blocks.REQUESTS: {1}".format(request_name, self.nodes))
             try:
                 fuzzable = request.names[qualified_name]
             except KeyError:
-                raise Exception("Name {0} not found in request {1}.names: {2}".format(
-                    qualified_name, request_name, request.names))
+                raise Exception(
+                    "Name {0} not found in request {1}.names: {2}".format(qualified_name, request_name, request.names)
+                )
             mutations += next(itertools.islice(fuzzable.get_mutations(), index, index + 1))
         return mutations
 

@@ -35,6 +35,7 @@ AFL_SHM_ENV_VAR = "__AFL_SHM_ID"
 
 class ForkServer:
     """Implements the AFL fork server protocol. Used by DebuggerThreadQemu."""
+
     def __init__(self, args, hide_output):
         self.hide_output = hide_output
         self.pid = None
@@ -53,8 +54,7 @@ class ForkServer:
             self.parent()
 
     def child(self, args):
-        """Execute afl-qemu-trace with appropriate inputs: target command args, env var settings, and file descriptors.
-        """
+        """Execute afl-qemu-trace with appropriate inputs: target command args, env var settings, and file descriptors."""
         os.dup2(self.forkserv_fd_to_server_out, AFL_FORKSRV_FD)
         os.dup2(self.forkserv_fd_from_server_in, AFL_FORKSRV_FD + 1)
 
@@ -68,9 +68,10 @@ class ForkServer:
         os.close(self.forkserv_fd_to_server_out)
         os.close(self.forkserv_fd_from_server_in)
         os.close(self.forkserv_fd_from_server_out)
-        env = {"QEMU_LOG": "nochain",
-               AFL_SHM_ENV_VAR: str(self.shm_id),
-               }
+        env = {
+            "QEMU_LOG": "nochain",
+            AFL_SHM_ENV_VAR: str(self.shm_id),
+        }
         os.execve(QEMU_PATH, ["afl-qemu-trace"] + args, env)
 
     def parent(self):
@@ -79,8 +80,7 @@ class ForkServer:
         os.read(self.forkserv_fd_from_server_out, 4)
 
     def run(self):  # only the parent runs run()
-        """Runs the testcase in QEMU (by sending a command to the fork server) and returns the pid.
-        """
+        """Runs the testcase in QEMU (by sending a command to the fork server) and returns the pid."""
         os.write(self.forkserv_fd_to_server_in, b"\0\0\0\0")  # Tell AFL Fork Server to start the target
         pid = struct.unpack("I", os.read(self.forkserv_fd_from_server_out, 4))[0]  # Read PID from Fork Server
         self.pid = pid
@@ -111,6 +111,7 @@ def _get_coredump_path():
 
 class DebuggerThreadQemu(threading.Thread):
     """Debugger thread using QEMU and AFL fork server."""
+
     fork_server = None  # use class attribute due to the procmon's behavior of creating a new debugger thread on restart
 
     def __init__(

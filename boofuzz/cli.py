@@ -42,9 +42,13 @@ def cli():
 )
 @click.option("--procmon-host", help="Process monitor port host or IP")
 @click.option("--procmon-port", type=int, default=DEFAULT_PROCMON_PORT, help="Process monitor port")
-@click.option("--stdout", type=click.Choice(["HIDE", "CAPTURE", "MIRROR"], case_sensitive=False), default="MIRROR",
-              help="How to handle stdout (and stderr) of target. CAPTURE saves output for crash reporting but can "
-                   "slow down fuzzing.")
+@click.option(
+    "--stdout",
+    type=click.Choice(["HIDE", "CAPTURE", "MIRROR"], case_sensitive=False),
+    default="MIRROR",
+    help="How to handle stdout (and stderr) of target. CAPTURE saves output for crash reporting but can "
+    "slow down fuzzing.",
+)
 @click.option("--tui/--no-tui", help="Enable TUI")
 @click.option("--text-dump/--no-text-dump", help="Enable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
@@ -64,12 +68,18 @@ def cli():
     type=int,
     help="Record this many cases before each failure. Set to 0 to record all test cases (high disk space usage!).",
 )
-@click.option("--qemu/--no-qemu", is_flag=True, default=False,
-              help="Experimental: Enable QEMU mode with code coverage feedback; requires afl-qemu-trace")
+@click.option(
+    "--qemu/--no-qemu",
+    is_flag=True,
+    default=False,
+    help="Experimental: Enable QEMU mode with code coverage feedback; requires afl-qemu-trace",
+)
 @click.option("--qemu-path", help="afl-qemu-trace path; looks in PATH by default")
 @click.option("--web-port", type=int, default=constants.DEFAULT_WEB_UI_PORT, help="port for web GUI")
 @click.option("--restart-interval", type=int, help="restart every n test cases")
-@click.option("--target-start-wait", type=float, default=0, help="wait n seconds for target to settle in before fuzzing")
+@click.option(
+    "--target-start-wait", type=float, default=0, help="wait n seconds for target to settle in before fuzzing"
+)
 @click.pass_context
 def fuzz(
     ctx,
