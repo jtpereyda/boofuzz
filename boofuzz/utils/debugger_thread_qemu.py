@@ -34,6 +34,7 @@ AFL_SHM_ENV_VAR = "__AFL_SHM_ID"
 
 
 class ForkServer:
+    """Implements the AFL fork server protocol. Used by DebuggerThreadQemu."""
     def __init__(self, args, hide_output):
         self.hide_output = hide_output
         self.pid = None
@@ -99,9 +100,7 @@ class ForkServer:
 
 
 def _get_coredump_path():
-    """
-    This method returns the path to the coredump file if one was created
-    """
+    """Returns the path to the coredump file if one was created. """
     if sys.platform == "linux" or sys.platform == "linux2":
         path = "./core"
         if os.path.isfile(path):
@@ -111,12 +110,7 @@ def _get_coredump_path():
 
 
 class DebuggerThreadQemu(threading.Thread):
-    """Simple debugger that gets exit code, stdout/stderr from a target process.
-
-    This class isn't actually ran as a thread, only the start_monitoring
-    method is. It can spawn/stop a process, wait for it to exit and report on
-    the exit status/code.
-    """
+    """Debugger thread using QEMU and AFL fork server."""
     fork_server = None  # use class attribute due to the procmon's behavior of creating a new debugger thread on restart
 
     def __init__(
@@ -238,4 +232,5 @@ class DebuggerThreadQemu(threading.Thread):
 
     @property
     def shm_mv(self):
+        """Shared memory map `memoryview`."""
         return self.fork_server.shm_mv

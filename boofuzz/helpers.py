@@ -482,11 +482,13 @@ def parse_test_case_name(test_case):
 
 
 def _reset_shm_map(shm_map):
+    """Reset shared memory map (used with AFL fork server)."""
     for i in range(0, len(shm_map)):
         shm_map[i] = 0
 
 
 def crash_reason(exit_status):
+    """Get human readable crash reason from exit status."""
     reason = "Process died for unknown reason"
     if exit_status is not None:
         if os.WCOREDUMP(exit_status):

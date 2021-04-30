@@ -934,20 +934,10 @@ class Session(pgraph.Graph):
             return False
 
     def register_post_test_case_callback(self, method):
-        """Register a post- test case method.
-
-        The registered method will be called after each fuzz test case.
-
-        Potential uses:
-         * Closing down a connection.
-         * Checking for expected responses.
-
-        The order of callback events is as follows::
-
-            pre_send() - req - callback ... req - callback - post-test-case-callback
+        """Register a callback, called after a target starts or restarts.
 
         Args:
-            method (function): A method with the same parameters as :func:`~Session.post_send`
+            method (function): A method with the same parameters as :func:`~Session.example_test_case_callback`
         """
         self._callback_monitor.on_post_send.append(method)
 

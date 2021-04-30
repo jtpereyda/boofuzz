@@ -27,12 +27,12 @@ temp_static_procmon = None
 temp_static_fuzz_only_one_case = None
 
 
-@click.group(help="boofuzz experimental CLI; usage may change over time")
+@click.group(help="boofuzz experimental CLI; usage may change over time", context_settings=dict(max_content_width=120))
 def cli():
     pass
 
 
-@cli.group(help="Must be run via a fuzz script")
+@cli.group(help="Must be run via a fuzz script", context_settings=dict(show_default=True))
 @click.option("--target", metavar="HOST:PORT", help="Target network address", required=True)
 @click.option("--test-case-index", help="Test case index", type=str)
 @click.option("--test-case-name", help="Name of node or specific test case")
@@ -45,8 +45,8 @@ def cli():
 @click.option("--stdout", type=click.Choice(["HIDE", "CAPTURE", "MIRROR"], case_sensitive=False), default="MIRROR",
               help="How to handle stdout (and stderr) of target. CAPTURE saves output for crash reporting but can "
                    "slow down fuzzing.")
-@click.option("--tui/--no-tui", help="Enable/disable TUI")
-@click.option("--text-dump/--no-text-dump", help="Enable/disable full text dump of logs", default=False)
+@click.option("--tui/--no-tui", help="Enable TUI")
+@click.option("--text-dump/--no-text-dump", help="Enable full text dump of logs", default=False)
 @click.option("--feature-check", is_flag=True, help="Run a feature check instead of a fuzz test", default=False)
 @click.option("--target-cmd", help="Target command and arguments")
 @click.option(
@@ -64,7 +64,8 @@ def cli():
     type=int,
     help="Record this many cases before each failure. Set to 0 to record all test cases (high disk space usage!).",
 )
-@click.option("--qemu/--no-qemu", is_flag=True, default=False, help="Enable QEMU mode with code coverage feedbcak; requires afl-qemu-trace")
+@click.option("--qemu/--no-qemu", is_flag=True, default=False,
+              help="Experimental: Enable QEMU mode with code coverage feedback; requires afl-qemu-trace")
 @click.option("--qemu-path", help="afl-qemu-trace path; looks in PATH by default")
 @click.option("--web-port", type=int, default=constants.DEFAULT_WEB_UI_PORT, help="port for web GUI")
 @click.option("--restart-interval", type=int, help="restart every n test cases")
@@ -193,7 +194,7 @@ def fuzz(
             session.fuzz(name=test_case_name, max_depth=max_depth, qemu=qemu)
 
 
-@cli.command(name="open")
+@cli.command(name="open", context_settings=dict(show_default=True))
 @click.option("--debug", help="Print debug info to console", is_flag=True)
 @click.option(
     "--ui-port",

@@ -171,8 +171,6 @@ class ProcessMonitorLocal(BaseMonitor):
         self.debugger_thread.daemon = True
         self.debugger_thread.start()
         self.debugger_thread.finished_starting.wait()
-        # self.log("giving debugger thread 2 seconds to settle in", 5)
-        # time.sleep(2)
         return True
 
     def stop_target(self):
