@@ -178,10 +178,10 @@ and has been replaced with boofuzz’s logging mechanisms.
 However, some people still prefer the PCAP approach.
 
 .. note::
-    The network monitor requires Pcapy, which will not be automatically installed with boofuzz. You can manually
-    install it with ``pip install pcapy``.
+    The network monitor requires Pcapy and Impacket, which will not be automatically installed with boofuzz. You can
+    manually install them with ``pip install pcapy impacket``.
 
-    If you run into errors, check out the requirements on the `project page <https://github.com/helpsystems/pcapy>`_.
+    If you run into errors, check out the Pcapy requirements on the `project page <https://github.com/helpsystems/pcapy>`_.
 
 .. _help site: http://www.howtogeek.com/197947/how-to-install-python-on-windows/
 .. _releases page: https://github.com/jtpereyda/boofuzz/releases

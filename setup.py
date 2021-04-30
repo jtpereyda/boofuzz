@@ -72,7 +72,6 @@ setup(
         "Flask",
         "funcy",
         "future",
-        "impacket",
         "psutil",
         "pyserial",
         "pydot",
