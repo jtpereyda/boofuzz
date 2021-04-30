@@ -28,7 +28,7 @@ class Checksum(primitives.BasePrimitive):
     the algorithm parameter.
 
     The length field is only necessary for custom algorithms.
-    When using your own provided custom checksum function return is the calculated crc of the data.
+    When using your own custom checksum function, the return value should be the calculated checksum of the data.
 
     Function signature:  <function_name>(data_bytes). Returns a number represented as a bytes type.
 
