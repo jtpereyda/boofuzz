@@ -8,7 +8,7 @@ from boofuzz import *
 
 
 def insert_questions(target, fuzz_data_logger, session, node, edge, *args, **kwargs):
-    #print(node.names)
+    # print(node.names)
     node.names["query.Questions"].value = 1 + node.names["query.queries"].current_reps
     node.names["query.Authority"].value = 1 + node.names["query.auth_nameservers"].current_reps
 
