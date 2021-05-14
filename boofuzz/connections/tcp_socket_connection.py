@@ -115,8 +115,6 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
 
         try:
             data = self._sock.recv(max_bytes)
-            if len(data) == 0:
-                raise exception.BoofuzzTargetConnectionShutdown()
         except socket.timeout:
             data = b""
         except socket.error as e:

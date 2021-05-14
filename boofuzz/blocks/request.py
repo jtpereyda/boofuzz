@@ -25,7 +25,6 @@ class Request(FuzzableBlock, Node):
         FuzzableBlock.__init__(self, name=name, request=self)
         Node.__init__(self)
         self.label = name  # node label for graph rendering.
-        self._name = name
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
         self.callbacks = collections.defaultdict(list)
