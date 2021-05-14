@@ -23,7 +23,7 @@ class Request(FuzzableBlock, Node):
 
     def __init__(self, name=None, children=None):
         FuzzableBlock.__init__(self, name=name, request=self)
-        Node.__init__(self)
+        Node.__init__(self, node_id=name)
         self.label = name  # node label for graph rendering.
         self.stack = []  # the request stack.
         self.block_stack = []  # list of open blocks, -1 is last open block.
@@ -67,8 +67,6 @@ class Request(FuzzableBlock, Node):
     @name.setter
     def name(self, name):
         self._name = name
-
-    id = name  # alias id to support Node superclass
 
     @property
     def fuzzable(self):
