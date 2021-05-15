@@ -5,6 +5,7 @@ from .byte import Byte
 from .bytes import Bytes
 from .delim import Delim
 from .dword import DWord
+from .float import Float
 from .from_file import FromFile
 from .group import Group
 from .mirror import Mirror
@@ -22,6 +23,7 @@ __all__ = [
     "Bytes",
     "Delim",
     "DWord",
+    "Float",
     "FromFile",
     "Group",
     "Mirror",
