@@ -23,7 +23,7 @@ from .utils.debugger_thread_simple import DebuggerThreadSimple
 
 if platform.system() != "Windows":
     from .utils.debugger_thread_qemu import DebuggerThreadQemu
-from .utils import debugger_thread_qemu
+    from .utils import debugger_thread_qemu
 
 temp_static_session = None
 temp_static_procmon = None
