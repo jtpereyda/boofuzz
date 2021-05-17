@@ -4,8 +4,7 @@ import sys
 import threading
 import time
 from io import open
-import impacket
-import impacket.ImpactDecoder
+import impacket.ImpactDecoder  # pytype: disable=import-error
 
 import netifaces as ni
 

@@ -8,8 +8,9 @@ from boofuzz import *
 
 
 def insert_questions(target, fuzz_data_logger, session, node, edge, *args, **kwargs):
-    node.names["Questions"].value = 1 + node.names["queries"].current_reps
-    node.names["Authority"].value = 1 + node.names["auth_nameservers"].current_reps
+    # print(node.names)
+    node.names["query.Questions"].value = 1 + node.names["query.queries"].current_reps
+    node.names["query.Authority"].value = 1 + node.names["query.auth_nameservers"].current_reps
 
 
 s_initialize("query")
@@ -30,7 +31,7 @@ if s_block_start("query"):
     s_block_end()
     s_repeat("name_chunk", min_reps=2, max_reps=4, step=1, fuzzable=True, name="aName")
 
-    s_group("end", values=["\x00", "\xc0\xb0"])  # very limited pointer fuzzing
+    s_group("end", values=[b"\x00", b"\xc0\xb0"])  # very limited pointer fuzzing
     s_word(0xC, name="Type", endian=">")
     s_word(0x8001, name="Class", endian=">")
 s_block_end()
@@ -46,7 +47,7 @@ if s_block_start("auth_nameserver"):
         s_block_end()
     s_block_end()
     s_repeat("name_chunk_auth", min_reps=2, max_reps=4, step=1, fuzzable=True, name="aName_auth")
-    s_group("end_auth", values=["\x00", "\xc0\xb0"])  # very limited pointer fuzzing
+    s_group("end_auth", values=[b"\x00", b"\xc0\xb0"])  # very limited pointer fuzzing
 
     s_word(0xC, name="Type_auth", endian=">")
     s_word(0x8001, name="Class_auth", endian=">")

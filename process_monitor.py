@@ -4,7 +4,7 @@ from __future__ import print_function
 import click
 
 from boofuzz.constants import DEFAULT_PROCMON_PORT
-from boofuzz.utils.debugger_thread_pydbg import DebuggerThreadPydbg
+from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 
 
@@ -13,7 +13,7 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
         host="0.0.0.0",
         port=port,
         crash_filename=crash_bin,
-        debugger_class=DebuggerThreadPydbg,
+        debugger_class=DebuggerThreadSimple,
         proc_name=proc_name,
         pid_to_ignore=ignore_pid,
         level=log_level,
