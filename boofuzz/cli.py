@@ -20,6 +20,7 @@ from .helpers import parse_target
 from .monitors import ProcessMonitor
 from .utils.process_monitor_local import ProcessMonitorLocal
 from .utils.debugger_thread_simple import DebuggerThreadSimple
+
 if platform.system() != "Windows":
     from .utils.debugger_thread_qemu import DebuggerThreadQemu
 from .utils import debugger_thread_qemu
