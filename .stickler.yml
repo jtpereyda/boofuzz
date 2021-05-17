@@ -6,6 +6,7 @@ linters:
     config: ./pyproject.toml
     fixer: true
   flake8:
+    python: 3
     config: ./setup.cfg
     fixer: true
   pytype:
