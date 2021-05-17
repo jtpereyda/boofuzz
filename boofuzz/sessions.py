@@ -1822,13 +1822,12 @@ class Session(pgraph.Graph):
 
             self._pre_send(target)
 
+            protocol_session = ProtocolSession()
             for e in mutation_context.message_path[:-1]:
                 prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
-                protocol_session = ProtocolSession(
-                    previous_message=prev_node,
-                    current_message=node,
-                )
+                protocol_session.previous_message = prev_node
+                protocol_session.current_message = node
                 mutation_context.protocol_session = protocol_session
                 callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
@@ -1836,10 +1835,8 @@ class Session(pgraph.Graph):
 
             prev_node = self.nodes[mutation_context.message_path[-1].src]
             node = self.nodes[mutation_context.message_path[-1].dst]
-            protocol_session = ProtocolSession(
-                previous_message=prev_node,
-                current_message=node,
-            )
+            protocol_session.previous_message = prev_node
+            protocol_session.current_message = node
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
                 node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
