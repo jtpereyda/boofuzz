@@ -340,11 +340,11 @@ class SessionInfo(object):
 
     @property
     def queue_upcoming(self):
-        return 0
+        return []
 
     @property
     def queue_covered(self):
-        return 0
+        return []
 
 
 class WebApp(object):
