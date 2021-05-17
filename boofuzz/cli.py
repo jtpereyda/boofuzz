@@ -107,7 +107,9 @@ def fuzz(
 ):
     if qemu:
         if platform.system() == "Windows":
-            print("error: --qemu requires System V interface and is not currently supported on Windows", file=sys.stderr)
+            print(
+                "error: --qemu requires System V interface and is not currently supported on Windows", file=sys.stderr
+            )
             sys.exit(1)
         if qemu_path is not None:
             debugger_thread_qemu.QEMU_PATH = qemu_path
