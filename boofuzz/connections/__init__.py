@@ -5,6 +5,7 @@ from .iserial_like import ISerialLike
 from .itarget_connection import ITargetConnection
 from .raw_l2_socket_connection import RawL2SocketConnection
 from .raw_l3_socket_connection import RawL3SocketConnection
+from .ip_socket_connection import IPSocketConnection
 from .serial_connection import SerialConnection
 from .serial_connection_low_level import SerialConnectionLowLevel
 from .socket_connection import SocketConnection
@@ -20,6 +21,7 @@ __all__ = [
     "ITargetConnection",
     "RawL2SocketConnection",
     "RawL3SocketConnection",
+    "IPSocketConnection",
     "SerialConnection",
     "SerialConnectionLowLevel",
     "SocketConnection",

@@ -406,11 +406,10 @@ class Session(pgraph.Graph):
                                               Set to 0 to save after every test case (high disk I/O!). Default 0.
         receive_data_after_each_request (bool): If True, Session will attempt to receive a reply after transmitting
                                                 each non-fuzzed node. Default True.
-        check_data_received_each_request (bool): If True, Session will verify that some data has
-                                                 been received after transmitting each non-fuzzed node, and if not,
-                                                 register a failure. If False, this check will not be performed. Default
-                                                 False. A receive attempt is still made unless
-                                                 receive_data_after_each_request is False.
+        check_data_received_each_request (bool): If True, Session will verify that some data has been received after
+                                                 transmitting each node, and if not, register a failure. If False, this
+                                                 check will not be performed. Default False. A receive attempt is still
+                                                 made unless receive_data_after_each_request is False.
         receive_data_after_fuzz (bool): If True, Session will attempt to receive a reply after transmitting
                                         a fuzzed message. Default False.
         ignore_connection_reset (bool): Log ECONNRESET errors ("Target connection reset") as "info" instead of
@@ -1130,9 +1129,14 @@ class Session(pgraph.Graph):
                     self._fuzz_data_logger.log_check("Verify some data was received from the target.")
                     if not self.last_recv:
                         # Assume a crash?
-                        raise BoofuzzFailure(message="Nothing received from target.")
+                        raise BoofuzzFailure(message="The target closed the connection.")
                     else:
                         self._fuzz_data_logger.log_pass("Some data received from target.")
+        except exception.BoofuzzTargetConnectionTimeout:
+            if self._check_data_received_each_request:
+                raise BoofuzzFailure(message=constants.ERR_CONN_TIMEOUT)
+            else:
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_TIMEOUT)
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
@@ -1185,10 +1189,22 @@ class Session(pgraph.Graph):
             else:
                 raise BoofuzzFailure(str(e))
 
-        received = b""
         try:  # recv
             if self._receive_data_after_fuzz:
-                received = self.targets[0].recv()
+                self.last_recv = self.targets[0].recv()
+
+                if self._check_data_received_each_request:
+                    self._fuzz_data_logger.log_check("Verify some data was received from the target.")
+                    if not self.last_recv:
+                        # Assume a crash?
+                        raise BoofuzzFailure(message="The target closed the connection.")
+                    else:
+                        self._fuzz_data_logger.log_pass("Some data received from target.")
+        except exception.BoofuzzTargetConnectionTimeout:
+            if self._check_data_received_each_request:
+                raise BoofuzzFailure(message=constants.ERR_CONN_TIMEOUT)
+            else:
+                self._fuzz_data_logger.log_info(constants.ERR_CONN_TIMEOUT)
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
@@ -1207,7 +1223,6 @@ class Session(pgraph.Graph):
             else:
                 self._fuzz_data_logger.log_fail(str(e))
                 raise BoofuzzFailure(str(e))
-        self.last_recv = received
 
     def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
         app.session = self
