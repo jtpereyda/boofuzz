@@ -29,6 +29,8 @@ ERR_CONN_ABORTED = (
 
 ERR_CONN_RESET = "Target connection reset."
 
+ERR_CONN_TIMEOUT = "Target connection timed out."
+
 ERR_CONN_RESET_FAIL = "Target connection reset -- considered a failure case when triggered from post_send"
 
 ERR_CALLBACK_FUNC = "A custom {func_name} callback function raised an uncought error.\n"

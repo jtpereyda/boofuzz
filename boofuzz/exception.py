@@ -44,6 +44,10 @@ class BoofuzzTargetConnectionAborted(BoofuzzError):
     socket_errmsg = attr.ib()
 
 
+class BoofuzzTargetConnectionTimeout(BoofuzzError):
+    pass
+
+
 class BoofuzzNoSuchTestCase(BoofuzzError):
     pass
 

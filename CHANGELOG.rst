@@ -13,10 +13,15 @@ Features
 - Implemented visual request-graph rendering functions for Session
 - Added to web UIL: runtime, exec speed, current test case name.
 - Added simple custom checksum and example usage.
+- Added `IPSocketConnection` for working with protocol on top of IP.
 
 Fixes
 ^^^^^
 - Clarified Checksum() data for custom checksum function.
+- Socket Connections no longer return b"" on timeout but raise `BoofuzzTargetConnectionTimeout`.
+- When the target closes the connection, b"" is returned.
+- With session option check_data_received_each_request enabled, any socket error or close is handles as a test case failure.
+  Before this was only checked on non-fuzzed requests and is now checked on fuzzed requests too.
 
 v0.3.0
 ------
