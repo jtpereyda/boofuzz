@@ -33,7 +33,7 @@ class IPSocketConnection(base_socket_connection.BaseSocketConnection):
         ip_proto=socket.IPPROTO_RAW,
         send_timeout=5.0,
         recv_timeout=5.0,
-        validate_sender_address=True
+        validate_sender_address=True,
     ):
         super(IPSocketConnection, self).__init__(send_timeout, recv_timeout)
 
@@ -123,8 +123,13 @@ class IPSocketConnection(base_socket_connection.BaseSocketConnection):
             elif e.errno in [errno.ECONNRESET, errno.ENETRESET, errno.ETIMEDOUT, errno.EPIPE]:
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno in [errno.EINVAL]:
-                raise_(exception.BoofuzzError("Invalid argument in sendto(). Make sure to provide a valid IP header in "
-                                              "case of IPPROTO_RAW"), None, sys.exc_info()[2])
+                raise_(
+                    exception.BoofuzzError(
+                        "Invalid argument in sendto(). Make sure to provide a valid IP header in " "case of IPPROTO_RAW"
+                    ),
+                    None,
+                    sys.exc_info()[2],
+                )
             else:
                 raise
 
