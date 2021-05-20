@@ -205,13 +205,13 @@ class String(Fuzzable):
         self._static_num_mutations = None
         self.random_indices = {}
 
-        random.seed(0)  # We want constant random numbers to generate reproducible test cases
+        local_random = random.Random(0)  # We want constant random numbers to generate reproducible test cases
         previous_length = 0
         # For every length add a random number of random indices to the random_indices dict. Prevent duplicates by
         # adding only indices in between previous_length and current length.
         for length in self._long_string_lengths:
-            self.random_indices[length] = random.sample(
-                range(previous_length, length), random.randint(1, self._long_string_lengths[0])
+            self.random_indices[length] = local_random.sample(
+                range(previous_length, length), local_random.randint(1, self._long_string_lengths[0])
             )
             previous_length = length
 
