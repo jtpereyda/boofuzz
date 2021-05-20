@@ -55,8 +55,7 @@ class RandomData(Fuzzable):
             str: Mutations
         """
 
-        # TODO use a non-zero seed (once each run has its own seed)
-        local_random = random.Random(0)
+        local_random = random.Random(0)  # We want constant random numbers to generate reproducible test cases
 
         for i in range(0, self.get_num_mutations()):
             # select a random length for this string.
