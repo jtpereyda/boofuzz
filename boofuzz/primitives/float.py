@@ -36,7 +36,7 @@ class Float(Fuzzable):
         seed=None,
         encode_as_ieee_754=False,
         *args,
-        **kwargs,
+        **kwargs
     ):
 
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
