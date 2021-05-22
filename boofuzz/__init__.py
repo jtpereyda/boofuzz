@@ -90,6 +90,7 @@ __all__ = [
     "EventHook",
     "exception",
     "FileConnection",
+    "Float",
     "FromFile",
     "Fuzzable",
     "FuzzableBlock",
