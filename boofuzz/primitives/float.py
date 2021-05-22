@@ -1,4 +1,5 @@
 import random
+import struct
 
 from ..fuzzable import Fuzzable
 
@@ -20,10 +21,13 @@ class Float(Fuzzable):
     :param max_mutations: Total number of mutations for this individual primitive, defaults to 1000 
     :type seed: int or str or bytes or bytearray
     :param seed: Set random.seed() with the given seed for reproducible results
+    :type encode_as_ieee_754: bool, optional
+    :param encode_as_ieee_754: Encode the float value as IEEE 754 floating point
     """
 
     def __init__(self, name=None, default_value: float = 0.0, s_format: str = '.1f', f_min: float = 0.0,
-                 f_max: float = 100.0, max_mutations: int = 1000, seed=None, *args, **kwargs):
+                 f_max: float = 100.0, max_mutations: int = 1000, seed=None, encode_as_ieee_754: bool = False, *args,
+                 **kwargs):
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
 
         self.s_format = s_format
@@ -31,6 +35,7 @@ class Float(Fuzzable):
         self.f_max = f_max
         self.max_mutations = max_mutations
         self.seed = seed
+        self.encode_as_ieee_754 = encode_as_ieee_754
 
     def mutations(self, default_value: float):
         last_val = None
@@ -51,7 +56,19 @@ class Float(Fuzzable):
             yield current_val
 
     def encode(self, value, mutation_context=None):
+        if self.encode_as_ieee_754:
+            value = self.__float_to_integer(value)
+            value = self.__integer_to_binary(value)
+
         return value.encode()
+
+    @staticmethod
+    def __float_to_integer(value: float):
+        return sum(b << 8 * i for i, b in enumerate(struct.pack('f', value)))
+
+    @staticmethod
+    def __integer_to_binary(value: int, bit_length: int = 32):
+        return bin(value).replace('0b', '').rjust(bit_length, '0')
 
     def num_mutations(self, default_value):
         return self.max_mutations
