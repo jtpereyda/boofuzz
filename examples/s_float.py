@@ -37,9 +37,7 @@ def define_floats(session):
     s_static(",")
 
     # Creates a float, with following format: xxxx.xx (fills in leading zeros)
-    s_float(
-        15.0, s_format="07.2f", f_min=0.0, f_max=100.0, max_mutations=10, fuzzable=True, name="float_leading_zeros"
-    )
+    s_float(15.0, s_format="07.2f", f_min=0.0, f_max=100.0, max_mutations=10, fuzzable=True, name="float_leading_zeros")
     s_static(",")
 
     # Creates a float encoded as IEEE 754 floating point

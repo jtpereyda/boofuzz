@@ -59,7 +59,7 @@ class Float(Fuzzable):
             else:
                 current_val = random.uniform(self.f_min, self.f_max)
 
-            str_format = '%' + self.s_format
+            str_format = "%" + self.s_format
             current_val = str_format % float(current_val)
 
             if last_val == current_val:
