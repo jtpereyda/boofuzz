@@ -25,16 +25,19 @@ class Float(Fuzzable):
     :param encode_as_ieee_754: Encode the float value as IEEE 754 floating point
     """
 
-    def __init__(self,
-                 name=None,
-                 default_value: float = 0.0,
-                 s_format: str = '.1f',
-                 f_min: float = 0.0,
-                 f_max: float = 100.0,
-                 max_mutations: int = 1000,
-                 seed=None,
-                 encode_as_ieee_754: bool = False, *args,
-                 **kwargs):
+    def __init__(
+        self,
+        name=None,
+        default_value: float = 0.0,
+        s_format: str = ".1f",
+        f_min: float = 0.0,
+        f_max: float = 100.0,
+        max_mutations: int = 1000,
+        seed=None,
+        encode_as_ieee_754: bool = False,
+        *args,
+        **kwargs,
+    ):
 
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
 
@@ -73,11 +76,11 @@ class Float(Fuzzable):
 
     @staticmethod
     def __float_to_integer(value: float):
-        return sum(b << 8 * i for i, b in enumerate(struct.pack('f', value)))
+        return sum(b << 8 * i for i, b in enumerate(struct.pack("f", value)))
 
     @staticmethod
     def __integer_to_binary(value: int, bit_length: int = 32):
-        return bin(value).replace('0b', '').rjust(bit_length, '0')
+        return bin(value).replace("0b", "").rjust(bit_length, "0")
 
     def num_mutations(self, default_value):
         return self.max_mutations
