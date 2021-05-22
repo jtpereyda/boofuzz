@@ -5,7 +5,7 @@ from ..fuzzable import Fuzzable
 
 
 class Float(Fuzzable):
-    """Primitive that generates random float values within a specific range and with a fixed format. 
+    """Primitive that generates random float values within a specific range and with a fixed format.
 
     :type name: str, optional
     :param name: Name, for referencing later.
@@ -18,16 +18,24 @@ class Float(Fuzzable):
     :type f_max: float, optional
     :param f_max: Maximal float value that can be generated while fuzzing, defaults to 100.0
     :type max_mutations: int, optional
-    :param max_mutations: Total number of mutations for this individual primitive, defaults to 1000 
+    :param max_mutations: Total number of mutations for this individual primitive, defaults to 1000
     :type seed: int or str or bytes or bytearray
     :param seed: Set random.seed() with the given seed for reproducible results
     :type encode_as_ieee_754: bool, optional
     :param encode_as_ieee_754: Encode the float value as IEEE 754 floating point
     """
 
-    def __init__(self, name=None, default_value: float = 0.0, s_format: str = '.1f', f_min: float = 0.0,
-                 f_max: float = 100.0, max_mutations: int = 1000, seed=None, encode_as_ieee_754: bool = False, *args,
+    def __init__(self,
+                 name=None,
+                 default_value: float = 0.0,
+                 s_format: str = '.1f',
+                 f_min: float = 0.0,
+                 f_max: float = 100.0,
+                 max_mutations: int = 1000,
+                 seed=None,
+                 encode_as_ieee_754: bool = False, *args,
                  **kwargs):
+
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
 
         self.s_format = s_format
@@ -48,7 +56,7 @@ class Float(Fuzzable):
             else:
                 current_val = random.uniform(self.f_min, self.f_max)
 
-            current_val = f'%{self.s_format}' % float(current_val)
+            current_val = f"%{self.s_format}" % float(current_val)
 
             if last_val == current_val:
                 continue
