@@ -792,26 +792,28 @@ def s_from_file(value="", filename=None, encoding="ascii", fuzzable=True, max_le
 
 
 def s_float(value: float = 0.0, s_format: str = ".1f", f_min: float = 0.0, f_max: float = 100.0,
-            max_mutations: int = 1000, fuzzable=True, seed=None, name=None):
+            max_mutations: int = 1000, fuzzable=True, seed=None, encode_as_ieee_754: bool = False, name=None):
     """
     Push a float onto the current block stack.
 
-    :type  value:         float
-    :param value:         (Optional, def=0.0) Default float value
-    :type  s_format:      str
-    :param s_format:      (Optional, def=".1f") Format of the float value after encoding.
-    :type f_min:          float
-    :param f_min:         (Optional, def=0.0) Min value of generated floats.
-    :type f_max:          float
-    :param f_max:         (Optional, def=100.0) Max value of generated floats.
-    :type max_mutations:  int
-    :param max_mutations: (Optional, def=1000) Total number of mutations for this individual primitive
-    :type  fuzzable:      bool
-    :param fuzzable:      (Optional, def=True) Enable/disable fuzzing of this primitive
-    :type seed:           int or str or bytes or bytearray
-    :param seed:          (Optional, def=None) Set random.seed() with the given seed for reproducible results
-    :type  name:          str
-    :param name:          (Optional, def=None) Specifying a name gives you direct access to a primitive
+    :type  value:              float
+    :param value:              (Optional, def=0.0) Default float value
+    :type  s_format:           str
+    :param s_format:           (Optional, def=".1f") Format of the float value after encoding.
+    :type f_min:               float
+    :param f_min:              (Optional, def=0.0) Min value of generated floats.
+    :type f_max:               float
+    :param f_max:              (Optional, def=100.0) Max value of generated floats.
+    :type max_mutations:       int
+    :param max_mutations:      (Optional, def=1000) Total number of mutations for this individual primitive
+    :type  fuzzable:           bool
+    :param fuzzable:           (Optional, def=True) Enable/disable fuzzing of this primitive
+    :type seed:                int or str or bytes or bytearray
+    :param seed:               (Optional, def=None) Set random.seed() with the given seed for reproducible results
+    :type encode_as_ieee_754:  bool
+    :param encode_as_ieee_754: (Optional, def=False) Enable/disable encoding as IEEE 754 float
+    :type  name:               str
+    :param name:               (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
     blocks.CURRENT.push(
         Float(
@@ -823,6 +825,7 @@ def s_float(value: float = 0.0, s_format: str = ".1f", f_min: float = 0.0, f_max
             max_mutations=max_mutations,
             fuzzable=fuzzable,
             seed=seed,
+            encode_as_ieee_754=encode_as_ieee_754,
         )
     )
 
