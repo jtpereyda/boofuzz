@@ -40,5 +40,5 @@ def define_floats(session):
     session.connect(s_get("float-test"))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
