@@ -792,15 +792,15 @@ def s_from_file(value="", filename=None, encoding="ascii", fuzzable=True, max_le
 
 
 def s_float(
-        value: float = 0.0,
-        s_format: str = ".1f",
-        f_min: float = 0.0,
-        f_max: float = 100.0,
-        max_mutations: int = 1000,
-        fuzzable=True,
-        seed=None,
-        encode_as_ieee_754: bool = False,
-        name=None
+    value: float = 0.0,
+    s_format: str = ".1f",
+    f_min: float = 0.0,
+    f_max: float = 100.0,
+    max_mutations: int = 1000,
+    fuzzable=True,
+    seed=None,
+    encode_as_ieee_754: bool = False,
+    name=None,
 ):
     """
     Push a float onto the current block stack.
