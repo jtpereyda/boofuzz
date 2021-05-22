@@ -28,13 +28,13 @@ class Float(Fuzzable):
     def __init__(
         self,
         name=None,
-        default_value: float = 0.0,
-        s_format: str = ".1f",
-        f_min: float = 0.0,
-        f_max: float = 100.0,
-        max_mutations: int = 1000,
+        default_value=0.0,
+        s_format=".1f",
+        f_min=0.0,
+        f_max=100.0,
+        max_mutations=1000,
         seed=None,
-        encode_as_ieee_754: bool = False,
+        encode_as_ieee_754=False,
         *args,
         **kwargs,
     ):
@@ -48,7 +48,7 @@ class Float(Fuzzable):
         self.seed = seed
         self.encode_as_ieee_754 = encode_as_ieee_754
 
-    def mutations(self, default_value: float):
+    def mutations(self, default_value):
         last_val = None
         if self.seed is not None:
             random.seed(self.seed)
@@ -76,11 +76,11 @@ class Float(Fuzzable):
         return value.encode()
 
     @staticmethod
-    def __float_to_integer(value: float):
+    def __float_to_integer(value):
         return sum(b << 8 * i for i, b in enumerate(struct.pack("f", value)))
 
     @staticmethod
-    def __integer_to_binary(value: int, bit_length: int = 32):
+    def __integer_to_binary(value, bit_length=32):
         return bin(value).replace("0b", "").rjust(bit_length, "0")
 
     def num_mutations(self, default_value):
