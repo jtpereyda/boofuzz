@@ -57,6 +57,7 @@ class Float(Fuzzable):
 
     def encode(self, value, mutation_context=None):
         if self.encode_as_ieee_754:
+            value = float(value)
             value = self.__float_to_integer(value)
             value = self.__integer_to_binary(value)
 
