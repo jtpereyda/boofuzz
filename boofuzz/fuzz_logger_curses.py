@@ -18,21 +18,9 @@ import signal
 import threading
 
 from math import *
+from shutil import get_terminal_size
 from . import helpers
 from . import ifuzz_logger_backend
-
-if sys.version_info >= (3, 3):
-    from shutil import get_terminal_size
-else:
-    try:
-        from shutil_backports import get_terminal_size
-    except ImportError:
-        # Allow fuzz_logger_curses to be imported when shutil_backports is not available for install. Will fallback to a
-        # static-sized console window, but warn the user so they can correct the issue.
-        def get_terminal_size():
-            return [130, 40]
-
-        warnings.warn("Console GUI will not resize properly. Install shutil_backports for full support.", UserWarning)
 
 COLOR_PAIR_WHITE = 1
 COLOR_PAIR_CYAN = 2
@@ -423,8 +411,9 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 def _progess_bar(current, total, width):
     try:
         percent = current / total
-    except ZeroDivisionError:
+    except (ZeroDivisionError, TypeError):
         percent = 0
+        total = 0
     title_str = "{:7d} of {:7d} ".format(current, total)
     percent_str = " {:7.3f}%".format(percent * 100)
     bar_len = width - 4 - len(title_str) - len(percent_str)

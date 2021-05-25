@@ -54,17 +54,20 @@ class RandomData(Fuzzable):
         Yields:
             str: Mutations
         """
+
+        local_random = random.Random(0)  # We want constant random numbers to generate reproducible test cases
+
         for i in range(0, self.get_num_mutations()):
             # select a random length for this string.
             if not self.step:
-                length = random.randint(self.min_length, self.max_length)
+                length = local_random.randint(self.min_length, self.max_length)
             # select a length function of the mutant index and the step.
             else:
                 length = self.min_length + i * self.step
 
             value = b""
             for _ in xrange(length):
-                value += struct.pack("B", random.randint(0, 255))
+                value += struct.pack("B", local_random.randint(0, 255))
             yield value
 
     def encode(self, value, mutation_context):

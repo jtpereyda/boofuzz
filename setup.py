@@ -66,7 +66,6 @@ setup(
     package_data={"boofuzz.web": ["static/*", "static/*/*", "templates/*", "templates/*/*"]},
     install_requires=[
         "attrs",
-        "backports.shutil_get_terminal_size",
         "click",
         "colorama",
         "Flask",

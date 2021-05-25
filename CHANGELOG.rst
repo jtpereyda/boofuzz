@@ -17,6 +17,7 @@ Features
 Fixes
 ^^^^^
 - Clarified Checksum() data for custom checksum function.
+- String and RandomData primitives now use a local and independent instance of random
 
 v0.3.0
 ------
