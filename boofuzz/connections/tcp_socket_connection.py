@@ -115,8 +115,8 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
 
         try:
             data = self._sock.recv(max_bytes)
-        except socket.timeout:
-            data = b""
+        except socket.timeout as e:
+            raise exception.BoofuzzTargetTimeout(socket_errno=e.errno, socket_errmsg=e.strerror)
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(
@@ -127,7 +127,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
             elif (e.errno == errno.ECONNRESET) or (e.errno == errno.ENETRESET) or (e.errno == errno.ETIMEDOUT):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
-                data = b""
+                raise exception.BoofuzzTargetTimeout(socket_errno=e.errno, socket_errmsg=e.strerror)
             else:
                 raise
 
