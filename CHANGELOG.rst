@@ -17,6 +17,7 @@ Features
 - Add s_float to push Float primitives to the current block
 - Add an example for s_float/Float usage
 - Add option to encode Floats as IEEE 754 floating point numbers
+- Add option to set endianness of IEEE 754 floating point numbers
 
 Fixes
 ^^^^^

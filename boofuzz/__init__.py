@@ -800,6 +800,7 @@ def s_float(
     fuzzable=True,
     seed=None,
     encode_as_ieee_754=False,
+    endian='big',
     name=None,
 ):
     """
@@ -821,6 +822,8 @@ def s_float(
     :param seed:               (Optional, def=None) Set random.seed() with the given seed for reproducible results
     :type encode_as_ieee_754:  bool
     :param encode_as_ieee_754: (Optional, def=False) Enable/disable encoding as IEEE 754 float
+    :type endian:              str
+    :param endian:             (Optional, def='big') Set the endianness for IEEE 754 float
     :type  name:               str
     :param name:               (Optional, def=None) Specifying a name gives you direct access to a primitive
     """
@@ -835,6 +838,7 @@ def s_float(
             fuzzable=fuzzable,
             seed=seed,
             encode_as_ieee_754=encode_as_ieee_754,
+            endian=endian,
         )
     )
 

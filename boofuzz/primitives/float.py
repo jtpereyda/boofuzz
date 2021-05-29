@@ -23,20 +23,23 @@ class Float(Fuzzable):
     :param seed: Set random.seed() with the given seed for reproducible results
     :type encode_as_ieee_754: bool, optional
     :param encode_as_ieee_754: Encode the float value as IEEE 754 floating point
+    :type endian: str, optional
+    :param endian: Change the endianness of IEEE 754 float point representation, defaults to big endian
     """
 
     def __init__(
-        self,
-        name=None,
-        default_value=0.0,
-        s_format=".1f",
-        f_min=0.0,
-        f_max=100.0,
-        max_mutations=1000,
-        seed=None,
-        encode_as_ieee_754=False,
-        *args,
-        **kwargs
+            self,
+            name=None,
+            default_value=0.0,
+            s_format=".1f",
+            f_min=0.0,
+            f_max=100.0,
+            max_mutations=1000,
+            seed=None,
+            encode_as_ieee_754=False,
+            endian='big',
+            *args,
+            **kwargs
     ):
 
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
@@ -47,6 +50,7 @@ class Float(Fuzzable):
         self.max_mutations = max_mutations
         self.seed = seed
         self.encode_as_ieee_754 = encode_as_ieee_754
+        self.endian = endian
 
     def mutations(self, default_value):
         last_val = None
@@ -74,9 +78,15 @@ class Float(Fuzzable):
 
         return value.encode()
 
-    @staticmethod
-    def __convert_to_iee_754(value: float):
-        iee_value = struct.pack('>f', value)
+    def __convert_to_iee_754(self, value: float):
+        if self.endian == 'big':
+            iee_value = struct.pack('>f', value)
+        elif self.endian == 'little':
+            iee_value = struct.pack('<f', value)
+        else:
+            error_msg = "Invalid endian argument '%s'. Use 'big' or 'little'." % self.endian
+            raise ValueError(error_msg)
+
         return iee_value.hex()
 
     def num_mutations(self, default_value):
