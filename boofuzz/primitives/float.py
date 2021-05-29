@@ -76,7 +76,7 @@ class Float(Fuzzable):
 
     @staticmethod
     def __convert_to_iee_754(value: float):
-        iee_value = struct.pack('>f', value)
+        iee_value = struct.pack(">f", value)
         return iee_value.hex()
 
     def num_mutations(self, default_value):
