@@ -28,18 +28,18 @@ class Float(Fuzzable):
     """
 
     def __init__(
-            self,
-            name=None,
-            default_value=0.0,
-            s_format=".1f",
-            f_min=0.0,
-            f_max=100.0,
-            max_mutations=1000,
-            seed=None,
-            encode_as_ieee_754=False,
-            endian='big',
-            *args,
-            **kwargs
+        self,
+        name=None,
+        default_value=0.0,
+        s_format=".1f",
+        f_min=0.0,
+        f_max=100.0,
+        max_mutations=1000,
+        seed=None,
+        encode_as_ieee_754=False,
+        endian="big",
+        *args,
+        **kwargs
     ):
 
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
@@ -79,10 +79,10 @@ class Float(Fuzzable):
         return value.encode()
 
     def __convert_to_iee_754(self, value: float):
-        if self.endian == 'big':
-            iee_value = struct.pack('>f', value)
-        elif self.endian == 'little':
-            iee_value = struct.pack('<f', value)
+        if self.endian == "big":
+            iee_value = struct.pack(">f", value)
+        elif self.endian == "little":
+            iee_value = struct.pack("<f", value)
         else:
             error_msg = "Invalid endian argument '%s'. Use 'big' or 'little'." % self.endian
             raise ValueError(error_msg)

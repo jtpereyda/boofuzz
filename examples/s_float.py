@@ -41,12 +41,13 @@ def define_floats(session):
     s_static(",")
 
     # Creates a float encoded as IEEE 754 floating point (big endian)
-    s_float(-12000.25, max_mutations=10, fuzzable=True, encode_as_ieee_754=True, endian='big', name="float_ieee_754")
+    s_float(-12000.25, max_mutations=10, fuzzable=True, encode_as_ieee_754=True, endian="big", name="float_ieee_754")
     s_static(",")
 
     # Creates a float encoded as IEEE 754 floating point (little endian)
-    s_float(-12000.25, max_mutations=10, fuzzable=True, encode_as_ieee_754=True, endian='little',
-            name="ieee_little_endian")
+    s_float(
+        -12000.25, max_mutations=10, fuzzable=True, encode_as_ieee_754=True, endian="little", name="ieee_little_endian"
+    )
     s_static("\r\n")
 
     session.connect(s_get("float-test"))

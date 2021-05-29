@@ -800,7 +800,7 @@ def s_float(
     fuzzable=True,
     seed=None,
     encode_as_ieee_754=False,
-    endian='big',
+    endian="big",
     name=None,
 ):
     """
