@@ -18,6 +18,7 @@ Fixes
 ^^^^^
 - Clarified Checksum() data for custom checksum function.
 - String and RandomData primitives now use a local and independent instance of random
+- The minimum supported Python version is now 3.6
 
 v0.3.0
 ------
