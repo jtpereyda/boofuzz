@@ -70,18 +70,14 @@ class Float(Fuzzable):
     def encode(self, value, mutation_context=None):
         if self.encode_as_ieee_754:
             value = float(value)
-            value = self.__float_to_integer(value)
-            value = self.__integer_to_binary(value)
+            value = self.__convert_to_iee_754(value)
 
         return value.encode()
 
     @staticmethod
-    def __float_to_integer(value):
-        return sum(b << 8 * i for i, b in enumerate(struct.pack("f", value)))
-
-    @staticmethod
-    def __integer_to_binary(value, bit_length=32):
-        return bin(value).replace("0b", "").rjust(bit_length, "0")
+    def __convert_to_iee_754(value: float):
+        iee_value = struct.pack('>f', value)
+        return iee_value.hex()
 
     def num_mutations(self, default_value):
         return self.max_mutations
