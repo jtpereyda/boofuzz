@@ -13,19 +13,14 @@ Features
 - Implemented visual request-graph rendering functions for Session
 - Added to web UIL: runtime, exec speed, current test case name.
 - Added simple custom checksum and example usage.
-
-Fixes
-^^^^^
-- Clarified Checksum() data for custom checksum function.
-
-v0.3.1
-------
-Features
-^^^^^^^^
 - Add Float primitive
 - Add s_float to push Float primitives to the current block
 - Add an example for s_float/Float usage
 - Add option to encode Floats as IEEE 754 floating point numbers
+
+Fixes
+^^^^^
+- Clarified Checksum() data for custom checksum function.
 
 v0.3.0
 ------
