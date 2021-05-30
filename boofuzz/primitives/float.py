@@ -78,7 +78,7 @@ class Float(Fuzzable):
 
         return value.encode()
 
-    def __convert_to_iee_754(self, value: float):
+    def __convert_to_iee_754(self, value):
         if self.endian == "big":
             iee_value = struct.pack(">f", value)
         elif self.endian == "little":
