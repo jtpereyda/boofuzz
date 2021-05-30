@@ -74,7 +74,7 @@ class Float(Fuzzable):
     def encode(self, value, mutation_context=None):
         if self.encode_as_ieee_754:
             value = float(value)
-            value = self.__convert_to_iee_754(value)
+            return self.__convert_to_iee_754(value)
 
         return value.encode()
 
@@ -87,7 +87,7 @@ class Float(Fuzzable):
             error_msg = "Invalid endian argument '%s'. Use 'big' or 'little'." % self.endian
             raise ValueError(error_msg)
 
-        return iee_value.hex()
+        return iee_value
 
     def num_mutations(self, default_value):
         return self.max_mutations
