@@ -13,6 +13,11 @@ Features
 - Implemented visual request-graph rendering functions for Session
 - Added to web UIL: runtime, exec speed, current test case name.
 - Added simple custom checksum and example usage.
+- Add Float primitive
+- Add s_float to push Float primitives to the current block
+- Add an example for s_float/Float usage
+- Add option to encode Floats as IEEE 754 floating point numbers
+- Add option to set endianness of IEEE 754 floating point numbers
 
 Fixes
 ^^^^^
