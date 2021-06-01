@@ -16,11 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
-        # Exclude Python 3.5 on windows (compiler missing)
-        exclude:
-          - os: windows-latest
-            python-version: 3.5
+        python-version: [3.6, 3.7, 3.8, 3.9]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

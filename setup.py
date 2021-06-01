@@ -2,7 +2,6 @@
 import ast
 import os
 import re
-import sys
 from io import open
 
 from setuptools import find_packages, setup
@@ -34,6 +33,7 @@ def get_long_description():
 
 extra_requirements = {
     "dev": [
+        "black",
         "tox",
         "flake8",
         "check-manifest",
@@ -48,10 +48,6 @@ extra_requirements = {
     "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
 }
 extra_requirements["dev"] += extra_requirements["docs"]
-
-if sys.version_info >= (3, 6):
-    extra_requirements["dev"] += ["black"]
-
 
 setup(
     name="boofuzz",
@@ -78,7 +74,7 @@ setup(
         "tornado",
     ],
     extras_require=extra_requirements,
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     entry_points={"console_scripts": ["boo=boofuzz.cli:main"]},
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -91,7 +87,6 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
