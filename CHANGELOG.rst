@@ -1,29 +1,26 @@
 Changelog
 =========
 
-Upcoming
---------
+v0.4.0
+------
 Features
 ^^^^^^^^
 - Fuzzing CLI -- Use main_helper() to use boofuzz's generic fuzzing CLI with your script.
 - Combinatorial fuzzing -- now fuzzes multiple mutations at once by default.
-- Added `Simple` primitive that uses only the specified values for fuzzing.
-- Fixed two memory leaks in the fuzz logger.
 - Test cases can now be specified and re-run by name.
-- Implemented visual request-graph rendering functions for Session
+- Implemented visual request-graph rendering functions for Session.
 - Added to web UIL: runtime, exec speed, current test case name.
 - Added simple custom checksum and example usage.
-- Add Float primitive
-- Add s_float to push Float primitives to the current block
-- Add an example for s_float/Float usage
-- Add option to encode Floats as IEEE 754 floating point numbers
-- Add option to set endianness of IEEE 754 floating point numbers
+- Added `Simple` primitive that uses only the specified values for fuzzing.
+- Added `Float` primitive with support for IEEE 754 encoding.
+- Added an example for s_float/Float usage.
 
 Fixes
 ^^^^^
-- Clarified Checksum() data for custom checksum function.
-- String and RandomData primitives now use a local and independent instance of random
-- The minimum supported Python version is now 3.6
+- Clarified documentation of custom checksum function for `Checksum` primitive.
+- String and RandomData primitives now use a local and independent instance of `random`.
+- The minimum supported Python version is now 3.6.
+- Fixed two memory leaks in the fuzz logger.
 
 v0.3.0
 ------
