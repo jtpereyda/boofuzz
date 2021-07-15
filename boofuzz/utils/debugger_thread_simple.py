@@ -156,7 +156,7 @@ class DebuggerThreadSimple(threading.Thread):
             self.exit_status = exit_info[1]  # [0] is the pid
 
         msg = ""
-        
+
         if self.exit_status:
             if os.WCOREDUMP(self.exit_status):
                 reason = "Segmentation fault"
