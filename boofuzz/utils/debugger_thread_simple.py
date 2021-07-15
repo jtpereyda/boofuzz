@@ -169,7 +169,7 @@ class DebuggerThreadSimple(threading.Thread):
             else:
                 reason = "Process died for unknown reason"
             msg += "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
-                time.strftime("%I:%M.%S"), self.exit_status if self.exit_status else "<unknown>", reason
+                time.strftime("%I:%M.%S"), self.exit_status, reason
             )
 
         outdata = None
