@@ -3,6 +3,7 @@ from .base_socket_connection import BaseSocketConnection
 from .file_connection import FileConnection
 from .iserial_like import ISerialLike
 from .itarget_connection import ITargetConnection
+from .netconf_connection import NETCONFConnection
 from .raw_l2_socket_connection import RawL2SocketConnection
 from .raw_l3_socket_connection import RawL3SocketConnection
 from .serial_connection import SerialConnection
@@ -18,6 +19,7 @@ __all__ = [
     "FileConnection",
     "ISerialLike",
     "ITargetConnection",
+    "NETCONFConnection",
     "RawL2SocketConnection",
     "RawL3SocketConnection",
     "SerialConnection",

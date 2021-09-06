@@ -46,6 +46,7 @@ extra_requirements = {
         "wheel",
     ],
     "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
+    "netconf": ["ncclient"],
 }
 extra_requirements["dev"] += extra_requirements["docs"]
 

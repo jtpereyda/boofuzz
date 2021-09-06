@@ -14,6 +14,7 @@ Features
 - Added `Simple` primitive that uses only the specified values for fuzzing.
 - Added `Float` primitive with support for IEEE 754 encoding.
 - Added an example for s_float/Float usage.
+- Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
 
 Fixes
 ^^^^^
