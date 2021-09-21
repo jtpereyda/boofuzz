@@ -56,6 +56,8 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
 
     def send(self, data):
         data = data.decode("utf-8")
+
+        # store data for later recv() calls
         self._received_data = self._conn.edit_config(target=self.datastore, config=data)
 
     def get_raw_conn(self):
