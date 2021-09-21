@@ -59,10 +59,13 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
 
     @property
     def info(self):
-        return "host: {host}, port: {port}, username: {username}, datastore: {datastore}, hostkey_verify: {hostkey_verify}".format(
-            host=self.host,
-            port=self.port,
-            username=self.username,
-            datastore=self.datastore,
-            hostkey_verify=self.hostkey_verify,
+        return (
+            "host: {host}, port: {port}, username: {username},"
+            " datastore: {datastore}, hostkey_verify: {hostkey_verify}".format(
+                host=self.host,
+                port=self.port,
+                username=self.username,
+                datastore=self.datastore,
+                hostkey_verify=self.hostkey_verify,
+            )
         )
