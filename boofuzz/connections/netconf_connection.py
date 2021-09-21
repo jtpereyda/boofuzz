@@ -1,6 +1,4 @@
-from __future__ import absolute_import
-
-from ncclient import manager
+import warnings
 
 from boofuzz.connections import itarget_connection
 
@@ -29,6 +27,14 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
         self._conn = None
 
     def open(self):
+        try:
+            from ncclient import manager # pytype: disable=import-error
+        except ImportError:
+            warnings.warn("Importing ncclient package failed. Please install it using pip.",
+                    UserWarning, stacklevel=2
+            )
+            raise
+
         self._conn = manager.connect(
             host=self.host,
             port=self.port,
