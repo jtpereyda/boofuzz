@@ -24,9 +24,9 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
         self.username = username
         self.password = password
         self.datastore = datastore
+        self.hostkey_verify = hostkey_verify
         self._received_data = None
         self._conn = None
-        self.hostkey_verify = hostkey_verify
 
     def open(self):
         self._conn = manager.connect(
