@@ -28,11 +28,9 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
 
     def open(self):
         try:
-            from ncclient import manager # pytype: disable=import-error
+            from ncclient import manager  # pytype: disable=import-error
         except ImportError:
-            warnings.warn("Importing ncclient package failed. Please install it using pip.",
-                    UserWarning, stacklevel=2
-            )
+            warnings.warn("Importing ncclient package failed. Please install it using pip.", UserWarning, stacklevel=2)
             raise
 
         self._conn = manager.connect(
