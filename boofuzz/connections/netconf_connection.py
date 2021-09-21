@@ -24,6 +24,7 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
         self.username = username
         self.password = password
         self.datastore = datastore
+        self._received_data = None
         self.conn = None
         self.hostkey_verify = hostkey_verify
 
@@ -41,13 +42,17 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
             self.conn.close_session()
 
     def recv(self, max_bytes):
-        data = self.data
-        self.data = None
+        data = self._received_data
+        self._received_data = None
+
+        if data is None:
+            data = ""
+
         return data
 
     def send(self, data):
         data = data.decode("utf-8")
-        self.data = self.conn.edit_config(target=self.datastore, config=data)
+        self._received_data = self.conn.edit_config(target=self.datastore, config=data)
 
     def get_raw_conn(self):
         return self.conn
