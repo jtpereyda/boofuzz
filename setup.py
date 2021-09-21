@@ -45,7 +45,7 @@ extra_requirements = {
         "ipaddress",
         "wheel",
     ],
-    "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"]
+    "docs": ["sphinx", "sphinx_rtd_theme", "pygments>=2.4.0"],
 }
 extra_requirements["dev"] += extra_requirements["docs"]
 
