@@ -6,6 +6,8 @@ from boofuzz.connections import itarget_connection
 class NETCONFConnection(itarget_connection.ITargetConnection):
     """
     ITargetConnection implementation for NETCONF server connections.
+    Unlike ITargetConnection, NETCONFConnection works with utf-8 encoded strings
+    instead of bytes.
 
     Args:
         host (str): IP address of NETCONF server.
@@ -46,6 +48,16 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
             self._conn.close_session()
 
     def recv(self, max_bytes):
+        """
+        Receive data from the NETCONF server.
+
+        Args:
+            max_bytes (int): Maximum number of bytes to receive. Currently ignored.
+
+        Returns:
+            str: utf-8 encoded XML response
+        """
+
         data = self._received_data
         self._received_data = None
 
@@ -55,6 +67,14 @@ class NETCONFConnection(itarget_connection.ITargetConnection):
         return data
 
     def send(self, data):
+        """
+        Send an edit-config request to the NETCONF server.
+
+        Args:
+            data (str): XML data for an XML edit_config request. Should be a
+            string with utf-8 encoding.
+        """
+
         data = data.decode("utf-8")
 
         # store data for later recv() calls
