@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Upcoming
+--------
+Features
+^^^^^^^^
+- Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
+
 v0.4.0
 ------
 Features
