@@ -60,9 +60,7 @@ class Mirror(BasePrimitive):
     @_may_recurse
     def _render_primitive(self, primitive_name):
         return (
-            self._request.resolve_name(self.context_path, primitive_name).render(
-                mutation_context=MutationContext()
-            )
+            self._request.resolve_name(self.context_path, primitive_name).render(mutation_context=MutationContext())
             if primitive_name is not None
             else None
         )

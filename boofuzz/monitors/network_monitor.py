@@ -36,19 +36,19 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         self.port = port
 
     def alive(self):
-        """ This method is forwarded to the RPC daemon. """
+        """This method is forwarded to the RPC daemon."""
         return self.__method_missing("alive")
 
     def pre_send(self, target=None, fuzz_data_logger=None, session=None):
-        """ This method is forwarded to the RPC daemon. """
+        """This method is forwarded to the RPC daemon."""
         return self.__method_missing("pre_send", session.total_mutant_index)
 
     def post_send(self, target=None, fuzz_data_logger=None, session=None):
-        """ This method is forwarded to the RPC daemon. """
+        """This method is forwarded to the RPC daemon."""
         return self.__method_missing("post_send")
 
     def retrieve_data(self):
-        """ This method is forwarded to the RPC daemon. """
+        """This method is forwarded to the RPC daemon."""
         return self.__method_missing("retrieve")
 
     def set_options(self, *args, **kwargs):
@@ -72,12 +72,12 @@ class NetworkMonitor(BaseMonitor, pedrpc.Client):
         self.server_options.update(**kwargs)
 
     def on_new_server(self, new_uuid):
-        """ Restores all set options to the RPC daemon if it has restarted since the last call. """
+        """Restores all set options to the RPC daemon if it has restarted since the last call."""
         for key, val in self.server_options.items():
             self.__hot_transmit(("set_{}".format(key), ((val,), {})))
 
     def restart_target(self, target=None, fuzz_data_logger=None, session=None):
-        """ Always returns false as this monitor cannot restart a target. """
+        """Always returns false as this monitor cannot restart a target."""
         return False
 
     def set_filter(self, new_filter):
