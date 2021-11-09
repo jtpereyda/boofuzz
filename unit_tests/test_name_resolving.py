@@ -1,5 +1,5 @@
 import pytest
-from pytest_bdd import given, scenarios, then, when
+from pytest_bdd import given, scenarios, then, when, parsers
 
 from boofuzz import *
 from boofuzz.exception import BoofuzzNameResolutionError
@@ -8,7 +8,7 @@ CONVERTERS = {
     "block_name": str,
 }
 
-scenarios("test_name_resolving.feature", example_converters=CONVERTERS)
+scenarios("test_name_resolving.feature")
 
 
 @pytest.fixture(autouse=True)
@@ -18,7 +18,7 @@ def clear_requests():
     blocks.CURRENT = None
 
 
-@given("Complex request scenario with block <name> block_name <block_name>")
+@given(parsers.parse("Complex request scenario with block {name} block_name {block_name}"), converters=CONVERTERS)
 def complex_request_scenario(context, name, block_name):
     """
     my_test_request                         [default] value
@@ -69,7 +69,7 @@ def scenario_try_render(context):
         context.exc = e
 
 
-@then("Scenario output is <result>")
+@then(parsers.parse("Scenario output is {result}"))
 def scenario_output_is(context, result):
     if result.startswith("0x"):
         result = result[2:]
