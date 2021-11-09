@@ -199,7 +199,7 @@ class Client(object):
             )
 
     def on_new_server(self, new_server):
-        """ Override this Method in a child class to be notified when the RPC server was restarted. """
+        """Override this Method in a child class to be notified when the RPC server was restarted."""
         return
 
 

@@ -16,7 +16,7 @@ class Repeater(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def start(self):
-        """ Starts the repeater. """
+        """Starts the repeater."""
         pass
 
     @abstractmethod
@@ -30,12 +30,12 @@ class Repeater(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def reset(self):
-        """ Resets the internal state of the repeater. """
+        """Resets the internal state of the repeater."""
         pass
 
     @abstractmethod
     def log_message(self):
-        """ Formats a message to output in a log file. It should contain info about your repetition."""
+        """Formats a message to output in a log file. It should contain info about your repetition."""
         pass
 
 
@@ -60,7 +60,7 @@ class TimeRepeater(Repeater):
         self._starttime = None
 
     def start(self):
-        """ Starts the timer. """
+        """Starts the timer."""
         self._starttime = time.time()
 
     def repeat(self):
@@ -68,7 +68,7 @@ class TimeRepeater(Repeater):
         return time.time() - self._starttime < self.duration
 
     def reset(self):
-        """ Resets the timer. """
+        """Resets the timer."""
         self._starttime = None
 
     def log_message(self):
