@@ -49,7 +49,7 @@ def scenario_output_is(context, value):
     assert context.output == bytes(bytearray.fromhex(value))
 
 
-@then("Output of mutation <mutation> is <result>")
+@then(parsers.parse("Output of mutation {mutation} is {result}"))
 def scenario_output_as(context, mutation, result):
     if result.startswith("0x"):
         result = result[2:]
