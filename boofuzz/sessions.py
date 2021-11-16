@@ -423,6 +423,8 @@ class Session(pgraph.Graph):
         reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
+        db_filename (str):      Filename to store sqlite db for test results and case information.
+                                        Defaults to ./boofuzz-results/{uniq_timestamp}.db
     """
 
     def __init__(
@@ -455,6 +457,7 @@ class Session(pgraph.Graph):
         ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
+        db_filename=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -485,9 +488,14 @@ class Session(pgraph.Graph):
             else:
                 fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
-        helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-")
-        self._db_filename = os.path.join(constants.RESULTS_DIR, "run-{0}.db".format(self._run_id))
+        if db_filename != None:
+            helpers.mkdir_safe(db_filename, file_included=True)
+            self._db_filename = db_filename
+        else:
+            helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
+            self._db_filename = os.path.join(constants.RESULTS_DIR, "run-{0}.db".format(self._run_id))
+
         self._db_logger = fuzz_logger_db.FuzzLoggerDb(
             db_filename=self._db_filename, num_log_cases=fuzz_db_keep_only_n_pass_cases
         )
@@ -1636,10 +1644,7 @@ class Session(pgraph.Graph):
             for e in mutation_context.message_path[:-1]:
                 prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
-                protocol_session = ProtocolSession(
-                    previous_message=prev_node,
-                    current_message=node,
-                )
+                protocol_session = ProtocolSession(previous_message=prev_node, current_message=node)
                 mutation_context.protocol_session = protocol_session
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
                 callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
@@ -1647,10 +1652,7 @@ class Session(pgraph.Graph):
 
             prev_node = self.nodes[mutation_context.message_path[-1].src]
             node = self.nodes[mutation_context.message_path[-1].dst]
-            protocol_session = ProtocolSession(
-                previous_message=prev_node,
-                current_message=node,
-            )
+            protocol_session = ProtocolSession(previous_message=prev_node, current_message=node)
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
                 node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
@@ -1711,17 +1713,11 @@ class Session(pgraph.Graph):
         if self.total_num_mutations is not None:
             self._fuzz_data_logger.log_info(
                 "Type: {0}. Case {1} of {2} overall.".format(
-                    type(self.fuzz_node.mutant).__name__,
-                    self.total_mutant_index,
-                    self.total_num_mutations,
+                    type(self.fuzz_node.mutant).__name__, self.total_mutant_index, self.total_num_mutations
                 )
             )
         else:
-            self._fuzz_data_logger.log_info(
-                "Type: {0}".format(
-                    type(self.fuzz_node.mutant).__name__,
-                )
-            )
+            self._fuzz_data_logger.log_info("Type: {0}".format(type(self.fuzz_node.mutant).__name__))
 
         try:
             self._open_connection_keep_trying(target)
@@ -1731,10 +1727,7 @@ class Session(pgraph.Graph):
             for e in mutation_context.message_path[:-1]:
                 prev_node = self.nodes[e.src]
                 node = self.nodes[e.dst]
-                protocol_session = ProtocolSession(
-                    previous_message=prev_node,
-                    current_message=node,
-                )
+                protocol_session = ProtocolSession(previous_message=prev_node, current_message=node)
                 mutation_context.protocol_session = protocol_session
                 callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
@@ -1742,10 +1735,7 @@ class Session(pgraph.Graph):
 
             prev_node = self.nodes[mutation_context.message_path[-1].src]
             node = self.nodes[mutation_context.message_path[-1].dst]
-            protocol_session = ProtocolSession(
-                previous_message=prev_node,
-                current_message=node,
-            )
+            protocol_session = ProtocolSession(previous_message=prev_node, current_message=node)
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
                 node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
