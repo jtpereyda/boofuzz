@@ -59,7 +59,7 @@ class Integer(blocks.Block):
         if not options:
             options = {}
 
-        super(Integer).__init__(name, request)
+        super(Integer, self).__init__(name, request)
 
         self.value = value
         self.options = options
