@@ -7,6 +7,10 @@ Features
 ^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
 
+Fixes
+^^^^^
+- Added type checking for arguments of `Bytes` primitive to prevent incorrect use.
+
 v0.4.0
 ------
 Features

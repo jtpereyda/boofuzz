@@ -120,6 +120,11 @@ class Bytes(Fuzzable):
     ]
 
     def __init__(self, name=None, default_value=b"", size=None, padding=b"\x00", max_len=None, *args, **kwargs):
+        if not isinstance(default_value, bytes):
+            raise TypeError("default_value must be bytes type")
+        if not isinstance(padding, bytes):
+            raise TypeError("padding must be bytes type")
+
         super(Bytes, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self.size = size
