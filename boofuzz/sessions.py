@@ -398,7 +398,8 @@ class Session(pgraph.Graph):
                                                   Default None.
         post_start_target_callbacks (list of method): Method(s) will be called after the target is started or restarted,
                                                       say, by a process monitor.
-        web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+        web_port (int or None): Port for monitoring fuzzing campaign via a web browser. Set to None to disable the web
+                                app. Default 26000.
         keep_web_open (bool):     Keep the webinterface open after session completion. Default True.
         fuzz_loggers (list of ifuzz_logger.IFuzzLogger): For saving test data and results.. Default Log to STDOUT.
         fuzz_db_keep_only_n_pass_cases (int): Minimize disk usage by only saving passing test cases
@@ -1054,9 +1055,10 @@ class Session(pgraph.Graph):
 
     def server_init(self):
         """Called by fuzz() to initialize variables, web interface, etc."""
-        if not self.web_interface_thread.is_alive():
-            # spawn the web interface.
-            self.web_interface_thread.start()
+        if self.web_port is not None:
+            if not self.web_interface_thread.is_alive():
+                # spawn the web interface.
+                self.web_interface_thread.start()
 
     def _callback_current_node(self, node, edge, test_case_context):
         """Execute callback preceding current node.
@@ -1362,8 +1364,7 @@ class Session(pgraph.Graph):
         Returns:
             None
         """
-        if self.web_port is not None:
-            self.server_init()
+        self.server_init()
 
         try:
             self._start_target(self.targets[0])

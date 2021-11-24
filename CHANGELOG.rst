@@ -7,6 +7,11 @@ Features
 ^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
 
+Fixes
+^^^^^
+- Fixed check for when to enable the web app.
+- Documented the possibility to disable the web app.
+
 v0.4.0
 ------
 Features
