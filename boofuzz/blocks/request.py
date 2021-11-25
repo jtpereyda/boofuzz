@@ -55,7 +55,7 @@ class Request(FuzzableBlock, Node):
 
             if len(block_stack) == 0:
                 self.stack.append(item)
-            if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+            if isinstance(item, FuzzableBlock):
                 block_stack.append(item)
                 self._initialize_children(child_nodes=item.stack, block_stack=block_stack)
                 block_stack.pop()
