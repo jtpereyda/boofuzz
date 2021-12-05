@@ -6,6 +6,12 @@ Upcoming
 Features
 ^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
+- Add support and tests for Python 3.10
+
+Fixes
+^^^^^
+- Fixed check for when to enable the web app.
+- Documented the possibility to disable the web app.
 
 Fixes
 ^^^^^
