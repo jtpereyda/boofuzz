@@ -79,6 +79,8 @@ Prep
 
     2. In ``docs/conf.py``.
 
+    3. Add new version to ``.github/ISSUE_TEMPLATE/2_bug_report.yml``.
+
 3. Modify CHANGELOG file for publication if needed.
 
 4. Merge release branch.

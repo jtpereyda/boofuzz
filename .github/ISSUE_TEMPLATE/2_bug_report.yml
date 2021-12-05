@@ -1,0 +1,85 @@
+name: Report a bug 🐞
+description: Create a report to help us improve
+labels: [bug]
+body:
+- type: textarea
+  attributes:
+    label: Report
+    description: What bug have you encountered?
+    placeholder: A clear and concise description of what the bug is.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: What did you expect to happen?
+    placeholder: What did you expect to happen?
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Actual behavior
+    description: Also tell us, what did you see is happen?
+    placeholder: Tell us what you see that is happening
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Steps to reproduce the problem
+    description: How can we reproduce this bug? Please walk us through it step by step.
+    value: |
+      1.
+      2.
+      3.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: boofuzz script
+    description: If possible, please provide the script or an excerpt of it. This will be automatically formatted into code, so no need for backticks.
+    render: python
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: boofuzz version
+    description: What version of boofuzz that are you running?
+    options:
+    - "0.4.0"
+    - "0.3.0"
+    - "0.2.1"
+    - "0.2.0"
+    - "0.1.6"
+    - "< 0.1.6"
+    - "Source - add commit hash"
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: Python version
+    description: What Python version are you running?
+    options:
+    - "3.10"
+    - "3.9"
+    - "3.8"
+    - "3.7"
+    - "3.6"
+    - "3.5"
+    - "Other"
+  validations:
+    required: false
+- type: dropdown
+  attributes:
+    label: Platform
+    description: What platform are you running boofuzz on?
+    options:
+    - Linux
+    - Windows
+    - macOS
+    - Other
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Anything else?
+    description: Let us know if you have anything else to share.
