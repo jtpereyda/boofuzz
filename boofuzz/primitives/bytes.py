@@ -1,5 +1,6 @@
 import functools
 import operator
+import typing
 
 from funcy import compose
 
@@ -119,11 +120,24 @@ class Bytes(Fuzzable):
         functools.partial(operator.mul, 100),
     ]
 
-    def __init__(self, name=None, default_value=b"", size=None, padding=b"\x00", max_len=None, *args, **kwargs):
-        if not isinstance(default_value, bytes):
-            raise TypeError("default_value must be bytes type")
-        if not isinstance(padding, bytes):
-            raise TypeError("padding must be bytes type")
+    def __init__(
+        self,
+        name: str = None,
+        default_value: typing.Union[bytes, memoryview] = b"",
+        size: int = None,
+        padding: typing.Union[bytes, memoryview] = b"\x00",
+        max_len: int = None,
+        *args,
+        **kwargs
+    ):
+        try:
+            memoryview(default_value)
+        except TypeError:
+            raise TypeError("default_value of Bytes must be bytes-like type")
+        try:
+            memoryview(padding)
+        except TypeError:
+            raise TypeError("padding of Bytes must be bytes-like type")
 
         super(Bytes, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
