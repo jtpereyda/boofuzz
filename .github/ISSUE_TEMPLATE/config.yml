@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question about boofuzz or discuss ideas 💬
+    url: https://github.com/jtpereyda/boofuzz/discussions/new
+    about: Discussions, questions and ideas
