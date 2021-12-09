@@ -415,12 +415,21 @@ def hex_to_hexstr(input_bytes):
     return hex_str(input_bytes) + " " + repr(input_bytes)
 
 
-def mkdir_safe(directory_name):
+def mkdir_safe(directory_name, file_included=False):
+    """Creates directory_name and subdirectories. If file_included is true, removes final element of the path"""
+    if file_included:
+        fullpath = os.path.abspath(directory_name)
+        directory_name = os.path.dirname(fullpath)
     try:
         os.makedirs(directory_name)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def path_exists(path):
+    """To avoid polluting files with import os"""
+    return os.path.exists(path)
 
 
 def get_boofuzz_version(boofuzz_class):
