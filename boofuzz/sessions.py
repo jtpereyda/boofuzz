@@ -425,7 +425,7 @@ class Session(pgraph.Graph):
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
         db_filename (str):      Filename to store sqlite db for test results and case information.
-                                        Defaults to ./boofuzz-results/{uniq_timestamp}.db
+                                Defaults to ./boofuzz-results/{uniq_timestamp}.db
     """
 
     def __init__(
