@@ -1,7 +1,6 @@
 import attr
 import collections.abc
 
-from .mutation import Mutation
 from .protocol_session import ProtocolSession
 
 

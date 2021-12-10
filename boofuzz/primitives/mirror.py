@@ -1,6 +1,5 @@
 from functools import wraps
 
-from boofuzz.mutation import Mutation
 from .base_primitive import BasePrimitive
 from .. import helpers
 from ..mutation_context import MutationContext
