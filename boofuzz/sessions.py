@@ -34,7 +34,6 @@ from boofuzz import (
     primitives,
 )
 from boofuzz.monitors import CallbackMonitor
-from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
 from boofuzz.protocol_session import ProtocolSession
 from boofuzz.web.app import app
@@ -424,6 +423,8 @@ class Session(pgraph.Graph):
         reuse_target_connection (bool): If True, only use one target connection instead of reconnecting each test case.
                                         Default False.
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
+        db_filename (str):      Filename to store sqlite db for test results and case information.
+                                Defaults to ./boofuzz-results/{uniq_timestamp}.db
     """
 
     def __init__(
@@ -456,6 +457,7 @@ class Session(pgraph.Graph):
         ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
+        db_filename=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -486,9 +488,14 @@ class Session(pgraph.Graph):
             else:
                 fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
-        helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
         self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-")
-        self._db_filename = os.path.join(constants.RESULTS_DIR, "run-{0}.db".format(self._run_id))
+        if db_filename is not None:
+            helpers.mkdir_safe(db_filename, file_included=True)
+            self._db_filename = db_filename
+        else:
+            helpers.mkdir_safe(os.path.join(constants.RESULTS_DIR))
+            self._db_filename = os.path.join(constants.RESULTS_DIR, "run-{0}.db".format(self._run_id))
+
         self._db_logger = fuzz_logger_db.FuzzLoggerDb(
             db_filename=self._db_filename, num_log_cases=fuzz_db_keep_only_n_pass_cases
         )
@@ -1534,7 +1541,6 @@ class Session(pgraph.Graph):
             path.pop()
 
     def _mutations_contain_duplicate(self, mutations):
-        # print(mutations)
         names = [m.qualified_name for m in mutations]
         for name1, name2 in itertools.combinations(names, r=2):
             if name1 in name2 or name2 in name1:

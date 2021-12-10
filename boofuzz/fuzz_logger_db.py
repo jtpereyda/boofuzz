@@ -35,16 +35,23 @@ def get_time_stamp():
 
 
 class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
-    """Log fuzz data in a sqlite database file."""
+    """
+    Log fuzz data in a sqlite database file.
+    Using an existing database requires more graceful exits to prevent case number duplication.
+    """
 
     def __init__(self, db_filename, num_log_cases=0):
+        # Check if a db exists before the connect leaves an "empty" file behind.
+        db_already_exist = helpers.path_exists(db_filename)
         self._database_connection = sqlite3.connect(db_filename, check_same_thread=False)
         self._db_cursor = self._database_connection.cursor()
-        self._db_cursor.execute("""CREATE TABLE cases (name text, number integer, timestamp TEXT)""")
-        self._db_cursor.execute(
-            """CREATE TABLE steps (test_case_index integer, type text, description text, data blob,
-                                   timestamp TEXT, is_truncated BOOLEAN)"""
-        )
+
+        if not db_already_exist:
+            self._db_cursor.execute("""CREATE TABLE cases (name text, number integer, timestamp TEXT)""")
+            self._db_cursor.execute(
+                """CREATE TABLE steps (test_case_index integer, type text, description text, data blob,
+                                    timestamp TEXT, is_truncated BOOLEAN)"""
+            )
 
         self._current_test_case_index = 0
 

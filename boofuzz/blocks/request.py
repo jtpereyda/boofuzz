@@ -1,7 +1,5 @@
 import collections
 
-from .aligned import Aligned
-from .block import Block
 from .. import exception
 from ..constants import ERR_NAME_NO_RESOLVE, ERR_NAME_NOT_FOUND, ERR_NAME_TOO_MANY
 from ..exception import BoofuzzNameResolutionError
@@ -55,7 +53,7 @@ class Request(FuzzableBlock, Node):
 
             if len(block_stack) == 0:
                 self.stack.append(item)
-            if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+            if isinstance(item, FuzzableBlock):
                 block_stack.append(item)
                 self._initialize_children(child_nodes=item.stack, block_stack=block_stack)
                 block_stack.pop()
@@ -115,7 +113,7 @@ class Request(FuzzableBlock, Node):
             self.block_stack[-1].push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+        if isinstance(item, FuzzableBlock):
             self.block_stack.append(item)
 
     def _generate_context_path(self, block_stack):
@@ -145,7 +143,7 @@ class Request(FuzzableBlock, Node):
 
         for item in stack:
             # if the item is a block, step into it and continue looping.
-            if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+            if isinstance(item, FuzzableBlock):
                 for stack_item in self.walk(item.stack):
                     yield stack_item
             else:

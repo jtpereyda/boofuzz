@@ -7,11 +7,13 @@ Features
 ^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
 - Add support and tests for Python 3.10
+- Added `Session` arg `db_filename` to modify the location of the log database.
 
 Fixes
 ^^^^^
 - Fixed check for when to enable the web app.
 - Documented the possibility to disable the web app.
+- Correctly initialize all children of a request which inherit from `FuzzableBlock`.
 
 Fixes
 ^^^^^
