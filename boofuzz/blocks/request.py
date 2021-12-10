@@ -1,7 +1,5 @@
 import collections
 
-from .aligned import Aligned
-from .block import Block
 from .. import exception
 from ..constants import ERR_NAME_NO_RESOLVE, ERR_NAME_NOT_FOUND, ERR_NAME_TOO_MANY
 from ..exception import BoofuzzNameResolutionError

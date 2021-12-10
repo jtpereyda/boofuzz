@@ -34,7 +34,6 @@ from boofuzz import (
     primitives,
 )
 from boofuzz.monitors import CallbackMonitor
-from boofuzz.mutation import Mutation
 from boofuzz.mutation_context import MutationContext
 from boofuzz.protocol_session import ProtocolSession
 from boofuzz.web.app import app
@@ -1542,7 +1541,6 @@ class Session(pgraph.Graph):
             path.pop()
 
     def _mutations_contain_duplicate(self, mutations):
-        # print(mutations)
         names = [m.qualified_name for m in mutations]
         for name1, name2 in itertools.combinations(names, r=2):
             if name1 in name2 or name2 in name1:
