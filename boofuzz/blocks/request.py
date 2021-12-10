@@ -115,7 +115,7 @@ class Request(FuzzableBlock, Node):
             self.block_stack[-1].push(item)
 
         # add the opened block to the block stack.
-        if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+        if isinstance(item, FuzzableBlock):
             self.block_stack.append(item)
 
     def _generate_context_path(self, block_stack):
@@ -145,7 +145,7 @@ class Request(FuzzableBlock, Node):
 
         for item in stack:
             # if the item is a block, step into it and continue looping.
-            if isinstance(item, Block) or isinstance(item, Aligned):  # TODO generic check here
+            if isinstance(item, FuzzableBlock):
                 for stack_item in self.walk(item.stack):
                     yield stack_item
             else:
