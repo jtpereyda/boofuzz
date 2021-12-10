@@ -13,6 +13,7 @@ Fixes
 ^^^^^
 - Fixed check for when to enable the web app.
 - Documented the possibility to disable the web app.
+- Correctly initialize all children of a request which inherit from `FuzzableBlock`.
 
 v0.4.0
 ------
