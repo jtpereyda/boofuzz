@@ -6,6 +6,8 @@ Upcoming
 Features
 ^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
+- Add support and tests for Python 3.10
+- Added `Session` arg `db_filename` to modify the location of the log database.
 
 Fixes
 ^^^^^
