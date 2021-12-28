@@ -1,5 +1,6 @@
 import functools
 import operator
+from collections.abc import ByteString
 
 from funcy import compose
 
@@ -119,7 +120,21 @@ class Bytes(Fuzzable):
         functools.partial(operator.mul, 100),
     ]
 
-    def __init__(self, name=None, default_value=b"", size=None, padding=b"\x00", max_len=None, *args, **kwargs):
+    def __init__(
+        self,
+        name: str = None,
+        default_value: bytes = b"",
+        size: int = None,
+        padding: bytes = b"\x00",
+        max_len: int = None,
+        *args,
+        **kwargs
+    ):
+        if not isinstance(default_value, ByteString):
+            raise TypeError("default_value of Bytes must be of ByteString type")
+        if not isinstance(padding, ByteString):
+            raise TypeError("padding of Bytes must be of ByteString type")
+
         super(Bytes, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self.size = size

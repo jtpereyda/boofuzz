@@ -15,6 +15,10 @@ Fixes
 - Documented the possibility to disable the web app.
 - Correctly initialize all children of a request which inherit from `FuzzableBlock`.
 
+Fixes
+^^^^^
+- Added type checking for arguments of `Bytes` primitive to prevent incorrect use.
+
 v0.4.0
 ------
 Features
