@@ -10,14 +10,14 @@ from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServ
 
 def serve_procmon(ip, port, crash_bin, proc_name, ignore_pid, log_level):
     with ProcessMonitorPedrpcServer(
-            host=ip,
-            port=port,
-            crash_filename=crash_bin,
-            debugger_class=DebuggerThreadSimple,
-            proc_name=proc_name,
-            pid_to_ignore=ignore_pid,
-            level=log_level,
-            coredump_dir=None,
+        host=ip,
+        port=port,
+        crash_filename=crash_bin,
+        debugger_class=DebuggerThreadSimple,
+        proc_name=proc_name,
+        pid_to_ignore=ignore_pid,
+        level=log_level,
+        coredump_dir=None,
     ) as servlet:
         servlet.serve_forever()
 

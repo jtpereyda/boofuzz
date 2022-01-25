@@ -168,7 +168,7 @@ class DebuggerThreadSimple(threading.Thread):
                     reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
                 else:
                     reason = default_reason
-            except AttributeError: # Windows does not support WCOREDUMP
+            except AttributeError:  # Windows does not support WCOREDUMP
                 reason = default_reason
         else:
             reason = default_reason
