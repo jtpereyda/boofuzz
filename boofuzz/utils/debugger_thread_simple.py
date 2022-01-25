@@ -152,20 +152,23 @@ class DebuggerThreadSimple(threading.Thread):
             gone, _ = psutil.wait_procs([self._psutil_proc])
             self.exit_status = gone[0].returncode
         else:
-            exit_info = os.waitpid(self.pid, 0)
-            self.exit_status = exit_info[1]  # [0] is the pid
+            # Waitpid doesn't work well on windows, switching to _process.wait()
+            self.exit_status = self._process.wait()
 
         default_reason = "Process died for unknown reason"
         if self.exit_status is not None:
-            if os.WCOREDUMP(self.exit_status):
-                reason = "Segmentation fault"
-            elif os.WIFSTOPPED(self.exit_status):
-                reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFSIGNALED(self.exit_status):
-                reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFEXITED(self.exit_status):
-                reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
-            else:
+            try:
+                if os.WCOREDUMP(self.exit_status):
+                    reason = "Segmentation fault"
+                elif os.WIFSTOPPED(self.exit_status):
+                    reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
+                elif os.WIFSIGNALED(self.exit_status):
+                    reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
+                elif os.WIFEXITED(self.exit_status):
+                    reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
+                else:
+                    reason = default_reason
+            except AttributeError: # Windows does not support WCOREDUMP
                 reason = default_reason
         else:
             reason = default_reason
@@ -210,7 +213,11 @@ class DebuggerThreadSimple(threading.Thread):
 
     def stop_target(self):
         try:
-            os.kill(self.pid, signal.SIGKILL)
+            try:
+                os.kill(self.pid, signal.SIGKILL)
+            except AttributeError:
+                # Windows does not support signal.SIGKILL
+                os.system("taskkill /F /PID:%d" % self.pid)
         except OSError as e:
             print(
                 'Error while killing process. PID: {0} errno: {1} "{2}"'.format(self.pid, e.errno, os.strerror(e.errno))
