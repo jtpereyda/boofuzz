@@ -8,28 +8,20 @@ from boofuzz.utils.debugger_thread_simple import DebuggerThreadSimple
 from boofuzz.utils.process_monitor_pedrpc_server import ProcessMonitorPedrpcServer
 
 
-def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
+def serve_procmon(ip, port, crash_bin, proc_name, ignore_pid, log_level):
     with ProcessMonitorPedrpcServer(
-        host="0.0.0.0",
-        port=port,
-        crash_filename=crash_bin,
-        debugger_class=DebuggerThreadSimple,
-        proc_name=proc_name,
-        pid_to_ignore=ignore_pid,
-        level=log_level,
-        coredump_dir=None,
+            host=ip,
+            port=port,
+            crash_filename=crash_bin,
+            debugger_class=DebuggerThreadSimple,
+            proc_name=proc_name,
+            pid_to_ignore=ignore_pid,
+            level=log_level,
+            coredump_dir=None,
     ) as servlet:
         servlet.serve_forever()
 
 
-# app.args.add_argument("-c", "--crash_bin", help='filename to serialize crash bin class to',
-#                       default='boofuzz-crash-bin', metavar='FILENAME')
-# app.args.add_argument("-i", "--ignore_pid", help='PID to ignore when searching for target process', type=int,
-#                       metavar='PID')
-# app.args.add_argument("-l", "--log_level", help='log level: default 1, increase for more verbosity', type=int,
-#                       default=1, metavar='LEVEL')
-# app.args.add_argument("-p", "--proc_name", help='process name to search for and attach to', metavar='NAME')
-# app.args.add_argument("-P", "--port", help='TCP port to bind this agent to', type=int, default=DEFAULT_PROCMON_PORT)
 @click.command()
 @click.option(
     "--crash-bin",
@@ -58,8 +50,9 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level):
 )
 @click.option("--proc-name", "--proc_name", "-p", help="process name to search for and attach to", metavar="NAME")
 @click.option("--port", "-P", help="TCP port to bind this agent to", type=int, default=DEFAULT_PROCMON_PORT)
-def go(crash_bin, ignore_pid, log_level, proc_name, port):
-    serve_procmon(port=port, crash_bin=crash_bin, proc_name=proc_name, ignore_pid=ignore_pid, log_level=log_level)
+@click.option("--ip", "-I", help="IP of the computer", type=str)
+def go(crash_bin, ignore_pid, log_level, proc_name, port, ip):
+    serve_procmon(ip, port=port, crash_bin=crash_bin, proc_name=proc_name, ignore_pid=ignore_pid, log_level=log_level)
 
 
 if __name__ == "__main__":
