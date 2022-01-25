@@ -443,6 +443,7 @@ class Session(pgraph.Graph):
         restart_callbacks=None,
         restart_threshold=None,
         restart_timeout=None,
+        restart_wait=3,
         pre_send_callbacks=None,
         post_test_case_callbacks=None,
         post_start_target_callbacks=None,
@@ -480,6 +481,7 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = restart_sleep_time
         self.restart_threshold = restart_threshold
         self.restart_timeout = restart_timeout
+        self.restart_wait = restart_wait
         if fuzz_loggers is None:
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":
@@ -1043,8 +1045,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
                     # TODO: doesn't this belong in the process monitor?
-                    self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
-                    time.sleep(3)
+                    self._fuzz_data_logger.log_info("Giving the process %d seconds to settle in" % self.restart_wait)
+                    time.sleep(self.restart_wait)
                     restarted = True
                     break
 
