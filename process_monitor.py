@@ -50,7 +50,7 @@ def serve_procmon(ip, port, crash_bin, proc_name, ignore_pid, log_level):
 )
 @click.option("--proc-name", "--proc_name", "-p", help="process name to search for and attach to", metavar="NAME")
 @click.option("--port", "-P", help="TCP port to bind this agent to", type=int, default=DEFAULT_PROCMON_PORT)
-@click.option("--ip", "-I", help="IP of the computer", type=str, default='0.0.0.0')
+@click.option("--ip", "-I", help="IP of the computer", type=str, default="0.0.0.0")
 def go(crash_bin, ignore_pid, log_level, proc_name, port, ip):
     serve_procmon(ip, port=port, crash_bin=crash_bin, proc_name=proc_name, ignore_pid=ignore_pid, log_level=log_level)
 
