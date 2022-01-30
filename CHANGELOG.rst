@@ -16,6 +16,7 @@ Fixes
 - Correctly initialize all children of a request which inherit from `FuzzableBlock`.
 - Added type checking for arguments of `Bytes` primitive to prevent incorrect use.
 - Fixed TypeError in `s_binary` initialization.
+- Remove redundant unicode strings
 
 v0.4.0
 ------
