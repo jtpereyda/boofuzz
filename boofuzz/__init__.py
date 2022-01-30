@@ -593,7 +593,7 @@ def s_binary(value, name=None):
 
         value += six.int2byte(int(pair, 16))
 
-    blocks.CURRENT.push(Static(name=name, default_value=parsed, fuzzable=False))
+    blocks.CURRENT.push(Static(name=name, default_value=parsed))
 
 
 def s_delim(value=" ", fuzzable=True, name=None):
