@@ -1,10 +1,6 @@
-from __future__ import absolute_import
-
 import errno
 import socket
 import sys
-
-from future.utils import raise_
 
 from boofuzz import exception
 from boofuzz.connections import base_socket_connection
@@ -67,13 +63,11 @@ class UnixSocketConnection(base_socket_connection.BaseSocketConnection):
             data = b""
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(
-                    exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
-                    None,
-                    sys.exc_info()[2],
-                )
+                raise exception.BoofuzzTargetConnectionAborted(
+                    socket_errno=e.errno, socket_errmsg=e.strerror
+                ).with_traceback(sys.exc_info()[2])
             elif (e.errno == errno.ECONNRESET) or (e.errno == errno.ENETRESET) or (e.errno == errno.ETIMEDOUT):
-                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
+                raise exception.BoofuzzTargetConnectionReset().with_traceback(sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
                 data = b""
             else:
@@ -97,13 +91,11 @@ class UnixSocketConnection(base_socket_connection.BaseSocketConnection):
             num_sent = self._sock.send(data)
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
-                raise_(
-                    exception.BoofuzzTargetConnectionAborted(socket_errno=e.errno, socket_errmsg=e.strerror),
-                    None,
-                    sys.exc_info()[2],
-                )
+                raise exception.BoofuzzTargetConnectionAborted(
+                    socket_errno=e.errno, socket_errmsg=e.strerror
+                ).with_traceback(sys.exc_info()[2])
             elif e.errno in [errno.ECONNRESET, errno.ENETRESET, errno.ETIMEDOUT, errno.EPIPE]:
-                raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
+                raise exception.BoofuzzTargetConnectionReset().with_traceback(sys.exc_info()[2])
             else:
                 raise
 

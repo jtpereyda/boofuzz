@@ -1,16 +1,11 @@
-from __future__ import division
-
 import itertools
 import math
 import random
 
 import six
-from future.standard_library import install_aliases
 from six.moves import range
 
 from ..fuzzable import Fuzzable
-
-install_aliases()
 
 
 class String(Fuzzable):

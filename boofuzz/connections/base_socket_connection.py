@@ -1,12 +1,8 @@
-from __future__ import absolute_import
-
 import abc
 import math
 import os
 import socket
 import struct
-
-from future.utils import with_metaclass
 
 from boofuzz.connections import itarget_connection
 
@@ -24,7 +20,7 @@ def _seconds_to_sockopt_format(seconds):
         return struct.pack("ll", whole_seconds, whole_microseconds)
 
 
-class BaseSocketConnection(with_metaclass(abc.ABCMeta, itarget_connection.ITargetConnection)):
+class BaseSocketConnection(itarget_connection.ITargetConnection, metaclass=abc.ABCMeta):
     """This class serves as a base for a number of Connections over sockets.
 
     .. versionadded:: 0.2.0

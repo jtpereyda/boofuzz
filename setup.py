@@ -66,7 +66,6 @@ setup(
         "colorama",
         "Flask",
         "funcy",
-        "future",
         "psutil",
         "pyserial",
         "pydot",

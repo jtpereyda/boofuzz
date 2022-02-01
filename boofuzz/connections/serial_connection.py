@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import time
 
 from boofuzz.connections import itarget_connection, serial_connection_low_level
