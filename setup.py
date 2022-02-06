@@ -71,6 +71,7 @@ setup(
         "pyserial",
         "pydot",
         "six",
+        "sysv_ipc; platform_system=='Linux'",
         "tornado",
     ],
     extras_require=extra_requirements,

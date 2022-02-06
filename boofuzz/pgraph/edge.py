@@ -43,7 +43,7 @@ class Edge(object):
 
         # the unique id for any edge (provided that duplicates are not allowed) is the combination of the source and
         # the destination stored as a long long.
-        self.id = (src << 32) + dst
+        self.id = str(src) + "->" + str(dst)
         self.src = src
         self.dst = dst
 

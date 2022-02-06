@@ -28,6 +28,7 @@ ERR_CONN_ABORTED = (
 )
 
 ERR_CONN_RESET = "Target connection reset."
+ERR_CONN_SHUTDOWN = "Connection shutdown by target."
 
 ERR_CONN_RESET_FAIL = "Target connection reset -- considered a failure case when triggered from post_send"
 

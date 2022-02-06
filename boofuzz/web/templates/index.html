@@ -50,6 +50,14 @@
                     <td class="summary-content-row-header-text">current</td>
                     <td id="current_test_case_name" colspan="5"> {{ state.session.current_test_case_name }} </td>
                 </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">queue_upcoming</td>
+                    <td id="queue_upcoming" colspan="5"> {{ state.session.queue_upcoming | length }} </td>
+                </tr>
+                <tr>
+                    <td class="summary-content-row-header-text">queue_covered</td>
+                    <td id="queue_covered" colspan="5"> {{ state.session.queue_covered | length }} </td>
+                </tr>
             </table> </td> </tr>
             <tr> <td>
                 <form method=get action="/togglepause">

@@ -34,6 +34,20 @@ class BoofuzzTargetConnectionReset(BoofuzzError):
     pass
 
 
+class BoofuzzTargetConnectionShutdown(BoofuzzError):
+    pass
+
+
+@attr.s
+class BoofuzzTargetTimeout(BoofuzzError):
+    """
+    Raised on `socket.timeout`.
+    """
+
+    socket_errno = attr.ib()
+    socket_errmsg = attr.ib()
+
+
 @attr.s
 class BoofuzzTargetConnectionAborted(BoofuzzError):
     """

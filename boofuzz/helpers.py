@@ -29,6 +29,10 @@ COLOR_PAIR_GREEN = 5
 COLOR_PAIR_MAGENTA = 6
 COLOR_PAIR_BLACK = 7
 
+sigmap = dict(
+    (k, v) for v, k in reversed(sorted(signal.__dict__.items())) if v.startswith("SIG") and not v.startswith("SIG_")
+)
+
 test_step_info = {
     "test_case": {
         "indent": 0,
@@ -485,3 +489,25 @@ def parse_test_case_name(test_case):
         mutations = match.group(1)
         mutations = re.split(r",\s*", mutations)
         return path, mutations
+
+
+def _reset_shm_map(shm_map):
+    """Reset shared memory map (used with AFL fork server)."""
+    for i in range(0, len(shm_map)):
+        shm_map[i] = 0
+
+
+def crash_reason(exit_status):
+    """Get human readable crash reason from exit status."""
+    reason = "Process died for unknown reason"
+    if exit_status is not None:
+        if os.WCOREDUMP(exit_status):
+            reason = "Segmentation fault"
+        elif os.WIFSTOPPED(exit_status):
+            reason = "Stopped with signal " + str(os.WTERMSIG(exit_status))
+        elif os.WIFSIGNALED(exit_status):
+            sig = os.WTERMSIG(exit_status)
+            reason = "Terminated with signal {0} {1}".format(str(sig), sigmap[sig])
+        elif os.WIFEXITED(exit_status):
+            reason = "Exit with code - " + str(os.WEXITSTATUS(exit_status))
+    return reason

@@ -21,18 +21,32 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.
         recv_timeout (float): Seconds to wait for recv before timing out. Default 5.0.
         server (bool): Set to True to enable server side fuzzing.
+        graceful_shutdown (bool): close() method attempts a graceful shutdown. Default: True.
 
     """
 
-    def __init__(self, host, port, send_timeout=5.0, recv_timeout=5.0, server=False):
+    def __init__(self, host, port, send_timeout=5.0, recv_timeout=5.0, server=False, graceful_shutdown=True):
         super(TCPSocketConnection, self).__init__(send_timeout, recv_timeout)
 
         self.host = host
         self.port = port
         self.server = server
         self._serverSock = None
+        self.graceful_shutdown = graceful_shutdown
 
     def close(self):
+        if self.graceful_shutdown:
+            try:
+                self._sock.shutdown(socket.SHUT_RDWR)
+                while len(self._sock.recv(1024)) > 0:
+                    pass
+            except ConnectionError:
+                pass
+            except OSError as e:
+                if e.errno == errno.ENOTCONN:
+                    pass
+                else:
+                    raise
         super(TCPSocketConnection, self).close()
 
         if self.server:
@@ -84,20 +98,25 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
 
     def recv(self, max_bytes):
         """
-        Receive up to max_bytes data from the target.
+        Receive up to max_bytes data from the target. Timeout results in 0 bytes returned.
 
         Args:
             max_bytes (int): Maximum number of bytes to receive.
 
         Returns:
-            Received data.
+            Received data (empty bytes array if timed out).
+
+        Raises:
+            BoofuzzTargetConnectionShutdown: Target shutdown connection (e.g. socket recv returns 0 bytes)
+            BoofuzzTargetConnectionAborted: ECONNABORTED
+            BoofuzzTargetConnectionReset: ECONNRESET, ENETRESET, ETIMEDOUT
         """
         data = b""
 
         try:
             data = self._sock.recv(max_bytes)
-        except socket.timeout:
-            data = b""
+        except socket.timeout as e:
+            raise exception.BoofuzzTargetTimeout(socket_errno=e.errno, socket_errmsg=e.strerror)
         except socket.error as e:
             if e.errno == errno.ECONNABORTED:
                 raise_(
@@ -108,7 +127,7 @@ class TCPSocketConnection(base_socket_connection.BaseSocketConnection):
             elif (e.errno == errno.ECONNRESET) or (e.errno == errno.ENETRESET) or (e.errno == errno.ETIMEDOUT):
                 raise_(exception.BoofuzzTargetConnectionReset(), None, sys.exc_info()[2])
             elif e.errno == errno.EWOULDBLOCK:  # timeout condition if using SO_RCVTIMEO or SO_SNDTIMEO
-                data = b""
+                raise exception.BoofuzzTargetTimeout(socket_errno=e.errno, socket_errmsg=e.strerror)
             else:
                 raise
 
