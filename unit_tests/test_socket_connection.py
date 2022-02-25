@@ -11,7 +11,6 @@ import zlib
 
 import netifaces  # pytype: disable=import-error
 import pytest
-import six
 
 from boofuzz import helpers
 from boofuzz.connections import ip_constants, SocketConnection
@@ -382,7 +381,7 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())["broadcast"]
+            broadcast_addr = next(get_local_non_loopback_ipv4_addresses_info())["broadcast"]
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
 
