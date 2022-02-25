@@ -1,7 +1,5 @@
 import struct
 
-import six
-
 from boofuzz.primitives.bit_field import BitField
 
 
@@ -34,6 +32,6 @@ class DWord(BitField):
         super(DWord, self).__init__(width=32, *args, **kwargs)
 
     def encode(self, value, mutation_context):
-        if not isinstance(value, (six.integer_types, list, tuple)):
+        if not isinstance(value, (int, list, tuple)):
             value = struct.unpack(self.endian + "L", value)[0]
         return super(DWord, self).encode(value, mutation_context)

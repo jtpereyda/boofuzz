@@ -5,8 +5,6 @@ import datetime
 import sqlite3
 import sys
 
-import six
-
 from . import data_test_case, data_test_step, exception, helpers, ifuzz_logger_backend
 
 # fixup for buffer in python 3
@@ -211,7 +209,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         if len(self._queue) > 0:
             if self._queue_max_len > 0:
                 while (
-                    self._current_test_case_index - next(x for x in self._queue[0] if isinstance(x, six.integer_types))
+                    self._current_test_case_index - next(x for x in self._queue[0] if isinstance(x, int))
                 ) >= self._queue_max_len:
                     self._queue.popleft()
             else:
