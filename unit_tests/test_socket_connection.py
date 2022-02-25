@@ -80,7 +80,7 @@ def ones_complement_sum_carry_16(a, b):
     return (c & 0xFFFF) + (c >> 16)
 
 
-def ip_packet(payload, src_ip, dst_ip, protocol=six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)):
+def ip_packet(payload, src_ip, dst_ip, protocol=ip_constants.IPV4_PROTOCOL_UDP.to_bytes(1, "little")):
     """
     Create an IPv4 packet.
 

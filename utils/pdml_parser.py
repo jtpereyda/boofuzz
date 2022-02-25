@@ -6,8 +6,6 @@ import sys
 from xml.sax import ContentHandler, make_parser
 from xml.sax.handler import feature_namespaces
 
-import six
-
 from boofuzz import helpers
 
 
@@ -79,7 +77,7 @@ class ParsePDML(ContentHandler):
             if hex_pair > 0x7F:
                 return False
 
-            value += six.int2byte(hex_pair)
+            value += hex_pair.to_bytes(1, "little")
 
         value = value.replace(b"\t", b"")
         value = value.replace(b"\r", b"")

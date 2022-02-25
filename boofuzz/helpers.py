@@ -277,7 +277,7 @@ def _udp_checksum_pseudo_header(src_addr, dst_addr, msg_len):
     :return: UDP pseudo-header
     :rtype: bytes
     """
-    return src_addr + dst_addr + b"\x00" + six.int2byte(ip_constants.IPV4_PROTOCOL_UDP) + struct.pack(">H", msg_len)
+    return src_addr + dst_addr + b"\x00" + bytes([ip_constants.IPV4_PROTOCOL_UDP]) + struct.pack(">H", msg_len)
 
 
 def udp_checksum(msg, src_addr, dst_addr):

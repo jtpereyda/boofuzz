@@ -1,7 +1,5 @@
 from struct import *
 
-import six
-
 from boofuzz import *
 
 
@@ -10,7 +8,7 @@ def mcafee_epo_xor(buf, poly=0xAA):
     new_buf = ""
 
     for char in buf:
-        new_buf += six.int2byte(ord(char) ^ poly)
+        new_buf += (ord(char) ^ poly).to_bytes(1, "little")
 
     return new_buf
 
