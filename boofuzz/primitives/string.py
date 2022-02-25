@@ -5,7 +5,6 @@ import math
 import random
 
 from future.standard_library import install_aliases
-from six.moves import range
 
 from ..fuzzable import Fuzzable
 
