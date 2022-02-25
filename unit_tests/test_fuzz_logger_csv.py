@@ -19,7 +19,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
         s = fuzz_logger_csv.get_time_stamp()
 
         # Then
-        six.assertRegex(self, s, r"\d\d\d\d-\d\d-\d\d\w\d\d:\d\d:\d\d.\d*")
+        self.assertRegex(s, r"\d\d\d\d-\d\d-\d\d\w\d\d:\d\d:\d\d.\d*")
 
     def test_hex_to_hexstr(self):
         """
@@ -61,8 +61,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
@@ -83,15 +82,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("open step,,," + self.some_test_step_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open step,,," + self.some_test_step_msg + "\r\n")
         )
 
     def test_log_check(self):
@@ -110,15 +106,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("check,,," + self.some_log_check_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("check,,," + self.some_log_check_msg + "\r\n")
         )
 
     def test_log_error(self):
@@ -137,15 +130,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("error,,," + self.some_log_error_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("error,,," + self.some_log_error_msg + "\r\n")
         )
 
     def test_log_recv(self):
@@ -164,13 +154,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape(
@@ -200,13 +188,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape(
@@ -236,13 +222,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,," + self.some_log_info_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,," + self.some_log_info_msg + "\r\n")
         )
 
     def test_log_fail(self):
@@ -261,13 +246,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,," + self.some_log_fail_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,," + self.some_log_fail_msg + "\r\n")
         )
 
     def test_log_pass(self):
@@ -286,13 +270,12 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,," + self.some_log_pass_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,," + self.some_log_pass_msg + "\r\n")
         )
 
     def test_open_test_case_empty(self):
@@ -306,9 +289,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open test case,,,Test case \r\n")
-        )
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open test case,,,Test case \r\n"))
 
     def test_open_test_step_empty(self):
         """
@@ -325,12 +306,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open step,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open step,,,\r\n"))
 
     def test_log_check_empty(self):
         """
@@ -347,12 +327,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("check,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("check,,,\r\n"))
 
     def test_log_error_empty(self):
         """
@@ -369,12 +348,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("error,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("error,,,\r\n"))
 
     def test_log_recv_empty(self):
         """
@@ -391,13 +369,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape("recv,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + "," + repr(b"") + "\r\n"),
@@ -418,13 +394,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape("send,0," + fuzz_logger_csv.DEFAULT_HEX_TO_STR(bytes(b"")) + "," + repr(b"") + "\r\n"),
@@ -445,12 +419,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,,\r\n"))
 
     def test_log_fail_empty(self):
         """
@@ -467,12 +440,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,,\r\n"))
 
     def test_log_pass_empty(self):
         """
@@ -489,12 +461,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,,\r\n"))
+        self.assertRegex(self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,,\r\n"))
 
     def test_several(self):
         """
@@ -527,18 +498,14 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("open step,,," + self.some_test_step_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("open step,,," + self.some_test_step_msg + "\r\n")
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape(
@@ -551,8 +518,7 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + "\r\n"
             ),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape(
@@ -565,24 +531,20 @@ class TestFuzzLoggerCsv(unittest.TestCase):
                 + "\r\n"
             ),
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,," + self.some_log_info_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("info,,," + self.some_log_info_msg + "\r\n")
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("check,,," + self.some_log_check_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("check,,," + self.some_log_check_msg + "\r\n")
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,," + self.some_log_fail_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("fail,,," + self.some_log_fail_msg + "\r\n")
         )
-        six.assertRegex(
-            self, self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,," + self.some_log_pass_msg + "\r\n")
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("pass,,," + self.some_log_pass_msg + "\r\n")
         )
-        six.assertRegex(
-            self,
-            self.virtual_file.readline(),
-            LOGGER_PREAMBLE + re.escape("error,,," + self.some_log_error_msg + "\r\n"),
+        self.assertRegex(
+            self.virtual_file.readline(), LOGGER_PREAMBLE + re.escape("error,,," + self.some_log_error_msg + "\r\n")
         )
 
     def test_hex_to_str_function(self):
@@ -610,13 +572,11 @@ class TestFuzzLoggerCsv(unittest.TestCase):
 
         # Then
         self.virtual_file.seek(0)
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE + re.escape("open test case,,,Test case " + self.some_test_case_id + "\r\n"),
         )
-        six.assertRegex(
-            self,
+        self.assertRegex(
             self.virtual_file.readline(),
             LOGGER_PREAMBLE
             + re.escape(
