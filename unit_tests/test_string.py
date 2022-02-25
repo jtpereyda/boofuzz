@@ -6,9 +6,7 @@ import unittest
 from collections import Counter, OrderedDict
 
 import pytest
-import six
 from future.standard_library import install_aliases
-from six.moves import map, zip
 
 from boofuzz import *
 
