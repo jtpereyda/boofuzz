@@ -4,8 +4,6 @@ import warnings
 import zlib
 from functools import wraps
 
-import six
-
 from .. import exception, helpers, primitives
 from ..constants import LITTLE_ENDIAN
 
@@ -145,7 +143,7 @@ class Checksum(primitives.BasePrimitive):
         :rtype:  bytes
         :return: Checksum.
         """
-        if isinstance(self._algorithm, six.string_types):
+        if isinstance(self._algorithm, str):
             if self._algorithm == "crc32":
                 check = struct.pack(self._endian + "L", (zlib.crc32(data) & 0xFFFFFFFF))
 
