@@ -1,7 +1,6 @@
+import io
 import re
 import unittest
-
-import six
 
 from boofuzz import fuzz_logger_csv
 
@@ -34,7 +33,7 @@ class TestFuzzLoggerCsvFreeFunctions(unittest.TestCase):
 
 class TestFuzzLoggerCsv(unittest.TestCase):
     def setUp(self):
-        self.virtual_file = six.StringIO()
+        self.virtual_file = io.StringIO()
         self.logger = fuzz_logger_csv.FuzzLoggerCsv(file_handle=self.virtual_file)
         self.some_test_case_id = "some test case"
         self.some_test_case_name = "some test case name"
