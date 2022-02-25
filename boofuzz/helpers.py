@@ -12,7 +12,6 @@ import zlib
 from builtins import int
 from functools import reduce
 
-import six
 from colorama import Back, Fore, Style
 from past.builtins import map, range
 
@@ -447,7 +446,9 @@ def get_boofuzz_version(boofuzz_class):
 
 
 def str_to_bytes(value, encoding="utf-8", errors="replace"):
-    return six.ensure_binary(value, encoding=encoding, errors=errors)
+    if isinstance(value, bytes):
+        return value
+    return value.encode(encoding, errors)
 
 
 def parse_target(target_name):

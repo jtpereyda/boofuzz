@@ -293,7 +293,7 @@ class String(Fuzzable):
         # TODO: Add easy and sane string injection from external file/s
 
     def encode(self, value, mutation_context=None):
-        value = six.ensure_binary(value, self.encoding, "replace")
+        value = value.encode(self.encoding, "replace")
         # pad undersized library items.
         if self.size is not None and len(value) < self.size:
             value += self.padding * (self.size - len(value))
