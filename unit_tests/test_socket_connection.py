@@ -29,7 +29,7 @@ TEST_ERR_NO_NON_LOOPBACK_IPV4 = "No local non-loopback IPv4 address found."
 
 def bytes_or_unicode_to_unicode(s):
     if isinstance(s, bytes):
-        return six.text_type(s)
+        return str(s, encoding="utf-8")
     else:
         return s
 

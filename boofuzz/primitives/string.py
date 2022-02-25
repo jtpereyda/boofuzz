@@ -4,7 +4,6 @@ import itertools
 import math
 import random
 
-import six
 from future.standard_library import install_aliases
 from six.moves import range
 
@@ -200,7 +199,7 @@ class String(Fuzzable):
             self.max_len = self.size
         self.encoding = encoding
         self.padding = padding
-        if isinstance(padding, six.text_type):
+        if isinstance(padding, str):
             self.padding = self.padding.encode(self.encoding)
         self._static_num_mutations = None
         self.random_indices = {}
