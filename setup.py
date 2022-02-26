@@ -70,7 +70,6 @@ setup(
         "psutil",
         "pyserial",
         "pydot",
-        "six",
         "tornado",
     ],
     extras_require=extra_requirements,
