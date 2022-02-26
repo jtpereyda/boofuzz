@@ -4,9 +4,7 @@ import itertools
 import math
 import random
 
-import six
 from future.standard_library import install_aliases
-from six.moves import range
 
 from ..fuzzable import Fuzzable
 
@@ -200,7 +198,7 @@ class String(Fuzzable):
             self.max_len = self.size
         self.encoding = encoding
         self.padding = padding
-        if isinstance(padding, six.text_type):
+        if isinstance(padding, str):
             self.padding = self.padding.encode(self.encoding)
         self._static_num_mutations = None
         self.random_indices = {}
@@ -293,7 +291,7 @@ class String(Fuzzable):
         # TODO: Add easy and sane string injection from external file/s
 
     def encode(self, value, mutation_context=None):
-        value = six.ensure_binary(value, self.encoding, "replace")
+        value = value.encode(self.encoding, "replace")
         # pad undersized library items.
         if self.size is not None and len(value) < self.size:
             value += self.padding * (self.size - len(value))

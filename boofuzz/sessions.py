@@ -15,7 +15,6 @@ import zlib
 from builtins import input
 from io import open
 
-import six
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
@@ -658,10 +657,10 @@ class Session(pgraph.Graph):
             src = self.root
 
         # if source or destination is a name, resolve the actual node.
-        if isinstance(src, six.string_types):
+        if isinstance(src, str):
             src = self.find_node("name", src)
 
-        if isinstance(dst, six.string_types):
+        if isinstance(dst, str):
             dst = self.find_node("name", dst)
 
         # if source or destination is not in the graph, add it.
