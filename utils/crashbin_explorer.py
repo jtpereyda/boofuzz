@@ -97,6 +97,6 @@ for _, crashes in iteritems(crashbin.bins):
     print("\n")
 
 if graph:
-    fh = open("%s.udg" % graph_name, "w+")
+    fh = open("%s.udg" % graph_name, "w+", encoding="utf-8")
     fh.write(graph.render_graph_udraw())
     fh.close()
