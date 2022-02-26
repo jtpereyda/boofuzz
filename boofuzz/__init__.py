@@ -1,7 +1,6 @@
 import functools
 import sys
 
-import six
 
 from . import blocks, exception, legos, primitives
 from .blocks import Aligned, Block, Checksum, Repeat, Request, REQUESTS, Size
@@ -588,7 +587,7 @@ def s_binary(value, name=None):
         pair = parsed[:2]
         parsed = parsed[2:]
 
-        value += six.int2byte(int(pair, 16))
+        value += int(pair, 16).to_bytes(1, "little")
 
     blocks.CURRENT.push(Static(name=name, default_value=parsed))
 

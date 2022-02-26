@@ -1,7 +1,5 @@
 import struct
 
-import six
-
 from .. import helpers
 from ..constants import LITTLE_ENDIAN
 from ..fuzzable import Fuzzable
@@ -78,7 +76,7 @@ class BitField(Fuzzable):
     ):
         super(BitField, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
-        assert isinstance(width, six.integer_types), "width must be an integer!"
+        assert isinstance(width, int), "width must be an integer!"
 
         self.width = width
         self.max_num = max_num
@@ -90,7 +88,7 @@ class BitField(Fuzzable):
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
 
-        assert isinstance(self.max_num, six.integer_types), "max_num must be an integer!"
+        assert isinstance(self.max_num, int), "max_num must be an integer!"
 
     def _iterate_fuzz_lib(self):
         if self.full_range:

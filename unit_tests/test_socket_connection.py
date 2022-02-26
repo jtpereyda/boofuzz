@@ -11,7 +11,6 @@ import zlib
 
 import netifaces  # pytype: disable=import-error
 import pytest
-import six
 
 from boofuzz import helpers
 from boofuzz.connections import ip_constants, SocketConnection
@@ -29,7 +28,7 @@ TEST_ERR_NO_NON_LOOPBACK_IPV4 = "No local non-loopback IPv4 address found."
 
 def bytes_or_unicode_to_unicode(s):
     if isinstance(s, bytes):
-        return six.text_type(s)
+        return str(s, encoding="utf-8")
     else:
         return s
 
@@ -80,7 +79,7 @@ def ones_complement_sum_carry_16(a, b):
     return (c & 0xFFFF) + (c >> 16)
 
 
-def ip_packet(payload, src_ip, dst_ip, protocol=six.int2byte(ip_constants.IPV4_PROTOCOL_UDP)):
+def ip_packet(payload, src_ip, dst_ip, protocol=ip_constants.IPV4_PROTOCOL_UDP.to_bytes(1, "little")):
     """
     Create an IPv4 packet.
 
@@ -382,7 +381,7 @@ class TestSocketConnection(unittest.TestCase):
          and: Sent and received data is as expected.
         """
         try:
-            broadcast_addr = six.next(get_local_non_loopback_ipv4_addresses_info())["broadcast"]
+            broadcast_addr = next(get_local_non_loopback_ipv4_addresses_info())["broadcast"]
         except StopIteration:
             assert False, TEST_ERR_NO_NON_LOOPBACK_IPV4
 

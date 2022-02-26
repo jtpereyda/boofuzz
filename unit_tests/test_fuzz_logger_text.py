@@ -2,8 +2,6 @@ import unittest
 from builtins import bytes, chr
 from io import StringIO
 
-import six
-
 import boofuzz.helpers
 from boofuzz import fuzz_logger_text
 
@@ -19,7 +17,7 @@ class TestFuzzLoggerTextFreeFunctions(unittest.TestCase):
         s = boofuzz.helpers.get_time_stamp()
 
         # Then
-        six.assertRegex(self, s, r"\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]")
+        self.assertRegex(s, r"\[\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d,\d\d\d\]")
 
     def test_hex_to_hexstr(self):
         """
