@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v0.4.2
+------
+Features
+^^^^^^^^
+- Remove six compatibility module
+
+
 v0.4.1
 ------
 Features
