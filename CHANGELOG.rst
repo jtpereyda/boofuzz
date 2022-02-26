@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Fixes
+^^^^^
+- Specified encoding on file write rather than assuming default encoding
+
 v0.4.1
 ------
 Features
