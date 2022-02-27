@@ -14,10 +14,9 @@
 #
 
 import pydot
-from future.builtins import object
 
 
-class Node(object):
+class Node:
     id = 0
     number = 0
 

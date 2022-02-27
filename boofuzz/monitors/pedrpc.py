@@ -10,7 +10,7 @@ import uuid
 from boofuzz import exception
 
 
-class Client(object):
+class Client:
     def __init__(self, host, port):
         self.__host = host
         self.__port = port
@@ -203,7 +203,7 @@ class Client(object):
         return
 
 
-class Server(object):
+class Server:
     """
     The main PED-RPC Server class. To implement an RPC server, inherit from this class. Call ``serve_forever`` to start
     listening for RPC commands.

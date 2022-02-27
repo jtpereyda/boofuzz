@@ -2,7 +2,7 @@ import attr
 
 
 @attr.s
-class ProtocolSessionReference(object):
+class ProtocolSessionReference:
     """Refers to a dynamic value received or generated in the context of an individual test case.
 
     Pass this object as a primitive's ``default_value`` argument, and make sure you set the referred-to value using

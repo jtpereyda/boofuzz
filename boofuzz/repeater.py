@@ -2,7 +2,7 @@ import time
 from abc import ABCMeta, abstractmethod
 
 
-class Repeater(object, metaclass=ABCMeta):
+class Repeater(metaclass=ABCMeta):
     """Base Repeater class.
 
     :param sleep_time: Time to sleep between repetitions.
