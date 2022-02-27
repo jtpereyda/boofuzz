@@ -6,7 +6,11 @@ Upcoming
 Features
 ^^^^^^^^
 - Remove six compatibility module
-- Remove Python 2 compatibility code
+- Remove Python 2 compatibility code.
+
+Fixes
+^^^^^
+- Specified encoding on file write rather than assuming default encoding
 
 v0.4.1
 ------

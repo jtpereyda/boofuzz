@@ -156,13 +156,13 @@ start_address = SegByName(".idata")
 strings = find_strings(start_address)
 
 # write integers
-fh = open(constants_file, "w+")
+fh = open(constants_file, "w+", encoding="utf-8")
 for c in constants:
     fh.write(c + "\n")
 fh.close()
 
 # write strings
-fh = open(strings_file, "w+")
+fh = open(strings_file, "w+", encoding="utf-8")
 for s in strings:
     fh.write(s + "\n")
 fh.close()
