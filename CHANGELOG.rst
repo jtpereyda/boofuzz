@@ -6,6 +6,7 @@ v0.4.2
 Features
 ^^^^^^^^
 - Remove six compatibility module
+- Remove specifying object inheritance in classes
 
 Fixes
 ^^^^^
