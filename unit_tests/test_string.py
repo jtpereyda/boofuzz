@@ -6,9 +6,7 @@ import unittest
 from collections import Counter, OrderedDict
 
 import pytest
-import six
 from future.standard_library import install_aliases
-from six.moves import map, zip
 
 from boofuzz import *
 
@@ -152,7 +150,7 @@ class TestString(unittest.TestCase):
         encoding = "utf-8"
 
         def fit_to_size(b):
-            b = six.ensure_binary(b[:max_len], encoding=encoding)
+            b = b[:max_len].encode(encoding=encoding)
             pad_len = max(0, max_len - len(b))
             return b + pad * pad_len
 

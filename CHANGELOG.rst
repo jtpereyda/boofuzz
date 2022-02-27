@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.4.2
+------
+Features
+^^^^^^^^
+- Remove six compatibility module
+
 Fixes
 ^^^^^
 - Specified encoding on file write rather than assuming default encoding

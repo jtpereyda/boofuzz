@@ -5,7 +5,7 @@ import sys
 import time
 import warnings
 
-from six import StringIO
+from io import StringIO
 
 try:
     import curses  # pytype: disable=import-error

@@ -1,5 +1,3 @@
-import six
-
 from .base_primitive import BasePrimitive
 
 
@@ -27,7 +25,7 @@ class Group(BasePrimitive):
     def __init__(self, name=None, values=None, default_value=None, encoding="ascii", *args, **kwargs):
         assert len(values) > 0, "You can't have an empty value list for your group!"
         for val in values:
-            assert isinstance(val, (six.binary_type, six.string_types)), "Value list may only contain string/byte types"
+            assert isinstance(val, (bytes, str)), "Value list may only contain string/byte types"
         values = list(map(lambda value: value if isinstance(value, bytes) else value.encode(encoding=encoding), values))
 
         if default_value is None:
