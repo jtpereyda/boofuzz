@@ -7,6 +7,9 @@ Features
 ^^^^^^^^
 - Remove six compatibility module
 
+Fixes
+^^^^^
+- Specified encoding on file write rather than assuming default encoding
 
 v0.4.1
 ------

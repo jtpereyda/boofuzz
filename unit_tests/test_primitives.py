@@ -158,11 +158,11 @@ class TestPrimitives(unittest.TestCase):
             pass
 
         # create extension libraries for unit test.
-        with open(fuzz_strings_path, "w") as fh:
+        with open(fuzz_strings_path, "w", encoding="utf-8") as fh:
             fh.write("pedram\n")
             fh.write("amini\n")
 
-        with open(fuzz_ints_path, "w") as fh:
+        with open(fuzz_ints_path, "w", encoding="utf-8") as fh:
             fh.write("deadbeef\n")
             fh.write("0xc0cac01a\n")
 
