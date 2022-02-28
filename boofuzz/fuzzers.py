@@ -1,7 +1,7 @@
 from .exception import MustImplementException
 
 
-class Fuzzer(object):
+class Fuzzer:
     blocks = []
 
     def __init__(self):

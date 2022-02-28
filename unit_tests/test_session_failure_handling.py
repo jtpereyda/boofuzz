@@ -25,7 +25,7 @@ THREAD_WAIT_TIMEOUT = 10  # Time to wait for a thread before considering it fail
 # TODO how to share MiniTestServer and THREAD_WAIT_TIMEOUT with test_socket_connection.py
 
 
-class MiniTestServer(object):
+class MiniTestServer:
     """
     Small server class for testing SocketConnection.
     """

@@ -14,10 +14,9 @@
 #
 
 import pydot
-from builtins import object
 
 
-class Edge(object):
+class Edge:
     id = None
     src = None
     dst = None

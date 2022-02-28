@@ -1,4 +1,4 @@
-class EventHook(object):
+class EventHook:
     """
     An EventHook that registers events using +=and -=.
 

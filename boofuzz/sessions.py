@@ -37,7 +37,7 @@ from boofuzz.web.app import app
 from .exception import BoofuzzFailure
 
 
-class Target(object):
+class Target:
     """Target descriptor container.
 
     Takes an ITargetConnection and wraps send/recv with appropriate
@@ -256,7 +256,7 @@ class Connection(pgraph.Edge):
         self.callback = callback
 
 
-class SessionInfo(object):
+class SessionInfo:
     def __init__(self, db_filename):
         self._db_reader = fuzz_logger_db.FuzzLoggerDbReader(db_filename=db_filename)
 
@@ -334,7 +334,7 @@ class SessionInfo(object):
         return ""
 
 
-class WebApp(object):
+class WebApp:
     """Serve fuzz data over HTTP.
 
     Args:
