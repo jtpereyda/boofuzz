@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def context():
-    class Context(object):
+    class Context:
         pass
 
     return Context()

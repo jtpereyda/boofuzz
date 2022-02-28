@@ -144,7 +144,7 @@ def ethernet_frame(payload, src_mac, dst_mac, ether_type=ETHER_TYPE_IPV4):
     return raw_packet
 
 
-class MiniTestServer(object):
+class MiniTestServer:
     """
     Small server class for testing SocketConnection.
     """

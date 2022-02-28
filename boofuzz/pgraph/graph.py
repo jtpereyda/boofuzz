@@ -16,11 +16,10 @@
 import copy
 
 import pydot
-from builtins import object
 from future.utils import listvalues
 
 
-class Graph(object):
+class Graph:
     """
     @todo: Add support for clusters
     @todo: Potentially swap node list with a node dictionary for increased performance

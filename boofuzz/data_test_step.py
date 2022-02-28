@@ -6,7 +6,7 @@ from . import helpers
 
 
 @attr.s
-class DataTestStep(object):
+class DataTestStep:
     type = attr.ib()
     description = attr.ib()
     data = attr.ib()

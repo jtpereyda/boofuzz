@@ -232,7 +232,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
             query[4] = buffer(query[4][: self._data_truncate_length])
 
 
-class FuzzLoggerDbReader(object):
+class FuzzLoggerDbReader:
     """Read fuzz data saved using FuzzLoggerDb
 
     Args:

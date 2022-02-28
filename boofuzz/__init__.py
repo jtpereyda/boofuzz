@@ -292,7 +292,7 @@ def s_block(name=None, group=None, encoder=None, dep=None, dep_value=None, dep_v
     :param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
 
-    class ScopedBlock(object):
+    class ScopedBlock:
         def __init__(self, block):
             self.block = block
 
@@ -335,7 +335,7 @@ def s_aligned(modulus=1, pattern=b"\x00", name=None):
                         be given, defaults to None
     """
 
-    class ScopedAligned(object):
+    class ScopedAligned:
         def __init__(self, aligned):
             self.aligned = aligned
 

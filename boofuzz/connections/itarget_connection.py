@@ -4,7 +4,7 @@ from future.utils import with_metaclass
 
 
 # abc.ABCMeta is the metaclass in both python 2 and 3
-class ITargetConnection(with_metaclass(abc.ABCMeta, object)):
+class ITargetConnection(with_metaclass(abc.ABCMeta)):
     """
     Interface for connections to fuzzing targets.
     Target connections may be opened and closed multiple times. You must open before using send/recv and close

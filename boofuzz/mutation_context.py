@@ -14,7 +14,7 @@ def mutations_list_to_dict(mutations_list_or_dict):
 
 
 @attr.s
-class MutationContext(object):
+class MutationContext:
     """Context for current mutation(s).
 
     MutationContext objects are created by Session (the fuzz session manager) and passed to various Fuzzable functions

@@ -1,4 +1,3 @@
-from future.builtins import object
 from future.moves import itertools
 
 from boofuzz.mutation import Mutation
@@ -6,7 +5,7 @@ from .mutation_context import MutationContext
 from .protocol_session_reference import ProtocolSessionReference
 
 
-class Fuzzable(object):
+class Fuzzable:
     """Parent class for all primitives and blocks.
 
     When making new fuzzable types, one will typically override :meth:`mutations` and/or :meth:`encode`.
