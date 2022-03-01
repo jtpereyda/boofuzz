@@ -1,7 +1,5 @@
 # ASN.1 / BER TYPES (http://luca.ntop.org/Teaching/Appunti/asn1.html)
 
-from __future__ import absolute_import
-
 from .. import blocks, exception, helpers, primitives
 from ..constants import BIG_ENDIAN
 

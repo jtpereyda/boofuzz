@@ -1,7 +1,4 @@
 import struct
-from builtins import range
-
-from past.builtins import map
 
 from .. import helpers
 from ..constants import LITTLE_ENDIAN

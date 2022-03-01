@@ -1,7 +1,5 @@
 import struct
 
-from past.builtins import range
-
 from boofuzz import *
 from boofuzz import utils
 

@@ -1,14 +1,8 @@
-from __future__ import division
-
 import itertools
 import math
 import random
 
-from future.standard_library import install_aliases
-
 from ..fuzzable import Fuzzable
-
-install_aliases()
 
 
 class String(Fuzzable):

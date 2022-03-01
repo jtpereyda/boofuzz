@@ -1,16 +1,11 @@
-from __future__ import division
-
 import itertools
 import math
 import unittest
 from collections import Counter, OrderedDict
 
 import pytest
-from future.standard_library import install_aliases
 
 from boofuzz import *
-
-install_aliases()
 
 
 @pytest.fixture(autouse=True)

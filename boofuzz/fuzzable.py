@@ -1,4 +1,4 @@
-from future.moves import itertools
+import itertools
 
 from boofuzz.mutation import Mutation
 from .mutation_context import MutationContext

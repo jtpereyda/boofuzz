@@ -1,11 +1,12 @@
 Changelog
 =========
 
-v0.4.2
-------
+Upcoming
+--------
 Features
 ^^^^^^^^
 - Remove six compatibility module
+- Remove Python 2 compatibility code.
 - Remove specifying object inheritance in classes
 
 Fixes

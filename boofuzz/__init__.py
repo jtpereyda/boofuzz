@@ -1,9 +1,6 @@
-from __future__ import absolute_import
-
 import functools
 import sys
 
-from past.builtins import map
 
 from . import blocks, exception, legos, primitives
 from .blocks import Aligned, Block, Checksum, Repeat, Request, REQUESTS, Size

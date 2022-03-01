@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from ..fuzzable_block import FuzzableBlock
 
 

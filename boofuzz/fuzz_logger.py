@@ -1,7 +1,5 @@
 from typing import Union  # noqa: F401
 
-from past.builtins import map
-
 from .ifuzz_logger import IFuzzLogger
 
 

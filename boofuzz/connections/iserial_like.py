@@ -1,10 +1,8 @@
 import abc
 
-from future.utils import with_metaclass
-
 
 # abc.ABCMeta is the metaclass in both python 2 and 3
-class ISerialLike(with_metaclass(abc.ABCMeta)):
+class ISerialLike(metaclass=abc.ABCMeta):
     """
     A serial-like interface, based on the pySerial module,
     the notable difference being that open() must always be called after the object is first created.

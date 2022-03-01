@@ -1,8 +1,6 @@
 import random
 import struct
 
-from past.builtins import xrange
-
 from boofuzz import helpers
 from ..fuzzable import Fuzzable
 
@@ -66,7 +64,7 @@ class RandomData(Fuzzable):
                 length = self.min_length + i * self.step
 
             value = b""
-            for _ in xrange(length):
+            for _ in range(length):
                 value += struct.pack("B", local_random.randint(0, 255))
             yield value
 

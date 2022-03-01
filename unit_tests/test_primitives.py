@@ -3,7 +3,6 @@ import shutil
 import unittest
 
 import pytest
-from past.builtins import xrange
 
 from boofuzz import *
 
@@ -67,7 +66,7 @@ class TestPrimitives(unittest.TestCase):
 
         # check that string padding and truncation are working correctly.
         mutations_generator = req.get_mutations()
-        for i in xrange(0, 50):
+        for i in range(0, 50):
             next(mutations_generator)
             self.assertEqual(
                 len(req.resolve_name(context_path="STRING UNIT TEST 1", name="sized_string").render()), 200
@@ -91,7 +90,7 @@ class TestPrimitives(unittest.TestCase):
 
         req = s_get("test_s_mirror")
         mutations_generator = req.get_mutations()
-        for _ in xrange(len(test_group_values)):
+        for _ in range(len(test_group_values)):
             next(mutations_generator)
             group_start_value = req.resolve_name(context_path="test_s_mirror", name="group_start").render()
             self.assertEqual(

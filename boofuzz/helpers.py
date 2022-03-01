@@ -1,5 +1,3 @@
-from __future__ import absolute_import, unicode_literals
-
 import errno
 import os
 import re
@@ -13,7 +11,6 @@ from builtins import int
 from functools import reduce
 
 from colorama import Back, Fore, Style
-from past.builtins import map, range
 
 from boofuzz.connections import ip_constants, udp_socket_connection
 from boofuzz.exception import BoofuzzError
