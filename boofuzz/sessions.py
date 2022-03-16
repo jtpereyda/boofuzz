@@ -422,6 +422,7 @@ class Session(pgraph.Graph):
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
         db_filename (str):      Filename to store sqlite db for test results and case information.
                                 Defaults to ./boofuzz-results/{uniq_timestamp}.db
+        address_listening:      Address where's Boofuzz logger exposed (default: localhost)
     """
 
     def __init__(
@@ -454,6 +455,7 @@ class Session(pgraph.Graph):
         ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
+        address_listening="localhost",
         db_filename=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
@@ -477,10 +479,11 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = restart_sleep_time
         self.restart_threshold = restart_threshold
         self.restart_timeout = restart_timeout
+        self.address_listening = address_listening
         if fuzz_loggers is None:
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":
-                fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port))
+                fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port, address_listening=self.address_listening))
                 self._keep_web_open = False
             else:
                 fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]

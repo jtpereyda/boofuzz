@@ -43,6 +43,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     def __init__(
         self,
         web_port=26000,
+        address_listening="localhost"
         window_height=40,
         window_width=130,
         auto_scroll=True,
@@ -83,6 +84,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         self._title = "boofuzz"
         self._web_port = web_port
+        self._address_listening = address_listening
         self._max_log_lines = max_log_lines
         self._auto_scroll = auto_scroll
         self._current_data = None
@@ -335,7 +337,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         # Status Screen
         self._indent_size = 16
         self._statscr.addstr(1, 1, "Webinterface:")
-        self._statscr.addstr(1, self._indent_size, "localhost:{}".format(self._web_port))
+        self._statscr.addstr(1, self._indent_size, "{}:{}".format(self._address_listening, self._web_port))
         self._statscr.addstr(2, 1, "Case:")
         # fmt: off
         self._statscr.addstr(2, self._indent_size, _progess_bar(self._current_index,
