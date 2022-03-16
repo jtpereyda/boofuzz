@@ -483,7 +483,11 @@ class Session(pgraph.Graph):
         if fuzz_loggers is None:
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":
-                fuzz_loggers.append(fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port, address_listening=self.address_listening))
+                fuzz_loggers.append(
+                    fuzz_logger_curses.FuzzLoggerCurses(
+                        web_port=self.web_port, address_listening=self.address_listening
+                    )
+                )
                 self._keep_web_open = False
             else:
                 fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
