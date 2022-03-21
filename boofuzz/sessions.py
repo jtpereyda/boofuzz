@@ -343,7 +343,9 @@ class WebApp:
         web_address (string):   Address binded to port for monitoring fuzzing campaign via a web browser. Default 'localhost'.
     """
 
-    def __init__(self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_address=constants.DEFAULT_WEB_UI_ADDRESS):
+    def __init__(
+        self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_address=constants.DEFAULT_WEB_UI_ADDRESS
+    ):
         self._session_info = session_info
         self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_address)
         pass
@@ -485,9 +487,7 @@ class Session(pgraph.Graph):
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":
                 fuzz_loggers.append(
-                    fuzz_logger_curses.FuzzLoggerCurses(
-                        web_port=self.web_port, web_address=self.web_address
-                    )
+                    fuzz_logger_curses.FuzzLoggerCurses(web_port=self.web_port, web_address=self.web_address)
                 )
                 self._keep_web_open = False
             else:
@@ -1413,7 +1413,9 @@ class Session(pgraph.Graph):
             if self._keep_web_open and self.web_port is not None:
                 self.end_time = time.time()
                 print(
-                    "\nFuzzing session completed. Keeping webinterface up on {}:{}".format(self.web_address, self.web_port),
+                    "\nFuzzing session completed. Keeping webinterface up on {}:{}".format(
+                        self.web_address, self.web_port
+                    ),
                     "\nPress ENTER to close webinterface",
                 )
                 input()
