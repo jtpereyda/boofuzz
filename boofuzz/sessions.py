@@ -340,11 +340,12 @@ class WebApp:
     Args:
         session_info (SessionInfo): Object providing information on session
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
+        web_address (string):   Address binded to port for monitoring fuzzing campaign via a web browser. Default 'localhost'.
     """
 
-    def __init__(self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_addr="localhost"):
+    def __init__(self, session_info, web_port=constants.DEFAULT_WEB_UI_PORT, web_address=constants.DEFAULT_WEB_UI_ADDRESS):
         self._session_info = session_info
-        self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_addr)
+        self._web_interface_thread = self._build_webapp_thread(port=web_port, address=web_address)
         pass
 
     def _build_webapp_thread(self, port, address):
@@ -362,9 +363,9 @@ class WebApp:
             self._web_interface_thread.start()
 
 
-def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address="localhost"):
+def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address=constants.DEFAULT_WEB_UI_ADDRESS):
     s = SessionInfo(db_filename=db_filename)
-    w = WebApp(session_info=s, web_port=port, web_addr=address)
+    w = WebApp(session_info=s, web_port=port, web_address=address)
     w.server_init()
 
 
@@ -422,7 +423,7 @@ class Session(pgraph.Graph):
         target (Target):        Target for fuzz session. Target must be fully initialized. Default None.
         db_filename (str):      Filename to store sqlite db for test results and case information.
                                 Defaults to ./boofuzz-results/{uniq_timestamp}.db
-        address_listening:      Address where's Boofuzz logger exposed (default: localhost)
+        web_address:            Address where's Boofuzz logger exposed. Default 'localhost'
     """
 
     def __init__(
@@ -455,7 +456,7 @@ class Session(pgraph.Graph):
         ignore_connection_ssl_errors=False,
         reuse_target_connection=False,
         target=None,
-        address_listening="localhost",
+        web_address=constants.DEFAULT_WEB_UI_ADDRESS,
         db_filename=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
@@ -479,13 +480,13 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = restart_sleep_time
         self.restart_threshold = restart_threshold
         self.restart_timeout = restart_timeout
-        self.address_listening = address_listening
+        self.web_address = web_address
         if fuzz_loggers is None:
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":
                 fuzz_loggers.append(
                     fuzz_logger_curses.FuzzLoggerCurses(
-                        web_port=self.web_port, address_listening=self.address_listening
+                        web_port=self.web_port, web_address=self.web_address
                     )
                 )
                 self._keep_web_open = False
@@ -517,7 +518,7 @@ class Session(pgraph.Graph):
         self.cumulative_pause_time = 0
 
         if self.web_port is not None:
-            self.web_interface_thread = self.build_webapp_thread(port=self.web_port)
+            self.web_interface_thread = self.build_webapp_thread(port=self.web_port, address=self.web_address)
 
         if pre_send_callbacks is None:
             pre_send_methods = []
@@ -710,6 +711,7 @@ class Session(pgraph.Graph):
             "restart_sleep_time": self.restart_sleep_time,
             "restart_interval": self.restart_interval,
             "web_port": self.web_port,
+            "web_address": self.web_address,
             "crash_threshold": self._crash_threshold_node,
             "total_num_mutations": self.total_num_mutations,
             "total_mutant_index": self.total_mutant_index,
@@ -753,6 +755,7 @@ class Session(pgraph.Graph):
         self.restart_sleep_time = data["restart_sleep_time"]
         self.restart_interval = data["restart_interval"]
         self.web_port = data["web_port"]
+        self.web_address = data["web_address"]
         self._crash_threshold_node = data["crash_threshold"]
         self.total_num_mutations = data["total_num_mutations"]
         self.total_mutant_index = data["total_mutant_index"]
@@ -1222,19 +1225,19 @@ class Session(pgraph.Graph):
                 raise BoofuzzFailure(str(e))
         self.last_recv = received
 
-    def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT):
+    def build_webapp_thread(self, port=constants.DEFAULT_WEB_UI_PORT, address=constants.DEFAULT_WEB_UI_ADDRESS):
         app.session = self
         http_server = HTTPServer(WSGIContainer(app))
         while True:
             try:
-                http_server.listen(port)
+                http_server.listen(port, address=address)
             except socket.error as exc:
                 # Only handle "Address already in use"
                 if exc.errno != errno.EADDRINUSE:
                     raise
                 port += 1
             else:
-                self._fuzz_data_logger.log_info("Web interface can be found at http://localhost:%d" % port)
+                self._fuzz_data_logger.log_info("Web interface can be found at http://%s:%d" % (address, port))
                 break
         flask_thread = threading.Thread(target=IOLoop.instance().start)
         flask_thread.daemon = True
@@ -1410,7 +1413,7 @@ class Session(pgraph.Graph):
             if self._keep_web_open and self.web_port is not None:
                 self.end_time = time.time()
                 print(
-                    "\nFuzzing session completed. Keeping webinterface up on localhost:{}".format(self.web_port),
+                    "\nFuzzing session completed. Keeping webinterface up on {}:{}".format(self.web_address, self.web_port),
                     "\nPress ENTER to close webinterface",
                 )
                 input()
