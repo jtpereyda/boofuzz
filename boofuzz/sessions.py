@@ -340,7 +340,8 @@ class WebApp:
     Args:
         session_info (SessionInfo): Object providing information on session
         web_port (int):         Port for monitoring fuzzing campaign via a web browser. Default 26000.
-        web_address (string):   Address binded to port for monitoring fuzzing campaign via a web browser. Default 'localhost'.
+        web_address (string):   Address binded to port for monitoring fuzzing campaign via a web browser.
+                                Default 'localhost'.
     """
 
     def __init__(

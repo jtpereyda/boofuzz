@@ -8,6 +8,7 @@ Features
 - Remove six compatibility module
 - Remove Python 2 compatibility code.
 - Remove specifying object inheritance in classes
+- Added Web UI listening on specific IP address
 
 Fixes
 ^^^^^

@@ -43,7 +43,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
     def __init__(
         self,
         web_port=26000,
-        web_address="localhost"
+        web_address="localhost",
         window_height=40,
         window_width=130,
         auto_scroll=True,
