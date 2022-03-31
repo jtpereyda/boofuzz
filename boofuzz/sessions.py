@@ -1413,10 +1413,10 @@ class Session(pgraph.Graph):
 
             if self._keep_web_open and self.web_port is not None:
                 self.end_time = time.time()
-                print(
-                    "\nFuzzing session completed. Keeping webinterface up on {}:{}".format(
+                self._fuzz_data_logger.log_info(
+                    "Fuzzing session completed. Keeping webinterface up on {}:{}".format(
                         self.web_address, self.web_port
-                    ),
+                    ) +
                     "\nPress ENTER to close webinterface",
                 )
                 input()
@@ -1431,6 +1431,9 @@ class Session(pgraph.Graph):
             raise
         except exception.BoofuzzTargetConnectionFailedError:
             # exception should have already been handled but rethrown in order to escape test run
+            pass
+        except EOFError:
+            # Fuzzing session completed
             pass
         except Exception:
             self._fuzz_data_logger.log_error("Unexpected exception! {0}".format(traceback.format_exc()))
