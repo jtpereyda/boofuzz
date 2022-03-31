@@ -1416,8 +1416,8 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info(
                     "Fuzzing session completed. Keeping webinterface up on {}:{}".format(
                         self.web_address, self.web_port
-                    ) +
-                    "\nPress ENTER to close webinterface",
+                    )
+                    + "\nPress ENTER to close webinterface",
                 )
                 input()
         except KeyboardInterrupt:
