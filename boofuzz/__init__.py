@@ -768,12 +768,12 @@ def s_string(value="", size=None, padding=b"\x00", encoding="ascii", fuzzable=Tr
     )
 
 
-def s_from_file(value="", filename=None, encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_from_file(value=b"", filename=None, encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a value from file onto the current block stack.
 
-    :type  value:    str
-    :param value:    (Optional, def="") Default string value
+    :type  value:    bytes
+    :param value:    (Optional, def=b"") Default bytes value
     :type  filename: str
     :param filename: (Optional, def=None) Filename pattern to load all fuzz value
     :type  encoding: str

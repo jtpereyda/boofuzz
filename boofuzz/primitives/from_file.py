@@ -13,8 +13,8 @@ class FromFile(BasePrimitive):
     :type  name: str, optional
     :param name: Name, for referencing later. Names should always be provided, but if not, a default name will be given,
         defaults to None
-    :type  default_value: str
-    :param default_value: Default string value
+    :type  default_value: bytes
+    :param default_value: Default bytes value
     :type  filename: str
     :param filename: Filename pattern to load all fuzz value
     :type  max_len: int, optional
@@ -23,7 +23,7 @@ class FromFile(BasePrimitive):
     :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
     """
 
-    def __init__(self, name=None, default_value="", filename=None, max_len=0, *args, **kwargs):
+    def __init__(self, name=None, default_value=b"", filename=None, max_len=0, *args, **kwargs):
 
         super(FromFile, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
