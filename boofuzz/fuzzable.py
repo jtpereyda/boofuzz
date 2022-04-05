@@ -129,6 +129,7 @@ class Fuzzable:
 
         """
         try:
+            pass
             if not self.fuzzable:
                 return
             index = 0
