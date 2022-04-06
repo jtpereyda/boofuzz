@@ -9,6 +9,3 @@ linters:
     python: 3
     config: ./setup.cfg
     fixer: true
-  pytype:
-    config: ./setup.cfg
-    fixer: false
