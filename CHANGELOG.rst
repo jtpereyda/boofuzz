@@ -8,10 +8,12 @@ Features
 - Remove six compatibility module
 - Remove Python 2 compatibility code.
 - Remove specifying object inheritance in classes
+- Added Web UI listening on specific IP address
 
 Fixes
 ^^^^^
 - Specified encoding on file write rather than assuming default encoding
+- Changed type of `default_value` from string to bytes for `FromFile`.
 
 v0.4.1
 ------
