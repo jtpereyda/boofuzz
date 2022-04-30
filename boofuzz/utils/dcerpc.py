@@ -1,9 +1,5 @@
-from __future__ import absolute_import
-
 import math
 import struct
-
-from past.builtins import xrange
 
 from .. import helpers
 
@@ -70,7 +66,7 @@ def request(opnum, data):
 
     num_frags = int(math.ceil(float(len(data)) / float(frag_size)))
 
-    for i in xrange(num_frags):
+    for i in range(num_frags):
         chunk = data[i * frag_size : (i + 1) * frag_size]
         frag_length = struct.pack("<H", len(chunk) + 24)
         alloc_hint = struct.pack("<L", len(chunk))

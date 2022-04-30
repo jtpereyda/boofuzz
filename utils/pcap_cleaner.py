@@ -3,8 +3,6 @@
 import os
 import sys
 
-from future.utils import iteritems
-
 from boofuzz import utils
 
 sys.path.append(r"..\..\..\paimei")
@@ -29,7 +27,7 @@ except Exception:
     sys.exit(1)
 
 test_cases = []
-for _, crashes in iteritems(crashbin.bins):
+for crashes in crashbin.bins.values():
     for crash in crashes:
         test_cases.append("%d.pcap" % crash.extra)
 

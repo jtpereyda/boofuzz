@@ -1,10 +1,6 @@
-from __future__ import absolute_import
-
 import functools
 import sys
 
-import six
-from past.builtins import map
 
 from . import blocks, exception, legos, primitives
 from .blocks import Aligned, Block, Checksum, Repeat, Request, REQUESTS, Size
@@ -191,7 +187,7 @@ __all__ = [
     "Word",
 ]
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 
 # REQUEST MANAGEMENT
@@ -293,7 +289,7 @@ def s_block(name=None, group=None, encoder=None, dep=None, dep_value=None, dep_v
     :param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
     """
 
-    class ScopedBlock(object):
+    class ScopedBlock:
         def __init__(self, block):
             self.block = block
 
@@ -336,7 +332,7 @@ def s_aligned(modulus=1, pattern=b"\x00", name=None):
                         be given, defaults to None
     """
 
-    class ScopedAligned(object):
+    class ScopedAligned:
         def __init__(self, aligned):
             self.aligned = aligned
 
@@ -591,9 +587,9 @@ def s_binary(value, name=None):
         pair = parsed[:2]
         parsed = parsed[2:]
 
-        value += six.int2byte(int(pair, 16))
+        value += int(pair, 16).to_bytes(1, "little")
 
-    blocks.CURRENT.push(Static(name=name, default_value=parsed, fuzzable=False))
+    blocks.CURRENT.push(Static(name=name, default_value=parsed))
 
 
 def s_delim(value=" ", fuzzable=True, name=None):
@@ -772,12 +768,12 @@ def s_string(value="", size=None, padding=b"\x00", encoding="ascii", fuzzable=Tr
     )
 
 
-def s_from_file(value="", filename=None, encoding="ascii", fuzzable=True, max_len=0, name=None):
+def s_from_file(value=b"", filename=None, encoding="ascii", fuzzable=True, max_len=0, name=None):
     """
     Push a value from file onto the current block stack.
 
-    :type  value:    str
-    :param value:    (Optional, def="") Default string value
+    :type  value:    bytes
+    :param value:    (Optional, def=b"") Default bytes value
     :type  filename: str
     :param filename: (Optional, def=None) Filename pattern to load all fuzz value
     :type  encoding: str

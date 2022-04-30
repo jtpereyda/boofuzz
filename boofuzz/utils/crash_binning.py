@@ -25,8 +25,6 @@
 import json
 from io import open
 
-from past.builtins import xrange
-
 
 class CrashBinStruct:
     def __init__(self):
@@ -96,7 +94,7 @@ class CrashBinning:
         crash.extra = extra
 
         # add module names to the stack unwind.
-        for i in xrange(len(crash.stack_unwind)):
+        for i in range(len(crash.stack_unwind)):
             addr = crash.stack_unwind[i]
             module = pydbg.addr_to_module(addr)
 
@@ -108,7 +106,7 @@ class CrashBinning:
             crash.stack_unwind[i] = "%s:%08x" % (module, addr)
 
         # add module names to the SEH unwind.
-        for i in xrange(len(crash.seh_unwind)):
+        for i in range(len(crash.seh_unwind)):
             (addr, handler) = crash.seh_unwind[i]
 
             module = pydbg.addr_to_module(handler)

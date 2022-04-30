@@ -1,12 +1,8 @@
-from __future__ import print_function
-
 import os
 import shlex
 import subprocess
 import time
 from builtins import str
-
-from past.builtins import map
 
 from boofuzz import utils
 from boofuzz.monitors.base_monitor import BaseMonitor
@@ -234,12 +230,12 @@ class ProcessMonitorLocal(BaseMonitor):
 
     def set_start_commands(self, new_start_commands):
         self.log("updating start commands to: {0}".format(list(new_start_commands)))
-        self.start_commands = map(_split_command_if_str, new_start_commands)
+        self.start_commands = list(map(_split_command_if_str, new_start_commands))
 
     def set_stop_commands(self, new_stop_commands):
         self.log("updating stop commands to: {0}".format(list(new_stop_commands)))
         self.stop_commands = new_stop_commands
-        self.stop_commands = map(_split_command_if_str, new_stop_commands)
+        self.stop_commands = list(map(_split_command_if_str, new_stop_commands))
 
     def set_crash_filename(self, new_crash_filename):
         self.log("updating crash bin filename to '%s'" % new_crash_filename)

@@ -1,12 +1,10 @@
-from __future__ import print_function
-
 import attr
 
 from . import helpers
 
 
 @attr.s
-class DataTestStep(object):
+class DataTestStep:
     type = attr.ib()
     description = attr.ib()
     data = attr.ib()

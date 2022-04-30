@@ -1,5 +1,3 @@
-from past.builtins import range
-
 from .. import helpers
 from ..fuzzable import Fuzzable
 from ..protocol_session_reference import ProtocolSessionReference
@@ -69,7 +67,7 @@ class Repeat(Fuzzable):
         self.current_reps = min_reps  # current number of repetitions
 
         if self.max_reps is not None and self.request is not None and self.block_name is not None:
-            self._fuzz_library = range(self.min_reps, self.max_reps + 1, self.step)
+            self._fuzz_library = list(range(self.min_reps, self.max_reps + 1, self.step))
 
     def mutations(self, default_value):
         for fuzzed_reps_number in self._fuzz_library:

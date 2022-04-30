@@ -47,7 +47,7 @@ class Mirror(BasePrimitive):
         :param mutation_context:
         :return: Rendered value.
         """
-        rendered = self._render_primitive(self._primitive_name)
+        rendered = self._render_primitive(self._primitive_name, mutation_context)
         return helpers.str_to_bytes(rendered)
 
     def mutations(self, default_value):
@@ -57,9 +57,9 @@ class Mirror(BasePrimitive):
         return self._original_value_of_primitive(self._primitive_name, test_case_context)
 
     @_may_recurse
-    def _render_primitive(self, primitive_name):
+    def _render_primitive(self, primitive_name, mutation_context=None):
         return (
-            self._request.resolve_name(self.context_path, primitive_name).render(mutation_context=MutationContext())
+            self._request.resolve_name(self.context_path, primitive_name).render(mutation_context=mutation_context)
             if primitive_name is not None
             else None
         )

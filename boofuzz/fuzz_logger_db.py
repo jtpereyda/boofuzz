@@ -1,11 +1,7 @@
-from __future__ import print_function
-
 import collections
 import datetime
 import sqlite3
 import sys
-
-import six
 
 from . import data_test_case, data_test_step, exception, helpers, ifuzz_logger_backend
 
@@ -141,7 +137,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
                 "INSERT INTO steps VALUES(?, ?, ?, ?, ?, ?);\n",
                 self._current_test_case_index,
                 "receive",
-                u"",
+                "",
                 buffer(data),
                 helpers.get_time_stamp(),
                 False,
@@ -154,7 +150,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
                 "INSERT INTO steps VALUES(?, ?, ?, ?, ?, ?);\n",
                 self._current_test_case_index,
                 "send",
-                u"",
+                "",
                 buffer(data),
                 helpers.get_time_stamp(),
                 False,
@@ -211,7 +207,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
         if len(self._queue) > 0:
             if self._queue_max_len > 0:
                 while (
-                    self._current_test_case_index - next(x for x in self._queue[0] if isinstance(x, six.integer_types))
+                    self._current_test_case_index - next(x for x in self._queue[0] if isinstance(x, int))
                 ) >= self._queue_max_len:
                     self._queue.popleft()
             else:
@@ -234,7 +230,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
             query[4] = buffer(query[4][: self._data_truncate_length])
 
 
-class FuzzLoggerDbReader(object):
+class FuzzLoggerDbReader:
     """Read fuzz data saved using FuzzLoggerDb
 
     Args:

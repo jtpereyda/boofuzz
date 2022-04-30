@@ -4,8 +4,6 @@ import sys
 from builtins import int
 from io import open
 
-from future.utils import iteritems
-
 from boofuzz import pgraph, utils
 
 sys.path.append(r"../../../paimei")
@@ -50,7 +48,7 @@ except Exception:
 #
 
 if test_number:
-    for _, crashes in iteritems(crashbin.bins):
+    for crashes in crashbin.bins.values():
         for crash in crashes:
             if test_number == crash.extra:
                 print(crashbin.crash_synopsis(crash))
@@ -64,7 +62,7 @@ if graph_name:
     graph = pgraph.Graph()
 
 # noinspection PyRedeclaration
-for _, crashes in iteritems(crashbin.bins):
+for crashes in crashbin.bins.values():
     synopsis = crashbin.crash_synopsis(crashes[0]).split("\n")[0]
 
     for crash in crashes:
@@ -97,6 +95,6 @@ for _, crashes in iteritems(crashbin.bins):
     print("\n")
 
 if graph:
-    fh = open("%s.udg" % graph_name, "w+")
+    fh = open("%s.udg" % graph_name, "w+", encoding="utf-8")
     fh.write(graph.render_graph_udraw())
     fh.close()
