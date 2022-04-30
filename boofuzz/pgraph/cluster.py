@@ -14,7 +14,7 @@
 #
 
 
-class Cluster(object):
+class Cluster:
 
     id = None
     nodes = []

@@ -5,19 +5,32 @@ Upcoming
 --------
 Features
 ^^^^^^^^
+- Remove six compatibility module
+- Remove Python 2 compatibility code.
+- Remove specifying object inheritance in classes
+- Added Web UI listening on specific IP address
+
+Fixes
+^^^^^
+- Specified encoding on file write rather than assuming default encoding
+- Changed type of `default_value` from string to bytes for `FromFile`.
+
+v0.4.1
+------
+Features
+^^^^^^^^
 - Added support for fuzzing NETCONF servers with the `NETCONFConnection` class.
-- Add support and tests for Python 3.10
+- Add support and tests for Python 3.10.
 - Added `Session` arg `db_filename` to modify the location of the log database.
 
 Fixes
 ^^^^^
 - Fixed check for when to enable the web app.
 - Documented the possibility to disable the web app.
-- Correctly initialize all children of a request which inherit from `FuzzableBlock`.
-
-Fixes
-^^^^^
+- Correctly initialize all children of a request which inherits from `FuzzableBlock`.
 - Added type checking for arguments of `Bytes` primitive to prevent incorrect use.
+- Fixed TypeError in `s_binary` initialization.
+- Remove redundant unicode strings.
 
 v0.4.0
 ------

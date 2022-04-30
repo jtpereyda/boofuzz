@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-
 import ssl
-
-from future.utils import raise_
 
 from boofuzz import exception
 from boofuzz.connections import tcp_socket_connection
@@ -77,7 +73,7 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
         except ssl.SSLError as e:
             # If an SSL error is thrown the connection should be treated as lost
             # All other exceptions should be handled / raised / re-raised by the parent class.
-            raise_(exception.BoofuzzSSLError(str(e)))
+            raise exception.BoofuzzSSLError(str(e))
 
         return data
 
@@ -99,6 +95,6 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             except ssl.SSLError as e:
                 # If an SSL error is thrown the connection should be treated as lost.
                 # All other exceptions should be handled / raised / re-raised by the parent class.
-                raise_(exception.BoofuzzSSLError(str(e)))
+                raise exception.BoofuzzSSLError(str(e))
 
         return num_sent

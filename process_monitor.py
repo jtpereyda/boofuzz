@@ -1,6 +1,4 @@
 #!c:\\python\\python.exe
-from __future__ import print_function
-
 import click
 
 from boofuzz.constants import DEFAULT_PROCMON_PORT

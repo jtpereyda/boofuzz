@@ -1,12 +1,10 @@
-from __future__ import print_function
-
 import attr
 
 from . import helpers
 
 
 @attr.s
-class DataTestCase(object):
+class DataTestCase:
     name = attr.ib()
     index = attr.ib()
     timestamp = attr.ib()

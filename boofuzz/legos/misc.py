@@ -1,6 +1,4 @@
 # Misc Types
-from __future__ import absolute_import
-
 from .. import blocks, exception, helpers, primitives
 
 

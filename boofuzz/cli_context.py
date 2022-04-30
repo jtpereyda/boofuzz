@@ -4,7 +4,7 @@ from .sessions import Session
 
 
 @attr.s
-class CliContext(object):
+class CliContext:
     """Context for Click commands' Context.obj"""
 
     session = attr.ib(type=Session)

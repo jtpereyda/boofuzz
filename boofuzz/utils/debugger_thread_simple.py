@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 
 try:
@@ -237,7 +235,7 @@ class DebuggerThreadSimple(threading.Thread):
         if self.is_alive():
             return True
         else:
-            with open(self.process_monitor.crash_filename, "a") as rec_file:
+            with open(self.process_monitor.crash_filename, "a", encoding="utf-8") as rec_file:
                 rec_file.write(self.process_monitor.last_synopsis)
 
             if self.process_monitor.coredump_dir is not None:

@@ -1,7 +1,5 @@
 import struct
 
-import six
-
 from .bit_field import BitField
 
 
@@ -34,6 +32,6 @@ class Byte(BitField):
         super(Byte, self).__init__(width=8, *args, **kwargs)
 
     def encode(self, value, mutation_context):
-        if not isinstance(value, (six.integer_types, list, tuple)):
+        if not isinstance(value, (int, list, tuple)):
             value = struct.unpack(self.endian + "B", value)[0]
         return super(Byte, self).encode(value, mutation_context)
