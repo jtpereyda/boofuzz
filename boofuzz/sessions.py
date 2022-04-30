@@ -942,7 +942,7 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.mutant_index)
+                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.fuzz_node.mutant.index_mutation)
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
