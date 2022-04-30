@@ -43,9 +43,9 @@ def err(msg):
     sys.stderr.write("ERR> " + msg + "\n") or sys.exit(1)
 
 
-def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
+def serve_procmon(ip, port, crash_bin, proc_name, ignore_pid, log_level, coredump_dir):
     with ProcessMonitorPedrpcServer(
-        host="0.0.0.0",
+        host=ip,
         port=port,
         crash_filename=crash_bin,
         debugger_class=DebuggerThreadSimple,
@@ -92,11 +92,13 @@ def serve_procmon(port, crash_bin, proc_name, ignore_pid, log_level, coredump_di
     help="directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)",
     default="coredumps",
 )
-def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir):
+@click.option("--ip", "-I", help="Listen on this IP for incoming connections from boofuzz", type=str, default="127.0.0.1")
+def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir, ip):
     if coredump_dir is not None:
         helpers.mkdir_safe(coredump_dir)
 
     serve_procmon(
+        ip,
         port=port,
         crash_bin=crash_bin,
         proc_name=proc_name,
