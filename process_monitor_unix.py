@@ -92,7 +92,9 @@ def serve_procmon(ip, port, crash_bin, proc_name, ignore_pid, log_level, coredum
     help="directory where coredumps are moved to (you may need to adjust ulimits to create coredumps)",
     default="coredumps",
 )
-@click.option("--ip", "-I", help="Listen on this IP for incoming connections from boofuzz", type=str, default="127.0.0.1")
+@click.option(
+    "--ip", "-I", help="Listen on this IP for incoming connections from boofuzz", type=str, default="127.0.0.1"
+)
 def go(crash_bin, ignore_pid, log_level, proc_name, port, coredump_dir, ip):
     if coredump_dir is not None:
         helpers.mkdir_safe(coredump_dir)

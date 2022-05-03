@@ -1051,7 +1051,9 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
                     # TODO: doesn't this belong in the process monitor?
-                    self._fuzz_data_logger.log_info("Giving the process %d seconds to settle in" % self.restart_sleep_time)
+                    self._fuzz_data_logger.log_info(
+                        "Giving the process %d seconds to settle in" % self.restart_sleep_time
+                    )
                     time.sleep(self.restart_sleep_time)
                     restarted = True
                     break
