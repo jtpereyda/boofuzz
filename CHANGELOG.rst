@@ -14,6 +14,7 @@ Fixes
 ^^^^^
 - Specified encoding on file write rather than assuming default encoding
 - Changed type of `default_value` from string to bytes for `FromFile`.
+- `s_update` primitive was out of date.
 
 v0.4.1
 ------
