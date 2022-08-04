@@ -47,6 +47,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+Pipfile
 
 # Sphinx documentation
 docs/_build/
