@@ -4,7 +4,7 @@ Installing boofuzz
 Prerequisites
 -------------
 
-Boofuzz requires Python ≥ 3.5. Recommended installation requires ``pip``. As a base requirement, the following packages
+Boofuzz requires Python ≥ 3.6. Recommended installation requires ``pip``. As a base requirement, the following packages
 are needed:
 
 Ubuntu/Debian
