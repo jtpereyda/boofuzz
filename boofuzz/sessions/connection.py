@@ -1,5 +1,6 @@
 from ..pgraph import Edge
 
+
 class Connection(Edge):
     def __init__(self, src, dst, callback=None):
         """

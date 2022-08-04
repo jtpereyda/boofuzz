@@ -1,6 +1,7 @@
 import time
 import warnings
 
+
 class Target:
     """Target descriptor container.
 

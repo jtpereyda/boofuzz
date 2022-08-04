@@ -7,6 +7,7 @@ from tornado.wsgi import WSGIContainer
 from boofuzz.web.app import app
 from boofuzz import constants
 
+
 class WebApp:
     """Serve fuzz data over HTTP.
 
