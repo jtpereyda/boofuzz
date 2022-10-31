@@ -28,7 +28,7 @@ jobs:
       run: python -m pip install --upgrade pip tox
     - name: Format Python version for tox
       id: py_tox_version
-      uses: frabert/replace-string-action@v2.2
+      uses: frabert/replace-string-action@v2.3
       with:
         pattern: '(\d)\.(\d)'
         string: ${{ matrix.python-version }}
