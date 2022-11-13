@@ -18,7 +18,7 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Install python version 2.7.9+ **and** 3.6+
+1. Install python version 3.7+
 
 2. Verify tests pass:
 
@@ -36,7 +36,7 @@ Pull Request Checklist
     .. attention::
         If the tests pass, check the output for new flake8 warnings that indicate PEP8 violations.
 
-3. Format the code to meet our code style requirements (needs python 3.6+):
+3. Format the code to meet our code style requirements:
 
     .. code-block::
 
