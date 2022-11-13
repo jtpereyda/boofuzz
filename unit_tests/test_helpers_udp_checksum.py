@@ -22,7 +22,7 @@ def msg_1_byte(context, msg):
     context.msg = ast.literal_eval(msg)
 
 
-@given("msg with 60 bytes")
+@given("Message with 60 bytes")
 def msg_60_bytes(context):
     # Use each bit at least once...
     all_16_bits = (

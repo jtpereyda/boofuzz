@@ -446,7 +446,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
@@ -499,7 +499,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
@@ -545,7 +545,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l2", recv_timeout=0.1)
@@ -595,7 +595,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l3")
@@ -644,7 +644,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l3")
@@ -690,7 +690,7 @@ class TestSocketConnection(unittest.TestCase):
 
         # Given
         server = MiniTestServer(proto="raw", host="lo")
-        server.data_to_send = "GKC"
+        server.data_to_send = b"GKC"
         server.bind()
 
         uut = SocketConnection(host="lo", proto="raw-l3")
