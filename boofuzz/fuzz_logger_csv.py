@@ -1,6 +1,6 @@
+import sys
 import csv
 import datetime
-import sys
 
 from . import helpers, ifuzz_logger_backend
 
@@ -37,6 +37,7 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
             file_handle (io.BinaryIO): Open file handle for logging. Defaults to sys.stdout.
             bytes_to_str (function): Function that converts sent/received bytes data to string for logging.
         """
+        file: file_handle
         self._file_handle = file_handle
         self._format_raw_bytes = bytes_to_str
         self._csv_handle = csv.writer(self._file_handle)
@@ -72,6 +73,9 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
         pass
 
     def close_test(self):
+        # At this point any buffered data in the file must be flushed to prevent loss.
+        # Issue 601 https://github.com/jtpereyda/boofuzz/issues/601
+        print("", file=self._file_handle, flush=True)
         pass
 
     def _print_log_msg(self, msg):
