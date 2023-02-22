@@ -100,7 +100,7 @@ Happy fuzzing, and Godspeed!
 Example
 ==========
 Ftp Simple
-Here is an example of execution of this script : `ftp_simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.pys>`_
+Here is an example of execution of this script : `ftp_simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.py>`_
 To perform this test, you will need an FTP server, here is one  `opensource FTP server <https://github.com/Siim/ftp>`_.
 
 Once you have maked the program, just run /ftp on a terminal.
