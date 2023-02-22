@@ -99,16 +99,16 @@ Happy fuzzing, and Godspeed!
 
 Another examples
 ==========
-Ftp Simple
-Here is an example of execution of this script : `ftp_simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.py>`_
+`Ftp_simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.py>`_
+Here is an example of execution of this script.
 To perform this test, you will need an FTP server, here is one  `opensource FTP server <https://github.com/Siim/ftp>`_.
 
 Once you have maked the program, just run /ftp on a terminal.
 The server by default run on port 8021. Make sure to run the ftp_simple.py script on the port that the server is waiting for.
 
-HTTP Simple and http_with_body.py
-Here is an example of execution of theses scripts :  `HTTP_Simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/http_simple.py>`_
+`HTTP_Simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/http_simple.py>`_
 and  `HTTP_With_Body <https://github.com/jtpereyda/boofuzz/blob/master/examples/http_with_body.py>`_
+Here is an example of execution of theses scripts.
 
 To perform this test, you will need an HTTP server, you can use python for that.
 python3 -m http.server
