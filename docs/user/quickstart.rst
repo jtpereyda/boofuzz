@@ -97,7 +97,7 @@ If you are doing crazy cool stuff, check out the :ref:`community info <community
 
 Happy fuzzing, and Godspeed!
 
-Example
+Another examples
 ==========
 Ftp Simple
 Here is an example of execution of this script : `ftp_simple <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.py>`_
