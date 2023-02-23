@@ -111,13 +111,10 @@ and  `HTTP_With_Body <https://github.com/jtpereyda/boofuzz/blob/master/examples/
 Here is an example of execution of theses scripts.
 
 To perform this test, you will need an HTTP server, you can use python for that.
+
 .. code-block:: bash
 
     $ python3 -m http.server
-    
-.. code-block:: bash
-
-    $ boo open <run-*.db>
     
 Then run the http_simple.py script on the ip/port that the server use.
 
