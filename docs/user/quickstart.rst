@@ -115,6 +115,10 @@ To perform this test, you will need an HTTP server, you can use python for that.
 
     $ python3 -m http.server
     
+.. code-block:: bash
+
+    $ boo open <run-*.db>
+    
 Then run the http_simple.py script on the ip/port that the server use.
 
 
