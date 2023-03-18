@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # Designed for use with boofuzz v0.3.0
 #
-# Fuzz Testing Autoprogramming
+# Autoprogramming an Internet Of Things (IOT) device by sending it a formatted xml data file with internal
+# checksum over selected portions of the data.
+# A typical CRC 16 algorithm is used to manage data integrity.
 #
-# how to run basics: python autoprog.py -a <target ip address> -p <port number>
+# how to run: python autoprog.py -a <target ip address> -p <port number>
 #
 
 
@@ -20,14 +22,17 @@ g_target_ip_addr = None
 g_autoprogram_port = 65534
 
 
-# a monitor to verify if the target is still alive
+# Verify if the IOT target is still alive by expecting a response to a ping. This meas that the test must have
+# network access to the same subnet as the IOT device target. Verify that a ping reply is successful independent of
+# running this fuzz test.
+#
 # noinspection PyMethodOverriding
 # noinspection PyMethodParameters
-class spaceTargetMonitor(NetworkMonitor):
+class IOT_TargetMonitor(NetworkMonitor):
     def alive():
         global g_target_ip_addr
         param = "-n" if platform.system().lower() == "windows" else "-c"
-        # Russian Sub Commander Marco Ramius requests one ping only
+        # One ping only
         command = ["ping", param, "1", g_target_ip_addr]
         # noinspection PyTypeChecker
         message = "alive() sending a ping command to " + g_target_ip_addr
@@ -58,10 +63,12 @@ class spaceTargetMonitor(NetworkMonitor):
     def get_crash_synopsis():
         return "get_crash_synopsis detected a crash of the target."
 
+    # The use of a 12 second sleep is based on experimentation for a specific IOT device. Change the number of seconds
+    # as needed for your environment.
     def restart_target(target=None, **kwargs):
         mylogger.log_info("restart_target sleep for 12")
         time.sleep(12)
-        if spaceTargetMonitor.alive() is True:
+        if IOT_TargetMonitor.alive() is True:
             mylogger.log_info("restart_target ok")
             return True
         else:
@@ -74,7 +81,6 @@ class spaceTargetMonitor(NetworkMonitor):
 
 def main(argv):
     # parse command line options.
-    opts = None
     target_ip_addr = None
     autoprogram_port = 65534
     start_index = 1
@@ -112,14 +118,16 @@ def main(argv):
     target_message = "Target device ip address and port " + str(g_target_ip_addr) + " " + str(g_autoprogram_port)
     mylogger.log_info(target_message)
 
-    spaceTargetMonitor(host=g_target_ip_addr, port=g_autoprogram_port)
+    IOT_TargetMonitor(host=g_target_ip_addr, port=g_autoprogram_port)
 
     mylogger.log_info("Initializing session to target ")
     session = Session(
         target=Target(
             connection=TCPSocketConnection(host=g_target_ip_addr, port=g_autoprogram_port),
-            monitors=[spaceTargetMonitor],
+            monitors=[IOT_TargetMonitor],
         ),
+        # The use of a 12 second sleep is based on experimentation for a specific IOT device. Change the sleep count
+        # as needed for your environment.
         sleep_time=12,
         crash_threshold_request=2,
         crash_threshold_element=2,
@@ -133,30 +141,30 @@ def main(argv):
 
 
 #################################################################
-# Single entry configuration within a Proposal list:
+# An Autoprogramming proposal protocol example
 #################################################################
 # Example protocol which will send the following data in sequence:
-#    1. A URL inside of a formatted line
-#    2. The checksum of line 1 above.
+#    1. A URL inside a formatted line
+#    2. The checksum of line 1.
 #    3. A formatted line to indicate the completion of the checksum.
 #    4. A formatted line indicating the start of the outer checksum.
 #    5. An outer checksum managing data consisting of lines 1,2,3, and 4.
 #    6. A formatted line to indicate the completion of the outer checksum.
 #
-# <ProposalList xmlns="http://www.bbraun.com/HC/AutoProgramming">
-# calculated_checksum_value
-# </Checksum>
-# <ChecksumTotal>
-# calculated_outer_checksum_value
-# </ChecksumTotal>
+# <ProposalList xmlns="http://www.example.com/HC/AutoProgramming">
+# the_calculated_checksum_value_of_previous_line
+# </Checksum_section_end>
+# <ChecksumTotal_begins>
+# the_calculated_outer_checksum_value
+# </ChecksumTotal_ends>
 #
-# An example of what goes out:
-#    <ProposalList xmlns="http://www.bbraun.com/HC/AutoProgramming">
+# An example of an AutoProgram protocol output:
+#    <ProposalList xmlns="http://www.example.com/HC/AutoProgramming">
 #    1234
-#    </Checksum>
-#    <ChecksumTotal>
+#    </Checksum_section_end>
+#    <ChecksumTotal_begins>
 #    5678
-#    </ChecksumTotal>
+#    </ChecksumTotal_ends>
 #
 #################################################################
 
@@ -165,16 +173,16 @@ def define_autoprog_static(session):
     dl_line_1 = String(
         name="proposal_header", default_value='<ProposalList xmlns="http://www.mycompany.com/HC/AutoProgramming">'
     )
-    # insert crc here
-    dl_line_9 = String(name="crc_end", default_value="</Checksum>", fuzzable=False)
-    dl_line_11 = String(name="outer_crc", default_value="<ChecksumTotal>", fuzzable=False)
+    # insert inner crc here
+    dl_line_2 = String(name="crc_end", default_value="</Checksum_end>", fuzzable=False)
+    dl_line_3 = String(name="outer_crc", default_value="<ChecksumTotal_begins>", fuzzable=False)
     # insert outer crc here
-    dl_line_12 = String(name="outer_crcend", default_value="</ChecksumTotal>", fuzzable=False)
+    dl_line_4 = String(name="outer_crcend", default_value="</ChecksumTotal_ends>", fuzzable=False)
 
     reqW = Request("autoprog")
     block = Block(name="autoprogB", request=reqW)
     reqW.push(block)
-    crcValue = Checksum(
+    crcValue_inner = Checksum(
         name="firstCRC16", block_name="autoprogB", request=reqW, algorithm=getCrc16Ccitt, length=2, fuzzable=False
     )
     crcValue_outer = Checksum(
@@ -182,11 +190,11 @@ def define_autoprog_static(session):
     )
 
     block.push(dl_line_1)
-    reqW.push(crcValue)
-    block.push(dl_line_9)
-    block.push(dl_line_11)
+    reqW.push(crcValue_inner)
+    block.push(dl_line_2)
+    block.push(dl_line_3)
     reqW.push(crcValue_outer)
-    block.push(dl_line_12)
+    block.push(dl_line_4)
     reqW.pop()
 
     session.connect(reqW)
