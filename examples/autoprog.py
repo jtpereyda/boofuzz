@@ -22,7 +22,7 @@ g_target_ip_addr = None
 g_autoprogram_port = 65534
 
 
-# Verify if the IOT target is still alive by expecting a response to a ping. This meas that the test must have
+# Verify if the IOT target is still alive by expecting a response to a ping. This means that the test must have
 # network access to the same subnet as the IOT device target. Verify that a ping reply is successful independent of
 # running this fuzz test.
 #
