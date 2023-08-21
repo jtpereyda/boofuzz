@@ -12,6 +12,7 @@ import warnings
 import zlib
 from builtins import input
 from io import open
+from itertools import cycle
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -1391,7 +1392,7 @@ class Session(pgraph.Graph):
 
             self.num_cases_actually_fuzzed = 0
             self.start_time = time.time()
-            for mutation_context in fuzz_case_iterator:
+            for mutation_context, target in zip(fuzz_case_iterator, cycle(self.targets)):
                 if self.total_mutant_index < self._index_start:
                     continue
 
@@ -1402,8 +1403,7 @@ class Session(pgraph.Graph):
                     and self.num_cases_actually_fuzzed % self.restart_interval == 0
                 ):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                    for target in self.targets:
-                        self._restart_target(target)   
+                    self._restart_target(target)   
 
                 self._fuzz_current_case(mutation_context, target)
 
@@ -1755,7 +1755,7 @@ class Session(pgraph.Graph):
                     current_message=node,
                 )
                 mutation_context.protocol_session = protocol_session
-                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
+                callback_data = self._callback_current_node(target=target, node=node, edge=e, test_case_context=protocol_session)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
@@ -1767,7 +1767,7 @@ class Session(pgraph.Graph):
             )
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
+                target=target, node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
             )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(
