@@ -106,8 +106,20 @@ class BitField(Fuzzable):
                 self.max_num // 32,
                 self.max_num,
             ]
+
+            # To avoid duplication of mutation params, we introduce gradually
+            # increasing lower border. We also require interesting borders to be
+            # sorted in ascending order to be processed correctly.
+            # Deduplication could also be done with intermediate 'set' construction,
+            # but it might be costly or impossible if the number of values is huge.
+            interesting_boundaries.sort()
+
+            # We don't expect negative bit field values with Python integers,
+            # the 0-value is possible with the given starting 'lower_border'.
+            lower_border = -1
             for boundary in interesting_boundaries:
-                for v in self._yield_integer_boundaries(boundary):
+                for v in self._yield_integer_boundaries(boundary, lower_border):
+                    lower_border = v
                     yield v
         # TODO Add a way to inject a list of fuzz values
         # elif isinstance(default_value, (list, tuple)):
@@ -116,16 +128,18 @@ class BitField(Fuzzable):
 
         # TODO: Add injectable arbitrary bit fields
 
-    def _yield_integer_boundaries(self, integer):
+    def _yield_integer_boundaries(self, integer, lower_border):
         """
         Add the supplied integer and border cases to the integer fuzz heuristics library.
 
         @type  integer: int
         @param integer: int to append to fuzz heuristics
+        @type  lower_border: int
+        @param lower_border: int bottom limit for border cases, so all values must be strictly greater
         """
         for i in range(-10, 10):
             case = integer + i
-            if 0 <= case < self.max_num:
+            if lower_border < case < self.max_num:
                 # some day: if case not in self._user_provided_values
                 yield case
 
