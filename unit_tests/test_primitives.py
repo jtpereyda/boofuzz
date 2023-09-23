@@ -105,6 +105,23 @@ class TestPrimitives(unittest.TestCase):
                 req.resolve_name(context_path="test_s_mirror", name="size").render(),
             )
 
+    def test_bit_field(self):
+        s_initialize("test_bit_field")
+        s_bit_field(0, width=4, name="bit_field")
+        req = s_get("test_bit_field")
+
+        mutated_values = []
+        mutations_generator = req.get_mutations()
+        for mutations_list in mutations_generator:
+            self.assertEqual(len(mutations_list), 1)
+            mutation = mutations_list[0]
+            self.assertEqual(mutation.qualified_name, "test_bit_field.bit_field")
+            mutated_values.append(mutation.value)
+
+        mutated_values_set = set(mutated_values)
+        # bit field mutations should not contain duplicates
+        self.assertEqual(len(mutated_values_set), len(mutated_values))
+
     def test_bytes(self):
         # test if s_bytes works with empty input
         s_initialize("test_bytes_empty")
