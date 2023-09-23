@@ -137,6 +137,7 @@ class BitField(Fuzzable):
         @type  lower_border: int
         @param lower_border: int bottom limit for border cases, so all values must be strictly greater
         """
+        # Contract: generate values in ascending order, otherwise deduplication logics might break.
         for i in range(-10, 10):
             case = integer + i
             if lower_border < case < self.max_num:
