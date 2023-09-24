@@ -157,7 +157,7 @@ class DebuggerThreadPydbg(threading.Thread):
         return pid
 
     def _scan_proc_names_once(self):
-        for (pid, name) in self.dbg.enumerate_processes():
+        for pid, name in self.dbg.enumerate_processes():
             if name.lower() == self.proc_name.lower() and pid != self.ignore_pid:
                 return pid
         return None

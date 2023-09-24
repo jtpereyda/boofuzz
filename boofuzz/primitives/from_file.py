@@ -24,7 +24,6 @@ class FromFile(BasePrimitive):
     """
 
     def __init__(self, name=None, default_value=b"", filename=None, max_len=0, *args, **kwargs):
-
         super(FromFile, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
         self._filename = filename

@@ -69,7 +69,6 @@ def find_ints(start_address):
 
     # loop heads
     for head in Heads(start_address, SegEnd(start_address)):
-
         # if it's code, check for cmp instruction
         if isCode(GetFlags(head)):
             mnem = GetMnem(head)
@@ -100,7 +99,6 @@ def find_strings(start_address):
             xref_start = import_ea
             xref_cur = DfirstB(xref_start)
             while xref_cur != BADADDR:
-
                 # print("Found call to ", import_name)
                 string_arg = get_arguments(xref_cur)
 
@@ -119,7 +117,6 @@ def find_strings(start_address):
             lib_name = GetFunctionName(function_ea)
 
             if len(lib_name) > 1 and "cmp" in lib_name:
-
                 # found one, now find xrefs to it and grab arguments
                 xref_start = function_ea
                 xref_cur = RfirstB(xref_start)

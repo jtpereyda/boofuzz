@@ -30,7 +30,6 @@ if s_block_start("packet_1"):
 s_block_end()
 
 if s_block_start("packet_2"):
-
     # unicode byte order marker
     s_static("\xfe\xff")
 
