@@ -17,6 +17,7 @@ Fixes
 - Changed type of `default_value` from string to bytes for `FromFile`.
 - `s_update` primitive was out of date.
 - The minimum supported Python version is now 3.7.
+- Removed duplicates from `BitField` primitive.
 
 v0.4.1
 ------
