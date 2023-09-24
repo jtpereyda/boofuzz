@@ -87,14 +87,10 @@ class BitField(Fuzzable):
 
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
-
+            
         assert isinstance(self.max_num, int), "max_num must be an integer!"
 
-    def _iterate_fuzz_lib(self):
-        if self.full_range:
-            for i in range(0, self.max_num):
-                yield i
-        else:
+        if not self.full_range:
             # try only "smart" values.
             interesting_boundaries = [
                 0,
@@ -106,18 +102,28 @@ class BitField(Fuzzable):
                 self.max_num // 32,
                 self.max_num,
             ]
-
-            # To avoid duplication of mutation params, we introduce gradually
-            # increasing lower border. We also require interesting borders to be
-            # sorted in ascending order to be processed correctly.
-            # Deduplication could also be done with intermediate 'set' construction,
-            # but it might be costly or impossible if the number of values is huge.
+            
+            # Contract: sort in ascending order required for deduplication.
             interesting_boundaries.sort()
 
+            self._interesting_boundaries = interesting_boundaries
+        else:
+            self._interesting_boundaries = []
+
+    def _iterate_fuzz_lib(self):
+        if self.full_range:
+            for i in range(0, self.max_num):
+                yield i
+        else:
+            # To avoid duplication of mutatation values, we introduce gradually
+            # increasing lower border. Combined with interesting boundaries
+            # sorted in ascending order, it's possible to avoid duplicates.
+            # Deduplication could also be done with intermediate 'set' construction,
+            # but it might be costly or impossible if the number of values is huge.
             # We don't expect negative bit field values with Python integers,
-            # the 0-value is possible with the given starting 'lower_border'.
+            # the 0-value for mutation is possible with the given starting 'lower_border'.
             lower_border = -1
-            for boundary in interesting_boundaries:
+            for boundary in self._interesting_boundaries:
                 for v in self._yield_integer_boundaries(boundary, lower_border):
                     lower_border = v
                     yield v
