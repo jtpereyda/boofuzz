@@ -106,7 +106,7 @@ class FuzzLoggerCurses(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._current_num_mutations = 0
 
         self._format_raw_bytes = bytes_to_str
-        self._version = helpers.get_boofuzz_version(helpers)
+        self._version = helpers.get_boofuzz_version()
 
         # Resize console to minimum size
         self._width, self._height = get_terminal_size()

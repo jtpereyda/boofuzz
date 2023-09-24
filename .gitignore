@@ -47,6 +47,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+poetry.lock
 
 # Sphinx documentation
 docs/_build/
