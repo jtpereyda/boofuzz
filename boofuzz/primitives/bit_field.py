@@ -87,7 +87,7 @@ class BitField(Fuzzable):
 
         if not self.max_num:
             self.max_num = binary_string_to_int("1" + "0" * width)
-            
+
         assert isinstance(self.max_num, int), "max_num must be an integer!"
 
         if not self.full_range:
@@ -102,7 +102,7 @@ class BitField(Fuzzable):
                 self.max_num // 32,
                 self.max_num,
             ]
-            
+
             # Contract: sort in ascending order required for deduplication.
             interesting_boundaries.sort()
 
