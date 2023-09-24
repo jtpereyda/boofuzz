@@ -159,7 +159,7 @@ class CrashBinning:
         synopsis += crash.context_dump
 
         synopsis += "\ndisasm around:\n"
-        for (ea, inst) in crash.disasm_around:
+        for ea, inst in crash.disasm_around:
             synopsis += "\t0x%08x %s\n" % (ea, inst)
 
         if len(crash.stack_unwind):
@@ -169,7 +169,7 @@ class CrashBinning:
 
         if len(crash.seh_unwind):
             synopsis += "\nSEH unwind:\n"
-            for (addr, handler, handler_str) in crash.seh_unwind:
+            for addr, handler, handler_str in crash.seh_unwind:
                 synopsis += "\t%08x -> %s\n" % (addr, handler_str)
 
         return synopsis + "\n"
@@ -215,7 +215,7 @@ class CrashBinning:
 
         self.bins = {}
         bin_dict = json.load(open(file_name, "rb"))
-        for (crash_address, bin_list) in bin_dict.items():
+        for crash_address, bin_list in bin_dict.items():
             self.bins[crash_address] = []
             for single_bin in bin_list:
                 tmp = CrashBinStruct()
@@ -252,7 +252,7 @@ class CrashBinning:
         synopsis += self.last_crash.context_dump
 
         synopsis += "\ndisasm around:\n"
-        for (ea, inst) in self.last_crash.disasm_around:
+        for ea, inst in self.last_crash.disasm_around:
             synopsis += "\t0x%08x %s\n" % (ea, inst)
 
         if len(self.last_crash.stack_unwind):
@@ -262,7 +262,7 @@ class CrashBinning:
 
         if len(self.last_crash.seh_unwind):
             synopsis += "\nSEH unwind:\n"
-            for (addr, handler, handler_str) in self.last_crash.seh_unwind:
+            for addr, handler, handler_str in self.last_crash.seh_unwind:
                 try:
                     disasm = self.pydbg.disasm(handler)
                 except Exception:

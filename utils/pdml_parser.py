@@ -20,7 +20,6 @@ class ParsePDML(ContentHandler):
 
         # if parsing flag is set, we're past tcp
         if self.start_parsing:
-
             if not name == "field":
                 print("Found payload with name %s" % attributes["name"])
             elif name == "field":

@@ -194,7 +194,7 @@ class DebuggerThreadSimple(threading.Thread):
         """
         self.pid = None
         while not self.pid:
-            for (pid, name) in _enumerate_processes():
+            for pid, name in _enumerate_processes():
                 # ignore the optionally specified PID.
                 if pid == self.ignore_pid:
                     continue
