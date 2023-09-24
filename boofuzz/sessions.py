@@ -861,7 +861,6 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_pass("No crash detected.")
             else:
                 for monitor in set(target.monitors) - set(finished_monitors):
-
                     synopsis = monitor.get_crash_synopsis()
                     if len(synopsis) > 0:
                         self._fuzz_data_logger.log_fail(
