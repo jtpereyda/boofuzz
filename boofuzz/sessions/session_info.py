@@ -3,11 +3,13 @@ from ..fuzz_logger_db import FuzzLoggerDbReader
 
 
 class SessionInfo:
+    """
+    .. versionchanged:: 0.5.0
+       This class has been moved into the sessions subpackage. The full path is now
+       boofuzz.sessions.session_info.SessionInfo.
+    """
+
     def __init__(self, db_filename):
-        """
-        .. versionchanged:: 0.5.0
-            This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.session_info.SessionInfo.
-        """
         self._db_reader = FuzzLoggerDbReader(db_filename=db_filename)
 
     @property

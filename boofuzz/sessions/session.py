@@ -107,7 +107,7 @@ class Session(pgraph.Graph):
         web_address:            Address where's Boofuzz logger exposed. Default 'localhost'
 
     .. versionchanged:: 0.5.0
-        This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.session.Session.
+       This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.session.Session.
     """
 
     def __init__(

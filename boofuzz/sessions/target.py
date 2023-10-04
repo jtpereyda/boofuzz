@@ -26,8 +26,7 @@ class Target:
         procmon_options: Deprecated interface for adding a process monitor.
 
     .. versionchanged:: 0.5.0
-        This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.target.Target.
-
+       This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.target.Target.
     """
 
     def __init__(

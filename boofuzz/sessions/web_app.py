@@ -18,7 +18,7 @@ class WebApp:
                                 Default 'localhost'.
 
     .. versionchanged:: 0.5.0
-        This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.web_app.WebApp.
+       This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.web_app.WebApp.
     """
 
     def __init__(

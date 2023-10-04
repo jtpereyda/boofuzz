@@ -21,8 +21,8 @@ class Connection(Edge):
             callback (function): Optional. Callback function to pass received data to between node xmits
 
         .. versionchanged:: 0.5.0
-            This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.connection.Connection.
-
+           This class has been moved into the sessions subpackage. The full path is now
+           boofuzz.sessions.connection.Connection.
         """
 
         super(Connection, self).__init__(src, dst)
