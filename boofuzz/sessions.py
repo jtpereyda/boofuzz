@@ -941,7 +941,7 @@ class Session(pgraph.Graph):
                 if not isinstance(self.fuzz_node.mutant, primitives.Group) and not isinstance(
                     self.fuzz_node.mutant, blocks.Repeat
                 ):
-                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.mutant_index)
+                    skipped = max(0, self.fuzz_node.mutant.get_num_mutations() - self.fuzz_node.mutant.index_mutation)
                     self._skip_current_element_after_current_test_case = True
                     self._fuzz_data_logger.open_test_step(
                         "Crash threshold reached for this element, exhausting {0} mutants.".format(skipped)
@@ -1050,8 +1050,10 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_info("Restarting target process using {}".format(monitor.__class__.__name__))
                 if monitor.restart_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self):
                     # TODO: doesn't this belong in the process monitor?
-                    self._fuzz_data_logger.log_info("Giving the process 3 seconds to settle in")
-                    time.sleep(3)
+                    self._fuzz_data_logger.log_info(
+                        "Giving the process %d seconds to settle in" % self.restart_sleep_time
+                    )
+                    time.sleep(self.restart_sleep_time)
                     restarted = True
                     break
 

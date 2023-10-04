@@ -50,6 +50,8 @@ class Fuzzable:
             Fuzzable.name_counter += 1
             self._name = "{0}{1}".format(type(self).__name__, Fuzzable.name_counter)
 
+        self.index_mutation = 0
+
     @property
     def fuzzable(self):
         """If False, this element should not be mutated in normal fuzzing."""
@@ -132,6 +134,7 @@ class Fuzzable:
             if not self.fuzzable:
                 return
             index = 0
+            self.index_mutation = 0
             for value in itertools.chain(self.mutations(self.original_value()), self._fuzz_values):
                 if self._halt_mutations:
                     self._halt_mutations = False
@@ -141,6 +144,7 @@ class Fuzzable:
                 elif isinstance(value, Mutation):
                     yield [value]
                 else:
+                    self.index_mutation += 1
                     yield [Mutation(value=value, qualified_name=self.qualified_name, index=index)]
                     index += 1
         finally:
