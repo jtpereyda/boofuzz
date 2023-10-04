@@ -18,7 +18,7 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Install python version 3.7+
+1. Install python version 3.8+
 
 2. Verify tests pass:
 
@@ -75,7 +75,7 @@ Prep
 
 2. Increment version number from last release according to PEP 0440 and roughly according to the Semantic Versioning guidelines.
 
-    1. In ``boofuzz/__init__.py``.
+    1. In ``pyproject.toml``.
 
     2. In ``docs/conf.py``.
 
