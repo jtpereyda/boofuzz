@@ -4,8 +4,8 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 
-from boofuzz.web.app import app
 from boofuzz import constants
+from boofuzz.web.app import app
 
 
 class WebApp:

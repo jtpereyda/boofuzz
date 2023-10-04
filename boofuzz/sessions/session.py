@@ -13,6 +13,10 @@ import zlib
 from builtins import input
 from io import open
 
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.wsgi import WSGIContainer
+
 from boofuzz import (
     blocks,
     constants,
@@ -26,22 +30,14 @@ from boofuzz import (
     pgraph,
     primitives,
 )
+from boofuzz.exception import BoofuzzFailure
 from boofuzz.monitors import CallbackMonitor
 from boofuzz.mutation_context import MutationContext
 from boofuzz.protocol_session import ProtocolSession
-
-from ..exception import BoofuzzFailure
-
+from boofuzz.web.app import app
 from .connection import Connection
 from .session_info import SessionInfo
 from .web_app import WebApp
-
-# needed for build_web_app_thread
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.wsgi import WSGIContainer
-
-from boofuzz.web.app import app
 
 
 def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address=constants.DEFAULT_WEB_UI_ADDRESS):
