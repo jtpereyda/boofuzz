@@ -18,6 +18,8 @@ Fixes
 - `s_update` primitive was out of date.
 - The minimum supported Python version is now 3.7.
 - Removed duplicates from `BitField` primitive.
+- Fixed unwanted deprecation warning when using `Session.fuzz(name=name)`.
+- Changed type of `dep_value` argument of `Block` to bytes and added type checks.
 
 v0.4.1
 ------
