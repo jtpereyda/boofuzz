@@ -12,6 +12,7 @@ import warnings
 import zlib
 from builtins import input
 from io import open
+from itertools import cycle
 
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
@@ -1057,7 +1058,7 @@ class Session(pgraph.Graph):
 
         if restarted:
             for monitor in target.monitors:
-                monitor.post_start_target(target=self.targets[0], fuzz_data_logger=self._fuzz_data_logger, session=self)
+                monitor.post_start_target(target=target, fuzz_data_logger=self._fuzz_data_logger, session=self)
         else:
             self._fuzz_data_logger.log_info(
                 "No reset handler available... sleeping for {} seconds".format(self.restart_sleep_time)
@@ -1074,7 +1075,7 @@ class Session(pgraph.Graph):
                 # spawn the web interface.
                 self.web_interface_thread.start()
 
-    def _callback_current_node(self, node, edge, test_case_context):
+    def _callback_current_node(self, target, node, edge, test_case_context):
         """Execute callback preceding current node.
 
         Args:
@@ -1091,7 +1092,7 @@ class Session(pgraph.Graph):
         if edge.callback:
             self._fuzz_data_logger.open_test_step("Callback function '{0}'".format(edge.callback.__name__))
             data = edge.callback(
-                self.targets[0],
+                target,
                 self._fuzz_data_logger,
                 session=self,
                 node=node,
@@ -1101,7 +1102,7 @@ class Session(pgraph.Graph):
 
         return data
 
-    def transmit_normal(self, sock, node, edge, callback_data, mutation_context):
+    def transmit_normal(self, target, node, edge, callback_data, mutation_context):
         """Render and transmit a non-fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1117,7 +1118,7 @@ class Session(pgraph.Graph):
             data = node.render(mutation_context=mutation_context)
 
         try:  # send
-            self.targets[0].send(data)
+            target.send(data)
             self.last_send = data
         except exception.BoofuzzTargetConnectionReset:
             # TODO: Switch _ignore_connection_reset for _ignore_transmission_error, or provide retry mechanism
@@ -1140,7 +1141,7 @@ class Session(pgraph.Graph):
 
         try:  # recv
             if self._receive_data_after_each_request:
-                self.last_recv = self.targets[0].recv()
+                self.last_recv = target.recv()
 
                 if self._check_data_received_each_request:
                     self._fuzz_data_logger.log_check("Verify some data was received from the target.")
@@ -1166,7 +1167,7 @@ class Session(pgraph.Graph):
             else:
                 raise BoofuzzFailure(str(e))
 
-    def transmit_fuzz(self, sock, node, edge, callback_data, mutation_context):
+    def transmit_fuzz(self, target, node, edge, callback_data, mutation_context):
         """Render and transmit a fuzzed node, process callbacks accordingly.
 
         Args:
@@ -1182,7 +1183,7 @@ class Session(pgraph.Graph):
             data = self.fuzz_node.render(mutation_context)
 
         try:  # send
-            self.targets[0].send(data)
+            target.send(data)
             self.last_send = data
         except exception.BoofuzzTargetConnectionReset:
             if self._ignore_connection_issues_when_sending_fuzz_data:
@@ -1204,7 +1205,7 @@ class Session(pgraph.Graph):
         received = b""
         try:  # recv
             if self._receive_data_after_fuzz:
-                received = self.targets[0].recv()
+                received = target.recv()
         except exception.BoofuzzTargetConnectionReset:
             if self._check_data_received_each_request:
                 raise BoofuzzFailure(message=constants.ERR_CONN_RESET)
@@ -1353,7 +1354,8 @@ class Session(pgraph.Graph):
         self.server_init()
 
         try:
-            self._check_message(MutationContext(message_path=path, mutations={}))
+            for target in self.targets:
+                self._check_message(MutationContext(message_path=path, mutations={}), target)
         except KeyboardInterrupt:
             # TODO: should wait for the end of the ongoing test case, and stop gracefully netmon and procmon
             self.export_file()
@@ -1386,13 +1388,15 @@ class Session(pgraph.Graph):
         self.server_init()
 
         try:
-            self._start_target(self.targets[0])
+            for target in self.targets:
+                self._start_target(target)
 
-            if self._reuse_target_connection:
-                self.targets[0].open()
+                if self._reuse_target_connection:
+                    target.open()
+
             self.num_cases_actually_fuzzed = 0
             self.start_time = time.time()
-            for mutation_context in fuzz_case_iterator:
+            for mutation_context, target in zip(fuzz_case_iterator, cycle(self.targets)):
                 if self.total_mutant_index < self._index_start:
                     continue
 
@@ -1403,9 +1407,9 @@ class Session(pgraph.Graph):
                     and self.num_cases_actually_fuzzed % self.restart_interval == 0
                 ):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
-                    self._restart_target(self.targets[0])
+                    self._restart_target(target)   
 
-                self._fuzz_current_case(mutation_context)
+                self._fuzz_current_case(mutation_context, target)
 
                 self.num_cases_actually_fuzzed += 1
 
@@ -1413,7 +1417,8 @@ class Session(pgraph.Graph):
                     break
 
             if self._reuse_target_connection:
-                self.targets[0].close()
+                for target in self.targets:
+                    target.close()
 
             if self._keep_web_open and self.web_port is not None:
                 self.end_time = time.time()
@@ -1626,7 +1631,7 @@ class Session(pgraph.Graph):
                 cur_node = next_node
         return edge_path
 
-    def _check_message(self, mutation_context):
+    def _check_message(self, mutation_context, target):
         """Sends the current message without fuzzing.
 
         Current test case is controlled by fuzz_case_iterator().
@@ -1634,7 +1639,6 @@ class Session(pgraph.Graph):
         Args:
             mutation_context (MutationContext): Current mutation context.
         """
-        target = self.targets[0]
         self.total_mutant_index += 1
 
         self._pause_if_pause_flag_is_set()
@@ -1663,7 +1667,7 @@ class Session(pgraph.Graph):
                 )
                 mutation_context.protocol_session = protocol_session
                 self._fuzz_data_logger.open_test_step("Prep Node '{0}'".format(node.name))
-                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
+                callback_data = self._callback_current_node(target=target, node=node, edge=e, test_case_context=protocol_session)
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
             prev_node = self.nodes[mutation_context.message_path[-1].src]
@@ -1674,7 +1678,7 @@ class Session(pgraph.Graph):
             )
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
+                target=target, node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
             )
 
             self._fuzz_data_logger.open_test_step("Node Under Test '{0}'".format(self.fuzz_node.name))
@@ -1704,7 +1708,7 @@ class Session(pgraph.Graph):
             self._fuzz_data_logger.close_test_case()
             self.export_file()
 
-    def _fuzz_current_case(self, mutation_context):
+    def _fuzz_current_case(self, mutation_context, target):
         """
         Fuzzes the current test case. Current test case is controlled by
         fuzz_case_iterator().
@@ -1713,8 +1717,6 @@ class Session(pgraph.Graph):
             mutation_context (MutationContext): Current mutation context.
 
         """
-        target = self.targets[0]
-
         self._pause_if_pause_flag_is_set()
 
         test_case_name = self._test_case_name(mutation_context)
@@ -1757,7 +1759,7 @@ class Session(pgraph.Graph):
                     current_message=node,
                 )
                 mutation_context.protocol_session = protocol_session
-                callback_data = self._callback_current_node(node=node, edge=e, test_case_context=protocol_session)
+                callback_data = self._callback_current_node(target=target, node=node, edge=e, test_case_context=protocol_session)
                 self._fuzz_data_logger.open_test_step("Transmit Prep Node '{0}'".format(node.name))
                 self.transmit_normal(target, node, e, callback_data=callback_data, mutation_context=mutation_context)
 
@@ -1769,7 +1771,7 @@ class Session(pgraph.Graph):
             )
             mutation_context.protocol_session = protocol_session
             callback_data = self._callback_current_node(
-                node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
+                target=target, node=self.fuzz_node, edge=mutation_context.message_path[-1], test_case_context=protocol_session
             )
             self._fuzz_data_logger.open_test_step("Fuzzing Node '{0}'".format(self.fuzz_node.name))
             self.transmit_fuzz(
