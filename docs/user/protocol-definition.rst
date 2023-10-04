@@ -47,28 +47,83 @@ Request
 
 Blocks
 ------
+Block
+^^^^^
 .. autofunction:: boofuzz.Block
+
+Checksum
+^^^^^^^^
 .. autofunction:: boofuzz.Checksum
+
+Repeat
+^^^^^^
 .. autofunction:: boofuzz.Repeat
+
+Size
+^^^^
 .. autofunction:: boofuzz.Size
+
+Aligned
+^^^^^^^
 .. autofunction:: boofuzz.Aligned
 
 Primitives
 ----------
 
+Static
+^^^^^^
 .. autofunction:: boofuzz.Static
+
+Simple
+^^^^^^
 .. autofunction:: boofuzz.Simple
+
+Delim
+^^^^^
 .. autofunction:: boofuzz.Delim
+
+Group
+^^^^^
 .. autofunction:: boofuzz.Group
+
+RandomData
+^^^^^^^^^^
 .. autofunction:: boofuzz.RandomData
+
+String
+^^^^^^
 .. autofunction:: boofuzz.String
+
+FromFile
+^^^^^^^^
 .. autofunction:: boofuzz.FromFile
+
+Mirror
+^^^^^^
 .. autofunction:: boofuzz.Mirror
+
+BitField
+^^^^^^^^
 .. autofunction:: boofuzz.BitField
+
+Byte
+^^^^
 .. autofunction:: boofuzz.Byte
+
+Bytes
+^^^^^
 .. autofunction:: boofuzz.Bytes
+
+Word
+^^^^
 .. autofunction:: boofuzz.Word
+
+DWord
+^^^^^
 .. autofunction:: boofuzz.DWord
+
+QWord
+^^^^^
 .. autofunction:: boofuzz.QWord
 
 .. _custom-blocks:

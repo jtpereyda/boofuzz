@@ -1,4 +1,5 @@
 from ..fuzzable_block import FuzzableBlock
+from typing import List
 
 
 class Block(FuzzableBlock):
@@ -21,7 +22,7 @@ class Block(FuzzableBlock):
     :param dep: Optional primitive whose specific value this block is dependant on, defaults to None
     :type dep: str, optional
     :param dep_value: Value that field "dep" must contain for block to be rendered, defaults to None
-    :type dep_value: Any, optional
+    :type dep_value: bytes, optional
     :param dep_values: Values that field "dep" may contain for block to be rendered, defaults to None
     :type dep_values: list, optional
     :param dep_compare: Comparison method to apply to dependency (==, !=, >, >=, <, <=), defaults to None
@@ -43,6 +44,13 @@ class Block(FuzzableBlock):
         *args,
         **kwargs
     ):
+        if dep_value is not None and not isinstance(dep_value, bytes):
+            raise TypeError("dep_value must be of bytes type")
+        if dep_values is not None and not (
+            isinstance(dep_values, list) and all(isinstance(x, bytes) for x in dep_values)
+        ):
+            raise TypeError("dep_values must be of list of bytes type")
+
         super(Block, self).__init__(
             name=name, default_value=default_value, request=request, children=children, *args, **kwargs
         )

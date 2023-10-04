@@ -542,7 +542,6 @@ class Session(pgraph.Graph):
                 self._fuzz_data_logger.log_pass("No crash detected.")
             else:
                 for monitor in set(target.monitors) - set(finished_monitors):
-
                     synopsis = monitor.get_crash_synopsis()
                     if len(synopsis) > 0:
                         self._fuzz_data_logger.log_fail(
@@ -956,29 +955,34 @@ class Session(pgraph.Graph):
             None
         """
         self.total_mutant_index = 0
-        self.total_num_mutations = self.num_mutations(max_depth=max_depth)
 
         if name is None or name == "":
+            self.total_num_mutations = self.num_mutations(max_depth=max_depth)
             self._main_fuzz_loop(self._generate_mutations_indefinitely(max_depth=max_depth))
         else:
-            self.fuzz_by_name(name=name)
+            path, mutations = helpers.parse_test_case_name(name)
+            if len(mutations) < 1:
+                self._fuzz_single_node_by_path(path)
+            else:
+                self.total_num_mutations = 1
+
+                node_edges = self._path_names_to_edges(node_names=path)
+                self._main_fuzz_loop(self._generate_test_case_from_named_mutations(node_edges, mutations))
 
     def fuzz_by_name(self, name):
         """Fuzz a particular test case or node by name.
 
         Args:
             name (str): Name of node.
-        """
-        warnings.warn("Session.fuzz_by_name is deprecated in favor of Session.fuzz(name=name).")
-        path, mutations = helpers.parse_test_case_name(name)
-        if len(mutations) < 1:
-            self._fuzz_single_node_by_path(path)
-        else:
-            self.total_mutant_index = 0
-            self.total_num_mutations = 1
 
-            node_edges = self._path_names_to_edges(node_names=path)
-            self._main_fuzz_loop(self._generate_test_case_from_named_mutations(node_edges, mutations))
+        .. deprecated :: 0.4.0
+           Use :meth:`Session.fuzz` instead.
+        """
+        warnings.warn(
+            "Session.fuzz_by_name is deprecated in favor of Session.fuzz(name=name).",
+            FutureWarning,
+        )
+        self.fuzz(name=name)
 
     def _fuzz_single_node_by_path(self, node_names):
         """Fuzz a particular node via the path in node_names.

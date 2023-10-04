@@ -41,7 +41,6 @@ class Float(Fuzzable):
         *args,
         **kwargs
     ):
-
         super(Float, self).__init__(name=name, default_value=str(default_value), *args, **kwargs)
 
         self.s_format = s_format

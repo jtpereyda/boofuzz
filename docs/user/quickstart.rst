@@ -96,3 +96,29 @@ Remember boofuzz is all Python, and advanced use cases often require customizati
 If you are doing crazy cool stuff, check out the :ref:`community info <community>` and consider contributing back!
 
 Happy fuzzing, and Godspeed!
+
+More examples
+-------------
+Simple FTP
+^^^^^^^^^^
+Check out the `ftp_simple.py <https://github.com/jtpereyda/boofuzz/blob/master/examples/ftp_simple.py>`_ example.
+To run it, you will need an `FTP server <https://github.com/Siim/ftp>`_.
+
+Once you have compiled the FTP server, just run it with ``./ftp``.
+The server runs on port 8021 by default. Make sure to run the ftp_simple.py script against the port that the server
+is listening on.
+
+Simple HTTP and HTTP with body
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Good examples on how to get started with HTTP fuzzing can be found in
+`http_simple.py <https://github.com/jtpereyda/boofuzz/blob/master/examples/http_simple.py>`_
+and `http_with_body.py <https://github.com/jtpereyda/boofuzz/blob/master/examples/http_with_body.py>`_.
+Here is an example of how to execute theses scripts.
+
+You will need an HTTP server, you can use Python or any other webserver like Apache or NGINX for that.
+
+.. code-block:: bash
+
+    $ python3 -m http.server
+
+Then run ``http_simple.py`` or ``http_with_body.py`` against the IP and port that your server uses.

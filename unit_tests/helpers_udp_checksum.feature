@@ -29,7 +29,7 @@ Feature: helpers.udp_checksum()
         Then The result is 0x4E36
     
     Scenario: Msg 60 bytes
-        Given msg with 60 bytes
+        Given Message with 60 bytes
         And src_addr 192.168.0.12
         And dst_addr 255.255.255.255
         When Calling udp_checksum

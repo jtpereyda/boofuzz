@@ -281,9 +281,9 @@ def s_block(name=None, group=None, encoder=None, dep=None, dep_value=None, dep_v
     :param encoder:     (Optional, def=None) Optional pointer to a function to pass rendered data to prior to return
     :type  dep:         str, optional
     :param dep:         (Optional, def=None) Optional primitive whose specific value this block is dependant on
-    :type  dep_value:   Mixed, optional
+    :type  dep_value:   bytes, optional
     :param dep_value:   (Optional, def=None) Value that field "dep" must contain for block to be rendered
-    :type  dep_values:  List of Mixed Types, optional
+    :type  dep_values:  List of bytes, optional
     :param dep_values:  (Optional, def=None) Values that field "dep" may contain for block to be rendered
     :type  dep_compare: str, optional
     :param dep_compare: (Optional, def="==") Comparison method to use on dependency (==, !=, >, >=, <, <=)
