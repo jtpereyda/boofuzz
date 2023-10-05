@@ -20,6 +20,7 @@ Fixes
 - Removed duplicates from `BitField` primitive.
 - Fixed unwanted deprecation warning when using `Session.fuzz(name=name)`.
 - Changed type of `dep_value` argument of `Block` to bytes and added type checks.
+- Split sessions.py into multiple files.
 
 v0.4.1
 ------
