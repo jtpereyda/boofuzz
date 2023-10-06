@@ -83,8 +83,8 @@ To install with extra dependencies like `dev` or `docs`, specify them in one of 
 
    .. code-block:: bash
 
-       $ poetry install --extras "dev docs"
-       $ poetry install -E dev -E docs
+       $ poetry install --extras "dev"
+       $ poetry install -E docs
        $ poetry install --all-extras
 
 Install with Pip
