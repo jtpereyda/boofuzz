@@ -5,7 +5,7 @@ from ..fuzz_logger_db import FuzzLoggerDbReader
 
 class SessionInfo:
     """
-    .. versionchanged:: 0.5.0
+    .. versionchanged:: 0.4.2
        This class has been moved into the sessions subpackage. The full path is now
        boofuzz.sessions.session_info.SessionInfo.
     """

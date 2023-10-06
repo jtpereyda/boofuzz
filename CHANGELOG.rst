@@ -1,19 +1,19 @@
 Changelog
 =========
 
-Upcoming
---------
+v0.4.2
+------
 Features
 ^^^^^^^^
-- Remove six compatibility module
+- Remove six compatibility module.
 - Remove Python 2 compatibility code.
-- Remove specifying object inheritance in classes
-- Added Web UI listening on specific IP address
+- Remove specifying object inheritance in classes.
+- Added Web UI listening on specific IP address.
 - Added Python 3.11 compatibility.
 
 Fixes
 ^^^^^
-- Specified encoding on file write rather than assuming default encoding
+- Specified encoding on file write rather than assuming default encoding.
 - Changed type of `default_value` from string to bytes for `FromFile`.
 - `s_update` primitive was out of date.
 - The minimum supported Python version is now 3.8.

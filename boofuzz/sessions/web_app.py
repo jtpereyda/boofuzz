@@ -17,7 +17,7 @@ class WebApp:
         web_address (string):   Address binded to port for monitoring fuzzing campaign via a web browser.
                                 Default 'localhost'.
 
-    .. versionchanged:: 0.5.0
+    .. versionchanged:: 0.4.2
        This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.web_app.WebApp.
     """
 
