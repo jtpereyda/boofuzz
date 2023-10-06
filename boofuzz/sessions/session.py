@@ -102,7 +102,7 @@ class Session(pgraph.Graph):
                                 Defaults to ./boofuzz-results/{uniq_timestamp}.db
         web_address:            Address where's Boofuzz logger exposed. Default 'localhost'
 
-    .. versionchanged:: 0.5.0
+    .. versionchanged:: 0.4.2
        This class has been moved into the sessions subpackage. The full path is now boofuzz.sessions.session.Session.
     """
 

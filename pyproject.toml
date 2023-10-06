@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "boofuzz"
-version = "0.4.1"
+version = "0.4.2"
 description = "A fork and successor of the Sulley Fuzzing Framework"
 authors = ["Joshua Pereyda <joshua.t.pereyda@gmail.com>"]
 license = "GPL-2.0-only"
