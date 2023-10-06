@@ -1,4 +1,5 @@
 import errno
+import importlib.metadata
 import os
 import re
 import signal
@@ -424,22 +425,14 @@ def path_exists(path):
     return os.path.exists(path)
 
 
-def get_boofuzz_version(boofuzz_class):
+def get_boofuzz_version():
     """
-    Parses __init__.py for a version string and returns it like 'v0.0.0'
-
-    :type  boofuzz_class: class
-    :param boofuzz_class: Any boofuzz class in the same dir as the __init__ class.
+    Gets the currently installed boofuzz version
 
     :rtype: str
     :return: Boofuzz version as string
     """
-    path = os.path.dirname(boofuzz_class.__file__)
-    with open(os.path.join(path, "__init__.py")) as search:
-        for line in search:
-            if line.find("__version__ = ") != -1:
-                return "v" + re.search(r'"(.*?)"', line).group(1)  # pytype: disable=attribute-error
-    return "v-.-.-"
+    return "v" + importlib.metadata.version("boofuzz")
 
 
 def str_to_bytes(value, encoding="utf-8", errors="replace"):

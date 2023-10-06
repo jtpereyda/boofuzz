@@ -58,11 +58,9 @@ environment beforehand.
 
 From Source
 -----------
-
-
 1. Like above, it is recommended to set up a virtual environment. Depending on your
    concrete setup, this is largely equivalent to the steps outlined above. Make sure
-   to upgrade ``setuptools`` and ``pip``.
+   to upgrade ``setuptools`` and ``pip`` or ``poetry``.
 2. Download the source code. You can either grab a zip from https://github.com/jtpereyda/boofuzz
    or directly clone it with git:
 
@@ -70,8 +68,28 @@ From Source
 
       $ git clone https://github.com/jtpereyda/boofuzz.git
 
-3. Install. Run ``pip`` from within the boofuzz directory after activating the virtual
-   environment:
+Install with Poetry
+~~~~~~~~~~~~~~~~~~~
+Poetry will automatically create a virtual environment for you and install the required dependencies. The installation
+will be editable by default, meaning that changes to the source code will be seen directly without reinstalling.
+
+Simply execute the following command inside the boofuzz source dir:
+
+   .. code-block:: bash
+
+       $ poetry install
+
+To install with extra dependencies like `dev` or `docs`, specify them in one of the following ways:
+
+   .. code-block:: bash
+
+       $ poetry install --extras "dev"
+       $ poetry install -E docs
+       $ poetry install --all-extras
+
+Install with Pip
+~~~~~~~~~~~~~~~~
+Run ``pip`` from within the boofuzz directory after activating the virtual environment:
 
    .. code-block:: bash
 
