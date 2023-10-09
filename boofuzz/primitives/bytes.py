@@ -26,7 +26,7 @@ class Bytes(Fuzzable):
     :param fuzzable: Enable/disable fuzzing of this primitive, defaults to true
     """
 
-    # This binary strings will always included as testcases.
+    # These binary strings are always included as testcases.
     _fuzz_library = [
         b"",
         b"\x00",
