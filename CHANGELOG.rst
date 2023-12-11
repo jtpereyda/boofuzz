@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Upcomming
+---------
+Features
+^^^^^^^^
+- Added Python 3.12 compatibility.
+
+Fixes
+^^^^^
+
 v0.4.2
 ------
 Features
