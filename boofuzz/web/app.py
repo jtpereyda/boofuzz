@@ -70,9 +70,9 @@ def index_update():
             "current_index": app.session.total_mutant_index,
             "num_mutations": app.session.total_num_mutations,
             "current_index_element": app.session.mutant_index if app.session is not None else None,
-            "num_mutations_element": app.session.fuzz_node.get_num_mutations()
-            if app.session.fuzz_node is not None
-            else None,
+            "num_mutations_element": (
+                app.session.fuzz_node.get_num_mutations() if app.session.fuzz_node is not None else None
+            ),
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
             "current_test_case_name": app.session.current_test_case_name,
             "crashes": _crash_summary_info(),

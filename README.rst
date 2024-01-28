@@ -5,8 +5,8 @@
 boofuzz: Network Protocol Fuzzing for Humans
 ============================================
 
-.. image:: https://github.com/jtpereyda/boofuzz/workflows/Test/badge.svg?branch=master
-    :target: https://github.com/jtpereyda/boofuzz/actions?query=workflow%3ATest+branch%3Amaster
+.. image:: https://github.com/jtpereyda/boofuzz/actions/workflows/test.yml/badge.svg?branch=master
+    :target: https://github.com/jtpereyda/boofuzz/actions/workflows/test.yml
 .. image:: https://readthedocs.org/projects/boofuzz/badge/?version=latest
     :target: https://boofuzz.readthedocs.io/
     :alt: Documentation Status

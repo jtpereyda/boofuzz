@@ -1,4 +1,5 @@
 """Demo of a very simple protocol definition using the float primitive."""
+
 from boofuzz import *
 
 
