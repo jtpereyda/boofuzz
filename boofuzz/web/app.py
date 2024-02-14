@@ -1,4 +1,5 @@
 import re
+import os
 
 import flask
 from flask import Flask, redirect, render_template
@@ -7,8 +8,10 @@ from .. import exception
 
 MAX_LOG_LINE_LEN = 1500
 
-app = Flask(__name__)
-app.session = None
+prefix = os.environ.get('FLASK_APP_PREFIX', '')
+
+app = Flask(__name__, static_url_path=f'{prefix}')
+app.session = None  # Initialize your session as needed
 
 
 def commify(number):
@@ -20,14 +23,14 @@ def commify(number):
     return number
 
 
-@app.route("/togglepause")
+@app.route(f"{prefix}/togglepause")
 def pause():
     # Flip our state
     app.session.is_paused = not app.session.is_paused
-    return redirect("/")
+    return redirect(flask.url_for("index"))
 
 
-@app.route("/test-case/<int:crash_id>")
+@app.route(f"{prefix}/test-case/<int:crash_id>")
 def test_case(crash_id):
     return render_template(
         "test-case.html",
@@ -36,15 +39,17 @@ def test_case(crash_id):
     )
 
 
-@app.route("/api/current-test-case")
+@app.route(f"{prefix}/api/current-test-case")
 def current_test_case_update():
-    data = {"index": app.session.total_mutant_index, "log_data": _get_log_data(app.session.total_mutant_index)}
+    data = {"index": app.session.total_mutant_index,
+            "log_data": _get_log_data(app.session.total_mutant_index)}
     return flask.jsonify(data)
 
 
-@app.route("/api/test-case/<int:test_case_index>")
+@app.route(f"{prefix}/api/test-case/<int:test_case_index>")
 def api_test_case(test_case_index):
-    data = {"index": test_case_index, "log_data": _get_log_data(test_case_id=test_case_index)}
+    data = {"index": test_case_index, "log_data": _get_log_data(
+        test_case_id=test_case_index)}
     return flask.jsonify(data)
 
 
@@ -55,14 +60,15 @@ def _get_log_data(test_case_id):
     except exception.BoofuzzNoSuchTestCase:
         return None
     if case is not None:
-        results.append({"css_class": case.css_class, "log_line": case.html_log_line})
+        results.append({"css_class": case.css_class,
+                        "log_line": case.html_log_line})
         for step in case.steps:
             line = step.html_log_line
             results.append({"css_class": step.css_class, "log_line": line})
     return results
 
 
-@app.route("/api/current-run")
+@app.route(f"{prefix}/api/current-run")
 def index_update():
     data = {
         "session_info": {
@@ -71,7 +77,8 @@ def index_update():
             "num_mutations": app.session.total_num_mutations,
             "current_index_element": app.session.mutant_index if app.session is not None else None,
             "num_mutations_element": (
-                app.session.fuzz_node.get_num_mutations() if app.session.fuzz_node is not None else None
+                app.session.fuzz_node.get_num_mutations(
+                ) if app.session.fuzz_node is not None else None
             ),
             "current_element": app.session.fuzz_node.name if app.session.fuzz_node is not None else None,
             "current_test_case_name": app.session.current_test_case_name,
@@ -84,7 +91,7 @@ def index_update():
     return flask.jsonify(data)
 
 
-@app.route("/")
+@app.route(f"{prefix}/")
 def index():
     crashes = _crash_summary_info()
 
@@ -104,7 +111,8 @@ def index():
         except ZeroDivisionError:
             progress_current = 0
         num_bars = int(progress_current * 50)
-        progress_current_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
+        progress_current_bar = "[" + "=" * \
+            num_bars + "&nbsp;" * (50 - num_bars) + "]"
         progress_current = "%.3f%%" % (progress_current * 100)
     else:
         progress_current = 0
@@ -118,12 +126,14 @@ def index():
         progress_total = 0
     else:
         try:
-            progress_total = min(total_mutant_index / total_num_mutations, 1)
+            progress_total = min(total_mutant_index
+                                 / total_num_mutations, 1)
         except ZeroDivisionError:
             progress_total = 0
 
     num_bars = int(progress_total * 50)
-    progress_total_bar = "[" + "=" * num_bars + "&nbsp;" * (50 - num_bars) + "]"
+    progress_total_bar = "[" + "=" * num_bars + \
+        "&nbsp;" * (50 - num_bars) + "]"
     progress_total = "%.3f%%" % (progress_total * 100)
 
     state = {
