@@ -2,7 +2,7 @@ class EventHook:
     """
     An EventHook that registers events using +=and -=.
 
-    Based on spassig's solution here: http://stackoverflow.com/a/1094423/461834
+    Based on spassig's solution here: https://stackoverflow.com/a/1094423/461834
     """
 
     def __init__(self):

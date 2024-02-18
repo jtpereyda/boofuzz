@@ -79,6 +79,7 @@ todo_include_todos = False
 
 linkcheck_ignore = [
     r"https://twitter.com/b00fuzz",
+    r"https://stackoverflow.com",
 ]
 
 
