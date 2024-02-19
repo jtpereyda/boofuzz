@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
-<script src="/static/js/index.js"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
 <!--suppress HtmlUnknownTarget -->
 <div class="main-wrapper">
     <div class="fixed-width-wrapper">
@@ -52,7 +52,7 @@
                 </tr>
             </table> </td> </tr>
             <tr> <td>
-                <form method=get action="/togglepause">
+                <form method=get action="{{url_for('pause') }}">
                     {% if state.session.is_paused %}
                         <input class="input" type="submit" value="Resume">
                     {% else %}

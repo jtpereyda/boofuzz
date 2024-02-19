@@ -133,7 +133,7 @@ function continually_update_current_run_info()
     {
         setTimeout(continually_update_current_run_info, 100);
     }
-    fetch(new Request('/api/current-run'), {method: 'GET'})
+    fetch(new Request('api/current-run'), {method: 'GET'})
         .then(function(response) { return response.json() })
         .then(update_repeat)
         .catch(_repeat_only);
@@ -158,13 +158,13 @@ function continually_update_current_test_case_log()
         setTimeout(continually_update_current_test_case_log, 100);
     }
     if (test_case_log_snap) {
-        fetch(new Request('/api/current-test-case'), {method: 'GET'})
+        fetch(new Request('api/current-test-case'), {method: 'GET'})
             .then(function(response) { return response.json() })
             .then(update_repeat)
             .catch(_repeat_only);
     }
     else {
-        fetch(new Request(`/api/test-case/${test_case_log_index}`), {method: 'GET'})
+        fetch(new Request(`api/test-case/${test_case_log_index}`), {method: 'GET'})
             .then(function(response) { return response.json() })
             .then(update_same_case_repeat)
             .catch(_repeat_only);
