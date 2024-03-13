@@ -149,6 +149,7 @@ class Session(pgraph.Graph):
 
         super(Session, self).__init__()
 
+        self.modified_data = modified_data
         self.session_filename = session_filename
         self._index_start = max(index_start, 1)
         self._index_end = index_end
