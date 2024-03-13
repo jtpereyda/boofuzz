@@ -138,6 +138,8 @@ class Session(pgraph.Graph):
         target=None,
         web_address=constants.DEFAULT_WEB_UI_ADDRESS,
         db_filename=None,
+        mutation_context=None,
+        modified_data=False
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -858,6 +860,9 @@ class Session(pgraph.Graph):
         else:
             data = self.fuzz_node.render(mutation_context)
 
+        if self.modified_data:
+            data = self.modified_data
+            self.modified_data = False
         try:  # send
             self.targets[0].send(data)
             self.last_send = data
@@ -1081,6 +1086,8 @@ class Session(pgraph.Graph):
                 ):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                     self._restart_target(self.targets[0])
+
+                self.mutation_context = mutation_context
 
                 self._fuzz_current_case(mutation_context)
 
