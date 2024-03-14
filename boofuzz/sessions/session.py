@@ -139,7 +139,7 @@ class Session(pgraph.Graph):
         web_address=constants.DEFAULT_WEB_UI_ADDRESS,
         db_filename=None,
         mutation_context=None,
-        modified_data=False
+        modified_data=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -149,6 +149,7 @@ class Session(pgraph.Graph):
 
         super(Session, self).__init__()
 
+        self.mutation_context = mutation_context
         self.modified_data = modified_data
         self.session_filename = session_filename
         self._index_start = max(index_start, 1)
@@ -863,7 +864,8 @@ class Session(pgraph.Graph):
 
         if self.modified_data:
             data = self.modified_data
-            self.modified_data = False
+            self.modified_data = None
+
         try:  # send
             self.targets[0].send(data)
             self.last_send = data
