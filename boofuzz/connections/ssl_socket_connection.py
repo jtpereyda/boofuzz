@@ -54,7 +54,18 @@ class SSLSocketConnection(tcp_socket_connection.TCPSocketConnection):
             # No SSL context set
             pass
 
-        super(SSLSocketConnection, self)._connect_socket()
+        # The wrapped SSL Socket does not have the timeout that is configured in BaseSocketConnection but needs the
+        # timeout to be configured through the SSLSocket class
+        self._sock.settimeout(self._recv_timeout)
+
+        try:
+            super(SSLSocketConnection, self)._connect_socket()
+        except TimeoutError as e:
+            # This TimeoutError is raised by the SSL layer during the TLS handshake, e.g. when the TCP connection could
+            # be established but the TLS handshakes times out. All other errors are handled by the parent class
+            raise exception.BoofuzzTargetConnectionFailedError(str(e))
+        else:
+            raise
 
     def recv(self, max_bytes):
         """
