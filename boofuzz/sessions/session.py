@@ -11,6 +11,7 @@ import traceback
 import warnings
 import zlib
 from builtins import input
+from collections import deque
 from io import open
 
 from tornado.httpserver import HTTPServer
@@ -138,7 +139,9 @@ class Session(pgraph.Graph):
         target=None,
         web_address=constants.DEFAULT_WEB_UI_ADDRESS,
         db_filename=None,
+        fuzz_task_name=""
     ):
+        self.fuzz_task_name = fuzz_task_name
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
         self._ignore_connection_issues_when_sending_fuzz_data = ignore_connection_issues_when_sending_fuzz_data
@@ -161,6 +164,8 @@ class Session(pgraph.Graph):
         self.restart_threshold = restart_threshold
         self.restart_timeout = restart_timeout
         self.web_address = web_address
+        self.msg_deque = deque(maxlen=3)
+
         if fuzz_loggers is None:
             fuzz_loggers = []
             if self.console_gui and os.name != "nt":

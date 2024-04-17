@@ -30,19 +30,20 @@ class Target:
     """
 
     def __init__(
-        self,
-        connection,
-        monitors=None,
-        monitor_alive=None,
-        max_recv_bytes=10000,
-        repeater=None,
-        procmon=None,
-        procmon_options=None,
-        **kwargs
+            self,
+            connection,
+            monitors=None,
+            monitor_alive=None,
+            max_recv_bytes=10000,
+            repeater=None,
+            procmon=None,
+            procmon_options=None,
+            **kwargs
     ):
         self._fuzz_data_logger = None
 
         self._target_connection = connection
+        self.connection_handle = connection
         self.max_recv_bytes = max_recv_bytes
         self.repeater = repeater
         self.monitors = monitors if monitors is not None else []
@@ -167,6 +168,10 @@ class Target:
         Returns:
             None
         """
+        print("-------------------------------------------------------------------------------------------")
+        print(bytes.hex(data))
+        print("-------------------------------------------------------------------------------------------")
+
         num_sent = 0
         if self._fuzz_data_logger is not None:
             repeat = ""
