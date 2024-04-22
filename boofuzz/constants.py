@@ -38,3 +38,14 @@ ERR_NAME_NOT_FOUND = "Cannot find block with name '{0}'"
 ERR_NAME_TOO_MANY = (
     "Unable to resolve block name '{0}'. Use an absolute or relative name instead." " Too many potential matches: {1}"
 )
+
+import enum
+
+
+class FUZZ_STATUS_CODES(enum.Enum):
+    FUZZ_INIT = 0
+    FUZZ_RUNNING = 1
+    FUZZ_STOPPED = 2
+    FUZZ_COMPLETE = 3
+    FUZZ_TARGET_RECONNECT = 4
+    FUZZ_TARGET_CONNECT_FAILURE = 5

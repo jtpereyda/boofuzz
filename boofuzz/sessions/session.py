@@ -1,4 +1,5 @@
 import datetime
+import enum
 import errno
 import itertools
 import logging
@@ -39,7 +40,7 @@ from boofuzz.web.app import app
 from .connection import Connection
 from .session_info import SessionInfo
 from .web_app import WebApp
-
+from ..constants import FUZZ_STATUS_CODES
 
 def open_test_run(db_filename, port=constants.DEFAULT_WEB_UI_PORT, address=constants.DEFAULT_WEB_UI_ADDRESS):
     s = SessionInfo(db_filename=db_filename)
@@ -165,6 +166,7 @@ class Session(pgraph.Graph):
         self.restart_timeout = restart_timeout
         self.web_address = web_address
         self.msg_deque = deque(maxlen=3)
+        self.fuzz_status = FUZZ_STATUS_CODES.FUZZ_INIT
 
         if fuzz_loggers is None:
             fuzz_loggers = []
@@ -714,6 +716,7 @@ class Session(pgraph.Graph):
         # TODO: reuse_target_connection seems to be only handled when using
         #       a custom callback. wtf?
 
+        self.fuzz_status = FUZZ_STATUS_CODES.FUZZ_TARGET_RECONNECT
         self._fuzz_data_logger.open_test_step("Restarting target")
         restarted = False
         if len(self.on_failure) > 0:
@@ -1074,6 +1077,7 @@ class Session(pgraph.Graph):
                 self.targets[0].open()
             self.num_cases_actually_fuzzed = 0
             self.start_time = time.time()
+            self.fuzz_status = FUZZ_STATUS_CODES.FUZZ_RUNNING
             for mutation_context in fuzz_case_iterator:
                 if self.total_mutant_index < self._index_start:
                     continue
@@ -1090,12 +1094,15 @@ class Session(pgraph.Graph):
                 self._fuzz_current_case(mutation_context)
 
                 self.num_cases_actually_fuzzed += 1
+                self.fuzz_status = FUZZ_STATUS_CODES.FUZZ_RUNNING
 
                 if self._index_end is not None and self.total_mutant_index >= self._index_end:
                     break
 
             if self._reuse_target_connection:
                 self.targets[0].close()
+
+            self.fuzz_status = FUZZ_STATUS_CODES.FUZZ_COMPLETE
 
             if self._keep_web_open and self.web_port is not None:
                 self.end_time = time.time()
