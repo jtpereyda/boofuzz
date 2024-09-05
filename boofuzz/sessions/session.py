@@ -138,8 +138,6 @@ class Session(pgraph.Graph):
         target=None,
         web_address=constants.DEFAULT_WEB_UI_ADDRESS,
         db_filename=None,
-        mutation_context=None,
-        modified_data=None,
     ):
         self._ignore_connection_reset = ignore_connection_reset
         self._ignore_connection_aborted = ignore_connection_aborted
@@ -149,8 +147,6 @@ class Session(pgraph.Graph):
 
         super(Session, self).__init__()
 
-        self.mutation_context = mutation_context
-        self.modified_data = modified_data
         self.session_filename = session_filename
         self._index_start = max(index_start, 1)
         self._index_end = index_end
@@ -242,7 +238,9 @@ class Session(pgraph.Graph):
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
-
+        self.mutation_context = None
+        self.modified_data = None
+        
         # import settings if they exist.
         self.import_file()
 
