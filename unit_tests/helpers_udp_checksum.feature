@@ -54,4 +54,5 @@ Feature: helpers.udp_checksum()
         And src_addr 192.168.0.12
         And dst_addr 255.255.255.255
         When Calling udp_checksum
-        Then The result is 0x7F3A  # Same as Max length; see docstring
+        Then The result is 0x7F3A
+        # Same as Max length; see docstring
