@@ -107,7 +107,7 @@ def ip_str_to_bytes(ip):
 
     :param ip: IP address string, e.g. '127.0.0.1'
 
-    :return 4-byte representation of ip, e.g. b'\x7F\x00\x00\x01'
+    :return 4-byte representation of ip, e.g. b'\x7f\x00\x00\x01'
     :rtype bytes
 
     :raises ValueError if ip is not a legal IP address.

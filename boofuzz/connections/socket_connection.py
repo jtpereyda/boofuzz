@@ -21,7 +21,7 @@ def SocketConnection(
     send_timeout=5.0,
     recv_timeout=5.0,
     ethernet_proto=None,
-    l2_dst=b"\xFF" * 6,
+    l2_dst=b"\xff" * 6,
     udp_broadcast=False,
     server=False,
     sslcontext=None,
@@ -66,7 +66,7 @@ def SocketConnection(
         ethernet_proto (int): Ethernet protocol when using 'raw-l3'. 16 bit integer.
             Default ETH_P_IP (0x0800) when using 'raw-l3'. See "if_ether.h" in Linux documentation for more options.
         l2_dst (str): Layer 2 destination address (e.g. MAC address). Used only by 'raw-l3'.
-            Default '\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast).
+            Default '\xff\xff\xff\xff\xff\xff' (broadcast).
         udp_broadcast (bool): Set to True to enable UDP broadcast. Must supply appropriate broadcast address for send()
             to work, and '' for bind host for recv() to work.
         server (bool): Set to True to enable server side fuzzing.

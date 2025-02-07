@@ -9,15 +9,15 @@ from boofuzz import helpers
 @pytest.mark.parametrize(
     ["ip_str", "ip_bytes"],
     [
-        ("127.0.0.1", b"\x7F\x00\x00\x01"),
-        ("255.255.255.255", b"\xFF\xFF\xFF\xFF"),
+        ("127.0.0.1", b"\x7f\x00\x00\x01"),
+        ("255.255.255.255", b"\xff\xff\xff\xff"),
         ("0.0.0.0", b"\x00\x00\x00\x00"),
         ("0.1.2.3", b"\x00\x01\x02\x03"),
         ("1.2.3", b"\x01\x02\x00\x03"),
         ("1.2.256", b"\x01\x02\x01\x00"),
-        ("1.2.65535", b"\x01\x02\xFF\xFF"),
-        ("1.16777215", b"\x01\xFF\xFF\xFF"),
-        ("4294967294", b"\xFF\xFF\xFF\xFE"),
+        ("1.2.65535", b"\x01\x02\xff\xff"),
+        ("1.16777215", b"\x01\xff\xff\xff"),
+        ("4294967294", b"\xff\xff\xff\xfe"),
     ],
 )
 @scenario("helpers_ip_str_to_bytes.feature", "Valid IP addresses")

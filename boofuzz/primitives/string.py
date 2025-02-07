@@ -171,8 +171,8 @@ class String(Fuzzable):
         "}",
         "\x14",
         "\x00",
-        "\xFE",  # expands to 4 characters under utf1
-        "\xFF",  # expands to 4 characters under utf1
+        "\xfe",  # expands to 4 characters under utf1
+        "\xff",  # expands to 4 characters under utf1
     ]
 
     _long_string_lengths = [8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 32768, 0xFFFF]

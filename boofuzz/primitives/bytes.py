@@ -30,7 +30,7 @@ class Bytes(Fuzzable):
     _fuzz_library = [
         b"",
         b"\x00",
-        b"\xFF",
+        b"\xff",
         b"A" * 10,
         b"A" * 100,
         b"A" * 1000,
@@ -88,7 +88,7 @@ class Bytes(Fuzzable):
     # This is a list of "interesting" 1,2 and 4 byte binary strings.
     # The lists are used to replace each block of 1, 2 or 4 byte in the original
     # value with each of those "interesting" values.
-    _fuzz_strings_1byte = [b"\x00", b"\x01", b"\x7F", b"\x80", b"\xFF"] + [
+    _fuzz_strings_1byte = [b"\x00", b"\x01", b"\x7f", b"\x80", b"\xff"] + [
         i for i in _magic_debug_values if len(i) == 1
     ]
 
@@ -96,22 +96,22 @@ class Bytes(Fuzzable):
         b"\x00\x00",
         b"\x01\x00",
         b"\x00\x01",
-        b"\x7F\xFF",
-        b"\xFF\x7F",
-        b"\xFE\xFF",
-        b"\xFF\xFE",
-        b"\xFF\xFF",
+        b"\x7f\xff",
+        b"\xff\x7f",
+        b"\xfe\xff",
+        b"\xff\xfe",
+        b"\xff\xff",
     ] + [i for i in _magic_debug_values if len(i) == 2]
 
     _fuzz_strings_4byte = [
         b"\x00\x00\x00\x00",
         b"\x00\x00\x00\x01",
         b"\x01\x00\x00\x00",
-        b"\x7F\xFF\xFF\xFF",
-        b"\xFF\xFF\xFF\x7F",
-        b"\xFE\xFF\xFF\xFF",
-        b"\xFF\xFF\xFF\xFE",
-        b"\xFF\xFF\xFF\xFF",
+        b"\x7f\xff\xff\xff",
+        b"\xff\xff\xff\x7f",
+        b"\xfe\xff\xff\xff",
+        b"\xff\xff\xff\xfe",
+        b"\xff\xff\xff\xff",
     ] + [i for i in _magic_debug_values if len(i) == 4]
 
     _mutators_of_default_value = [
