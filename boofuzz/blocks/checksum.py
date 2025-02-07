@@ -91,9 +91,9 @@ class Checksum(primitives.BasePrimitive):
         self._fuzz_library = [
             b"\x00" * self._length,
             b"\x11" * self._length,
-            b"\xEE" * self._length,
-            b"\xFF" * self._length,
-            b"\xFF" * (self._length - 1) + b"\xFE",
+            b"\xee" * self._length,
+            b"\xff" * self._length,
+            b"\xff" * (self._length - 1) + b"\xfe",
             b"\x00" * (self._length - 1) + b"\x01",
         ]
 

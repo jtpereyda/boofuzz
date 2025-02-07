@@ -160,7 +160,7 @@ class MiniTestServer:
     def __init__(self, stay_silent=False, proto="tcp", host="0.0.0.0"):
         self.server_socket = None
         self.received = None
-        self.data_to_send = b"\xFE\xEB\xDA\xED"
+        self.data_to_send = b"\xfe\xeb\xda\xed"
         self.active_port = None
         self.stay_silent = stay_silent
         self.proto = proto
@@ -462,8 +462,8 @@ class TestSocketConnection(unittest.TestCase):
         raw_packet = ethernet_frame(
             payload=ip_packet(
                 payload=udp_packet(payload=data_to_send, src_port=server.active_port + 1, dst_port=server.active_port),
-                src_ip=b"\x7F\x00\x00\x01",
-                dst_ip=b"\x7F\x00\x00\x01",
+                src_ip=b"\x7f\x00\x00\x01",
+                dst_ip=b"\x7f\x00\x00\x01",
             ),
             src_mac=b"\x00" * 6,
             dst_mac=b"\xff" * 6,
@@ -613,8 +613,8 @@ class TestSocketConnection(unittest.TestCase):
         # Assemble packet...
         raw_packet = ip_packet(
             payload=udp_packet(payload=data_to_send, src_port=server.active_port + 1, dst_port=server.active_port),
-            src_ip=b"\x7F\x00\x00\x01",
-            dst_ip=b"\x7F\x00\x00\x01",
+            src_ip=b"\x7f\x00\x00\x01",
+            dst_ip=b"\x7f\x00\x00\x01",
         )
         expected_server_receive = ETHER_IPV4_HEADER + raw_packet
 

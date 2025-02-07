@@ -40,16 +40,16 @@ def complex_request_scenario(context, name, block_name):
         "sizer_l3": block_name if name == "sizer_l3" else ".A",
     }
     s_initialize("test_req")
-    s_static(b"\xA1\xA1", name="A")
-    s_static(b"\xB1", name="B1")
+    s_static(b"\xa1\xa1", name="A")
+    s_static(b"\xb1", name="B1")
     s_size(block_names["sizer_l1"], name="sizer_l1", length=1)
     with s_block("C"):
-        s_static(b"\xA2\xA2\xA2", name="A")
-        s_static(b"\xB2", name="B2")
+        s_static(b"\xa2\xa2\xa2", name="A")
+        s_static(b"\xb2", name="B2")
         s_size(block_names["sizer_l2"], name="sizer_l2", length=1)
         with s_block("C"):
-            s_static(b"\xA3\xA3\xA3\xA3", name="A")
-            s_static(b"\xB3", name="B3")
+            s_static(b"\xa3\xa3\xa3\xa3", name="A")
+            s_static(b"\xb3", name="B3")
             s_size(block_names["sizer_l3"], name="sizer_l3", length=1)
 
     context.req = s_get("test_req")

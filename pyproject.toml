@@ -45,7 +45,7 @@ funcy = "*"
 psutil = "*"
 pydot = "*"
 pyserial = "*"
-python = "^3.8"
+python = "^3.9"
 tornado = "*"
 
 # dev extras

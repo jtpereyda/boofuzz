@@ -19,7 +19,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.
         recv_timeout (float): Seconds to wait for recv before timing out. Default 5.0.
         ethernet_proto (int): Ethernet protocol to bind to. Defaults to ETH_P_IP (0x0800).
-        l2_dst (bytes): Layer2 destination address (e.g. MAC address). Default b'\xFF\xFF\xFF\xFF\xFF\xFF' (broadcast)
+        l2_dst (bytes): Layer2 destination address (e.g. MAC address). Default b'\xff\xff\xff\xff\xff\xff' (broadcast)
         packet_size (int): Maximum packet size (in bytes). Default 1500 if the underlying interface uses
             standard ethernet for layer 2. Otherwise, a different packet size may apply (e.g. Jumboframes,
             802.5 Token Ring, 802.11 wifi, ...) that must be specified.
