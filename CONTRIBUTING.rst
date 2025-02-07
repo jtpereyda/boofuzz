@@ -18,7 +18,7 @@ See installation instructions for details on installing boofuzz from source with
 Pull Request Checklist
 ----------------------
 
-1. Install python version 3.8+
+1. Install python version 3.9+
 
 2. Verify tests pass:
 

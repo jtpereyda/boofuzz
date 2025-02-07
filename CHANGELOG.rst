@@ -5,10 +5,11 @@ Upcomming
 ---------
 Features
 ^^^^^^^^
-- Added Python 3.12 compatibility.
+- Added Python 3.13 compatibility.
 
 Fixes
 ^^^^^
+- The minimum supported Python version is now 3.9.
 
 v0.4.2
 ------
