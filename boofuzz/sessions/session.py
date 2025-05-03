@@ -171,7 +171,7 @@ class Session(pgraph.Graph):
             else:
                 fuzz_loggers = [fuzz_logger_text.FuzzLoggerText()]
 
-        self._run_id = datetime.datetime.utcnow().replace(microsecond=0).isoformat().replace(":", "-")
+        self._run_id = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace(":", "-")
         if db_filename is not None:
             helpers.mkdir_safe(db_filename, file_included=True)
             self._db_filename = db_filename

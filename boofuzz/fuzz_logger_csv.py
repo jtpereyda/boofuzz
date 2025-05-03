@@ -21,7 +21,7 @@ DEFAULT_HEX_TO_STR = hex_to_hexstr
 
 
 def get_time_stamp():
-    s = datetime.datetime.utcnow().isoformat()
+    s = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat()
     return s
 
 

@@ -26,7 +26,7 @@ DEFAULT_HEX_TO_STR = hex_to_hexstr
 
 
 def get_time_stamp():
-    s = datetime.datetime.utcnow().isoformat()
+    s = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat()
     return s
 
 
@@ -51,7 +51,7 @@ class FuzzLoggerDb(ifuzz_logger_backend.IFuzzLoggerBackend):
 
         self._current_test_case_index = 0
 
-        self._queue = collections.deque([])  # Queue that holds last n test cases before commiting
+        self._queue = collections.deque([])  # Queue that holds last n test cases before committing
         self._queue_max_len = num_log_cases
         self._fail_detected = False
         self._log_first_case = True
