@@ -153,8 +153,9 @@ class DebuggerThreadSimple(threading.Thread):
             exit_info = os.waitpid(self.pid, 0)
             self.exit_status = exit_info[1]  # [0] is the pid
 
-        default_reason = "Process died for unknown reason"
-        if self.exit_status is not None:
+        msg = ""
+
+        if self.exit_status:
             if os.WCOREDUMP(self.exit_status):
                 reason = "Segmentation fault"
             elif os.WIFSTOPPED(self.exit_status):
@@ -164,9 +165,10 @@ class DebuggerThreadSimple(threading.Thread):
             elif os.WIFEXITED(self.exit_status):
                 reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
             else:
-                reason = default_reason
-        else:
-            reason = default_reason
+                reason = "Process died for unknown reason"
+            msg += "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
+                time.strftime("%I:%M.%S"), self.exit_status, reason
+            )
 
         outdata = None
         errdata = None
@@ -178,9 +180,6 @@ class DebuggerThreadSimple(threading.Thread):
                 msg="Expired waiting for process {0} to terminate".format(self._process.pid), level=1
             )
 
-        msg = "[{0}] Crash. Exit code: {1}. Reason - {2}\n".format(
-            time.strftime("%I:%M.%S"), self.exit_status if self.exit_status is not None else "<unknown>", reason
-        )
         if errdata is not None:
             msg += "STDERR:\n{0}\n".format(errdata.decode("ascii"))
         if outdata is not None:
