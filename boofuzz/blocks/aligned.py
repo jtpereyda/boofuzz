@@ -24,6 +24,13 @@ class Aligned(FuzzableBlock):
 
     def encode(self, value, mutation_context):
         child_data = self.get_child_data(mutation_context=mutation_context)
-        padding_length = self._modulus - (len(child_data) % self._modulus)
+        remainder = len(child_data) % self._modulus
+
+        # If already aligned, no padding needed
+        if remainder == 0:
+            return child_data
+
+        # Calculate padding needed to reach next alignment boundary
+        padding_length = self._modulus - remainder
         a, b = divmod(padding_length, len(self._pattern))
         return child_data + self._pattern * a + self._pattern[:b]
