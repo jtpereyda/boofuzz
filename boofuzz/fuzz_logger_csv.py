@@ -69,10 +69,10 @@ class FuzzLoggerCsv(ifuzz_logger_backend.IFuzzLoggerBackend):
         self._print_log_msg(["pass", "", "", description])
 
     def close_test_case(self):
-        pass
+        self._file_handle.flush()
 
     def close_test(self):
-        pass
+        self._file_handle.flush()
 
     def _print_log_msg(self, msg):
         time_stamp = get_time_stamp()
