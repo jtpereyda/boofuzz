@@ -20,20 +20,31 @@ Feature: test_s_group
 
         Examples:
             | mutation | result |
-            | 0        | 0x0211 |
-            | 1        | 0x0311 |
-            | 2        | 0x0112 |
-            | 3        | 0x0113 |
-            | 4        | 0x0114 |
-            | 5        | 0x0212 |
-            | 6        | 0x0213 |
-            | 7        | 0x0214 |
-            | 8        | 0x0312 |
-            | 9        | 0x0313 |
-            | 10       | 0x0314 |
+            | 0        | 0x0111 |
+            | 1        | 0x0211 |
+            | 2        | 0x0311 |
+            | 4        | 0x0112 |
+            | 5        | 0x0113 |
+            | 6        | 0x0114 |
+            | 11       | 0x0211 |
+            | 12       | 0x0212 |
+            | 13       | 0x0213 |
+            | 14       | 0x0214 |
+            | 15       | 0x0311 |
+            | 16       | 0x0312 |
+            | 17       | 0x0313 |
+            | 18       | 0x0314 |
 
     Scenario: test_groups_and_blocks_mutation_count
         Given Groups and blocks scenario
         When Scenario can be rendered
         Then All mutations render
-        And There are 11 total mutations
+        And There are 19 total mutations
+
+    Scenario: test_default_value_is_fuzzed
+        Given Group with default value in values list
+        When Scenario can be rendered
+        Then All mutations render
+        And Mutation values include GET
+        And Mutation values include POST
+        And There are 2 total mutations
