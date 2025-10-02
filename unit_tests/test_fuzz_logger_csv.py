@@ -590,5 +590,33 @@ class TestFuzzLoggerCsv(unittest.TestCase):
         )
 
 
+    def test_close_test_case_flushes_data(self):
+        """
+        Verify that close_test_case flushes buffered data to file handle.
+        This test addresses issue #601 where last test case data was missing.
+
+        Given: FuzzLoggerCsv with a virtual file handle.
+        When: Logging data for multiple test cases and calling close_test_case.
+        Then: Data for all test cases, including the last one, should be
+              available in the file handle after close_test_case is called.
+        """
+        # When
+        self.logger.open_test_case("test_1", name="First Test", index=1)
+        self.logger.log_pass("First test passed")
+        self.logger.close_test_case()
+
+        self.logger.open_test_case("test_2", name="Second Test", index=2)
+        self.logger.log_pass("Check OK: No crash detected.")
+        self.logger.close_test_case()
+
+        # Then - verify both test cases are in the output
+        self.virtual_file.seek(0)
+        content = self.virtual_file.read()
+        self.assertIn("test_1", content)
+        self.assertIn("First test passed", content)
+        self.assertIn("test_2", content)
+        self.assertIn("Check OK: No crash detected.", content)
+
+
 if __name__ == "__main__":
     unittest.main()
