@@ -61,6 +61,7 @@ class RawL3SocketConnection(base_socket_connection.BaseSocketConnection):
         data = b""
 
         try:
+            self._sock.settimeout(self._recv_timeout)
             data = self._sock.recv(self.packet_size)
 
             if 0 < max_bytes < self.packet_size:

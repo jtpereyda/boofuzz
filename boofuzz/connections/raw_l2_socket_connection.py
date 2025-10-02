@@ -69,6 +69,7 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
         data = b""
 
         try:
+            self._sock.settimeout(self._recv_timeout)
             data = self._sock.recv(self.mtu)
 
             if 0 < len(data) < max_bytes:
