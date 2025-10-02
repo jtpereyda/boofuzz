@@ -76,6 +76,7 @@ class UDPSocketConnection(base_socket_connection.BaseSocketConnection):
         data = b""
 
         try:
+            self._sock.settimeout(self._recv_timeout)
             if self.bind or self.server:
                 data, self._udp_client_port = self._sock.recvfrom(max_bytes)
             else:

@@ -338,6 +338,95 @@ class TestSocketConnection(unittest.TestCase):
         self.assertEqual(data_to_send, server.received)
         self.assertEqual(received, b"")
 
+    def test_tcp_recv_timeout_enforced(self):
+        """
+        Given: A TCP server that accepts connection but never sends data, and connection with recv_timeout=1.
+        When: Calling recv()
+        Then: recv() returns empty bytes within approximately 1 second (not hanging forever).
+        """
+        # Given - Create a server that accepts but never sends (keeps connection open)
+        def server_stay_connected():
+            server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            server_sock.bind(("0.0.0.0", 0))
+            server_sock.listen(1)
+            port = server_sock.getsockname()[1]
+            server_stay_connected.port = port
+            server_sock.settimeout(5)
+            (client_socket, address) = server_sock.accept()
+            # Receive data but don't send anything back - just sleep
+            client_socket.recv(10000)
+            time.sleep(3)  # Keep connection open longer than client timeout
+            client_socket.close()
+            server_sock.close()
+
+        t = threading.Thread(target=server_stay_connected)
+        t.daemon = True
+        t.start()
+        time.sleep(0.1)  # Give server time to bind
+
+        uut = TCPSocketConnection(host=socket.gethostname(), port=server_stay_connected.port, recv_timeout=1.0)
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # When
+        uut.open()
+        uut.send(data=b"test")
+        start_time = time.time()
+        received = uut.recv(10000)
+        elapsed_time = time.time() - start_time
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.is_alive())
+
+        # Then
+        self.assertEqual(received, b"")
+        # Timeout should happen within 1.5 seconds (1s timeout + 0.5s tolerance)
+        self.assertLess(elapsed_time, 1.5, "recv() should timeout within expected time")
+        # And should take at least 0.9 seconds (ensuring timeout actually waited)
+        self.assertGreater(elapsed_time, 0.9, "recv() should wait close to timeout duration")
+
+    def test_udp_recv_timeout_enforced(self):
+        """
+        Given: A UDP server that does not respond, and connection with recv_timeout=1.
+        When: Calling recv()
+        Then: recv() returns empty bytes within approximately 1 second (not hanging forever).
+        """
+        # Given
+        server = MiniTestServer(proto="udp", stay_silent=True)
+        server.bind()
+
+        t = threading.Thread(target=server.serve_once)
+        t.daemon = True
+        t.start()
+
+        uut = UDPSocketConnection(
+            host=socket.gethostname(),
+            port=server.active_port,
+            bind=(socket.gethostname(), 0),
+            recv_timeout=1.0,
+        )
+        uut.logger = logging.getLogger("SulleyUTLogger")
+
+        # When
+        uut.open()
+        uut.send(data=b"test")
+        start_time = time.time()
+        received = uut.recv(10000)
+        elapsed_time = time.time() - start_time
+        uut.close()
+
+        # Wait for the other thread to terminate
+        t.join(THREAD_WAIT_TIMEOUT)
+        self.assertFalse(t.is_alive())
+
+        # Then
+        self.assertEqual(received, b"")
+        # Timeout should happen within 1.5 seconds (1s timeout + 0.5s tolerance)
+        self.assertLess(elapsed_time, 1.5, "recv() should timeout within expected time")
+        # And should take at least 0.9 seconds (ensuring timeout actually waited)
+        self.assertGreater(elapsed_time, 0.9, "recv() should wait close to timeout duration")
+
     def test_udp_client(self):
         """
         Given: A SocketConnection 'udp' object and a UDP server.
