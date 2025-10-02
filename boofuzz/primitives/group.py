@@ -33,8 +33,6 @@ class Group(BasePrimitive):
 
         default_value = default_value if isinstance(default_value, bytes) else default_value.encode(encoding=encoding)
 
-        if default_value in values:
-            values.remove(default_value)
 
         super(Group, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 

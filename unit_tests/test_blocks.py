@@ -65,7 +65,7 @@ class TestBlocks(DebuggableTestCase):
         self.assertEqual(random.get_num_mutations(), 100)
 
         # we specify the number of values in a group field, so ensure that matches.
-        self.assertEqual(group.get_num_mutations(), 3)
+        self.assertEqual(group.get_num_mutations(), 4)
 
         # assert that the number of block mutations equals the sum of the number of mutations of its components.
         self.assertEqual(
@@ -94,7 +94,7 @@ class TestBlocks(DebuggableTestCase):
         req2 = s_get("UNIT TEST 2")
         req2block = req2.resolve_name("", "BLOCK")
 
-        self.assertEqual(req2block.get_num_mutations(), block.get_num_mutations() * 4)
+        self.assertEqual(req2block.get_num_mutations(), block.get_num_mutations() * 5)
 
     def test_dependencies(self):
         s_initialize("DEP TEST 1")

@@ -67,3 +67,26 @@ def scenario_can_render_all_mutations(context):
 @then(parsers.parse("There are {value:d} total mutations"))
 def total_mutations(context, value):
     assert len(context.mutations) == value
+
+
+@given("Group with default value in values list")
+def scenario_default_value_included(context):
+    s_initialize("test_default_value_fuzzed")
+    s_group("method", values=["GET", "POST"], default_value="GET")
+    context.req = s_get("test_default_value_fuzzed")
+
+
+@then(parsers.parse("Mutation values include {value}"))
+def mutation_includes_value(context, value):
+    """Check that a specific value appears in the mutations"""
+    if value.startswith("0x"):
+        value = value[2:]
+        value = bytes(bytearray.fromhex(value))
+    else:
+        value = value.encode('ascii')
+    
+    mutation_values = [
+        context.req.render(MutationContext(mutations=mutation))
+        for mutation in context.mutations
+    ]
+    assert value in mutation_values, f"Value {value} not found in mutations: {mutation_values}"
