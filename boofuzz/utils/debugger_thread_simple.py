@@ -126,7 +126,7 @@ class DebuggerThreadSimple(threading.Thread):
                 return False
         if self.proc_name:
             self.log("done. waiting for start command to terminate.")
-            os.waitpid(self._process.pid, 0)
+            self._process.wait()
             self.log('searching for process by name "{0}"'.format(self.proc_name))
             self.watch()
             self._psutil_proc = psutil.Process(pid=self.pid)
@@ -150,21 +150,26 @@ class DebuggerThreadSimple(threading.Thread):
             gone, _ = psutil.wait_procs([self._psutil_proc])
             self.exit_status = gone[0].returncode
         else:
-            exit_info = os.waitpid(self.pid, 0)
-            self.exit_status = exit_info[1]  # [0] is the pid
+            self.exit_status = self._process.wait()
 
         default_reason = "Process died for unknown reason"
         if self.exit_status is not None:
-            if os.WCOREDUMP(self.exit_status):
-                reason = "Segmentation fault"
-            elif os.WIFSTOPPED(self.exit_status):
-                reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFSIGNALED(self.exit_status):
-                reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
-            elif os.WIFEXITED(self.exit_status):
-                reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
+            # Unix-specific exit status parsing
+            if sys.platform.startswith('win'):
+                # Windows: exit_status is just the return code
+                reason = "Exit with code - " + str(self.exit_status)
             else:
-                reason = default_reason
+                # Unix: exit_status contains signal/exit information
+                if os.WCOREDUMP(self.exit_status):
+                    reason = "Segmentation fault"
+                elif os.WIFSTOPPED(self.exit_status):
+                    reason = "Stopped with signal " + str(os.WTERMSIG(self.exit_status))
+                elif os.WIFSIGNALED(self.exit_status):
+                    reason = "Terminated with signal " + str(os.WTERMSIG(self.exit_status))
+                elif os.WIFEXITED(self.exit_status):
+                    reason = "Exit with code - " + str(os.WEXITSTATUS(self.exit_status))
+                else:
+                    reason = default_reason
         else:
             reason = default_reason
 
