@@ -81,6 +81,7 @@ coverage:
 
 - `boofuzz-ftp`_
 - `boofuzz-http`_
+- `boofuzz-can`_
 
 If you have an open source boofuzz protocol suite to share, please :ref:`let us know <community>`!
 
