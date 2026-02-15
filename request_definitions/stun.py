@@ -6,7 +6,6 @@ http://www.vovida.org/
 
 from boofuzz import *
 
-
 s_initialize("binding request")
 
 # message type 0x0001: binding request.

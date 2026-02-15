@@ -92,17 +92,13 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "ha:p:s:e:", ["address=", "port=", "start_index=", "end_index="])
     except getopt.GetoptError:
-        print(
-            "autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
-            -s <start of fuzzing index> --end_index|-e <end of fuzzing index>"
-        )
+        print("autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
+            -s <start of fuzzing index> --end_index|-e <end of fuzzing index>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == "-h":
-            print(
-                "autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
-                -s <start of fuzzing index> --end_index|-e <end of fuzzing index>"
-            )
+            print("autoprog.py --address|-a <target ip address> --port|-p <auto programming port> --start_index|\
+                -s <start of fuzzing index> --end_index|-e <end of fuzzing index>")
             sys.exit()
         elif opt in ("-a", "--address"):
             target_ip_addr = arg

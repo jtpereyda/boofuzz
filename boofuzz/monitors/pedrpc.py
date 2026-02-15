@@ -325,7 +325,7 @@ class Server:
                 readable, writeable, errored = select.select([self.__server], [], [], 0.1)
                 if len(readable) > 0:
                     assert readable[0] == self.__server
-                    (self.__client_sock, self.__client_address) = self.__server.accept()
+                    self.__client_sock, self.__client_address = self.__server.accept()
                     break
 
             self.__debug("accepted connection from %s:%d" % (self.__client_address[0], self.__client_address[1]))
@@ -334,7 +334,7 @@ class Server:
 
             # receive the method name and arguments, continue on socket disconnect.
             try:
-                (method_name, (args, kwargs)) = self.__pickle_recv()
+                method_name, (args, kwargs) = self.__pickle_recv()
                 self.__debug("%s(args=%s, kwargs=%s)" % (method_name, args, kwargs))
             except Exception:
                 continue

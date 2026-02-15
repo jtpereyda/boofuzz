@@ -107,7 +107,7 @@ class CrashBinning:
 
         # add module names to the SEH unwind.
         for i in range(len(crash.seh_unwind)):
-            (addr, handler) = crash.seh_unwind[i]
+            addr, handler = crash.seh_unwind[i]
 
             module = pydbg.addr_to_module(handler)
 

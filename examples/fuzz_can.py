@@ -15,10 +15,11 @@ import subprocess
 import os
 import signal
 
-#def post_test_callback(target, fuzz_data_logger, session, node, edge, *args, **kwargs):
+# def post_test_callback(target, fuzz_data_logger, session, node, edge, *args, **kwargs):
 #    print("Testcase finished")
 #    time.sleep(5)
 #    return 1
+
 
 class CanConnection(ITargetConnection):
     """a connection to the virtual CAN bus vcan0"""
@@ -30,10 +31,10 @@ class CanConnection(ITargetConnection):
 
     def open(self):
         """Open CAN raw socket"""
-        #self.sock = socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
-        #self.sock.bind((self.interface,))
+        # self.sock = socket.socket(socket.AF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
+        # self.sock.bind((self.interface,))
         # TODO check if interface exists
-        self.bus = can.Bus(interface='socketcan', channel='vcan0', bitrate=500000)
+        self.bus = can.Bus(interface="socketcan", channel="vcan0", bitrate=500000)
         self.is_alive = True
 
     def info(self):
@@ -56,30 +57,25 @@ class CanConnection(ITargetConnection):
         - data (payload_bytes)
         No padding is employed if not modeled in the Protocol Definition.
         """
-        # Extract fuzzed fields  
+        # Extract fuzzed fields
         can_id = struct.unpack("<I", data[0:4])[0]
         dlc = data[4]
-        payload = data[5:5+dlc].ljust(8, b"\x00")
-        #print(f"[{can_id}] {payload}")
+        payload = data[5 : 5 + dlc].ljust(8, b"\x00")
+        # print(f"[{can_id}] {payload}")
 
         # create the CAN frame (using can-utils)
-        msg = can.Message(
-            arbitration_id=self.can_id, 
-            data=payload,
-            dlc=dlc,
-            is_extended_id=False
-        )
+        msg = can.Message(arbitration_id=self.can_id, data=payload, dlc=dlc, is_extended_id=False)
 
         self.bus.send(msg)
 
     def recv(self, max_bytes=4096):
         """Return CAN responses (if any)."""
         try:
-            #print("retrieving response")
+            # print("retrieving response")
             response = self.bus.recv(timeout=0.01)
             return response
         except socket.timeout:
-            #print("nothing received")
+            # print("nothing received")
             return b""
 
         return b""
@@ -108,8 +104,8 @@ class MyProcessMonitor(BaseMonitor):
         self.last_result = None
         self.soft_fail = False
         # We expect the target as running
-        #self.start_target()
-    
+        # self.start_target()
+
     def check_proc(self):
         if self.proc is None:
             print("no proc")
@@ -122,9 +118,9 @@ class MyProcessMonitor(BaseMonitor):
         except ProcessLookupError:
             return False  # No such process
         except PermissionError:
-            return True   # Process exists but no permission
-        #ret = self.proc.poll()
-        #if ret is None:
+            return True  # Process exists but no permission
+        # ret = self.proc.poll()
+        # if ret is None:
         #    return True # process is ready
         return False
 
@@ -134,26 +130,24 @@ class MyProcessMonitor(BaseMonitor):
 
     def start_target(self, *args, **kwargs):
         print(f"starting target {self.cmd}")
-        proc = subprocess.Popen(self.cmd, 
-                                     cwd=self.cwd, 
-                                     stdout=subprocess.PIPE, 
-                                     stderr=subprocess.PIPE,
-                                     start_new_session=True)
+        proc = subprocess.Popen(
+            self.cmd, cwd=self.cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True
+        )
         time.sleep(2)
-        #while True:
+        # while True:
         #    # wait until the process reacts
         #    if self.proc.poll() is None: break
         #    # TODO maybe wait?
         print("ready")
         self.proc = proc
-            
+
         return True
 
     def stop_target(self, *args, **kwargs):
         print(f"stopping process {self.proc.pid}")
         if self.proc:
             try:
-                os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL) # killpg
+                os.killpg(os.getpgid(self.proc.pid), signal.SIGKILL)  # killpg
                 time.sleep(0.5)
             except Exception as e:
                 print(f"[!] Failed to terminate process: {e}")
@@ -195,23 +189,25 @@ class MyProcessMonitor(BaseMonitor):
     def __repr__(self):
         return f"Process Monitor {self.cmd}"
 
+
 class BitSweep(Byte):
     """Custom protocol definition for a single bit"""
 
     def __init__(
-        self, name=None, default_value="", size=None, padding=b"\x00", encoding="utf-8", max_len=None, 
-        *args, **kwargs):
+        self, name=None, default_value="", size=None, padding=b"\x00", encoding="utf-8", max_len=None, *args, **kwargs
+    ):
         super(Byte, self).__init__(name=name, default_value=default_value, *args, **kwargs)
 
     def mutations(self, default_value):
-        yield 0x80 # b10000000
-        yield 0x40 # b01000000
-        yield 0x20 # b00100000
-        yield 0x10 # b00010000
+        yield 0x80  # b10000000
+        yield 0x40  # b01000000
+        yield 0x20  # b00100000
+        yield 0x10  # b00010000
         yield 0x8  # b00001000
         yield 0x4  # b00000100
         yield 0x2  # b00000010
         yield 0x1  # b00000001
+
 
 def post_test_case(target, fuzz_data_logger, session, *args, **kwargs):
     """soft crash in case of a CAN network reply"""
@@ -226,50 +222,51 @@ def post_test_case(target, fuzz_data_logger, session, *args, **kwargs):
             # Reset soft_fail_code for next testcase
             monitor.soft_fail_code = 0
 
+
 def main():
     process_monitor = MyProcessMonitor(
-        cmd="/home/kali/ACOSec/ICSim/icsim",
-        args=["vcan0"],
-        cwd="/home/kali/ACOSec/ICSim")
+        cmd="/home/kali/ACOSec/ICSim/icsim", args=["vcan0"], cwd="/home/kali/ACOSec/ICSim"
+    )
 
     conn = CanConnection(interface="vcan0", can_id=0x188)
 
-    target = Target(connection=conn,
-                    monitors=[process_monitor]) 
+    target = Target(connection=conn, monitors=[process_monitor])
 
-    session = Session(
-        target=target,
-        sleep_time=0.01,
-        reuse_target_connection=True
-    )
+    session = Session(target=target, sleep_time=0.01, reuse_target_connection=True)
     session.register_post_test_case_callback(post_test_case)
 
     # CAN message structure using the new protocol defintion
-    request = Request("can_frame", children=(
-        DWord("can_id", 0x188, fuzzable=False),
-        Byte("dlc", 8, fuzzable=False),
-        #Byte("data", 8)
-        #BitSweep("data")
-        Block("data", children=(
-             BitSweep("data_0", 0x00),
-             BitSweep("data_1", 0x00),
-             BitSweep("data_2", 0x00),
-             BitSweep("data_3", 0x00),
-        #    Byte("data_0", 0x00),
-        #    Byte("data_1", 0x01),
-        #    Byte("data_2", 0x02),
-        #    #s_byte(name="data_3")
-        #    #BitField(name="data_3", width=8, max_num=22),
-        #    Byte("data_3", 0x03),
-        #    Byte("data_4", 0x04),
-        #    Byte("data_5", 0x05),
-        #    Byte("data_6", 0x06),
-        #    Byte("data_7", 0x07),
-        #    Byte("data_8", 0x08),
-        ))
-    ))
+    request = Request(
+        "can_frame",
+        children=(
+            DWord("can_id", 0x188, fuzzable=False),
+            Byte("dlc", 8, fuzzable=False),
+            # Byte("data", 8)
+            # BitSweep("data")
+            Block(
+                "data",
+                children=(
+                    BitSweep("data_0", 0x00),
+                    BitSweep("data_1", 0x00),
+                    BitSweep("data_2", 0x00),
+                    BitSweep("data_3", 0x00),
+                    #    Byte("data_0", 0x00),
+                    #    Byte("data_1", 0x01),
+                    #    Byte("data_2", 0x02),
+                    #    #s_byte(name="data_3")
+                    #    #BitField(name="data_3", width=8, max_num=22),
+                    #    Byte("data_3", 0x03),
+                    #    Byte("data_4", 0x04),
+                    #    Byte("data_5", 0x05),
+                    #    Byte("data_6", 0x06),
+                    #    Byte("data_7", 0x07),
+                    #    Byte("data_8", 0x08),
+                ),
+            ),
+        ),
+    )
 
-    session.connect(request) #, callback=post_test_callback)
+    session.connect(request)  # , callback=post_test_callback)
 
     try:
         session.fuzz()

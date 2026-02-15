@@ -19,7 +19,7 @@ def commify(number):
     processing = 1
     regex = re.compile(r"^(-?\d+)(\d{3})")
     while processing:
-        (number, processing) = regex.subn(r"\1,\2", number)
+        number, processing = regex.subn(r"\1,\2", number)
     return number
 
 

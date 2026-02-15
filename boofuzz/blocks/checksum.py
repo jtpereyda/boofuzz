@@ -173,7 +173,7 @@ class Checksum(primitives.BasePrimitive):
 
                 # TODO: is this right?
                 if self._endian == ">":
-                    (a, b, c, d) = struct.unpack("<LLLL", digest)
+                    a, b, c, d = struct.unpack("<LLLL", digest)
                     digest = struct.pack(">LLLL", a, b, c, d)
 
                 check = digest
@@ -183,7 +183,7 @@ class Checksum(primitives.BasePrimitive):
 
                 # TODO: is this right?
                 if self._endian == ">":
-                    (a, b, c, d, e) = struct.unpack("<LLLLL", digest)
+                    a, b, c, d, e = struct.unpack("<LLLLL", digest)
                     digest = struct.pack(">LLLLL", a, b, c, d, e)
 
                 check = digest

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Demo of Block and group functionality."""
+
 from boofuzz import *
 import boofuzz
 import click

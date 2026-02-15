@@ -68,7 +68,7 @@ class MiniTestServer:
         self.server_socket.settimeout(self.timeout)
 
         if self.proto == "tcp":
-            (client_socket, address) = self.server_socket.accept()
+            client_socket, address = self.server_socket.accept()
 
             self.received = client_socket.recv(10000)
 

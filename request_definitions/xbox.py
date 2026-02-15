@@ -4,7 +4,6 @@ mediaconnect port 2869
 
 from boofuzz import *
 
-
 s_initialize("mediaconnect: get album list")
 
 # POST /upnphost/udhisapi.dll?

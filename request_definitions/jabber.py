@@ -1,6 +1,5 @@
 from boofuzz import *
 
-
 s_initialize("chat init")
 
 """

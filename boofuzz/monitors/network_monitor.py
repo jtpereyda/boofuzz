@@ -3,7 +3,6 @@ import warnings
 from . import pedrpc
 from .base_monitor import BaseMonitor
 
-
 # Important: BaseMonitor needs to come *before* pedrpc.Client in the
 # Inheritance list for the method resolution order to produce
 # correct results.

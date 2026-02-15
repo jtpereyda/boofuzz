@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Demo of a very simple protocol definition using the Simple primitive."""
+
 from boofuzz import *
 import boofuzz
 import click

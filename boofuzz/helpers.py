@@ -176,8 +176,8 @@ def uuid_bin_to_str(uuid):
 
     @param uuid: bytes representing UUID.
     """
-    (block1, block2, block3) = struct.unpack("<LHH", uuid[:8])
-    (block4, block5, block6) = struct.unpack(">HHL", uuid[8:16])
+    block1, block2, block3 = struct.unpack("<LHH", uuid[:8])
+    block4, block5, block6 = struct.unpack(">HHL", uuid[8:16])
 
     return "%08x-%04x-%04x-%04x-%04x%08x" % (block1, block2, block3, block4, block5, block6)
 
@@ -200,7 +200,7 @@ def uuid_str_to_bin(uuid):
     matches = re.match(uuid_re, uuid)
 
     # pytype: disable=attribute-error
-    (uuid1, uuid2, uuid3, uuid4, uuid5, uuid6) = map(lambda x: int(x, 16), matches.groups())
+    uuid1, uuid2, uuid3, uuid4, uuid5, uuid6 = map(lambda x: int(x, 16), matches.groups())
     # pytype: enable=attribute-error
 
     uuid = struct.pack("<LHH", uuid1, uuid2, uuid3)
