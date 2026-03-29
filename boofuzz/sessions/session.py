@@ -238,7 +238,9 @@ class Session(pgraph.Graph):
         self.is_paused = False
         self.crashing_primitives = {}
         self.on_failure = event_hook.EventHook()
-
+        self.mutation_context = None
+        self.modified_data = None
+        
         # import settings if they exist.
         self.import_file()
 
@@ -858,6 +860,10 @@ class Session(pgraph.Graph):
         else:
             data = self.fuzz_node.render(mutation_context)
 
+        if self.modified_data:
+            data = self.modified_data
+            self.modified_data = None
+
         try:  # send
             self.targets[0].send(data)
             self.last_send = data
@@ -1081,6 +1087,8 @@ class Session(pgraph.Graph):
                 ):
                     self._fuzz_data_logger.open_test_step("restart interval of %d reached" % self.restart_interval)
                     self._restart_target(self.targets[0])
+
+                self.mutation_context = mutation_context
 
                 self._fuzz_current_case(mutation_context)
 
