@@ -1,7 +1,6 @@
 import abc
 import math
 import os
-import socket
 import struct
 
 from boofuzz.connections import itarget_connection
@@ -10,6 +9,9 @@ from boofuzz.connections import itarget_connection
 def _seconds_to_sockopt_format(seconds):
     """Convert floating point seconds value to second/useconds struct used by UNIX socket library.
     For Windows, convert to whole milliseconds.
+
+    .. deprecated:: 0.4.3
+        This function is no longer used internally but kept for backward compatibility.
     """
     if os.name == "nt":
         return int(seconds * 1000)
@@ -53,5 +55,7 @@ class BaseSocketConnection(itarget_connection.ITargetConnection, metaclass=abc.A
         Returns:
             None
         """
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDTIMEO, _seconds_to_sockopt_format(self._send_timeout))
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, _seconds_to_sockopt_format(self._recv_timeout))
+        # Use settimeout() which is more reliable than SO_RCVTIMEO/SO_SNDTIMEO socket options.
+        # Socket options don't work correctly with wrapped sockets (e.g., SSL) and may not work
+        # consistently across all platforms. settimeout() affects both send and receive operations.
+        self._sock.settimeout(self._recv_timeout)
