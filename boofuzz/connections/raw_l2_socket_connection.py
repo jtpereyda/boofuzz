@@ -12,7 +12,7 @@ class RawL2SocketConnection(base_socket_connection.BaseSocketConnection):
     .. versionadded:: 0.2.0
 
     Args:
-        interface (str): Hostname or IP adress of target system.
+        interface (str): Interface to send and receive on.
         send_timeout (float): Seconds to wait for send before timing out. Default 5.0.
         recv_timeout (float): Seconds to wait for recv before timing out. Default 5.0.
         ethernet_proto (int): Ethernet protocol to bind to. If supplied, the opened socket
