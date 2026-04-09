@@ -1532,7 +1532,7 @@ class Session(pgraph.Graph):
         """
         message_path = self._message_path_to_str(mutation_context.message_path)
         mutation_names = (
-            "{0}:{1}".format(qualified_name, mutation.index)
+            "{0}:{1}".format(qualified_name, mutation.value)
             for qualified_name, mutation in mutation_context.mutations.items()
         )
         return "{0}:[{1}]".format(message_path, ", ".join(mutation_names))
